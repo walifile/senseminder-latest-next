@@ -4,6 +4,7 @@ import { Search, HelpCircle, ChevronDown, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 const faqItems = [
   {
@@ -192,10 +193,12 @@ const FAQ = () => {
             <p className="dark:text-gray-300 text-gray-600 mb-4">
               Still have questions?
             </p>
-            <Button className="bg-primary hover:bg-primary/90 text-white dark:text-primary-foreground dark:shadow-primary/20 dark:shadow-lg">
-              <MessageCircle className="mr-2 h-4 w-4" />
-              Contact Support
-            </Button>
+            <Link href="/contact">
+              <Button className="bg-primary hover:bg-primary/90 text-white dark:text-primary-foreground dark:shadow-primary/20 dark:shadow-lg">
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Contact Support
+              </Button>
+            </Link>
           </motion.div>
         </div>
       </div>
