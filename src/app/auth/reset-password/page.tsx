@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,9 +43,10 @@ export default function ResetPassword() {
   const email = searchParams.get("email");
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const [newPassword, setNewPassword] = useState("");
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(true);
+  const [verificationOtp, setVerificationOtp] = useState("");
 
   const {
     register,
@@ -55,7 +56,13 @@ export default function ResetPassword() {
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (data: FormValuesType) => {
+  useEffect(() => {
+    if (email && !otpVerified) {
+      sendOTP();
+    }
+  }, [email]);
+
+  const sendOTP = async () => {
     try {
       setIsLoading(true);
       const response = await handleResetPassword(email!);
@@ -65,8 +72,6 @@ export default function ResetPassword() {
           title: "OTP Sent",
           description: "A verification code has been sent to your email.",
         });
-        setNewPassword(data.password);
-        setIsDialogOpen(true);
       } else {
         toast({
           title: "Error",
@@ -90,27 +95,14 @@ export default function ResetPassword() {
   const handleOTPSubmit = async (otp: string) => {
     try {
       setIsLoading(true);
-      const response = await handleConfirmResetPassword(
-        email!,
-        otp,
-        newPassword
-      );
-
-      if (response.success) {
-        toast({
-          title: "Password Reset Successful",
-          description: "You can now sign in with your new password.",
-        });
-
-        setIsDialogOpen(false);
-        router.push(routes?.signIn);
-      } else {
-        toast({
-          title: "Invalid Code",
-          description: response.error || "The verification code is incorrect.",
-          variant: "destructive",
-        });
-      }
+      setVerificationOtp(otp);
+      setOtpVerified(true);
+      setIsDialogOpen(false);
+      
+      toast({
+        title: "Verification Successful",
+        description: "Now you can set your new password.",
+      });
     } catch (error: unknown) {
       const message =
         error instanceof Error
@@ -119,6 +111,45 @@ export default function ResetPassword() {
 
       toast({
         title: "Verification Failed",
+        description: message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onSubmit = async (data: FormValuesType) => {
+    try {
+      setIsLoading(true);
+      const response = await handleConfirmResetPassword(
+        email!,
+        verificationOtp,
+        data.password
+      );
+
+      if (response.success) {
+        toast({
+          title: "Password Reset Successful",
+          description: "You can now sign in with your new password.",
+        });
+        router.push(routes?.signIn);
+      } else {
+        toast({
+          title: "Error",
+          description: response.error || "Failed to reset password",
+          variant: "destructive",
+        });
+        // If OTP expired, reopen the OTP dialog
+        setOtpVerified(false);
+        setIsDialogOpen(true);
+        sendOTP();
+      }
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Something went wrong";
+      toast({
+        title: "Error",
         description: message,
         variant: "destructive",
       });
@@ -148,14 +179,14 @@ export default function ResetPassword() {
       const message =
         error instanceof Error
           ? error.message
-          : "Unable to verify OTP. Please try again.";
+          : "Unable to send OTP. Please try again.";
       toast({
-        title: "Verification Failed",
+        title: "Error",
         description: message,
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsResending(false);
     }
   };
 
@@ -163,66 +194,77 @@ export default function ResetPassword() {
     <div className="space-y-6">
       <div className="space-y-2 text-center">
         <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">
-          Set New Password
+          {otpVerified ? "Set New Password" : "Verify Your Email"}
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           {email
-            ? `Resetting password for ${email}`
+            ? otpVerified
+              ? `Resetting password for ${email}`
+              : `Please verify your email ${email} to continue`
             : "Enter your new password below"}
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="space-y-2">
-          <label
-            htmlFor="password"
-            className="text-sm font-medium text-gray-700 dark:text-gray-200"
-          >
-            New Password
-          </label>
-          <Input
-            id="password"
-            type="password"
-            placeholder="Enter new password"
-            {...register("password")}
-            className="bg-white/50 border-gray-200 text-gray-900 placeholder:text-gray-500 dark:bg-[#ffffff0f] dark:border-[#ffffff1a] dark:text-white dark:placeholder:text-gray-400"
-          />
-          {errors.password && (
-            <p className="text-sm text-red-600 dark:text-red-500">
-              {errors.password.message}
-            </p>
-          )}
-        </div>
+      {otpVerified ? (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <label
+              htmlFor="password"
+              className="text-sm font-medium text-gray-700 dark:text-gray-200"
+            >
+              New Password
+            </label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Enter new password"
+              {...register("password")}
+              className="bg-white/50 border-gray-200 text-gray-900 placeholder:text-gray-500 dark:bg-[#ffffff0f] dark:border-[#ffffff1a] dark:text-white dark:placeholder:text-gray-400"
+            />
+            {errors.password && (
+              <p className="text-sm text-red-600 dark:text-red-500">
+                {errors.password.message}
+              </p>
+            )}
+          </div>
 
-        <div className="space-y-2">
-          <label
-            htmlFor="confirmPassword"
-            className="text-sm font-medium text-gray-700 dark:text-gray-200"
-          >
-            Confirm Password
-          </label>
-          <Input
-            id="confirmPassword"
-            type="password"
-            placeholder="Confirm new password"
-            {...register("confirmPassword")}
-            className="bg-white/50 border-gray-200 text-gray-900 placeholder:text-gray-500 dark:bg-[#ffffff0f] dark:border-[#ffffff1a] dark:text-white dark:placeholder:text-gray-400"
-          />
-          {errors.confirmPassword && (
-            <p className="text-sm text-red-600 dark:text-red-500">
-              {errors.confirmPassword.message}
-            </p>
-          )}
-        </div>
+          <div className="space-y-2">
+            <label
+              htmlFor="confirmPassword"
+              className="text-sm font-medium text-gray-700 dark:text-gray-200"
+            >
+              Confirm Password
+            </label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder="Confirm new password"
+              {...register("confirmPassword")}
+              className="bg-white/50 border-gray-200 text-gray-900 placeholder:text-gray-500 dark:bg-[#ffffff0f] dark:border-[#ffffff1a] dark:text-white dark:placeholder:text-gray-400"
+            />
+            {errors.confirmPassword && (
+              <p className="text-sm text-red-600 dark:text-red-500">
+                {errors.confirmPassword.message}
+              </p>
+            )}
+          </div>
 
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white dark:from-[#0EA5E9] dark:to-[#6366F1] dark:hover:from-[#0284C7] dark:hover:to-[#4F46E5] disabled:opacity-60"
+          >
+            {isLoading ? "Submitting..." : "Reset Password"}
+          </Button>
+        </form>
+      ) : (
         <Button
-          type="submit"
-          disabled={isLoading}
+          onClick={() => setIsDialogOpen(true)}
           className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white dark:from-[#0EA5E9] dark:to-[#6366F1] dark:hover:from-[#0284C7] dark:hover:to-[#4F46E5] disabled:opacity-60"
         >
-          {isLoading ? "Submitting..." : "Reset Password"}
+          Enter Verification Code
         </Button>
-      </form>
+      )}
 
       <p className="text-center text-sm text-gray-500 dark:text-gray-400">
         Know your password?{" "}
@@ -236,7 +278,11 @@ export default function ResetPassword() {
 
       <OTPDialog
         isOpen={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
+        onClose={() => {
+          if (otpVerified) {
+            setIsDialogOpen(false);
+          }
+        }}
         onSubmit={handleOTPSubmit}
         onResend={handleResendOTP}
         isLoading={isLoading}
