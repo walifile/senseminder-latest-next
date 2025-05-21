@@ -80,6 +80,7 @@ import FileTypeIcon from "./file-type-icon";
 import { formatDate, formatFileSize, formatTimeAgo } from "../utils";
 import UploadDialog from "./upload-dialog";
 import {
+  useDeleteFilesMutation,
   useLazyDownloadFileQuery,
   useListFilesQuery,
   useUnstarFileMutation,
@@ -89,6 +90,7 @@ import { RootState } from "@/redux/store";
 import ConfirmDeleteDialog from "./confirm-delete-dialog";
 import { useStarFileMutation } from "@/api/fileManagerAPI";
 import { FileItem } from "../types";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const CloudStorage = () => {
   const router = useRouter();
@@ -138,6 +140,13 @@ const CloudStorage = () => {
     []
   );
   const [isBulkDownloading, setIsBulkDownloading] = useState(false);
+  const [filters, setFilters] = useState({
+    starred: false,
+    shared: false,
+    modified: "",
+  });
+
+  const debouncedQuery = useDebounce(searchQuery, 500);
 
   console.log(lastSynced);
 
@@ -145,14 +154,19 @@ const CloudStorage = () => {
     selectedCategory === "All Files" ? "" : selectedCategory.toLowerCase();
 
   const { data, isLoading, error } = useListFilesQuery({
-    userId: userId,
+    userId,
     region: "virginia",
     type: selectedType,
+    search: debouncedQuery,
+    starred: filters.starred,
+    shared: filters.shared,
+    modified: filters.modified,
   });
 
   const [triggerDownloadFile] = useLazyDownloadFileQuery();
   const [starFile] = useStarFileMutation();
   const [unstarFile] = useUnstarFileMutation();
+  const [deleteFiles] = useDeleteFilesMutation();
 
   console.log({ wali: data?.files });
   const handleUpload = () => {
@@ -213,21 +227,48 @@ const CloudStorage = () => {
   };
   const visibleFiles = (data?.files as FileItem[]) || [];
 
-  // Add a new function to handle deletion of selected files
-  const handleDeleteSelected = () => {
-    // if (selectedFiles.length === 0) return;
-    // // Remove all selected files from state
-    // setFiles((prevFiles) =>
-    //   prevFiles.filter((file) => !selectedFiles.includes(file.id))
-    // );
-    // // Show success toast
-    // toast({
-    //   title: `${selectedFiles.length} Files Deleted`,
-    //   description: "The selected files have been moved to trash",
-    //   variant: "destructive",
-    // });
-    // // Clear selected files
-    // setSelectedFiles([]);
+  const handleDeleteSelected = async () => {
+    if (selectedFiles.length === 0) return;
+
+    if (selectedFiles.length > 20) {
+      toast({
+        title: "Too Many Files Selected",
+        description: "You can delete a maximum of 20 files at once.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const filesToDelete = data.files.filter((file: FileItem) =>
+        selectedFiles.includes(file.id)
+      );
+
+      const { userId, region } = filesToDelete[0];
+
+      const fileNames = filesToDelete.map((file: FileItem) => file.fileName);
+
+      await deleteFiles({
+        region,
+        userId,
+        fileNames,
+      }).unwrap();
+
+      toast({
+        title: `${fileNames.length} Files Deleted`,
+        description: "The selected files have been moved to trash.",
+        variant: "destructive",
+      });
+
+      setSelectedFiles([]);
+    } catch (error) {
+      console.error("Error deleting files:", error);
+      toast({
+        title: "Error",
+        description: "Some files could not be deleted.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleStar = async (file: FileItem) => {
@@ -326,9 +367,9 @@ const CloudStorage = () => {
 
   // Handle file selection
   const handleFileSelect = (fileId: string) => {
-    setSelectedFiles((prev) => {
+    setSelectedFiles(prev => {
       if (prev.includes(fileId)) {
-        return prev.filter((id) => id !== fileId);
+        return prev.filter(id => id !== fileId);
       } else {
         return [...prev, fileId];
       }
@@ -353,7 +394,7 @@ const CloudStorage = () => {
   // };
   const handleSelectAllInPage = (checked: boolean) => {
     if (checked) {
-      const fileIds = visibleFiles.map((file) => file.id);
+      const fileIds = visibleFiles.map(file => file.id);
       setSelectedFiles(fileIds);
     } else {
       setSelectedFiles([]);
@@ -541,7 +582,7 @@ const CloudStorage = () => {
 
     try {
       for (const fileId of selectedFiles) {
-        const file = (data?.files as FileItem[]).find((f) => f.id === fileId);
+        const file = (data?.files as FileItem[]).find(f => f.id === fileId);
         if (!file) continue;
 
         const { data: downloadData } = await triggerDownloadFile({
@@ -658,7 +699,7 @@ const CloudStorage = () => {
                       <Input
                         placeholder="Search files..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={e => setSearchQuery(e.target.value)}
                         className="pl-8"
                       />
                     </div>
@@ -700,20 +741,57 @@ const CloudStorage = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-                      <DropdownMenuCheckboxItem checked>
+
+                      <DropdownMenuCheckboxItem
+                        checked={filters.starred}
+                        onCheckedChange={() =>
+                          setFilters(prev => ({
+                            ...prev,
+                            starred: !prev.starred,
+                          }))
+                        }
+                      >
                         Starred
                       </DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem checked>
+
+                      <DropdownMenuCheckboxItem
+                        checked={filters.shared}
+                        onCheckedChange={() =>
+                          setFilters(prev => ({
+                            ...prev,
+                            shared: !prev.shared,
+                          }))
+                        }
+                      >
                         Shared
                       </DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem>
+
+                      <DropdownMenuCheckboxItem
+                        checked={filters.modified === "today"}
+                        onCheckedChange={() =>
+                          setFilters(prev => ({
+                            ...prev,
+                            modified: prev.modified === "today" ? "" : "today",
+                          }))
+                        }
+                      >
                         Modified today
                       </DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem>
+
+                      <DropdownMenuCheckboxItem
+                        checked={filters.modified === "week"}
+                        onCheckedChange={() =>
+                          setFilters(prev => ({
+                            ...prev,
+                            modified: prev.modified === "week" ? "" : "week",
+                          }))
+                        }
+                      >
                         Modified this week
                       </DropdownMenuCheckboxItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
+
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button size="sm" variant="ghost">
@@ -859,11 +937,11 @@ const CloudStorage = () => {
                                     <Checkbox
                                       checked={
                                         visibleFiles.length > 0 &&
-                                        visibleFiles.every((file) =>
+                                        visibleFiles.every(file =>
                                           selectedFiles.includes(file.id)
                                         )
                                       }
-                                      onCheckedChange={(checked) =>
+                                      onCheckedChange={checked =>
                                         handleSelectAllInPage(!!checked)
                                       }
                                     />
@@ -877,7 +955,7 @@ const CloudStorage = () => {
                               </TableHeader>
                               <TableBody>
                                 {data &&
-                                  (data?.files as FileItem[]).map((file) => (
+                                  (data?.files as FileItem[]).map(file => (
                                     <TableRow
                                       key={file.id}
                                       className={`hover:bg-muted/50 ${
@@ -886,20 +964,20 @@ const CloudStorage = () => {
                                           : ""
                                       }`}
                                       draggable={true}
-                                      onDragStart={(e) =>
+                                      onDragStart={e =>
                                         handleItemDragStart(e, file.id)
                                       }
-                                      onDragOver={(e) =>
+                                      onDragOver={e =>
                                         file.type === "folder"
                                           ? handleFolderDragOver(e, file.id)
                                           : undefined
                                       }
-                                      onDragLeave={(e) =>
+                                      onDragLeave={e =>
                                         file.type === "folder"
                                           ? handleFolderDragLeave(e)
                                           : undefined
                                       }
-                                      onDrop={(e) =>
+                                      onDrop={e =>
                                         file.type === "folder"
                                           ? handleFolderDrop(e, file.id)
                                           : undefined
@@ -1118,7 +1196,7 @@ const CloudStorage = () => {
                           </div>
                         ) : (
                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
-                            {(data?.files as FileItem[]).map((file) => (
+                            {(data?.files as FileItem[]).map(file => (
                               <div
                                 key={file.id}
                                 className={`group relative p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors ${
@@ -1127,20 +1205,20 @@ const CloudStorage = () => {
                                     : ""
                                 }`}
                                 draggable={true}
-                                onDragStart={(e) =>
+                                onDragStart={e =>
                                   handleItemDragStart(e, file.id)
                                 }
-                                onDragOver={(e) =>
+                                onDragOver={e =>
                                   file.type === "folder"
                                     ? handleFolderDragOver(e, file.id)
                                     : undefined
                                 }
-                                onDragLeave={(e) =>
+                                onDragLeave={e =>
                                   file.type === "folder"
                                     ? handleFolderDragLeave(e)
                                     : undefined
                                 }
-                                onDrop={(e) =>
+                                onDrop={e =>
                                   file.type === "folder"
                                     ? handleFolderDrop(e, file.id)
                                     : undefined
@@ -1358,7 +1436,7 @@ const CloudStorage = () => {
                   >
                     <ScrollArea className="flex-1">
                       <div className="p-4 space-y-4">
-                        {recentActivity.map((activity) => (
+                        {recentActivity.map(activity => (
                           <div
                             key={activity.id}
                             className="flex items-start gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
