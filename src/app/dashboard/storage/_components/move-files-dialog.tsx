@@ -14,7 +14,8 @@ import { Folder } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
-import { useMoveFilesMutation } from "@/api/fileManagerAPI";
+import { useListFilesQuery, useMoveFilesMutation } from "@/api/fileManagerAPI";
+import { FileItem } from "../types";
 
 type MoveFilesDialogProps = {
   open: boolean;
@@ -80,6 +81,12 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
       console.error("Move error:", err);
     }
   };
+  console.log({ selectedFiles });
+  const { data, isLoading: isFilesLoading } = useListFilesQuery({
+    userId,
+    region: "virginia",
+    type: "folder",
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -93,21 +100,23 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
 
         <div className="py-4">
           <div className="space-y-2">
-            {files &&
-              files
-                .filter((file) => file.type === "folder")
-                .map((folder) => (
-                  <div
-                    key={folder.id}
-                    className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-muted/50 ${
-                      selectedFolderId === folder.id ? "bg-muted" : ""
-                    }`}
-                    onClick={() => setSelectedFolderId(folder.id)}
-                  >
-                    <Folder className="h-4 w-4" />
-                    <span>{folder.name}</span>
-                  </div>
-                ))}
+            {isFilesLoading && <p>Loading folders...</p>}
+            {!isFilesLoading && data?.files?.length === 0 && (
+              <p>No folders found.</p>
+            )}
+            {!isFilesLoading &&
+              data?.files?.map((folder: FileItem) => (
+                <div
+                  key={folder.id}
+                  className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-muted/50 ${
+                    selectedFolderId === folder.id ? "bg-muted" : ""
+                  }`}
+                  onClick={() => setSelectedFolderId(folder.id)}
+                >
+                  <Folder className="h-4 w-4" />
+                  <span>{folder.fileName}</span>
+                </div>
+              ))}
           </div>
         </div>
 
