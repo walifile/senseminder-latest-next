@@ -49,18 +49,37 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
   const handleMove = async () => {
     if (!selectedFolderId || !userId) return;
 
+    const selectedFolders = files?.filter(
+      file => selectedFiles.includes(file.id) && file.fileType === "folder"
+    );
+
+    if (selectedFolders?.length) {
+      toast({
+        title: "Invalid Selection",
+        description: "Only files will be moved. Folders will be skipped.",
+        variant: "destructive",
+      });
+    }
+
     try {
       const sourceFileNames =
         files &&
         files
-          .filter((file) => selectedFiles.includes(file.id))
-          .map((file) => file.name || file.id);
+          .filter(
+            file =>
+              selectedFiles.includes(file.id) && file.fileType !== "folder"
+          )
+          .map(file => file.fileName);
+
+      const destinationFolder = files?.find(
+        file => file.id === selectedFolderId
+      )?.fileName;
 
       await moveFiles({
         region: "virginia",
         userId,
         sourceFileNames,
-        destinationFolder: selectedFolderId,
+        destinationFolder,
       }).unwrap();
       if (sourceFileNames) {
         toast({

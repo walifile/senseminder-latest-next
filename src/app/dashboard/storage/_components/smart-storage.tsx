@@ -43,6 +43,7 @@ import {
   GraduationCap,
   Loader2,
   Filter,
+  ArrowLeft,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -145,13 +146,16 @@ const CloudStorage = () => {
     shared: false,
     modified: "",
   });
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
   const debouncedQuery = useDebounce(searchQuery, 500);
 
   console.log(lastSynced);
 
   const selectedType =
-    selectedCategory === "All Files" ? "" : selectedCategory.toLowerCase();
+    selectedCategory === "All Files" || selectedFolder
+      ? ""
+      : selectedCategory.toLowerCase();
 
   const { data, isLoading, error } = useListFilesQuery({
     userId,
@@ -161,6 +165,7 @@ const CloudStorage = () => {
     starred: filters.starred,
     shared: filters.shared,
     modified: filters.modified,
+    folder: selectedFolder,
   });
 
   const [triggerDownloadFile] = useLazyDownloadFileQuery();
@@ -171,6 +176,21 @@ const CloudStorage = () => {
   console.log({ wali: data?.files });
   const handleUpload = () => {
     setShowUploadDialog(true);
+  };
+
+  const handleFolderSelection = (file: FileItem) => {
+    if (file.fileType === "folder") {
+      setSelectedFolder(file.fileName);
+    }
+  };
+
+  const handleCloseFolder = () => {
+    setSelectedFolder(null);
+  };
+
+  const handleCategorySelection = (category: string) => {
+    setSelectedCategory(category);
+    handleCloseFolder();
   };
 
   const handleDownload = async (fileName: string) => {
@@ -367,9 +387,9 @@ const CloudStorage = () => {
 
   // Handle file selection
   const handleFileSelect = (fileId: string) => {
-    setSelectedFiles((prev) => {
+    setSelectedFiles(prev => {
       if (prev.includes(fileId)) {
-        return prev.filter((id) => id !== fileId);
+        return prev.filter(id => id !== fileId);
       } else {
         return [...prev, fileId];
       }
@@ -394,7 +414,7 @@ const CloudStorage = () => {
   // };
   const handleSelectAllInPage = (checked: boolean) => {
     if (checked) {
-      const fileIds = visibleFiles.map((file) => file.id);
+      const fileIds = visibleFiles.map(file => file.id);
       setSelectedFiles(fileIds);
     } else {
       setSelectedFiles([]);
@@ -582,7 +602,7 @@ const CloudStorage = () => {
 
     try {
       for (const fileId of selectedFiles) {
-        const file = (data?.files as FileItem[]).find((f) => f.id === fileId);
+        const file = (data?.files as FileItem[]).find(f => f.id === fileId);
         if (!file) continue;
 
         const { data: downloadData } = await triggerDownloadFile({
@@ -684,7 +704,7 @@ const CloudStorage = () => {
               usagePercentage={usagePercentage}
               categories={categories}
               selectedCategory={selectedCategory}
-              onSelectCategory={setSelectedCategory}
+              onSelectCategory={handleCategorySelection}
               onUploadClick={handleUpload}
               onNewFolderClick={() => setShowNewFolderDialog(true)}
             />
@@ -692,14 +712,24 @@ const CloudStorage = () => {
             <div className="flex-1 overflow-hidden flex flex-col">
               <div className="border-b border-border p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div className="flex items-center gap-4 w-full md:w-auto">
-                  <h3 className="text-lg font-medium">{selectedCategory}</h3>
+                  {selectedFolder && (
+                    <button
+                      onClick={handleCloseFolder}
+                      className="flex items-center"
+                    >
+                      <ArrowLeft className="h-5 w-5 text-muted-foreground" />
+                    </button>
+                  )}
+                  <h3 className="text-lg font-medium">
+                    {selectedFolder ? selectedFolder : selectedCategory}
+                  </h3>
                   <div className="flex-1 md:w-64">
                     <div className="relative">
                       <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
                         placeholder="Search files..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={e => setSearchQuery(e.target.value)}
                         className="pl-8"
                       />
                     </div>
@@ -745,7 +775,7 @@ const CloudStorage = () => {
                       <DropdownMenuCheckboxItem
                         checked={filters.starred}
                         onCheckedChange={() =>
-                          setFilters((prev) => ({
+                          setFilters(prev => ({
                             ...prev,
                             starred: !prev.starred,
                           }))
@@ -757,7 +787,7 @@ const CloudStorage = () => {
                       <DropdownMenuCheckboxItem
                         checked={filters.shared}
                         onCheckedChange={() =>
-                          setFilters((prev) => ({
+                          setFilters(prev => ({
                             ...prev,
                             shared: !prev.shared,
                           }))
@@ -769,7 +799,7 @@ const CloudStorage = () => {
                       <DropdownMenuCheckboxItem
                         checked={filters.modified === "today"}
                         onCheckedChange={() =>
-                          setFilters((prev) => ({
+                          setFilters(prev => ({
                             ...prev,
                             modified: prev.modified === "today" ? "" : "today",
                           }))
@@ -781,7 +811,7 @@ const CloudStorage = () => {
                       <DropdownMenuCheckboxItem
                         checked={filters.modified === "week"}
                         onCheckedChange={() =>
-                          setFilters((prev) => ({
+                          setFilters(prev => ({
                             ...prev,
                             modified: prev.modified === "week" ? "" : "week",
                           }))
@@ -937,11 +967,11 @@ const CloudStorage = () => {
                                     <Checkbox
                                       checked={
                                         visibleFiles.length > 0 &&
-                                        visibleFiles.every((file) =>
+                                        visibleFiles.every(file =>
                                           selectedFiles.includes(file.id)
                                         )
                                       }
-                                      onCheckedChange={(checked) =>
+                                      onCheckedChange={checked =>
                                         handleSelectAllInPage(!!checked)
                                       }
                                     />
@@ -955,7 +985,7 @@ const CloudStorage = () => {
                               </TableHeader>
                               <TableBody>
                                 {data &&
-                                  (data?.files as FileItem[]).map((file) => (
+                                  (data?.files as FileItem[]).map(file => (
                                     <TableRow
                                       key={file.id}
                                       className={`hover:bg-muted/50 ${
@@ -964,20 +994,20 @@ const CloudStorage = () => {
                                           : ""
                                       }`}
                                       draggable={true}
-                                      onDragStart={(e) =>
+                                      onDragStart={e =>
                                         handleItemDragStart(e, file.id)
                                       }
-                                      onDragOver={(e) =>
+                                      onDragOver={e =>
                                         file.type === "folder"
                                           ? handleFolderDragOver(e, file.id)
                                           : undefined
                                       }
-                                      onDragLeave={(e) =>
+                                      onDragLeave={e =>
                                         file.type === "folder"
                                           ? handleFolderDragLeave(e)
                                           : undefined
                                       }
-                                      onDrop={(e) =>
+                                      onDrop={e =>
                                         file.type === "folder"
                                           ? handleFolderDrop(e, file.id)
                                           : undefined
@@ -997,7 +1027,18 @@ const CloudStorage = () => {
                                         </div>
                                       </TableCell>
                                       <TableCell>
-                                        <div className="flex items-center gap-2">
+                                        <div
+                                          {...(file.fileType === "folder" && {
+                                            title: "Click to open folder",
+                                          })}
+                                          className={`flex items-center gap-2 ${
+                                            file.fileType === "folder" &&
+                                            "cursor-pointer"
+                                          }`}
+                                          onClick={() =>
+                                            handleFolderSelection(file)
+                                          }
+                                        >
                                           <div className="h-8 w-8 flex items-center justify-center">
                                             <FileTypeIcon
                                               fileName={file.fileName}
@@ -1196,7 +1237,7 @@ const CloudStorage = () => {
                           </div>
                         ) : (
                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
-                            {(data?.files as FileItem[]).map((file) => (
+                            {(data?.files as FileItem[]).map(file => (
                               <div
                                 key={file.id}
                                 className={`group relative p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors ${
@@ -1205,20 +1246,20 @@ const CloudStorage = () => {
                                     : ""
                                 }`}
                                 draggable={true}
-                                onDragStart={(e) =>
+                                onDragStart={e =>
                                   handleItemDragStart(e, file.id)
                                 }
-                                onDragOver={(e) =>
+                                onDragOver={e =>
                                   file.type === "folder"
                                     ? handleFolderDragOver(e, file.id)
                                     : undefined
                                 }
-                                onDragLeave={(e) =>
+                                onDragLeave={e =>
                                   file.type === "folder"
                                     ? handleFolderDragLeave(e)
                                     : undefined
                                 }
-                                onDrop={(e) =>
+                                onDrop={e =>
                                   file.type === "folder"
                                     ? handleFolderDrop(e, file.id)
                                     : undefined
@@ -1233,7 +1274,16 @@ const CloudStorage = () => {
                                     }
                                   />
                                 </div>
-                                <div className="flex flex-col items-center text-center mb-3">
+                                <div
+                                  {...(file.fileType === "folder" && {
+                                    title: "Click to open folder",
+                                  })}
+                                  className={`flex flex-col items-center text-center mb-3 ${
+                                    file.fileType === "folder" &&
+                                    "cursor-pointer"
+                                  }`}
+                                  onClick={() => handleFolderSelection(file)}
+                                >
                                   <div className="h-12 w-12 mb-2">
                                     <FileTypeIcon
                                       fileName={file.fileName}
@@ -1436,7 +1486,7 @@ const CloudStorage = () => {
                   >
                     <ScrollArea className="flex-1">
                       <div className="p-4 space-y-4">
-                        {recentActivity.map((activity) => (
+                        {recentActivity.map(activity => (
                           <div
                             key={activity.id}
                             className="flex items-start gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
@@ -1521,7 +1571,7 @@ const CloudStorage = () => {
       <MoveFilesDialog
         open={moveDialogOpen}
         onOpenChange={setMoveDialogOpen}
-        // files={files}
+        files={data?.files}
         selectedFiles={selectedFiles}
         setSelectedFiles={setSelectedFiles}
         selectedFolderId={selectedFolderForMove}
