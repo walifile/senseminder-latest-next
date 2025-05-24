@@ -8,4 +8,5 @@ export interface FileItem {
   sharedWith?: string;
   size?: string;
   type?: string;
+  previewUrl?: string;
 }
