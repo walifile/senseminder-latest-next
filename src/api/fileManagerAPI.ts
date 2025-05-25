@@ -309,19 +309,33 @@ export const fileManagerAPI = createApi({
 
     deleteFile: builder.mutation<
       { message: string },
-      { fileName: string; userId: string; region: string }
+      {
+        fileName: string;
+        userId: string;
+        region: string;
+        folder?: string;
+      }
     >({
-      query: ({ fileName, userId, region }) => ({
+      query: ({ fileName, userId, region, folder }) => ({
         url: `/delete`,
         method: "DELETE",
-        params: { fileName, userId, region },
+        params: {
+          fileName,
+          userId,
+          region,
+          ...(folder && { folder }),
+        },
       }),
       invalidatesTags: ["Files"],
     }),
 
     deleteFiles: builder.mutation<
       { message: string },
-      { region: string; userId: string; fileNames: string[] }
+      {
+        region: string;
+        userId: string;
+        fileNames: any[];
+      }
     >({
       query: ({ region, userId, fileNames }) => ({
         url: "/delete-multiple",

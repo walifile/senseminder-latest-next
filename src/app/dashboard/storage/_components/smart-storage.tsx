@@ -278,7 +278,12 @@ const CloudStorage = () => {
 
       const { userId, region } = filesToDelete[0];
 
-      const fileNames = filesToDelete.map((file: FileItem) => file.fileName);
+      const fileNames = selectedFolder
+        ? filesToDelete.map((file: FileItem) => ({
+            folder: selectedFolder.fileName,
+            fileName: file.fileName,
+          }))
+        : filesToDelete.map((file: FileItem) => file.fileName);
 
       await deleteFiles({
         region,
@@ -1511,6 +1516,7 @@ const CloudStorage = () => {
           setSelectedFilesToDelete([]);
         }}
         fileNames={selectedFilesToDelete}
+        selectedFolder={selectedFolder}
       />
 
       {/* Storage Plans Dialog */}

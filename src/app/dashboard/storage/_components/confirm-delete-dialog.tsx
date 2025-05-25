@@ -11,11 +11,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { RootState } from "@/redux/store";
+import { FileItem } from "../types";
 
 interface ConfirmDeleteDialogProps {
   open: boolean;
   onClose: () => void;
   fileNames: string[];
+  selectedFolder: FileItem | null;
   region?: string;
   onDeleteComplete?: () => void;
 }
@@ -24,6 +26,7 @@ const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
   open,
   onClose,
   fileNames,
+  selectedFolder,
   region = "virginia",
   onDeleteComplete,
 }) => {
@@ -38,7 +41,12 @@ const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
     setIsLoading(true);
     try {
       for (const fileName of fileNames) {
-        await deleteFile({ fileName, userId, region }).unwrap();
+        await deleteFile({
+          fileName,
+          userId,
+          region,
+          folder: selectedFolder?.fileName || "",
+        }).unwrap();
       }
       if (onDeleteComplete) onDeleteComplete();
       onClose();
