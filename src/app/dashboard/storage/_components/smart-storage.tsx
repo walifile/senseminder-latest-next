@@ -318,6 +318,7 @@ const CloudStorage = () => {
         region: "virginia",
         userId,
         fileName: file.fileName,
+        ...(selectedFolder && { folder: selectedFolder.fileName }),
       }).unwrap();
 
       toast({
@@ -1531,6 +1532,7 @@ const CloudStorage = () => {
         open={showShareDialog}
         onOpenChange={setShowShareDialog}
         file={selectedFileForShare}
+        selectedFolder={selectedFolder}
       />
 
       {/* Move Files Dialog */}

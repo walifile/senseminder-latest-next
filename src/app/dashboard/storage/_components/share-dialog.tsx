@@ -32,12 +32,14 @@ type ShareDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   file?: FileItem | null;
+  selectedFolder: FileItem | null;
 };
 
 const ShareDialog: React.FC<ShareDialogProps> = ({
   open,
   onOpenChange,
   file,
+  selectedFolder,
 }) => {
   const { toast } = useToast();
 
@@ -81,6 +83,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
         permissions: sharePermissions,
         expiry: shareExpiry,
         ...(sharePasswordEnabled && { password: sharePassword }),
+        ...(selectedFolder && { folder: selectedFolder.fileName }),
       }).unwrap();
 
       setShareLink(result.shareLink);

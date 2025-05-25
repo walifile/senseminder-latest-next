@@ -29,18 +29,6 @@ interface UploadDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-interface FileItem {
-  id: string;
-  fileName: string;
-  fileType: string;
-  createdAt: string;
-  shared?: boolean;
-  starred?: boolean;
-  sharedWith?: string;
-  size?: string;
-  type?: string;
-}
-
 const UploadDialog: React.FC<UploadDialogProps> = ({ open, onOpenChange }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -54,9 +42,6 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ open, onOpenChange }) => {
   const [uploadFile] = useUploadFileMutation();
   const [uploadToPresignedUrl] = useUploadToPresignedUrlMutation();
   const { user } = useSelector((state: RootState) => state.auth);
-
-  console.log(selectedFiles);
-  console.log(uploadStatus);
 
   const handleFileChange = (files: FileList | null) => {
     if (!files) return;

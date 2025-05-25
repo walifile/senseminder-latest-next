@@ -334,7 +334,7 @@ export const fileManagerAPI = createApi({
       {
         region: string;
         userId: string;
-        fileNames: any[];
+        fileNames: (string | { folder: string; fileName: string })[];
       }
     >({
       query: ({ region, userId, fileNames }) => ({

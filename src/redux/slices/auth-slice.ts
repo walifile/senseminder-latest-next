@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { routes } from "@/constants/routes";
 import { syncAuthState } from "@/lib/utils/auth-sync";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
@@ -61,7 +60,7 @@ export const authSlice = createSlice({
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
-    clearAuth: (state) => {
+    clearAuth: state => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
