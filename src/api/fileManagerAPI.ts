@@ -287,11 +287,23 @@ export const fileManagerAPI = createApi({
     }),
     downloadFile: builder.query<
       { downloadUrl: string },
-      { fileName: string; userId: string; region: string }
+      {
+        fileName: string;
+        userId: string;
+        region: string;
+        folder?: string;
+        key?: string;
+      }
     >({
-      query: ({ fileName, userId, region }) => ({
+      query: ({ fileName, userId, region, folder, key }) => ({
         url: "/download",
-        params: { fileName, userId, region },
+        params: {
+          fileName,
+          userId,
+          region,
+          ...(folder && { folder }),
+          ...(key && { key }),
+        },
       }),
     }),
 

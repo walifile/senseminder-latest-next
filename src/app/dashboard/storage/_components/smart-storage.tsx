@@ -149,7 +149,8 @@ const CloudStorage = () => {
     shared: false,
     modified: "",
   });
-  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const [selectedFolder, setSelectedFolder] = useState<FileItem | null>(null);
+  const [filePreview, setFilePreview] = useState<FileItem | null>(null);
 
   const debouncedQuery = useDebounce(searchQuery, 500);
 
@@ -168,30 +169,33 @@ const CloudStorage = () => {
     starred: filters.starred,
     shared: filters.shared,
     modified: filters.modified,
-    folder: selectedFolder,
+    folder: selectedFolder?.fileName || "",
     sortBy,
     itemsPerPage,
     currentPage,
   });
+  const files = data?.files || [];
 
   const [triggerDownloadFile] = useLazyDownloadFileQuery();
   const [starFile] = useStarFileMutation();
   const [unstarFile] = useUnstarFileMutation();
   const [deleteFiles] = useDeleteFilesMutation();
 
-  console.log({ wali: data?.files });
+  console.log({ wali: files });
   const handleUpload = () => {
     setShowUploadDialog(true);
   };
 
   const handleFolderSelection = (file: FileItem) => {
     if (file.fileType === "folder") {
-      setSelectedFolder(file.fileName);
+      setSelectedFolder(file);
+      setSelectedFiles([]);
     }
   };
 
   const handleCloseFolder = () => {
     setSelectedFolder(null);
+    setSelectedFiles([]);
   };
 
   const handleCategorySelection = (category: string) => {
@@ -208,6 +212,8 @@ const CloudStorage = () => {
         fileName,
         userId,
         region: "virginia",
+        folder: selectedFolder?.fileName || "",
+        key: selectedFolder?.id || "",
       });
 
       if (data?.downloadUrl) {
@@ -542,10 +548,25 @@ const CloudStorage = () => {
   const handleBulkDownload = async () => {
     if (!userId || selectedFiles.length === 0) return;
 
-    setIsBulkDownloading(true);
+    // setIsBulkDownloading(true);
+
+    const filteredFileIds = files
+      .filter(
+        (file: FileItem) =>
+          selectedFiles.includes(file.id) && file.fileType !== "folder"
+      )
+      .map((file: FileItem) => file.id);
+
+    if (selectedFiles.length !== filteredFileIds?.length) {
+      toast({
+        title: "Invalid Selection",
+        description: "Only files will be downloaded. Folders will be skipped.",
+        variant: "destructive",
+      });
+    }
 
     try {
-      for (const fileId of selectedFiles) {
+      for (const fileId of filteredFileIds) {
         const file = (data?.files as FileItem[]).find(f => f.id === fileId);
         if (!file) continue;
 
@@ -553,6 +574,8 @@ const CloudStorage = () => {
           fileName: file.fileName,
           userId,
           region: "virginia",
+          folder: selectedFolder?.fileName || "",
+          key: selectedFolder?.id || "",
         });
 
         if (downloadData?.downloadUrl) {
@@ -578,7 +601,7 @@ const CloudStorage = () => {
 
       toast({
         title: "Bulk Download Complete",
-        description: `${selectedFiles.length} file(s) downloaded.`,
+        description: `${filteredFileIds.length} file(s) downloaded.`,
       });
     } catch (error) {
       console.error("Bulk download error:", error);
@@ -591,9 +614,6 @@ const CloudStorage = () => {
       setIsBulkDownloading(false);
     }
   };
-
-  // Files
-  const files = data?.files || [];
 
   // Sort files based on selected criteria
   // const sortedFiles = [...files].sort((a, b) => {
@@ -636,8 +656,6 @@ const CloudStorage = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-
-  const [filePreview, setFilePreview] = useState<FileItem | null>(null);
 
   return (
     <>
@@ -708,7 +726,9 @@ const CloudStorage = () => {
                     </button>
                   )}
                   <h3 className="text-lg font-medium">
-                    {selectedFolder ? selectedFolder : selectedCategory}
+                    {selectedFolder
+                      ? selectedFolder?.fileName
+                      : selectedCategory}
                   </h3>
                   <div className="flex-1 md:w-64">
                     <div className="relative">
