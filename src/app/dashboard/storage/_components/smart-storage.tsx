@@ -43,6 +43,10 @@ import {
   Loader2,
   Filter,
   ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  ListFilter,
+  Eye,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -91,6 +95,7 @@ import ConfirmDeleteDialog from "./confirm-delete-dialog";
 import { useStarFileMutation } from "@/api/fileManagerAPI";
 import { FileItem } from "../types";
 import { useDebounce } from "@/hooks/useDebounce";
+import FilePreviewDialog from "./file-preview-dialog";
 
 const CloudStorage = () => {
   const router = useRouter();
@@ -111,8 +116,11 @@ const CloudStorage = () => {
   const [selectedFileForShare, setSelectedFileForShare] =
     useState<FileItem | null>(null);
 
-  // const [currentPage, setCurrentPage] = useState(1);
-  // const itemsPerPage = 10;
+  // table
+  // const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [selectedFolderForMove, setSelectedFolderForMove] = useState<
     string | null
@@ -162,6 +170,8 @@ const CloudStorage = () => {
     modified: filters.modified,
     folder: selectedFolder,
     sortBy,
+    itemsPerPage,
+    currentPage,
   });
 
   const [triggerDownloadFile] = useLazyDownloadFileQuery();
@@ -324,63 +334,11 @@ const CloudStorage = () => {
     setSortBy(sort);
   };
 
-  // Filter files based on search and category
-  // const filteredFiles = files.filter((file) => {
-  //   const matchesSearch = file.name
-  //     .toLowerCase()
-  //     .includes(searchQuery.toLowerCase());
-  //   const matchesCategory =
-  //     selectedCategory === "All Files" ||
-  //     (selectedCategory === "Folders" && file.type === "folder") ||
-  //     (selectedCategory === "Documents" && file.type === "document") ||
-  //     (selectedCategory === "Images" && file.type === "image") ||
-  //     (selectedCategory === "Videos" && file.type === "video") ||
-  //     (selectedCategory === "Audio" && file.type === "audio");
-  //   return matchesSearch && matchesCategory;
-  // });
-
-  // Sort files based on selected criteria
-  // const sortedFiles = [...filteredFiles].sort((a, b) => {
-  //   // Always put folders on top
-  //   if (a.type === "folder" && b.type !== "folder") return -1;
-  //   if (a.type !== "folder" && b.type === "folder") return 1;
-
-  //   // If both are folders or both are files, sort by selected criteria
-  //   if (sortBy === "name") {
-  //     return sortOrder === "asc"
-  //       ? a.name.localeCompare(b.name)
-  //       : b.name.localeCompare(a.name);
-  //   } else if (sortBy === "date") {
-  //     return sortOrder === "asc"
-  //       ? new Date(a.modified).getTime() - new Date(b.modified).getTime()
-  //       : new Date(b.modified).getTime() - new Date(a.modified).getTime();
-  //   } else if (sortBy === "size") {
-  //     // For folders, compare by number of files
-  //     if (a.type === "folder" && b.type === "folder") {
-  //       const aSize = parseInt(a.size);
-  //       const bSize = parseInt(b.size);
-  //       return sortOrder === "asc" ? aSize - bSize : bSize - aSize;
-  //     }
-  //     // For files, compare by file size
-  //     const aSize = parseInt(a.size);
-  //     const bSize = parseInt(b.size);
-  //     return sortOrder === "asc" ? aSize - bSize : bSize - aSize;
-  //   }
-  //   return 0;
-  // });
-
-  // Paginate files
-  // const totalPages = Math.ceil(sortedFiles.length / itemsPerPage);
-  // const paginatedFiles = sortedFiles.slice(
-  //   (currentPage - 1) * itemsPerPage,
-  //   currentPage * itemsPerPage
-  // );
-
   // Handle file selection
   const handleFileSelect = (fileId: string) => {
-    setSelectedFiles((prev) => {
+    setSelectedFiles(prev => {
       if (prev.includes(fileId)) {
-        return prev.filter((id) => id !== fileId);
+        return prev.filter(id => id !== fileId);
       } else {
         return [...prev, fileId];
       }
@@ -405,7 +363,7 @@ const CloudStorage = () => {
   // };
   const handleSelectAllInPage = (checked: boolean) => {
     if (checked) {
-      const fileIds = visibleFiles.map((file) => file.id);
+      const fileIds = visibleFiles.map(file => file.id);
       setSelectedFiles(fileIds);
     } else {
       setSelectedFiles([]);
@@ -416,11 +374,6 @@ const CloudStorage = () => {
   // const areAllCurrentPageFilesSelected = paginatedFiles.every((file) =>
   //   selectedFiles.includes(file.id)
   // );
-
-  // Handle page change
-  // const handlePageChange = (page: number) => {
-  //   setCurrentPage(page);
-  // };
 
   // Get file for sharing
   // const fileToShare = selectedFileForShare
@@ -593,7 +546,7 @@ const CloudStorage = () => {
 
     try {
       for (const fileId of selectedFiles) {
-        const file = (data?.files as FileItem[]).find((f) => f.id === fileId);
+        const file = (data?.files as FileItem[]).find(f => f.id === fileId);
         if (!file) continue;
 
         const { data: downloadData } = await triggerDownloadFile({
@@ -638,6 +591,53 @@ const CloudStorage = () => {
       setIsBulkDownloading(false);
     }
   };
+
+  // Files
+  const files = data?.files || [];
+
+  // Sort files based on selected criteria
+  // const sortedFiles = [...files].sort((a, b) => {
+  //   // Always put folders on top
+  //   if (a.type === "folder" && b.type !== "folder") return -1;
+  //   if (a.type !== "folder" && b.type === "folder") return 1;
+
+  //   // If both are folders or both are files, sort by selected criteria
+  //   if (sortBy === "name") {
+  //     return sortOrder === "asc"
+  //       ? a.name.localeCompare(b.name)
+  //       : b.name.localeCompare(a.name);
+  //   } else if (sortBy === "date") {
+  //     return sortOrder === "asc"
+  //       ? new Date(a.modified).getTime() - new Date(b.modified).getTime()
+  //       : new Date(b.modified).getTime() - new Date(a.modified).getTime();
+  //   } else if (sortBy === "size") {
+  //     // For folders, compare by number of files
+  //     if (a.type === "folder" && b.type === "folder") {
+  //       const aSize = parseInt(a.size);
+  //       const bSize = parseInt(b.size);
+  //       return sortOrder === "asc" ? aSize - bSize : bSize - aSize;
+  //     }
+  //     // For files, compare by file size
+  //     const aSize = parseInt(a.size);
+  //     const bSize = parseInt(b.size);
+  //     return sortOrder === "asc" ? aSize - bSize : bSize - aSize;
+  //   }
+  //   return 0;
+  // });
+
+  // Paginate files
+  const totalPages = Math.ceil(files.length / itemsPerPage);
+  const paginatedFiles = files.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const [filePreview, setFilePreview] = useState<FileItem | null>(null);
 
   return (
     <>
@@ -716,7 +716,7 @@ const CloudStorage = () => {
                       <Input
                         placeholder="Search files..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={e => setSearchQuery(e.target.value)}
                         className="pl-8"
                       />
                     </div>
@@ -762,7 +762,7 @@ const CloudStorage = () => {
                       <DropdownMenuCheckboxItem
                         checked={filters.modified === "today"}
                         onCheckedChange={() =>
-                          setFilters((prev) => ({
+                          setFilters(prev => ({
                             ...prev,
                             modified: prev.modified === "today" ? "" : "today",
                           }))
@@ -774,7 +774,7 @@ const CloudStorage = () => {
                       <DropdownMenuCheckboxItem
                         checked={filters.modified === "week"}
                         onCheckedChange={() =>
-                          setFilters((prev) => ({
+                          setFilters(prev => ({
                             ...prev,
                             modified: prev.modified === "week" ? "" : "week",
                           }))
@@ -896,8 +896,8 @@ const CloudStorage = () => {
                       </div>
                     )}
                     {!isFetching && (
-                      <ScrollArea className="flex-1">
-                        {error || data?.files.length === 0 ? (
+                      <ScrollArea className="flex-1 h-full">
+                        {error || paginatedFiles.length === 0 ? (
                           <div className="flex flex-col items-center justify-center h-[400px] text-center p-4">
                             <FileText className="h-8 w-8 text-muted-foreground mb-4" />
                             <h3 className="font-medium mb-2">No files found</h3>
@@ -921,34 +921,34 @@ const CloudStorage = () => {
                               </div>
                             )}
                           </div>
-                        ) : viewMode === "list" ? (
-                          <div className="p-0">
-                            <Table>
-                              <TableHeader>
-                                <TableRow>
-                                  <TableHead className="w-[40px]">
-                                    <Checkbox
-                                      checked={
-                                        visibleFiles.length > 0 &&
-                                        visibleFiles.every((file) =>
-                                          selectedFiles.includes(file.id)
-                                        )
-                                      }
-                                      onCheckedChange={(checked) =>
-                                        handleSelectAllInPage(!!checked)
-                                      }
-                                    />
-                                  </TableHead>
-                                  <TableHead>Name</TableHead>
-                                  <TableHead>Size</TableHead>
-                                  <TableHead>Uploaded</TableHead>
-                                  <TableHead>Status</TableHead>
-                                  <TableHead></TableHead>
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {data &&
-                                  (data?.files as FileItem[]).map((file) => (
+                        ) : (
+                          <div className="flex flex-col gap-2 justify-between">
+                            {viewMode === "list" ? (
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead className="w-[40px]">
+                                      <Checkbox
+                                        checked={
+                                          visibleFiles.length > 0 &&
+                                          visibleFiles.every(file =>
+                                            selectedFiles.includes(file.id)
+                                          )
+                                        }
+                                        onCheckedChange={checked =>
+                                          handleSelectAllInPage(!!checked)
+                                        }
+                                      />
+                                    </TableHead>
+                                    <TableHead>Name</TableHead>
+                                    <TableHead>Size</TableHead>
+                                    <TableHead>Uploaded</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead></TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {(paginatedFiles as FileItem[]).map(file => (
                                     <TableRow
                                       key={file.id}
                                       className={`hover:bg-muted/50 ${
@@ -957,20 +957,20 @@ const CloudStorage = () => {
                                           : ""
                                       }`}
                                       draggable={true}
-                                      onDragStart={(e) =>
+                                      onDragStart={e =>
                                         handleItemDragStart(e, file.id)
                                       }
-                                      onDragOver={(e) =>
+                                      onDragOver={e =>
                                         file.type === "folder"
                                           ? handleFolderDragOver(e, file.id)
                                           : undefined
                                       }
-                                      onDragLeave={(e) =>
+                                      onDragLeave={e =>
                                         file.type === "folder"
                                           ? handleFolderDragLeave(e)
                                           : undefined
                                       }
-                                      onDrop={(e) =>
+                                      onDrop={e =>
                                         file.type === "folder"
                                           ? handleFolderDrop(e, file.id)
                                           : undefined
@@ -1065,28 +1065,41 @@ const CloudStorage = () => {
                                           </DropdownMenuTrigger>
                                           <DropdownMenuContent align="end">
                                             {file.type !== "folder" && (
-                                              <DropdownMenuItem
-                                                disabled={
-                                                  downloadingFile ===
-                                                  file.fileName
-                                                }
-                                                onClick={() =>
-                                                  handleDownload(file.fileName)
-                                                }
-                                              >
-                                                {downloadingFile ===
-                                                file.fileName ? (
-                                                  <>
-                                                    <Loader2 className="h-4 w-4 mr-2 animate-spin text-primary" />
-                                                    Downloading...
-                                                  </>
-                                                ) : (
-                                                  <>
-                                                    <Download className="h-4 w-4 mr-2" />
-                                                    Download
-                                                  </>
-                                                )}
-                                              </DropdownMenuItem>
+                                              <>
+                                                <DropdownMenuItem
+                                                  onClick={() =>
+                                                    setFilePreview(file)
+                                                  }
+                                                >
+                                                  <Eye className="h-4 w-4 mr-2" />
+                                                  View
+                                                </DropdownMenuItem>
+
+                                                <DropdownMenuItem
+                                                  disabled={
+                                                    downloadingFile ===
+                                                    file.fileName
+                                                  }
+                                                  onClick={() =>
+                                                    handleDownload(
+                                                      file.fileName
+                                                    )
+                                                  }
+                                                >
+                                                  {downloadingFile ===
+                                                  file.fileName ? (
+                                                    <>
+                                                      <Loader2 className="h-4 w-4 mr-2 animate-spin text-primary" />
+                                                      Downloading...
+                                                    </>
+                                                  ) : (
+                                                    <>
+                                                      <Download className="h-4 w-4 mr-2" />
+                                                      Download
+                                                    </>
+                                                  )}
+                                                </DropdownMenuItem>
+                                              </>
                                             )}
                                             <DropdownMenuItem
                                               onClick={() => handleShare(file)}
@@ -1136,298 +1149,263 @@ const CloudStorage = () => {
                                       </TableCell>
                                     </TableRow>
                                   ))}
-                              </TableBody>
-                            </Table>
-                            {/* <div className="flex items-center justify-between px-4 py-4 border-t">
+                                </TableBody>
+                              </Table>
+                            ) : (
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 p-4">
+                                {(paginatedFiles as FileItem[]).map(file => (
+                                  <div
+                                    key={file.id}
+                                    className={`group relative p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors ${
+                                      dragOverFolderId === file.id
+                                        ? "bg-muted ring-2 ring-primary"
+                                        : ""
+                                    }`}
+                                    draggable
+                                    onDragStart={e =>
+                                      handleItemDragStart(e, file.id)
+                                    }
+                                    onDragOver={e =>
+                                      file.fileType === "folder"
+                                        ? handleFolderDragOver(e, file.id)
+                                        : undefined
+                                    }
+                                    onDragLeave={e =>
+                                      file.fileType === "folder"
+                                        ? handleFolderDragLeave(e)
+                                        : undefined
+                                    }
+                                    onDrop={e =>
+                                      file.fileType === "folder"
+                                        ? handleFolderDrop(e, file.id)
+                                        : undefined
+                                    }
+                                  >
+                                    {/* drag handle + checkbox */}
+                                    <div className="absolute top-2 left-2 flex items-center gap-2">
+                                      <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
+                                      <Checkbox
+                                        checked={selectedFiles.includes(
+                                          file.id
+                                        )}
+                                        onCheckedChange={() =>
+                                          handleFileSelect(file.id)
+                                        }
+                                      />
+                                    </div>
+
+                                    {/* preview or icon + filename */}
+                                    <div
+                                      {...(file.fileType === "folder" && {
+                                        title: "Click to open folder",
+                                      })}
+                                      className={`flex flex-col items-center text-center mb-3 ${
+                                        file.fileType === "folder"
+                                          ? "cursor-pointer"
+                                          : ""
+                                      }`}
+                                      onClick={() =>
+                                        file.fileType === "folder" &&
+                                        handleFolderSelection(file)
+                                      }
+                                    >
+                                      <div className="mb-2">
+                                        <FileTypeIcon
+                                          fileName={file.fileName}
+                                          fileType={file.fileType}
+                                          size="large"
+                                        />
+                                      </div>
+                                      <div className="w-full">
+                                        <div className="font-medium truncate text-sm">
+                                          {file.fileName}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground mt-1">
+                                          {formatFileSize(file.size)}
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* metadata + menu */}
+                                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                      {formatDate(file.createdAt)}
+                                      <div className="flex items-center gap-1">
+                                        {file.shared && (
+                                          <Share2 className="h-3.5 w-3.5 text-green-500" />
+                                        )}
+                                        {file.starred && (
+                                          <Star className="h-3.5 w-3.5 text-yellow-500" />
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                          >
+                                            <MoreHorizontal className="h-4 w-4" />
+                                          </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                          {file.fileType !== "folder" && (
+                                            <>
+                                              <DropdownMenuItem
+                                                onClick={() =>
+                                                  setFilePreview(file)
+                                                }
+                                              >
+                                                <Eye className="h-4 w-4 mr-2" />
+                                                View
+                                              </DropdownMenuItem>
+
+                                              <DropdownMenuItem
+                                                onClick={() =>
+                                                  handleDownload(file.fileName)
+                                                }
+                                              >
+                                                <Download className="h-4 w-4 mr-2" />
+                                                Download
+                                              </DropdownMenuItem>
+                                            </>
+                                          )}
+                                          <DropdownMenuItem
+                                            onClick={() => handleShare(file)}
+                                          >
+                                            <Share2 className="h-4 w-4 mr-2" />
+                                            Share
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem
+                                            onClick={() => handleStar(file)}
+                                          >
+                                            <Star className="h-4 w-4 mr-2" />
+                                            {file.starred ? "Unstar" : "Star"}
+                                          </DropdownMenuItem>
+                                          <DropdownMenuSeparator />
+                                          {selectedFiles.length > 0 && (
+                                            <DropdownMenuItem
+                                              onClick={() =>
+                                                setMoveDialogOpen(true)
+                                              }
+                                            >
+                                              <FolderIcon className="h-4 w-4 mr-2" />
+                                              Move Selected
+                                            </DropdownMenuItem>
+                                          )}
+                                          <DropdownMenuItem
+                                            className="text-destructive"
+                                            onClick={() => {
+                                              setSelectedFilesToDelete([
+                                                file.fileName,
+                                              ]);
+                                              setDeleteDialogOpen(true);
+                                            }}
+                                          >
+                                            <Trash2 className="h-4 w-4 mr-2" />
+                                            Delete
+                                          </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            <div className="flex items-center justify-between px-4 py-4 border-t">
                               <div className="text-sm text-muted-foreground">
                                 Showing{" "}
                                 {Math.min(
                                   (currentPage - 1) * itemsPerPage + 1,
-                                  sortedFiles.length
+                                  files.length
                                 )}{" "}
                                 to{" "}
                                 {Math.min(
                                   currentPage * itemsPerPage,
-                                  sortedFiles.length
+                                  files.length
                                 )}{" "}
-                                of {sortedFiles.length} files
+                                of {files.length} files
                               </div>
-                              <div className="flex items-center space-x-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    handlePageChange(currentPage - 1)
-                                  }
-                                  disabled={currentPage === 1}
-                                >
-                                  <ChevronLeft className="h-4 w-4" />
-                                  Previous
-                                </Button>
-                                <div className="flex items-center space-x-1">
-                                  {Array.from(
-                                    { length: totalPages },
-                                    (_, i) => i + 1
-                                  ).map((page) => (
-                                    <Button
-                                      key={page}
-                                      variant={
-                                        currentPage === page
-                                          ? "default"
-                                          : "outline"
-                                      }
-                                      size="sm"
-                                      onClick={() => handlePageChange(page)}
-                                      className="w-8"
-                                    >
-                                      {page}
+
+                              <div className="flex items-center space-x-4">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button size="sm" variant="ghost">
+                                      <ListFilter className="h-4 w-4 mr-2" />
+                                      Items per page
                                     </Button>
-                                  ))}
-                                </div>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    handlePageChange(currentPage + 1)
-                                  }
-                                  disabled={currentPage === totalPages}
-                                >
-                                  Next
-                                  <ChevronRight className="h-4 w-4 ml-1" />
-                                </Button>
-                              </div>
-                            </div> */}
-                          </div>
-                        ) : (
-                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 p-4">
-                            {(data?.files as FileItem[]).map((file) => {
-                              const isFile = file.fileType !== "folder";
-                              const url = file.previewUrl;
-                              const ext =
-                                file.fileName.split(".").pop()?.toLowerCase() ??
-                                "";
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>
+                                      Items per page
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuRadioGroup
+                                      value={String(itemsPerPage)}
+                                      onValueChange={value => {
+                                        setItemsPerPage(Number(value));
+                                        handlePageChange(1);
+                                      }}
+                                    >
+                                      {[5, 10, 25].map(value => (
+                                        <DropdownMenuRadioItem
+                                          key={value}
+                                          value={String(value)}
+                                        >
+                                          {value}
+                                        </DropdownMenuRadioItem>
+                                      ))}
+                                    </DropdownMenuRadioGroup>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
 
-                              let Preview: React.ReactNode;
-                              if (
-                                isFile &&
-                                ["png", "jpg", "jpeg", "gif", "webp"].includes(
-                                  ext
-                                ) &&
-                                url
-                              ) {
-                                Preview = (
-                                  <img
-                                    src={url}
-                                    alt={file.fileName}
-                                    className="max-w-full max-h-12 object-contain mb-2"
-                                  />
-                                );
-                              } else if (isFile && ext === "pdf" && url) {
-                                Preview = (
-                                  <iframe
-                                    src={url}
-                                    title={file.fileName}
-                                    className="w-full h-12 mb-2"
-                                  />
-                                );
-                              } else if (
-                                isFile &&
-                                [
-                                  "doc",
-                                  "docx",
-                                  "xls",
-                                  "xlsx",
-                                  "ppt",
-                                  "pptx",
-                                ].includes(ext) &&
-                                url
-                              ) {
-                                const officeSrc = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
-                                  url
-                                )}`;
-                                Preview = (
-                                  <iframe
-                                    src={officeSrc}
-                                    title={file.fileName}
-                                    className="w-full h-12 mb-2"
-                                  />
-                                );
-                              } else if (
-                                isFile &&
-                                ["mp4", "webm", "ogg"].includes(ext) &&
-                                url
-                              ) {
-                                Preview = (
-                                  <video
-                                    src={url}
-                                    controls
-                                    className="w-full h-12 mb-2 object-cover"
-                                  />
-                                );
-                              } else if (
-                                isFile &&
-                                ["mp3", "wav", "ogg"].includes(ext) &&
-                                url
-                              ) {
-                                Preview = (
-                                  <audio
-                                    src={url}
-                                    controls
-                                    className="w-full mb-2"
-                                  />
-                                );
-                              } else {
-                                Preview = (
-                                  <FileTypeIcon
-                                    fileName={file.fileName}
-                                    fileType={file.fileType}
-                                    size="large"
-                                  />
-                                );
-                              }
-
-                              return (
-                                <div
-                                  key={file.id}
-                                  className={`group relative p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors ${
-                                    dragOverFolderId === file.id
-                                      ? "bg-muted ring-2 ring-primary"
-                                      : ""
-                                  }`}
-                                  draggable
-                                  onDragStart={(e) =>
-                                    handleItemDragStart(e, file.id)
-                                  }
-                                  onDragOver={(e) =>
-                                    file.fileType === "folder"
-                                      ? handleFolderDragOver(e, file.id)
-                                      : undefined
-                                  }
-                                  onDragLeave={(e) =>
-                                    file.fileType === "folder"
-                                      ? handleFolderDragLeave(e)
-                                      : undefined
-                                  }
-                                  onDrop={(e) =>
-                                    file.fileType === "folder"
-                                      ? handleFolderDrop(e, file.id)
-                                      : undefined
-                                  }
-                                >
-                                  {/* drag handle + checkbox */}
-                                  <div className="absolute top-2 left-2 flex items-center gap-2">
-                                    <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
-                                    <Checkbox
-                                      checked={selectedFiles.includes(file.id)}
-                                      onCheckedChange={() =>
-                                        handleFileSelect(file.id)
-                                      }
-                                    />
-                                  </div>
-
-                                  {/* preview or icon + filename */}
-                                  <div
-                                    {...(file.fileType === "folder" && {
-                                      title: "Click to open folder",
-                                    })}
-                                    className={`flex flex-col items-center text-center mb-3 ${
-                                      file.fileType === "folder"
-                                        ? "cursor-pointer"
-                                        : ""
-                                    }`}
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
                                     onClick={() =>
-                                      file.fileType === "folder" &&
-                                      handleFolderSelection(file)
+                                      handlePageChange(currentPage - 1)
                                     }
+                                    disabled={currentPage === 1}
                                   >
-                                    <div className="h-12 w-12 mb-2">
-                                      {Preview}
-                                    </div>
-                                    <div className="w-full">
-                                      <div className="font-medium truncate text-sm">
-                                        {file.fileName}
-                                      </div>
-                                      <div className="text-xs text-muted-foreground mt-1">
-                                        {formatFileSize(file.size)}
-                                      </div>
-                                    </div>
+                                    <ChevronLeft className="h-4 w-4" />
+                                    Previous
+                                  </Button>
+                                  <div className="flex items-center space-x-1">
+                                    {Array.from(
+                                      { length: totalPages },
+                                      (_, i) => i + 1
+                                    ).map(page => (
+                                      <Button
+                                        key={page}
+                                        variant={
+                                          currentPage === page
+                                            ? "default"
+                                            : "outline"
+                                        }
+                                        size="sm"
+                                        onClick={() => handlePageChange(page)}
+                                        className="w-8"
+                                      >
+                                        {page}
+                                      </Button>
+                                    ))}
                                   </div>
-
-                                  {/* metadata + menu */}
-                                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                    {formatDate(file.createdAt)}
-                                    <div className="flex items-center gap-1">
-                                      {file.shared && (
-                                        <Share2 className="h-3.5 w-3.5 text-green-500" />
-                                      )}
-                                      {file.starred && (
-                                        <Star className="h-3.5 w-3.5 text-yellow-500" />
-                                      )}
-                                    </div>
-                                  </div>
-                                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          size="icon"
-                                          className="h-8 w-8"
-                                        >
-                                          <MoreHorizontal className="h-4 w-4" />
-                                        </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent align="end">
-                                        {isFile && (
-                                          <DropdownMenuItem
-                                            onClick={() =>
-                                              handleDownload(file.fileName)
-                                            }
-                                          >
-                                            <Download className="h-4 w-4 mr-2" />
-                                            Download
-                                          </DropdownMenuItem>
-                                        )}
-                                        <DropdownMenuItem
-                                          onClick={() => handleShare(file)}
-                                        >
-                                          <Share2 className="h-4 w-4 mr-2" />
-                                          Share
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                          onClick={() => handleStar(file)}
-                                        >
-                                          <Star className="h-4 w-4 mr-2" />
-                                          {file.starred ? "Unstar" : "Star"}
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        {selectedFiles.length > 0 && (
-                                          <DropdownMenuItem
-                                            onClick={() =>
-                                              setMoveDialogOpen(true)
-                                            }
-                                          >
-                                            <FolderIcon className="h-4 w-4 mr-2" />
-                                            Move Selected
-                                          </DropdownMenuItem>
-                                        )}
-                                        <DropdownMenuItem
-                                          className="text-destructive"
-                                          onClick={() => {
-                                            setSelectedFilesToDelete([
-                                              file.fileName,
-                                            ]);
-                                            setDeleteDialogOpen(true);
-                                          }}
-                                        >
-                                          <Trash2 className="h-4 w-4 mr-2" />
-                                          Delete
-                                        </DropdownMenuItem>
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
-                                  </div>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      handlePageChange(currentPage + 1)
+                                    }
+                                    disabled={currentPage === totalPages}
+                                  >
+                                    Next
+                                    <ChevronRight className="h-4 w-4 ml-1" />
+                                  </Button>
                                 </div>
-                              );
-                            })}
+                              </div>
+                            </div>
                           </div>
                         )}
                       </ScrollArea>
@@ -1440,7 +1418,7 @@ const CloudStorage = () => {
                   >
                     <ScrollArea className="flex-1">
                       <div className="p-4 space-y-4">
-                        {recentActivity.map((activity) => (
+                        {recentActivity.map(activity => (
                           <div
                             key={activity.id}
                             className="flex items-start gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
@@ -1497,6 +1475,14 @@ const CloudStorage = () => {
           </div>
         </CardContent>
       </Card>
+
+      {console.log(filePreview)}
+
+      <FilePreviewDialog
+        file={filePreview}
+        onClose={() => setFilePreview(null)}
+        handleDownload={handleDownload}
+      />
 
       <ConfirmDeleteDialog
         open={deleteDialogOpen}

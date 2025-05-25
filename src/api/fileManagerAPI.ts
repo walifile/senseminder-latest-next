@@ -5,7 +5,7 @@ export const fileManagerAPI = createApi({
   reducerPath: "fileManagerAPI",
   baseQuery: baseQueryWithReauth(false),
   tagTypes: ["Files", "VM"],
-  endpoints: (builder) => ({
+  endpoints: builder => ({
     getEstimate: builder.mutation({
       query: ({ operatingSystem, machineType, storageSize }) => {
         const ssdSizeWithGb = storageSize.endsWith("gb")
@@ -38,7 +38,7 @@ export const fileManagerAPI = createApi({
       providesTags: ["VM"],
     }),
     stopVM: builder.mutation({
-      query: (instanceId) => ({
+      query: instanceId => ({
         url: "https://lul5oxdwic.execute-api.us-east-1.amazonaws.com/dev/instance",
         method: "POST",
         body: {
@@ -54,7 +54,7 @@ export const fileManagerAPI = createApi({
     }),
 
     startVM: builder.mutation({
-      query: (instanceId) => ({
+      query: instanceId => ({
         url: "https://lul5oxdwic.execute-api.us-east-1.amazonaws.com/dev/instance",
         method: "POST",
         body: {
@@ -137,7 +137,7 @@ export const fileManagerAPI = createApi({
     }),
 
     scheduleVM: builder.mutation({
-      query: (scheduleData) => ({
+      query: scheduleData => ({
         url: `https://cufbznlyqa.execute-api.us-east-1.amazonaws.com/dev/schedules`,
         method: "POST",
         body: scheduleData,
@@ -153,7 +153,7 @@ export const fileManagerAPI = createApi({
       void,
       { region: string; userId: string; fileName: string }
     >({
-      query: (payload) => ({
+      query: payload => ({
         url: "star",
         method: "POST",
         body: payload,
@@ -164,7 +164,7 @@ export const fileManagerAPI = createApi({
       void,
       { region: string; userId: string; fileName: string }
     >({
-      query: (payload) => ({
+      query: payload => ({
         url: "unstar",
         method: "POST",
         body: payload,
@@ -173,7 +173,7 @@ export const fileManagerAPI = createApi({
     }),
 
     shareFile: builder.mutation({
-      query: (body) => ({
+      query: body => ({
         url: "share",
         method: "POST",
         body,
@@ -181,7 +181,7 @@ export const fileManagerAPI = createApi({
       invalidatesTags: ["Files"],
     }),
     copyFiles: builder.mutation({
-      query: (payload) => ({
+      query: payload => ({
         url: "copy",
         method: "POST",
         body: payload,
@@ -190,7 +190,7 @@ export const fileManagerAPI = createApi({
     }),
 
     moveFiles: builder.mutation({
-      query: (body) => ({
+      query: body => ({
         url: "move",
         method: "POST",
         body,
@@ -208,6 +208,8 @@ export const fileManagerAPI = createApi({
         modified,
         folder,
         sortBy,
+        itemsPerPage,
+        currentPage,
       }) => ({
         // search = "", token = null,
         url: "list",
@@ -222,6 +224,8 @@ export const fileManagerAPI = createApi({
           ...(modified && { modified }),
           ...(folder && { folder }),
           ...(sortBy && { sortBy }),
+          itemsPerPage,
+          currentPage,
         },
       }),
       providesTags: ["Files"],

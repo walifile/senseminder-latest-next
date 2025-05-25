@@ -16,6 +16,9 @@ import {
 export const getFileIcon = (fileName: string, type: string) => {
   const extension = fileName.split(".").pop()?.toLowerCase();
 
+  // Folder
+  if (type === "folder") return Folder;
+
   // Document types
   if (extension === "pdf") return File;
   if (extension === "doc" || extension === "docx") return FileDocument;
@@ -47,9 +50,6 @@ export const getFileIcon = (fileName: string, type: string) => {
   // Archive types
   if (["zip", "rar", "7z", "tar", "gz"].includes(extension || ""))
     return Archive;
-
-  // Folder
-  if (type === "folder") return Folder;
 
   // Default
   return FileText;
