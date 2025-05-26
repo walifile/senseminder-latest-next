@@ -84,9 +84,11 @@ import FileTypeIcon from "./file-type-icon";
 import { formatDate, formatFileSize, formatTimeAgo } from "../utils";
 import UploadDialog from "./upload-dialog";
 import {
+  useCopyFilesMutation,
   useDeleteFilesMutation,
   useLazyDownloadFileQuery,
   useListFilesQuery,
+  useMoveFilesMutation,
   useUnstarFileMutation,
 } from "@/api/fileManagerAPI";
 import { useSelector } from "react-redux";
@@ -180,6 +182,8 @@ const CloudStorage = () => {
   const [starFile] = useStarFileMutation();
   const [unstarFile] = useUnstarFileMutation();
   const [deleteFiles] = useDeleteFilesMutation();
+  const [copyFiles] = useCopyFilesMutation();
+  const [moveFiles] = useMoveFilesMutation();
 
   console.log({ wali: files });
   const handleUpload = () => {
@@ -502,7 +506,7 @@ const CloudStorage = () => {
   };
 
   // Handle drop on folder
-  const handleFolderDrop = (e: React.DragEvent, folderId: string) => {
+  const handleFolderDrop = async (e: React.DragEvent, folderId: string) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -517,6 +521,30 @@ const CloudStorage = () => {
       const fileIds = dragData.fileIds || [];
 
       if (fileIds.length > 0) {
+        const sourceFileNames = files
+          ?.filter(
+            (file: FileItem) =>
+              fileIds.includes(file.id) && file.fileType !== "folder"
+          )
+          ?.map((file: FileItem) => file.fileName);
+
+        const destinationFolder = files?.find(
+          (file: FileItem) => file.id === folderId
+        )?.fileName;
+
+        const filesData = {
+          region: "virginia",
+          userId,
+          sourceFileNames,
+          destinationFolder,
+        };
+
+        if (operation === "copy") {
+          await copyFiles(filesData).unwrap();
+        } else {
+          await moveFiles(filesData).unwrap();
+        }
+
         toast({
           title: `Files ${operation === "copy" ? "Copied" : "Moved"}`,
           description: `${fileIds.length} file(s) ${
@@ -524,7 +552,6 @@ const CloudStorage = () => {
           } successfully`,
         });
 
-        // Clear selection and drag state
         setSelectedFiles([]);
         setDraggedFiles([]);
         setDragOverFolderId(null);
@@ -992,17 +1019,17 @@ const CloudStorage = () => {
                                         handleItemDragStart(e, file.id)
                                       }
                                       onDragOver={e =>
-                                        file.type === "folder"
+                                        file.fileType === "folder"
                                           ? handleFolderDragOver(e, file.id)
                                           : undefined
                                       }
                                       onDragLeave={e =>
-                                        file.type === "folder"
+                                        file.fileType === "folder"
                                           ? handleFolderDragLeave(e)
                                           : undefined
                                       }
                                       onDrop={e =>
-                                        file.type === "folder"
+                                        file.fileType === "folder"
                                           ? handleFolderDrop(e, file.id)
                                           : undefined
                                       }
