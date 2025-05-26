@@ -203,6 +203,11 @@ const CloudStorage = () => {
     handleCloseFolder();
   };
 
+  const handleMoveSelected = (file: FileItem) => {
+    setSelectedFiles([file.id]);
+    setMoveDialogOpen(true);
+  };
+
   const handleDownload = async (fileName: string) => {
     if (!userId) return;
 
@@ -1148,10 +1153,10 @@ const CloudStorage = () => {
                                               View Details
                                             </DropdownMenuItem> */}
                                             <DropdownMenuSeparator />
-                                            {selectedFiles.length > 0 && (
+                                            {file.fileType !== "folder" && (
                                               <DropdownMenuItem
                                                 onClick={() =>
-                                                  setMoveDialogOpen(true)
+                                                  handleMoveSelected(file)
                                                 }
                                               >
                                                 <FolderIcon className="h-4 w-4 mr-2" />
@@ -1310,10 +1315,10 @@ const CloudStorage = () => {
                                             {file.starred ? "Unstar" : "Star"}
                                           </DropdownMenuItem>
                                           <DropdownMenuSeparator />
-                                          {selectedFiles.length > 0 && (
+                                          {file.fileType !== "folder" && (
                                             <DropdownMenuItem
                                               onClick={() =>
-                                                setMoveDialogOpen(true)
+                                                handleMoveSelected(file)
                                               }
                                             >
                                               <FolderIcon className="h-4 w-4 mr-2" />
