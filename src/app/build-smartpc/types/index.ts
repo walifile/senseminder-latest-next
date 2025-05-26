@@ -19,6 +19,7 @@ export type PC = {
   instanceId: string;
   description?: string;
   region?: string;
+  userId?: string;
   // for dummy data
 
   name?: string;
@@ -107,6 +108,6 @@ export type SelectedPcProps = {
   showDetails: boolean;
   setShowDetails: React.Dispatch<React.SetStateAction<boolean>>;
   cloudPCs: PC[];
-  setCloudPCs?: React.Dispatch<React.SetStateAction<PC[]>>;
+  setCloudPCs: React.Dispatch<React.SetStateAction<PC[]>>;
   handleAssignUser: (pc: PC) => void;
 };

@@ -19,7 +19,7 @@ export default function RootLayout({
         <ReduxProvider>
           <AmplifyProvider>
             <ThemeWrapper>
-              <div className="flex min-h-screen flex-col">
+              <div className="flex min-h-screen flex-col overflow-x-hidden">
                 <Navbar />
                 {children}
                 <Footer />

@@ -174,7 +174,7 @@ const Hero = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.6 }}
-              className="grid grid-cols-2 md:grid-cols-3 gap-8 pt-12"
+              className="grid grid-cols-3 gap-4 md:gap-8 pt-12 max-w-5xl mx-auto"
             >
               {[
                 {
@@ -198,16 +198,18 @@ const Hero = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
-                  className="text-center p-4 rounded-xl bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border border-black/5 dark:border-gray-800 shadow-lg dark:shadow-none"
+                  className="text-center p-3 md:p-4 rounded-xl bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border border-black/5 dark:border-gray-800 shadow-lg dark:shadow-none flex items-center justify-center gap-3"
                 >
-                  <div className="flex items-center justify-center mb-2">
+                  <div className="flex items-center justify-center">
                     {stat.icon}
                   </div>
-                  <div className="text-2xl font-bold text-primary">
-                    {stat.value}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {stat.label}
+                  <div className="flex flex-col items-start">
+                    <div className="text-xl md:text-2xl font-bold text-primary">
+                      {stat.value}
+                    </div>
+                    <div className="text-xs md:text-sm text-muted-foreground">
+                      {stat.label}
+                    </div>
                   </div>
                 </motion.div>
               ))}
