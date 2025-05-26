@@ -46,6 +46,12 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
   const userId = useSelector((state: RootState) => state.auth.user?.id);
   const [moveFiles, { isLoading }] = useMoveFilesMutation();
 
+  const { data, isLoading: isFilesLoading } = useListFilesQuery({
+    userId,
+    region: "virginia",
+    type: "folder",
+  });
+
   const handleMove = async () => {
     if (!selectedFolderId || !userId) return;
 
@@ -100,12 +106,6 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
       console.error("Move error:", err);
     }
   };
-  console.log({ selectedFiles });
-  const { data, isLoading: isFilesLoading } = useListFilesQuery({
-    userId,
-    region: "virginia",
-    type: "folder",
-  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

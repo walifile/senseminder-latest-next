@@ -12,7 +12,8 @@ import { Folder } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { useCopyFilesMutation } from "@/api/fileManagerAPI";
+import { useCopyFilesMutation, useListFilesQuery } from "@/api/fileManagerAPI";
+import { FileItem } from "../types";
 
 interface CopyFilesDialogProps {
   open: boolean;
@@ -42,16 +43,38 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
   const userId = useSelector((state: RootState) => state.auth.user?.id);
   const [copyFiles, { isLoading }] = useCopyFilesMutation();
 
+  const { data, isLoading: isFilesLoading } = useListFilesQuery({
+    userId,
+    region: "virginia",
+    type: "folder",
+  });
+
   const handleCopy = async () => {
-    const destinationFolder =
-      files && files.find((f) => f.id === selectedFolderId)?.name;
-    if (!userId || !destinationFolder) return;
+    if (!selectedFolderId || !userId) return;
+
+    const selectedFolders = files?.filter(
+      file => selectedFiles.includes(file.id) && file.fileType === "folder"
+    );
+
+    if (selectedFolders?.length) {
+      toast({
+        title: "Invalid Selection",
+        description: "Only files will be moved. Folders will be skipped.",
+        variant: "destructive",
+      });
+    }
 
     const sourceFileNames =
       files &&
       files
-        .filter((file) => selectedFiles.includes(file.id))
-        .map((file) => file.name || "");
+        .filter(
+          file => selectedFiles.includes(file.id) && file.fileType !== "folder"
+        )
+        .map(file => file.fileName);
+
+    const destinationFolder = files?.find(
+      file => file.id === selectedFolderId
+    )?.fileName;
 
     try {
       await copyFiles({
@@ -88,25 +111,29 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
             Select a destination folder to copy the selected files
           </DialogDescription>
         </DialogHeader>
+
         <div className="py-4">
           <div className="space-y-2">
-            {files &&
-              files
-                .filter((file) => file.type === "folder")
-                .map((folder) => (
-                  <div
-                    key={folder.id}
-                    className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-muted/50 ${
-                      selectedFolderId === folder.id ? "bg-muted" : ""
-                    }`}
-                    onClick={() => setSelectedFolderId(folder.id)}
-                  >
-                    <Folder className="h-4 w-4" />
-                    <span>{folder.name}</span>
-                  </div>
-                ))}
+            {isFilesLoading && <p>Loading folders...</p>}
+            {!isFilesLoading && data?.files?.length === 0 && (
+              <p>No folders found.</p>
+            )}
+            {!isFilesLoading &&
+              data?.files?.map((folder: FileItem) => (
+                <div
+                  key={folder.id}
+                  className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-muted/50 ${
+                    selectedFolderId === folder.id ? "bg-muted" : ""
+                  }`}
+                  onClick={() => setSelectedFolderId(folder.id)}
+                >
+                  <Folder className="h-4 w-4" />
+                  <span>{folder.fileName}</span>
+                </div>
+              ))}
           </div>
         </div>
+
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel

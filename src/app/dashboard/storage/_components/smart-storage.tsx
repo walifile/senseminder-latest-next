@@ -1502,8 +1502,6 @@ const CloudStorage = () => {
         </CardContent>
       </Card>
 
-      {console.log(filePreview)}
-
       <FilePreviewDialog
         file={filePreview}
         onClose={() => setFilePreview(null)}
@@ -1539,7 +1537,7 @@ const CloudStorage = () => {
       <MoveFilesDialog
         open={moveDialogOpen}
         onOpenChange={setMoveDialogOpen}
-        files={data?.files}
+        files={files}
         selectedFiles={selectedFiles}
         setSelectedFiles={setSelectedFiles}
         selectedFolderId={selectedFolderForMove}
@@ -1549,7 +1547,7 @@ const CloudStorage = () => {
       <CopyFilesDialog
         open={copyDialogOpen}
         onOpenChange={setCopyDialogOpen}
-        // files={files}
+        files={files}
         selectedFiles={selectedFiles}
         setSelectedFiles={setSelectedFiles}
         selectedFolderId={selectedFolderForMove}

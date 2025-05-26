@@ -181,10 +181,10 @@ export const fileManagerAPI = createApi({
       invalidatesTags: ["Files"],
     }),
     copyFiles: builder.mutation({
-      query: payload => ({
+      query: body => ({
         url: "copy",
         method: "POST",
-        body: payload,
+        body,
       }),
       invalidatesTags: ["Files"],
     }),
