@@ -291,7 +291,7 @@ const PCViewerContent = () => {
   }, [hasClicked]);
 
   return (
-    <div className="flex min-h-screen bg-white dark:bg-gray-950">
+    <div className="flex h-screen bg-white dark:bg-gray-950">
       <button
         ref={connectButtonRef}
         onClick={() => connectToDcv()}
@@ -472,7 +472,7 @@ const PCViewerContent = () => {
                   "F10",
                   "F11",
                   "F12",
-                ].map((key) => (
+                ].map(key => (
                   <Button
                     key={key}
                     variant="outline"
@@ -499,7 +499,7 @@ const PCViewerContent = () => {
                   "-",
                   "=",
                   "Backspace",
-                ].map((key) => (
+                ].map(key => (
                   <Button
                     key={key}
                     variant="outline"
@@ -530,7 +530,7 @@ const PCViewerContent = () => {
               setIsConnected(false);
               setDcvSession(null);
             }}
-            onError={(error) => {
+            onError={error => {
               setDcvError(error);
               setConnectionState("DISCONNECTED");
               setIsConnected(false);
@@ -571,7 +571,7 @@ const PCViewerContent = () => {
 
       {/* Side Control Panel - Hidden in fullscreen mode */}
       {!isFullscreen && (
-        <div className="w-80 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 p-4 flex flex-col gap-6">
+        <div className="ml-auto min-w-[20%] max-w-[55%] w-80 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 p-4 flex flex-col gap-6 overflow-y-auto">
           {/* Connection Status */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Connection Status</h3>
@@ -670,7 +670,7 @@ const PCViewerContent = () => {
                 </div>
                 <Slider
                   value={[bandwidth]}
-                  onValueChange={(value) => setBandwidth(value[0])}
+                  onValueChange={value => setBandwidth(value[0])}
                   max={100}
                   step={1}
                 />
