@@ -177,6 +177,7 @@ const CloudStorage = () => {
     sortBy,
     itemsPerPage,
     currentPage,
+    recursive: true,
   });
   const files = data?.files || [];
 
