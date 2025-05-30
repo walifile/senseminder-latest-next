@@ -270,8 +270,36 @@ const PCViewerContent = () => {
           divId: "remote-desktop",
           callbacks: {
             firstFrame: () => console.log("First frame received"),
+            displayLayoutCallback: (serverWidth, serverHeight, heads) => {
+              console.log(
+                "Display layout changed",
+                serverWidth,
+                serverHeight,
+                heads
+              );
+            },
           },
         });
+
+        const updateResolution = () => {
+          const container = document.getElementById("remote-desktop");
+          if (container) {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            conn
+              .requestResolution(width, height)
+              .catch(e => console.warn("Failed to request resolution:", e));
+          }
+        };
+
+        // Delay to ensure layout is ready
+        requestAnimationFrame(() => {
+          updateResolution();
+        });
+
+        // Add event listener for resize
+        window.addEventListener("resize", updateResolution);
+
         console.log("Connection established:", conn);
       } catch (error) {
         console.error("Connection failed:", error);

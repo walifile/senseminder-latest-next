@@ -221,23 +221,3 @@
     opacity: 0.7;
   }
 }
-
-#remote-desktop {
-  width: 100% !important;
-  height: calc(100%) !important;
-  background-color: black;
-  display: none;
-  position: relative;
-}
-
-#dcv-input {
-  display: none !important;
-}
-
-canvas {
-  width: 100% !important;
-  left: 0 !important;
-  top: 0 !important;
-  position: relative !important;
-  height: 100% !important;
-}
