@@ -154,11 +154,15 @@ const CloudStorage = () => {
     modified: "",
   });
   const [selectedFolder, setSelectedFolder] = useState<FileItem | null>(null);
+  const [path, setPath] = useState<FileItem[]>([]);
+
   const [filePreview, setFilePreview] = useState<FileItem | null>(null);
 
   const debouncedQuery = useDebounce(searchQuery, 500);
 
   console.log(lastSynced);
+
+  const folderPath = path.map((f) => f.fileName).join("/");
 
   const selectedType =
     selectedCategory === "All Files" || selectedFolder
@@ -173,11 +177,12 @@ const CloudStorage = () => {
     starred: filters.starred,
     shared: filters.shared,
     modified: filters.modified,
-    folder: selectedFolder?.fileName || "",
+    // folder: selectedFolder?.fileName || "",
+    folder: folderPath,
     sortBy,
     itemsPerPage,
     currentPage,
-    recursive: true,
+    // recursive: true,
   });
   const files = data?.files || [];
 
@@ -194,14 +199,17 @@ const CloudStorage = () => {
   };
 
   const handleFolderSelection = (file: FileItem) => {
-    if (file.fileType === "folder") {
-      setSelectedFolder(file);
-      setSelectedFiles([]);
-    }
+    if (file.fileType !== "folder") return;
+    setPath((prev) => [...prev, file]);
+    setSelectedFolder(file);
+    setSelectedFiles([]);
   };
 
   const handleCloseFolder = () => {
-    setSelectedFolder(null);
+    // remove last folder
+    const newPath = path.slice(0, -1);
+    setPath(newPath);
+    setSelectedFolder(newPath[newPath.length - 1] || null);
     setSelectedFiles([]);
   };
 
