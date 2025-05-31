@@ -272,7 +272,7 @@ const PCViewerContent = () => {
             firstFrame: () => console.log("First frame received"),
             displayLayoutCallback: (serverWidth, serverHeight, heads) => {
               console.log(
-                "Display layout changed",
+                "Updating resolution realtime:",
                 serverWidth,
                 serverHeight,
                 heads
@@ -285,7 +285,8 @@ const PCViewerContent = () => {
           const container = document.getElementById("remote-desktop");
           if (container) {
             const width = container.clientWidth;
-            const height = container.clientHeight;
+            const height = window.innerHeight;
+            console.log("Updating resolution:", width, height);
             conn
               .requestResolution(width, height)
               .catch(e => console.warn("Failed to request resolution:", e));
