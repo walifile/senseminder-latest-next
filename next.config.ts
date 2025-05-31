@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 const path = require("path");
 
 const nextConfig: NextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false,
   webpack(config) {
     config.resolve.alias = {
       ...config.resolve.alias,

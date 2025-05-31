@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  Suspense,
-  useRef,
-} from "react";
+import React, { useState, useEffect, Suspense, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -49,6 +43,14 @@ import dcv from "../../../public/dcvjs/dcv";
 // Add ConnectionState type
 type ConnectionState = "CONNECTED" | "DISCONNECTED" | "RECONNECTING";
 
+// const connectionStats = {
+//   latency: "45ms",
+//   fps: "30",
+//   quality: "85%",
+//   dataTransferred: "1.2 GB",
+//   uptime: "2h 15m",
+// };
+
 // Create a separate client component that uses useSearchParams
 const PCViewerContent = () => {
   const searchParams = useSearchParams();
@@ -85,69 +87,142 @@ const PCViewerContent = () => {
     sessionId: string;
     sessionToken: string;
   } | null>(null);
+  const connRef = useRef<any | null>(null);
 
-  // Function to start DCV session
-  const startDCVSession = useCallback(async () => {
-    try {
-      setConnectionState("RECONNECTING");
+  const [connectionStats, setConnectionStats] = useState({
+    latency: "0ms",
+    fps: "0",
+    quality: "0%",
+    dataTransferred: "0 MB",
+    uptime: "0m",
+  });
+
+  const launchVMResponse = useSelector(selectLaunchVMResponse);
+  const sessionId = launchVMResponse?.sessionId;
+  const authToken = launchVMResponse?.sessionToken;
+  const url = launchVMResponse?.dnsName;
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Function to connect to DCV
+  const connectToDcv = async () => {
+    if (sessionId && authToken) {
+      console.log("checking");
       setTvEffect("on");
+      setIsLoading(true);
+      setConnectionState("RECONNECTING");
 
-      // Call your session manager service to get session details
-      const response = await fetch("/api/dcv-session-manager/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          pcName: searchParams?.get("name"),
-        }),
-      });
+      try {
+        const conn = await dcv.connect({
+          url: `https://${url}`,
+          sessionId,
+          authToken,
+          useGateway: true,
+          divId: "remote-desktop",
+          callbacks: {
+            firstFrame: () => {
+              console.log("First frame received");
+              setConnectionState("CONNECTED");
+            },
+            displayLayoutCallback: (serverWidth, serverHeight, heads) => {
+              console.log("Layout:", serverWidth, serverHeight, heads);
+            },
+          },
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to create DCV session");
+        // Save connection reference
+        connRef.current = conn;
+
+        // Watch for disconnection
+        conn.onDisconnected = reason => {
+          console.log("Disconnected:", reason);
+          setConnectionState("DISCONNECTED");
+          setIsConnected(false);
+        };
+
+        // Adjust resolution
+        const updateResolution = () => {
+          const container = document.getElementById("remote-desktop");
+          if (container) {
+            const width = container.clientWidth;
+            const height = window.innerHeight;
+            console.log("Updating resolution:", width, height);
+            conn
+              .requestResolution(width, height)
+              .catch(e => console.warn("Failed to request resolution:", e));
+          }
+        };
+
+        requestAnimationFrame(() => {
+          updateResolution();
+        });
+
+        window.addEventListener("resize", updateResolution);
+
+        console.log("Connection established:", conn);
+        setIsConnected(true);
+      } catch (error) {
+        console.error("Connection failed:", error);
+        setDcvError(error as Error);
+        setTvEffect("off");
+        setIsConnected(false);
+        setConnectionState("DISCONNECTED");
+      } finally {
+        setIsLoading(false);
       }
+    }
+  };
 
-      const sessionData = await response.json();
-      setDcvSession({
-        sessionId: sessionData.sessionId,
-        sessionToken: sessionData.sessionToken,
-      });
+  useEffect(() => {
+    connectToDcv();
+  }, []);
 
-      setConnectionState("CONNECTED");
-      setIsConnected(true);
-      setTvEffect(null);
-    } catch (error) {
-      console.error("Failed to start DCV session:", error);
-      setDcvError(error as Error);
-      setConnectionState("DISCONNECTED");
+  const handleConnect = () => {
+    if (!connRef.current && sessionId && authToken) {
+      connectToDcv();
+    }
+  };
+
+  const handleDisconnect = () => {
+    if (connRef.current) {
+      connRef.current.disconnect();
+      connRef.current = null;
+      setTvEffect("off");
       setIsConnected(false);
-      setTvEffect(null);
+      setConnectionState("DISCONNECTED");
     }
-  }, [
-    searchParams,
-    setConnectionState,
-    setTvEffect,
-    setDcvSession,
-    setIsConnected,
-    setDcvError,
-  ]);
+  };
+
+  // Update stats
+  const updateStats = async () => {
+    if (connRef.current) {
+      try {
+        const stats = await connRef.current.getStats();
+        setConnectionStats(prev => ({
+          ...prev,
+          latency: `${Math.round(stats.latency)}ms`,
+          fps: `${Math.round(stats.fps)}`,
+        }));
+      } catch (err) {
+        console.warn("Failed to fetch DCV stats:", err);
+      }
+    }
+  };
 
   useEffect(() => {
-    if (!isConnected && !dcvSession) {
-      startDCVSession();
-    }
-  }, [isConnected, dcvSession, startDCVSession]);
+    const interval = setInterval(updateStats, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
-  useEffect(() => {
-    // Initial connection animation when component mounts
-    setConnectionState("RECONNECTING");
-    setTimeout(() => {
-      setConnectionState("CONNECTED");
-      setIsConnected(true);
-      setTvEffect(null);
-    }, 2000);
-  }, []); // This is fine as it's only for initial mount
+  // Open a new session in a new window
+  const openNewSession = () => {
+    const currentUrl = window.location.href;
+    const sessionId = searchParams?.get("sessionId") || Date.now().toString();
+    const newUrl = new URL(currentUrl);
+    newUrl.searchParams.set("sessionId", sessionId);
+    window.open(newUrl.toString(), "_blank", "width=1024,height=768");
+  };
 
+  // Fullscreen
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       const remoteDesktop = document.getElementById("remote-desktop");
@@ -172,170 +247,13 @@ const PCViewerContent = () => {
     };
   }, []);
 
-  const connectionStats = {
-    latency: "45ms",
-    fps: "30",
-    quality: "85%",
-    dataTransferred: "1.2 GB",
-    uptime: "2h 15m",
-  };
-
-  // const handleImageError = () => {
-  //   console.error("Failed to load preview image");
-  //   setImageError(true);
-  // };
-
-  // // Add power on/off animation handlers
-  // const handlePowerOn = () => {
-  //   setPoweringOn(true);
-  //   setTimeout(() => {
-  //     setPoweringOn(false);
-  //     setIsConnected(true);
-  //   }, 1500); // Duration of power on animation
-  // };
-
-  // const handlePowerOff = () => {
-  //   setPoweringOff(true);
-  //   setTimeout(() => {
-  //     setPoweringOff(false);
-  //     setIsConnected(false);
-  //   }, 1500); // Duration of power off animation
-  // };
-
-  const handleConnect = () => {
-    setConnectionState("RECONNECTING");
-    setTvEffect("on");
-    setTimeout(() => {
-      setConnectionState("CONNECTED");
-      setIsConnected(true);
-      setTvEffect(null);
-    }, 2000);
-  };
-
-  const handleDisconnect = async () => {
-    setTvEffect("off");
-    setConnectionState("DISCONNECTED");
-
-    try {
-      // Call your session manager service to end the session
-      if (dcvSession) {
-        await fetch("/api/dcv-session-manager/end", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            sessionId: dcvSession.sessionId,
-          }),
-        });
-      }
-    } catch (error) {
-      console.error("Failed to end DCV session:", error);
-    }
-
-    setDcvSession(null);
-    setIsConnected(false);
-    setTvEffect(null);
-  };
-
-  const openNewSession = () => {
-    const currentUrl = window.location.href;
-    const sessionId = searchParams?.get("sessionId") || Date.now().toString();
-    const newUrl = new URL(currentUrl);
-    newUrl.searchParams.set("sessionId", sessionId);
-    window.open(newUrl.toString(), "_blank", "width=1024,height=768");
-  };
-  // my
-
-  const launchVMResponse = useSelector(selectLaunchVMResponse);
-  const connectButtonRef = useRef<HTMLButtonElement | null>(null);
-  const sessionId = launchVMResponse?.sessionId;
-  const authToken = launchVMResponse?.sessionToken;
-  const url = launchVMResponse?.dnsName;
-
-  const [hasClicked, setHasClicked] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const connectToDcv = async () => {
-    if (sessionId && authToken && !hasClicked) {
-      setHasClicked(true);
-      setIsLoading(true);
-
-      try {
-        const conn = await dcv.connect({
-          url: `https://${url}`,
-          sessionId,
-          authToken,
-          useGateway: true,
-          divId: "remote-desktop",
-          callbacks: {
-            firstFrame: () => console.log("First frame received"),
-            displayLayoutCallback: (serverWidth, serverHeight, heads) => {
-              console.log(
-                "Updating resolution realtime:",
-                serverWidth,
-                serverHeight,
-                heads
-              );
-            },
-          },
-        });
-
-        const updateResolution = () => {
-          const container = document.getElementById("remote-desktop");
-          if (container) {
-            const width = container.clientWidth;
-            const height = window.innerHeight;
-            console.log("Updating resolution:", width, height);
-            conn
-              .requestResolution(width, height)
-              .catch(e => console.warn("Failed to request resolution:", e));
-          }
-        };
-
-        // Delay to ensure layout is ready
-        requestAnimationFrame(() => {
-          updateResolution();
-        });
-
-        // Add event listener for resize
-        window.addEventListener("resize", updateResolution);
-
-        console.log("Connection established:", conn);
-      } catch (error) {
-        console.error("Connection failed:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  useEffect(() => {
-    setTimeout(() => {
-      if (connectButtonRef.current && !hasClicked) {
-        console.log({ idh: "Dfdf" });
-        connectButtonRef.current.click();
-      }
-    }, 0);
-  }, [hasClicked]);
-
   return (
     <div className="flex h-screen bg-white dark:bg-gray-950">
-      <button
-        ref={connectButtonRef}
-        onClick={() => connectToDcv()}
-        className="hidden"
-      ></button>
       {/* Main Remote Desktop Area */}
       <div
         id="remote-desktop"
         className="flex-1 bg-gradient-to-br from-gray-900 to-black relative overflow-hidden"
       >
-        <button
-          ref={connectButtonRef}
-          onClick={() => connectToDcv()}
-          className="hidden"
-        ></button>
         {/* TV On/Off Animation */}
         <AnimatePresence>
           {/* tvEffect === "on" */}
