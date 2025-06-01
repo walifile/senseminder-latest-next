@@ -43,13 +43,18 @@ import dcv from "../../../public/dcvjs/dcv";
 // Add ConnectionState type
 type ConnectionState = "CONNECTED" | "DISCONNECTED" | "RECONNECTING";
 
-// const connectionStats = {
-//   latency: "45ms",
-//   fps: "30",
-//   quality: "85%",
-//   dataTransferred: "1.2 GB",
-//   uptime: "2h 15m",
-// };
+// Add DcvConnection type
+interface KeyboardShortcutKey {
+  key: string;
+  location: number;
+}
+
+interface DcvConnection {
+  requestResolution: (width: number, height: number) => Promise<void>;
+  disconnect: () => Promise<void>;
+  getStats: () => Promise<{ latency: number; fps: number }>;
+  sendKeyboardShortcut: (keys: KeyboardShortcutKey[]) => void;
+}
 
 // Create a separate client component that uses useSearchParams
 const PCViewerContent = () => {
@@ -88,7 +93,7 @@ const PCViewerContent = () => {
     sessionId: string;
     sessionToken: string;
   } | null>(null);
-  const connRef = useRef<any | null>(null);
+  const connRef = useRef<DcvConnection | null>(null);
 
   const [connectionStats, setConnectionStats] = useState({
     latency: "0ms",
@@ -103,6 +108,19 @@ const PCViewerContent = () => {
   const authToken = launchVMResponse?.sessionToken;
   const url = launchVMResponse?.dnsName;
   const [isLoading, setIsLoading] = useState(false);
+
+  // Adjust resolution
+  const updateResolution = () => {
+    const container = document.getElementById("remote-desktop");
+    if (connRef.current && container) {
+      const width = container.clientWidth;
+      const height = window.innerHeight;
+      console.log("Updating resolution:", width, height);
+      connRef.current
+        .requestResolution(width, height)
+        .catch(e => console.warn("Failed to request resolution:", e));
+    }
+  };
 
   // Function to connect to DCV
   const connectToDcv = async () => {
@@ -121,11 +139,10 @@ const PCViewerContent = () => {
           divId: "remote-desktop",
           callbacks: {
             firstFrame: () => {
-              console.log("First frame received");
+              updateResolution();
+              setIsConnected(true);
               setConnectionState("CONNECTED");
-            },
-            displayLayoutCallback: (serverWidth, serverHeight, heads) => {
-              console.log("Layout:", serverWidth, serverHeight, heads);
+              console.log("checking Connection:", conn);
             },
           },
         });
@@ -133,34 +150,7 @@ const PCViewerContent = () => {
         // Save connection reference
         connRef.current = conn;
 
-        // Watch for disconnection
-        conn.onDisconnected = reason => {
-          console.log("Disconnected:", reason);
-          setConnectionState("DISCONNECTED");
-          setIsConnected(false);
-        };
-
-        // Adjust resolution
-        const updateResolution = () => {
-          const container = document.getElementById("remote-desktop");
-          if (container) {
-            const width = container.clientWidth;
-            const height = window.innerHeight;
-            console.log("Updating resolution:", width, height);
-            conn
-              .requestResolution(width, height)
-              .catch(e => console.warn("Failed to request resolution:", e));
-          }
-        };
-
-        requestAnimationFrame(() => {
-          updateResolution();
-        });
-
         window.addEventListener("resize", updateResolution);
-
-        console.log("Connection established:", conn);
-        setIsConnected(true);
       } catch (error) {
         console.error("Connection failed:", error);
         setDcvError(error as Error);
