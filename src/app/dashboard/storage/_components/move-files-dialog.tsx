@@ -42,7 +42,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
   setSelectedFolderId,
 }) => {
   const { toast } = useToast();
-
+  console.log({ files });
   const userId = useSelector((state: RootState) => state.auth.user?.id);
   const [moveFiles, { isLoading }] = useMoveFilesMutation();
 
@@ -53,32 +53,19 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
   });
 
   const handleMove = async () => {
-    if (!selectedFolderId || !userId) return;
-
-    const selectedFolders = files?.filter(
-      file => selectedFiles.includes(file.id) && file.fileType === "folder"
-    );
-
-    if (selectedFolders?.length) {
-      toast({
-        title: "Invalid Selection",
-        description: "Only files will be moved. Folders will be skipped.",
-        variant: "destructive",
-      });
-    }
+    if (!selectedFolderId || !userId || !files) return;
 
     try {
-      const sourceFileNames =
-        files &&
-        files
-          .filter(
-            file =>
-              selectedFiles.includes(file.id) && file.fileType !== "folder"
-          )
-          .map(file => file.fileName);
+      const sourceFileNames = files
+        .filter((file) => selectedFiles.includes(file.id))
+        .map((file) => {
+          // Construct relative path name to move (folder or file)
+          const pathParts = file.id.split("/");
+          return pathParts.slice(2).join("/"); // Removes userId/uploads/
+        });
 
-      const destinationFolder = files?.find(
-        file => file.id === selectedFolderId
+      const destinationFolder = files.find(
+        (file) => file.id === selectedFolderId
       )?.fileName;
 
       await moveFiles({
@@ -87,12 +74,11 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
         sourceFileNames,
         destinationFolder,
       }).unwrap();
-      if (sourceFileNames) {
-        toast({
-          title: "Files Moved",
-          description: `${sourceFileNames.length} file(s) moved to "${selectedFolderId}"`,
-        });
-      }
+
+      toast({
+        title: "Move Complete",
+        description: `${sourceFileNames.length} item(s) moved to "${destinationFolder}"`,
+      });
 
       setSelectedFiles([]);
       setSelectedFolderId(null);
@@ -100,7 +86,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
     } catch (err) {
       toast({
         title: "Move Failed",
-        description: "Could not move files. Please try again.",
+        description: "Could not move selected items. Please try again.",
         variant: "destructive",
       });
       console.error("Move error:", err);
