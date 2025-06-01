@@ -54,6 +54,7 @@ interface DcvConnection {
   disconnect: () => Promise<void>;
   getStats: () => Promise<{ latency: number; fps: number }>;
   sendKeyboardShortcut: (keys: KeyboardShortcutKey[]) => void;
+  setDisplayQuality: (min: number, max: number) => void;
 }
 
 // Create a separate client component that uses useSearchParams
@@ -109,6 +110,29 @@ const PCViewerContent = () => {
   const url = launchVMResponse?.dnsName;
   const [isLoading, setIsLoading] = useState(false);
 
+  // Function to handle quality change
+  const handleQualityChange = (value: string) => {
+    setQuality(value);
+
+    if (!connRef.current) return;
+
+    switch (value) {
+      case "low":
+        connRef.current.setDisplayQuality(10, 25);
+        break;
+      case "medium":
+        connRef.current.setDisplayQuality(40, 60);
+        break;
+      case "high":
+        connRef.current.setDisplayQuality(80, 100);
+        break;
+      case "auto":
+      default:
+        connRef.current.setDisplayQuality(0, 100);
+        break;
+    }
+  };
+
   // Adjust resolution
   const updateResolution = () => {
     const container = document.getElementById("remote-desktop");
@@ -140,8 +164,11 @@ const PCViewerContent = () => {
           callbacks: {
             firstFrame: () => {
               updateResolution();
+              setIsLoading(false);
               setIsConnected(true);
+              handleQualityChange("auto");
               setConnectionState("CONNECTED");
+              conn.enableDisplayQualityUpdates(true);
               console.log("checking Connection:", conn);
             },
           },
@@ -155,10 +182,9 @@ const PCViewerContent = () => {
         console.error("Connection failed:", error);
         setDcvError(error as Error);
         setTvEffect("off");
+        setIsLoading(false);
         setIsConnected(false);
         setConnectionState("DISCONNECTED");
-      } finally {
-        setIsLoading(false);
       }
     }
   };
@@ -532,7 +558,7 @@ const PCViewerContent = () => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>Quality Preset</Label>
-                  <Select value={quality} onValueChange={setQuality}>
+                  <Select value={quality} onValueChange={handleQualityChange}>
                     <SelectTrigger className="w-32">
                       <SelectValue placeholder="Select quality" />
                     </SelectTrigger>
@@ -627,20 +653,31 @@ const PCViewerContent = () => {
                 variant="destructive"
                 className="w-full"
                 onClick={handleDisconnect}
+                disabled={isLoading}
               >
-                <Power className="h-4 w-4 mr-2" />
-                Disconnect
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Power className="h-4 w-4 mr-2" />
+                )}
+                {isLoading ? "Disconnecting..." : "Disconnect"}
               </Button>
             ) : (
               <Button
                 variant="default"
                 className="w-full"
                 onClick={handleConnect}
+                disabled={isLoading}
               >
-                <Power className="h-4 w-4 mr-2" />
-                Connect
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Power className="h-4 w-4 mr-2" />
+                )}
+                {isLoading ? "Connecting..." : "Connect"}
               </Button>
             )}
+
             <Button
               variant="outline"
               className="w-full"
