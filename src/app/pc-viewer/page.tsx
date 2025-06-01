@@ -68,7 +68,6 @@ const PCViewerContent = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [usbEnabled, setUsbEnabled] = useState(true);
   const [vrEnabled, setVrEnabled] = useState(false);
-  const [showKeyboard, setShowKeyboard] = useState(false);
   // const { theme } = useTheme();
   // const poweringOn = false;
   // const poweringOff = false;
@@ -82,7 +81,9 @@ const PCViewerContent = () => {
     audio: true,
   };
 
-  console.log(dcvError);
+  if (dcvError) {
+    console.log(dcvError);
+  }
   const [dcvSession, setDcvSession] = useState<{
     sessionId: string;
     sessionToken: string;
@@ -380,10 +381,20 @@ const PCViewerContent = () => {
               variant="outline"
               size="icon"
               className="h-8 w-8 bg-white/80 dark:bg-gray-800/80 border-0 hover:bg-white/90 dark:hover:bg-gray-800/90 backdrop-blur-sm"
-              onClick={() => setShowKeyboard(!showKeyboard)}
+              onClick={() => {
+                if (connRef.current) {
+                  connRef.current.sendKeyboardShortcut([
+                    { key: "Control", location: 1 },
+                    { key: "Meta", location: 1 },
+                    { key: "o", location: 0 },
+                  ]);
+                  console.log("Sent Ctrl + Win + O to open OSK");
+                }
+              }}
             >
               <Keyboard className="h-4 w-4 text-gray-600 dark:text-gray-300" />
             </Button>
+
             <Button
               variant="outline"
               size="icon"
@@ -396,70 +407,6 @@ const PCViewerContent = () => {
                 <Maximize className="h-4 w-4 text-gray-600 dark:text-gray-300" />
               )}
             </Button>
-          </div>
-        )}
-
-        {/* On-screen Keyboard */}
-        {showKeyboard && !isFullscreen && (
-          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-[90%] max-w-5xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-lg shadow-lg p-4 z-30">
-            <div className="flex flex-col gap-1.5">
-              {/* Function Keys Row */}
-              <div className="flex gap-1">
-                {[
-                  "Esc",
-                  "F1",
-                  "F2",
-                  "F3",
-                  "F4",
-                  "F5",
-                  "F6",
-                  "F7",
-                  "F8",
-                  "F9",
-                  "F10",
-                  "F11",
-                  "F12",
-                ].map(key => (
-                  <Button
-                    key={key}
-                    variant="outline"
-                    className="h-8 flex-1 text-sm bg-white/80 dark:bg-gray-900/80 border-gray-200 dark:border-gray-700"
-                  >
-                    {key}
-                  </Button>
-                ))}
-              </div>
-              {/* Number Row */}
-              <div className="flex gap-1">
-                {[
-                  "`",
-                  "1",
-                  "2",
-                  "3",
-                  "4",
-                  "5",
-                  "6",
-                  "7",
-                  "8",
-                  "9",
-                  "0",
-                  "-",
-                  "=",
-                  "Backspace",
-                ].map(key => (
-                  <Button
-                    key={key}
-                    variant="outline"
-                    className={cn(
-                      "h-8 text-sm bg-white/80 dark:bg-gray-900/80 border-gray-200 dark:border-gray-700",
-                      key === "Backspace" ? "flex-[1.5]" : "flex-1"
-                    )}
-                  >
-                    {key}
-                  </Button>
-                ))}
-              </div>
-            </div>
           </div>
         )}
 
