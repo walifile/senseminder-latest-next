@@ -16,7 +16,7 @@ import { FileItem } from "../types";
 interface ConfirmDeleteDialogProps {
   open: boolean;
   onClose: () => void;
-  fileNames: string[];
+  file: FileItem | null; // ✅ single file or folder
   selectedFolder: FileItem | null;
   region?: string;
   onDeleteComplete?: () => void;
@@ -25,7 +25,7 @@ interface ConfirmDeleteDialogProps {
 const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
   open,
   onClose,
-  fileNames,
+  file,
   selectedFolder,
   region = "virginia",
   onDeleteComplete,
@@ -34,44 +34,43 @@ const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
   const [deleteFile] = useDeleteFileMutation();
   const [isLoading, setIsLoading] = useState(false);
 
-  const isMultiDelete = fileNames.length > 1;
+  console.log({ file });
 
   const handleFileDelete = async () => {
-    if (fileNames.length === 0 || !userId) return;
+    if (!file || !userId) return;
     setIsLoading(true);
     try {
-      for (const fileName of fileNames) {
-        await deleteFile({
-          fileName,
-          userId,
-          region,
-          folder: selectedFolder?.fileName || "",
-        }).unwrap();
-      }
+      await deleteFile({
+        fileName: file.fileName,
+        userId,
+        region,
+        folder: selectedFolder?.fileName || "",
+        key: file.id,
+      }).unwrap();
+
       if (onDeleteComplete) onDeleteComplete();
       onClose();
     } catch (err) {
-      console.error("Error deleting file(s):", err);
+      console.error("Error deleting file:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (fileNames.length === 0) return null;
+  if (!file) return null;
+
+  const isFolder = file.fileType === "folder";
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {isMultiDelete
-              ? `Delete ${fileNames.length} files?`
-              : "Delete file?"}
+            Delete {isFolder ? "folder" : "file"} "{file.fileName}"?
           </DialogTitle>
           <DialogDescription>
-            {isMultiDelete
-              ? "This will permanently delete all selected files. Are you sure?"
-              : `Are you sure you want to delete "${fileNames[0]}"? This action cannot be undone.`}
+            This will permanently delete the{" "}
+            {isFolder ? "folder and all its contents" : "file"}. Are you sure?
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

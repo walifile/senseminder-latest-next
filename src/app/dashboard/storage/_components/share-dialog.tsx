@@ -75,28 +75,33 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
   const handleShare = async () => {
     if (!file || !userId) return;
 
+    const isFolder = file.fileType === "folder";
+
     try {
       const result = await shareFile({
         region: "virginia",
         userId,
-        fileName: file?.fileName,
+        ...(file.id && { key: file.id }),
+        ...(file.fileName && !file.id && { fileName: file.fileName }),
+        ...(selectedFolder && { folder: selectedFolder.fileName }),
         permissions: sharePermissions,
         expiry: shareExpiry,
         ...(sharePasswordEnabled && { password: sharePassword }),
-        ...(selectedFolder && { folder: selectedFolder.fileName }),
       }).unwrap();
 
       setShareLink(result.shareLink);
 
       toast({
-        title: "Link Shared",
-        description: "Your file has been shared successfully",
+        title: `${isFolder ? "Folder" : "File"} Shared`,
+        description: `Your ${
+          isFolder ? "folder and its contents" : "file"
+        } have been shared successfully`,
       });
     } catch (error) {
       console.error("Share error:", error);
       toast({
         title: "Share Failed",
-        description: "Could not share the file. Please try again.",
+        description: "Could not share. Please try again.",
         variant: "destructive",
       });
     }
@@ -108,7 +113,9 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Share {file?.fileName}</DialogTitle>
           <DialogDescription>
-            Create a link to share this file with others
+            {file?.fileType === "folder"
+              ? "Create a link to share this folder and all its contents"
+              : "Create a link to share this file with others"}
           </DialogDescription>
         </DialogHeader>
 
@@ -120,35 +127,37 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                 <Copy className="h-4 w-4 mr-2" />
                 Copy
               </Button>
-              <Button
-                variant="outline"
-                onClick={async () => {
-                  try {
-                    const response = await fetch(shareLink);
-                    const blob = await response.blob();
-                    const blobUrl = window.URL.createObjectURL(blob);
+              {file?.fileType !== "folder" && (
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(shareLink);
+                      const blob = await response.blob();
+                      const blobUrl = window.URL.createObjectURL(blob);
 
-                    const link = document.createElement("a");
-                    link.href = blobUrl;
-                    link.download = file?.fileName || "download";
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    window.URL.revokeObjectURL(blobUrl);
-                  } catch (error) {
-                    console.error("Download failed:", error);
-                    toast({
-                      title: "Download Error",
-                      description:
-                        "Could not download the file. Try again later.",
-                      variant: "destructive",
-                    });
-                  }
-                }}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Download
-              </Button>
+                      const link = document.createElement("a");
+                      link.href = blobUrl;
+                      link.download = file?.fileName || "download";
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      window.URL.revokeObjectURL(blobUrl);
+                    } catch (error) {
+                      console.error("Download failed:", error);
+                      toast({
+                        title: "Download Error",
+                        description:
+                          "Could not download the file. Try again later.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download
+                </Button>
+              )}
             </div>
           )}
           {/* <div className="space-y-2">

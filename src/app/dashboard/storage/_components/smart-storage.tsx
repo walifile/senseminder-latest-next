@@ -162,7 +162,7 @@ const CloudStorage = () => {
 
   console.log(lastSynced);
 
-  const folderPath = path.map(f => f.fileName).join("/");
+  const folderPath = path.map((f) => f.fileName).join("/");
 
   console.log(path);
 
@@ -207,7 +207,7 @@ const CloudStorage = () => {
 
   const handleFolderSelection = (file: FileItem) => {
     if (file.fileType !== "folder") return;
-    setPath(prev => [...prev, file]);
+    setPath((prev) => [...prev, file]);
     setSelectedFolder(file);
     setSelectedFiles([]);
   };
@@ -230,16 +230,17 @@ const CloudStorage = () => {
     setMoveDialogOpen(true);
   };
 
-  const handleDownload = async (fileName: string) => {
+  const handleDownload = async (file: FileItem) => {
     if (!userId) return;
 
-    setDownloadingFile(fileName);
+    setDownloadingFile(file.fileName);
     try {
       const { data } = await triggerDownloadFile({
-        fileName,
+        fileName: file.fileName,
         userId,
         region: "virginia",
         folder: selectedFolder?.fileName || "",
+        key: file.id,
       });
 
       if (data?.downloadUrl) {
@@ -249,7 +250,7 @@ const CloudStorage = () => {
 
         const link = document.createElement("a");
         link.href = blobUrl;
-        link.download = fileName;
+        link.download = file.fileName;
         document.body.appendChild(link);
         link.click();
 
@@ -258,7 +259,7 @@ const CloudStorage = () => {
 
         toast({
           title: "Download Complete",
-          description: `${fileName} has been downloaded successfully.`,
+          description: `${file.fileName} has been downloaded successfully.`,
         });
       } else {
         toast({
@@ -304,12 +305,16 @@ const CloudStorage = () => {
 
       const { userId, region } = filesToDelete[0];
 
-      const fileNames = selectedFolder
-        ? filesToDelete.map((file: FileItem) => ({
-            folder: selectedFolder.fileName,
-            fileName: file.fileName,
-          }))
-        : filesToDelete.map((file: FileItem) => file.fileName);
+      const fileNames = filesToDelete.map((file: FileItem) => {
+        const isFolder = file.fileType === "folder";
+        return {
+          ...(file.id && { key: file.id }),
+          fileName: file.fileName,
+          ...(selectedFolder &&
+            !file.id && { folder: selectedFolder.fileName }),
+          ...(isFolder && !file.id && { folder: file.fileName }),
+        };
+      });
 
       await deleteFiles({
         region,
@@ -318,8 +323,10 @@ const CloudStorage = () => {
       }).unwrap();
 
       toast({
-        title: `${fileNames.length} Files Deleted`,
-        description: "The selected files have been moved to trash.",
+        title: `${fileNames.length} ${
+          fileNames.length === 1 ? "item" : "items"
+        } deleted`,
+        description: "The selected files and folders have been moved to trash.",
         variant: "destructive",
       });
 
@@ -328,7 +335,7 @@ const CloudStorage = () => {
       console.error("Error deleting files:", error);
       toast({
         title: "Error",
-        description: "Some files could not be deleted.",
+        description: "Some items could not be deleted.",
         variant: "destructive",
       });
     }
@@ -341,14 +348,13 @@ const CloudStorage = () => {
       const action = file.starred ? unstarFile : starFile;
 
       await action({
-        region: "virginia",
+        region: selectedRegion,
         userId,
-        fileName: file.fileName,
-        ...(selectedFolder && { folder: selectedFolder.fileName }),
+        key: file.id,
       }).unwrap();
 
       toast({
-        title: file.starred ? "File Unstarred" : "File Starred",
+        title: file.starred ? "Unstarred" : "Starred",
         description: `"${file.fileName}" was ${
           file.starred ? "removed from" : "added to"
         } your starred items`,
@@ -357,7 +363,7 @@ const CloudStorage = () => {
       console.error("Star/unstar error:", err);
       toast({
         title: "Error",
-        description: `Failed to ${file.starred ? "unstar" : "star"} the file.`,
+        description: `Failed to ${file.starred ? "unstar" : "star"} the item.`,
         variant: "destructive",
       });
     }
@@ -378,9 +384,9 @@ const CloudStorage = () => {
 
   // Handle file selection
   const handleFileSelect = (fileId: string) => {
-    setSelectedFiles(prev => {
+    setSelectedFiles((prev) => {
       if (prev.includes(fileId)) {
-        return prev.filter(id => id !== fileId);
+        return prev.filter((id) => id !== fileId);
       } else {
         return [...prev, fileId];
       }
@@ -405,7 +411,7 @@ const CloudStorage = () => {
   // };
   const handleSelectAllInPage = (checked: boolean) => {
     if (checked) {
-      const fileIds = visibleFiles.map(file => file.id);
+      const fileIds = visibleFiles.map((file) => file.id);
       setSelectedFiles(fileIds);
     } else {
       setSelectedFiles([]);
@@ -607,33 +613,29 @@ const CloudStorage = () => {
   const handleBulkDownload = async () => {
     if (!userId || selectedFiles.length === 0) return;
 
-    // setIsBulkDownloading(true);
+    setIsBulkDownloading(true);
 
-    const filteredFileIds = files
-      .filter(
-        (file: FileItem) =>
-          selectedFiles.includes(file.id) && file.fileType !== "folder"
-      )
-      .map((file: FileItem) => file.id);
+    // Only allow files (no folders)
+    const filesToDownload = files.filter(
+      (file: FileItem) =>
+        selectedFiles.includes(file.id) && file.fileType !== "folder"
+    );
 
-    if (selectedFiles.length !== filteredFileIds?.length) {
+    if (selectedFiles.length !== filesToDownload.length) {
       toast({
         title: "Invalid Selection",
-        description: "Only files will be downloaded. Folders will be skipped.",
+        description: "Only files will be downloaded. Folders were skipped.",
         variant: "destructive",
       });
     }
 
     try {
-      for (const fileId of filteredFileIds) {
-        const file = (data?.files as FileItem[]).find(f => f.id === fileId);
-        if (!file) continue;
-
+      for (const file of filesToDownload) {
         const { data: downloadData } = await triggerDownloadFile({
           fileName: file.fileName,
           userId,
           region: "virginia",
-          folder: selectedFolder?.fileName || "",
+          key: file.id,
         });
 
         if (downloadData?.downloadUrl) {
@@ -659,7 +661,7 @@ const CloudStorage = () => {
 
       toast({
         title: "Bulk Download Complete",
-        description: `${filteredFileIds.length} file(s) downloaded.`,
+        description: `${filesToDownload.length} file(s) downloaded.`,
       });
     } catch (error) {
       console.error("Bulk download error:", error);
@@ -794,7 +796,7 @@ const CloudStorage = () => {
                       <Input
                         placeholder="Search files..."
                         value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-8"
                       />
                     </div>
@@ -840,7 +842,7 @@ const CloudStorage = () => {
                       <DropdownMenuCheckboxItem
                         checked={filters.modified === "today"}
                         onCheckedChange={() =>
-                          setFilters(prev => ({
+                          setFilters((prev) => ({
                             ...prev,
                             modified: prev.modified === "today" ? "" : "today",
                           }))
@@ -852,7 +854,7 @@ const CloudStorage = () => {
                       <DropdownMenuCheckboxItem
                         checked={filters.modified === "week"}
                         onCheckedChange={() =>
-                          setFilters(prev => ({
+                          setFilters((prev) => ({
                             ...prev,
                             modified: prev.modified === "week" ? "" : "week",
                           }))
@@ -1029,11 +1031,11 @@ const CloudStorage = () => {
                                       <Checkbox
                                         checked={
                                           visibleFiles.length > 0 &&
-                                          visibleFiles.every(file =>
+                                          visibleFiles.every((file) =>
                                             selectedFiles.includes(file.id)
                                           )
                                         }
-                                        onCheckedChange={checked =>
+                                        onCheckedChange={(checked) =>
                                           handleSelectAllInPage(!!checked)
                                         }
                                       />
@@ -1056,20 +1058,20 @@ const CloudStorage = () => {
                                             : ""
                                         }`}
                                         draggable={true}
-                                        onDragStart={e =>
+                                        onDragStart={(e) =>
                                           handleItemDragStart(e, file.id)
                                         }
-                                        onDragOver={e =>
+                                        onDragOver={(e) =>
                                           file.fileType === "folder"
                                             ? handleFolderDragOver(e, file.id)
                                             : undefined
                                         }
-                                        onDragLeave={e =>
+                                        onDragLeave={(e) =>
                                           file.fileType === "folder"
                                             ? handleFolderDragLeave(e)
                                             : undefined
                                         }
-                                        onDrop={e =>
+                                        onDrop={(e) =>
                                           file.fileType === "folder"
                                             ? handleFolderDrop(e, file.id)
                                             : undefined
@@ -1181,9 +1183,7 @@ const CloudStorage = () => {
                                                       file.fileName
                                                     }
                                                     onClick={() =>
-                                                      handleDownload(
-                                                        file.fileName
-                                                      )
+                                                      handleDownload(file)
                                                     }
                                                   >
                                                     {downloadingFile ===
@@ -1268,20 +1268,20 @@ const CloudStorage = () => {
                                           : ""
                                       }`}
                                       draggable
-                                      onDragStart={e =>
+                                      onDragStart={(e) =>
                                         handleItemDragStart(e, file.id)
                                       }
-                                      onDragOver={e =>
+                                      onDragOver={(e) =>
                                         file.fileType === "folder"
                                           ? handleFolderDragOver(e, file.id)
                                           : undefined
                                       }
-                                      onDragLeave={e =>
+                                      onDragLeave={(e) =>
                                         file.fileType === "folder"
                                           ? handleFolderDragLeave(e)
                                           : undefined
                                       }
-                                      onDrop={e =>
+                                      onDrop={(e) =>
                                         file.fileType === "folder"
                                           ? handleFolderDrop(e, file.id)
                                           : undefined
@@ -1370,9 +1370,7 @@ const CloudStorage = () => {
 
                                                 <DropdownMenuItem
                                                   onClick={() =>
-                                                    handleDownload(
-                                                      file.fileName
-                                                    )
+                                                    handleDownload(file)
                                                   }
                                                 >
                                                   <Download className="h-4 w-4 mr-2" />
@@ -1453,12 +1451,12 @@ const CloudStorage = () => {
                                     </DropdownMenuLabel>
                                     <DropdownMenuRadioGroup
                                       value={String(itemsPerPage)}
-                                      onValueChange={value => {
+                                      onValueChange={(value) => {
                                         setItemsPerPage(Number(value));
                                         handlePageChange(1);
                                       }}
                                     >
-                                      {[5, 10, 25].map(value => (
+                                      {[5, 10, 25].map((value) => (
                                         <DropdownMenuRadioItem
                                           key={value}
                                           value={String(value)}
@@ -1486,7 +1484,7 @@ const CloudStorage = () => {
                                     {Array.from(
                                       { length: totalPages },
                                       (_, i) => i + 1
-                                    ).map(page => (
+                                    ).map((page) => (
                                       <Button
                                         key={page}
                                         variant={
@@ -1528,7 +1526,7 @@ const CloudStorage = () => {
                   >
                     <ScrollArea className="flex-1">
                       <div className="p-4 space-y-4">
-                        {recentActivity.map(activity => (
+                        {recentActivity.map((activity) => (
                           <div
                             key={activity.id}
                             className="flex items-start gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
@@ -1592,7 +1590,7 @@ const CloudStorage = () => {
         handleDownload={handleDownload}
       />
 
-      <ConfirmDeleteDialog
+      {/* <ConfirmDeleteDialog
         open={deleteDialogOpen}
         onClose={() => {
           setDeleteDialogOpen(false);
@@ -1600,6 +1598,26 @@ const CloudStorage = () => {
         }}
         fileNames={selectedFilesToDelete}
         selectedFolder={selectedFolder}
+      /> */}
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setSelectedFilesToDelete([]);
+        }}
+        file={
+          files.find(
+            (f: FileItem) => f.fileName === selectedFilesToDelete[0]
+          ) || null
+        }
+        selectedFolder={selectedFolder}
+        onDeleteComplete={() => {
+          setSelectedFiles((prev) =>
+            prev.filter((id) => id !== selectedFilesToDelete[0])
+          );
+          setSelectedFilesToDelete([]);
+        }}
       />
 
       {/* Storage Plans Dialog */}

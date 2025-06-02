@@ -11,7 +11,7 @@ import { FileItem } from "../types";
 interface FilePreviewProps {
   file: FileItem | null;
   onClose: () => void;
-  handleDownload: (fileName: string) => void;
+  handleDownload: (file: FileItem) => void;
 }
 
 const FilePreviewDialog: React.FC<FilePreviewProps> = ({
@@ -86,9 +86,7 @@ const FilePreviewDialog: React.FC<FilePreviewProps> = ({
           <Button variant="outline" onClick={onClose}>
             Close
           </Button>
-          <Button onClick={() => handleDownload(file.fileName)}>
-            Download
-          </Button>
+          <Button onClick={() => handleDownload(file)}>Download</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
