@@ -11,6 +11,7 @@ export const routes = {
   smartStorage: "/smart-storage",
   buildPc: "/build-smartpc",
   pcViewer: "/pc-viewer",
+  changePassword: "/auth/change-password",
 };
 
 export const publicRoutes: string[] = [
@@ -23,6 +24,7 @@ export const publicRoutes: string[] = [
   routes.callback,
   routes.smartStorage,
   routes.buildPc,
+  routes.changePassword,
   "/login",
   "/index",
 ];

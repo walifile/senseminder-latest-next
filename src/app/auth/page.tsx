@@ -23,9 +23,11 @@ export default function SignIn() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
       setIsLoading(true);
       const response = await handleSignIn(email, password);
+      console.log("Login Response:", response);
 
       if (response.success) {
         toast({
@@ -36,14 +38,19 @@ export default function SignIn() {
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         const from = searchParams.get("from");
-        const decodedFrom = from
-          ? decodeURIComponent(from).replace(/^\//, "")
-          : "";
+        const decodedFrom = from ? decodeURIComponent(from).replace(/^\//, "") : "";
+        const redirectTo = decodedFrom ? `/${decodedFrom}` : routes.dashboard;
 
-        const redirectTo = decodedFrom ? `/${decodedFrom}` : routes?.dashboard;
-
-        // Use full page reload or router.push based on your app flow
         window.location.href = redirectTo;
+
+      } else if ("requiresNewPassword" in response && response.requiresNewPassword) {
+        toast({
+          title: "Temporary Password Detected",
+          description: "Please set a new password to continue.",
+        });
+
+        router.push(routes.changePassword);
+
       } else if ("requiresOTP" in response && response.requiresOTP) {
         toast({
           title: "Verification Required",
@@ -51,13 +58,13 @@ export default function SignIn() {
         });
 
         setTimeout(() => {
-          router.push(routes?.verifyOTP);
+          router.push(routes.verifyOTP);
         }, 1500);
+
       } else {
         toast({
           title: "Login Failed",
-          description:
-            response.error || "Invalid credentials. Please try again.",
+          description: response.error || "Invalid credentials. Please try again.",
         });
       }
     } catch (err) {
@@ -86,10 +93,7 @@ export default function SignIn() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <label
-            className="text-sm font-medium text-gray-700 dark:text-gray-200"
-            htmlFor="email"
-          >
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-200" htmlFor="email">
             Email
           </label>
           <Input
@@ -104,10 +108,7 @@ export default function SignIn() {
         </div>
 
         <div className="space-y-2">
-          <label
-            className="text-sm font-medium text-gray-700 dark:text-gray-200"
-            htmlFor="password"
-          >
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-200" htmlFor="password">
             Password
           </label>
           <Input
@@ -129,15 +130,12 @@ export default function SignIn() {
               onCheckedChange={(checked) => setRememberMe(checked as boolean)}
               className="border-gray-200 data-[state=checked]:bg-blue-500 dark:border-[#ffffff1a]"
             />
-            <label
-              htmlFor="remember"
-              className="text-sm font-medium text-gray-700 dark:text-gray-200"
-            >
+            <label htmlFor="remember" className="text-sm font-medium text-gray-700 dark:text-gray-200">
               Remember me
             </label>
           </div>
           <Link
-            href={routes?.forgotPassword}
+            href={routes.forgotPassword}
             className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
           >
             Forgot password?
@@ -169,7 +167,7 @@ export default function SignIn() {
       <p className="text-center text-sm text-gray-500 dark:text-gray-400">
         Don't have an account?{" "}
         <Link
-          href={routes?.signUp}
+          href={routes.signUp}
           className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
         >
           Sign up

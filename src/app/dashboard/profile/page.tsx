@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -21,6 +21,7 @@ import {
   AlertTriangle,
   Smartphone,
   QrCode,
+  Edit2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -32,8 +33,33 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
+import { getUserProfile, updateUserProfile } from "@/api/profileManagement"; // adjust path as needed
+
 const ProfilePage = () => {
   const { toast } = useToast();
+
+  // ===== API-driven Profile State =====
+  const [profile, setProfile] = useState<{
+    email: string;
+    firstName: string;
+    lastName: string;
+    country: string;
+    organization: string;
+    role: string;
+  } | null>(null);
+
+  // ===== Form States =====
+  const [orgEditing, setOrgEditing] = useState(false);
+  const [orgInput, setOrgInput] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [country, setCountry] = useState("");
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const orgInputRef = useRef<HTMLInputElement>(null);
+
+  // Security & 2FA/session states
   const [show2FADialog, setShow2FADialog] = useState(false);
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
   const [sessions] = useState([
@@ -65,10 +91,152 @@ const ProfilePage = () => {
   const [preferredEmail, setPreferredEmail] = useState("");
   const [isEmailValid, setIsEmailValid] = useState(false);
 
+  // ===== Profile & Org Data Fetch/Sync =====
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setLoading(true);
+      try {
+        const data = await getUserProfile();
+        setProfile(data);
+
+        const first = (data.firstName || "").trim();
+        const last = (data.lastName || "").trim();
+        const name = [first, last].filter(Boolean).join(" ");
+        setFullName(name);
+        setCountry(data.country || "");
+        setOrgInput(data.organization || "");
+      } catch (error: any) {
+        toast({
+          title: "Error loading profile",
+          description: error.message || "Could not fetch profile.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+    // eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+    if (orgEditing && orgInputRef.current) {
+      orgInputRef.current.focus();
+      orgInputRef.current.select();
+    }
+  }, [orgEditing]);
+
+  // ===== Permission Computed Value =====
+  const canEditOrg = profile?.role === "owner";
+
+  // ===== Avatar Initials =====
+  const fallbackInitials = (() => {
+    if (!profile) return "JD";
+    const parts = [profile.firstName, profile.lastName].filter(Boolean);
+    return parts
+      .map((s) => s.trim().charAt(0).toUpperCase())
+      .join("")
+      .slice(0, 2) || "JD";
+  })();
+
+  // ===== Full Name (for API) Processing =====
+  function parseNameForApi(raw: string): { firstName: string; lastName: string } {
+    const trimmed = raw.trim().replace(/\s+/, " ");
+    if (!trimmed) return { firstName: "", lastName: "" };
+    const [first, ...rest] = trimmed.split(/\s+/);
+    return {
+      firstName: first || "",
+      lastName: rest.join(" ") || "",
+    };
+  }
+
+  // ===== Profile Save =====
+  const handleSave = async () => {
+    setSaving(true);
+    const { firstName, lastName } = parseNameForApi(fullName);
+
+    const payload: any = {
+      firstName,
+      lastName,
+      country: country ?? "",
+    };
+    if (canEditOrg) {
+      payload.organization = orgInput ?? "";
+    }
+
+    Object.keys(payload).forEach(
+      (k) => payload[k] === "" && delete payload[k]
+    );
+
+    if (Object.keys(payload).length === 0) {
+      setSaving(false);
+      return toast({
+        title: "Nothing to update!",
+        description: "No new values to update.",
+        variant: "destructive",
+      });
+    }
+
+    try {
+      await updateUserProfile(payload);
+      toast({
+        title: "Profile Updated",
+        description: `Your profile changes have been saved.`,
+      });
+      const data = await getUserProfile();
+      setProfile(data);
+      const first = (data.firstName || "").trim();
+      const last = (data.lastName || "").trim();
+      setFullName([first, last].filter(Boolean).join(" "));
+      setCountry(data.country || "");
+      setOrgInput(data.organization || "");
+      setOrgEditing(false);
+    } catch (error: any) {
+      toast({
+        title: "Error updating profile",
+        description: error.message || "Failed to save changes.",
+      });
+    }
+    setSaving(false);
+  };
+
+  // ===== Org Inline Save =====
+  const handleOrgSave = async () => {
+    if (!canEditOrg) return;
+    setSaving(true);
+    try {
+      await updateUserProfile({ organization: orgInput });
+      const data = await getUserProfile();
+      setProfile(data);
+      setOrgInput(data.organization || "");
+      setOrgEditing(false);
+      toast({
+        title: "Organization Updated",
+        description: "Organization name updated successfully.",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Error updating organization",
+        description: err.message || "Could not update organization.",
+      });
+    }
+    setSaving(false);
+  };
+
+  // ===== Org Inline Cancel =====
+  const handleOrgCancel = () => {
+    setOrgEditing(false);
+    setOrgInput(profile?.organization || "");
+  };
+
+  // ===== Prevent Default Submit =====
+  function prevent(e: any) {
+    e.preventDefault();
+  }
+
+  // ===== Security/2FA Logic (Unchanged) =====
   useEffect(() => {
     let mounted = true;
     let timer: NodeJS.Timeout;
-
     if (cooldown > 0) {
       timer = setInterval(() => {
         if (mounted) {
@@ -82,7 +250,6 @@ const ProfilePage = () => {
         }
       }, 1000);
     }
-
     return () => {
       mounted = false;
       if (timer) clearInterval(timer);
@@ -90,7 +257,6 @@ const ProfilePage = () => {
   }, [cooldown]);
 
   const validatePhoneNumber = (phone: string) => {
-    // Basic phone validation - can be made more robust
     const phoneRegex = /^\+?[1-9]\d{1,14}$/;
     return phoneRegex.test(phone.replace(/[\s()-]/g, ""));
   };
@@ -114,41 +280,23 @@ const ProfilePage = () => {
 
   const sendVerificationCode = async () => {
     try {
-      // Prevent multiple sends
       if (cooldown > 0) return;
-
       setIsCodeSent(false);
-      // In a real app, this would make an API call to send the code
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulated API call
-
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       setIsCodeSent(true);
-      setCooldown(60); // Start 60-second cooldown
-      setVerificationCode(""); // Reset verification code
+      setCooldown(60);
+      setVerificationCode("");
     } catch (error) {
       console.error("Failed to send verification code:", error);
-      // Handle error appropriately
     }
   };
 
   const handleRevokeSession = (sessionId: number) => {
-    console.log(sessionId);
     toast({
       title: "Session Revoked",
       description: "The selected session has been terminated.",
     });
   };
-
-  // const handle2FASetup = () => {
-  //   if (!is2FAEnabled) {
-  //     setShow2FADialog(true);
-  //   } else {
-  //     setIs2FAEnabled(false);
-  //     toast({
-  //       title: "2FA Disabled",
-  //       description: "Two-factor authentication has been disabled.",
-  //     });
-  //   }
-  // };
 
   const complete2FASetup = () => {
     setIs2FAEnabled(true);
@@ -164,16 +312,77 @@ const ProfilePage = () => {
     setShow2FADialog(true);
   };
 
+  // ===== Main Render =====
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Profile</h1>
+      {/* --- Organization Name Banner --- */}
+      <div className="w-full flex items-center justify-between mb-4">
+        <div className="flex-1 flex items-center">
+          {orgEditing ? (
+            <form onSubmit={prevent} className="flex items-center gap-2 w-full">
+              <Input
+                ref={orgInputRef}
+                value={orgInput}
+                onChange={(e) => setOrgInput(e.target.value)}
+                disabled={saving}
+                className="text-2xl font-bold max-w-xs"
+                style={{ fontSize: "2rem" }}
+                data-testid="org-input"
+              />
+              <Button
+                size="sm"
+                onClick={handleOrgSave}
+                disabled={saving || !orgInput.trim()}
+                data-testid="org-save"
+              >
+                Save
+              </Button>
+              <Button
+                size="sm"
+                type="button"
+                variant="secondary"
+                onClick={handleOrgCancel}
+                disabled={saving}
+                data-testid="org-cancel"
+              >
+                Cancel
+              </Button>
+            </form>
+          ) : (
+            <span
+              className="text-3xl font-bold tracking-tight"
+              style={{ lineHeight: "1.2" }}
+              data-testid="org-label"
+            >
+              {profile?.organization || (
+                <span className="text-muted">Organization</span>
+              )}
+            </span>
+          )}
 
+          {canEditOrg && !orgEditing && (
+            <Button
+              size="icon"
+              variant="ghost"
+              className="ml-2"
+              aria-label="Edit Organization"
+              onClick={() => setOrgEditing(true)}
+              data-testid="org-edit"
+            >
+              <Edit2 className="w-5 h-5" />
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* --- Tabs Content: Account/Security --- */}
       <Tabs defaultValue="account" className="w-full">
         <TabsList className="grid w-full md:w-auto grid-cols-2">
           <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
         </TabsList>
 
+        {/* -------- ACCOUNT TAB -------- */}
         <TabsContent value="account" className="space-y-6">
           <Card>
             <CardHeader>
@@ -185,7 +394,9 @@ const ProfilePage = () => {
                 <div className="relative">
                   <Avatar className="h-24 w-24">
                     <AvatarImage src="/avatar-placeholder.jpg" alt="User" />
-                    <AvatarFallback className="text-xl">JD</AvatarFallback>
+                    <AvatarFallback className="text-xl">
+                      {fallbackInitials}
+                    </AvatarFallback>
                   </Avatar>
                   <Button
                     size="icon"
@@ -211,18 +422,39 @@ const ProfilePage = () => {
                 </div>
               </div>
 
-              <div className="grid gap-4">
+              <form onSubmit={prevent} className="grid gap-4">
+                {/* Full name */}
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" placeholder="John Doe" />
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input
+                    id="fullName"
+                    name="fullName"
+                    value={fullName}
+                    placeholder="Full Name"
+                    onChange={(e) => setFullName(e.target.value)}
+                    disabled={loading}
+                    autoComplete="name"
+                  />
                 </div>
-
+                {/* Country */}
+                <div className="grid gap-2">
+                  <Label htmlFor="country">Country</Label>
+                  <Input
+                    id="country"
+                    name="country"
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    placeholder="Your Country"
+                    disabled={loading}
+                  />
+                </div>
+                {/* Email */}
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     type="email"
-                    value="john@example.com"
+                    value={profile?.email || ""}
                     disabled
                   />
                   <p className="text-sm text-muted-foreground">
@@ -230,14 +462,21 @@ const ProfilePage = () => {
                     to update your email address.
                   </p>
                 </div>
-              </div>
-
-              <Button>Save Changes</Button>
+                <Button
+                  onClick={handleSave}
+                  disabled={loading || saving}
+                  type="button"
+                >
+                  {saving ? "Saving..." : "Save Changes"}
+                </Button>
+              </form>
             </CardContent>
           </Card>
         </TabsContent>
 
+        {/* -------- SECURITY TAB -------- */}
         <TabsContent value="security" className="space-y-6">
+          {/* ----- Change Password Card ----- */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -277,6 +516,7 @@ const ProfilePage = () => {
             </CardContent>
           </Card>
 
+          {/* ----- Multi-Factor Auth Card ----- */}
           <Card>
             <CardHeader>
               <CardTitle>Multi-Factor Authentication</CardTitle>
@@ -302,7 +542,6 @@ const ProfilePage = () => {
                   {is2FAEnabled ? "Disable" : "Setup"}
                 </Button>
               </div>
-
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="font-medium">SMS Authentication</p>
@@ -318,7 +557,6 @@ const ProfilePage = () => {
                   Setup
                 </Button>
               </div>
-
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="font-medium">Email Authentication</p>
@@ -337,6 +575,7 @@ const ProfilePage = () => {
             </CardContent>
           </Card>
 
+          {/* ----- Active Sessions Card ----- */}
           <Card>
             <CardHeader>
               <CardTitle>Active Sessions</CardTitle>
@@ -381,6 +620,7 @@ const ProfilePage = () => {
         </TabsContent>
       </Tabs>
 
+      {/* 2FA Dialog */}
       <Dialog open={show2FADialog} onOpenChange={setShow2FADialog}>
         <DialogContent>
           <DialogHeader>
@@ -413,7 +653,6 @@ const ProfilePage = () => {
                 </p>
               </>
             )}
-
             {mfaMethod === "sms" && (
               <div className="space-y-4 w-full">
                 <div className="space-y-2">
@@ -465,7 +704,6 @@ const ProfilePage = () => {
                 )}
               </div>
             )}
-
             {mfaMethod === "email" && (
               <div className="space-y-4 w-full">
                 <div className="space-y-2">
@@ -477,9 +715,7 @@ const ProfilePage = () => {
                       value={preferredEmail}
                       onChange={handleEmailChange}
                       className={
-                        !isEmailValid && preferredEmail
-                          ? "border-destructive"
-                          : ""
+                        !isEmailValid && preferredEmail ? "border-destructive" : ""
                       }
                     />
                     <Button

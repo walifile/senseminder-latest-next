@@ -13,7 +13,7 @@ import {
   getCurrentUser,
 } from "aws-amplify/auth";
 import { store } from "@/redux/store";
-import { setUser, clearAuth, setLoading } from "@/redux/slices/auth-slice";
+import { setUser, clearAuth, setLoading,setTempUser } from "@/redux/slices/auth-slice";
 import { deleteCookie } from "cookies-next";
 
 interface SignUpFormData {
@@ -156,6 +156,19 @@ export const handleSignIn = async (email: string, password: string) => {
         requiresOTP: true,
       };
     }
+    // ADD THIS:
+    // if (signInResponse.nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED") {
+    //   // Save the user for later password completion
+    //   store.dispatch(setTempUser(signInResponse));
+    //   store.dispatch(setLoading(false));
+    //   return { success: false, requiresNewPassword: true };
+    // }
+    if (signInResponse.nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED") {
+    store.dispatch(setTempUser(signInResponse)); // save temporary user to Redux
+    store.dispatch(setLoading(false));
+    return { success: false, requiresNewPassword: true };
+  }
+
 
     return await handlePostAuthentication();
   } catch (error: any) {

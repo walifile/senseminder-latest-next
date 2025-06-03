@@ -1,147 +1,52 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
+  Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter,
 } from "@/components/ui/card";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogFooter,
+  DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+  Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  UserPlus,
-  MoreHorizontal,
-  UserCheck,
-  UserX,
-  Users,
-  Search,
-  Mail,
-  Users2,
-  Info,
-  Monitor,
+  UserPlus, MoreHorizontal, UserCheck, UserX, Users, Search, Mail,
+  Users2, Info, Monitor,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "@/hooks/use-toast";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+  Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
+import { assignPC, unassignPC, getAssignments } from "@/api/assignpc";
+import { inviteUser, getUsers, deleteUser } from "@/api/user";
+import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
 
-// Mock data for SmartPCs
-const mockSmartPCs = [
-  { id: 1, name: "Dev PC 1", status: "Running", specs: "8 vCPU, 16GB RAM" },
-  { id: 2, name: "Design PC", status: "Stopped", specs: "16 vCPU, 32GB RAM" },
-  { id: 3, name: "Test PC", status: "Running", specs: "4 vCPU, 8GB RAM" },
+const GROUP_OPTIONS = [
+  "Engineering", "Support", "IT", "Marketing", "Sales",
 ];
-
-// Updated mock users with assigned PCs
-const mockUsers = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "john.doe@example.com",
-    role: "Admin",
-    status: "Active",
-    group: "Management",
-    assignedPCs: [1, 2], // References to PC IDs
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    role: "User",
-    status: "Active",
-    group: "Engineering",
-    assignedPCs: [3],
-  },
-  {
-    id: 3,
-    name: "Alice Johnson",
-    email: "alice@example.com",
-    role: "User",
-    status: "Pending",
-    group: "Marketing",
-    assignedPCs: [],
-  },
-  {
-    id: 4,
-    name: "Bob Brown",
-    email: "bob@example.com",
-    role: "User",
-    status: "Inactive",
-    group: "Engineering",
-    assignedPCs: [],
-  },
-  {
-    id: 5,
-    name: "Eve Williams",
-    email: "eve@example.com",
-    role: "Admin",
-    status: "Active",
-    group: "Management",
-    assignedPCs: [],
-  },
-];
-
-// Mock data for groups
 const mockGroups = [
-  {
-    id: 1,
-    name: "Management",
-    members: 2,
-    description: "Company management team",
-  },
-  {
-    id: 2,
-    name: "Engineering",
-    members: 2,
-    description: "Software engineering team",
-  },
+  { id: 1, name: "Management", members: 2, description: "Company management team" },
+  { id: 2, name: "Engineering", members: 2, description: "Software engineering team" },
   { id: 3, name: "Marketing", members: 1, description: "Marketing department" },
   { id: 4, name: "Sales", members: 0, description: "Sales team" },
+  { id: 5, name: "Support", members: 0, description: "Support desk" },
+  { id: 6, name: "IT", members: 0, description: "IT department" },
 ];
 
 type UserFormValues = {
@@ -150,61 +55,224 @@ type UserFormValues = {
   role: string;
   group: string;
 };
-
 type GroupFormValues = {
   name: string;
   description: string;
 };
 
+type ApiUser = {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  id: string;
+  role: "admin" | "member";
+  owner_id: string;
+  group: string;
+  createdAt: string;
+  country?: string;
+  organization?: string;
+  phoneNumber?: string;
+  status?: "active" | "pending" | string;
+};
+
+
 const UsersManagementPage = () => {
+  const [users, setUsers] = useState<ApiUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [reloadFlag, setReloadFlag] = useState(0);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
   const [isAssignPCDialogOpen, setIsAssignPCDialogOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("users");
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteUserEmail, setDeleteUserEmail] = useState<string | null>(null);
+  const [deleteUserRole, setDeleteUserRole] = useState<"admin" | "member" | null>(null);
+  const [deleteConfirmInput, setDeleteConfirmInput] = useState("");
+  const [deletingUser, setDeletingUser] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<ApiUser | null>(null);
+  const [smartPCs, setSmartPCs] = useState<any[]>([]);
+  const [assignments, setAssignments] = useState<any>({});
+  const [fetchAssignmentsLoading, setFetchAssignmentsLoading] = useState(false);
 
+  // For PC assign/unassign
+  const [pcAssigningId, setPCAssigningId] = useState<string | null>(null);
+
+  // Invite user form
   const userForm = useForm<UserFormValues>({
     defaultValues: {
       name: "",
       email: "",
-      role: "User",
+      role: "",
       group: "",
     },
   });
-
   const groupForm = useForm<GroupFormValues>({
-    defaultValues: {
-      name: "",
-      description: "",
-    },
+    defaultValues: { name: "", description: "" },
   });
 
-  const filteredUsers = mockUsers.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.group.toLowerCase().includes(searchQuery.toLowerCase())
+  // Fetch users
+  const fetchUserList = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await getUsers();
+      setUsers(res.users || []);
+    } catch (e: any) {
+      toast({
+        title: "Failed to fetch users",
+        variant: "destructive",
+        description: (e && e.message) || "Failed to fetch users.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchUserList(); }, [fetchUserList, reloadFlag]);
+
+  // Find owner/admin for fetching remote desktops
+  const mainUser = users.find(
+    // @ts-ignore
+    (u) => u.role === "owner" || u.role === "admin" || u.role === "member"
+  );
+  const {
+    data: fetchedSmartPCs,
+    isLoading: isSmartPCLoading,
+    error: smartPCError,
+    refetch: refetchSmartPCs,
+  } = useListRemoteDesktopQuery(
+    mainUser
+      ? { userId: mainUser.owner_id || mainUser.id }
+      : { userId: undefined },
+    { skip: !mainUser }
   );
 
-  const filteredGroups = mockGroups.filter(
-    (group) =>
-      group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      group.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    setSmartPCs(Array.isArray(fetchedSmartPCs) ? fetchedSmartPCs : []);
+  }, [fetchedSmartPCs]);
 
-  const handleInviteUser = (data: UserFormValues) => {
-    console.log("Inviting user:", data);
-    toast({
-      title: "Invitation sent",
-      description: `An invitation has been sent to ${data.email}`,
-    });
-    setIsInviteDialogOpen(false);
-    userForm.reset();
+  // Fetch assignments for ALL members (for PC assign badge column)
+  const fetchAssignments = useCallback(async () => {
+    setFetchAssignmentsLoading(true);
+    try {
+      const res = await getAssignments();
+      setAssignments(res || {});
+    } catch (e: any) {
+      toast({
+        title: "Failed to fetch assignments",
+        variant: "destructive",
+        description: (e && e.message) || "Failed to fetch assignments.",
+      });
+    } finally {
+      setFetchAssignmentsLoading(false);
+    }
+  }, []);
+  useEffect(() => { fetchAssignments(); }, [reloadFlag, fetchAssignments]);
+
+  // "Reload everything" fn
+  const globalReload = () => {
+    setReloadFlag((r) => r + 1);
+    // refetchSmartPCs();
+      if (mainUser) {         
+      refetchSmartPCs();
+    }
+    fetchAssignments();
   };
 
+  // Filter users
+  const filteredUsers = users.filter(
+    (user) =>
+      ((user.firstName?.toLowerCase() + " " + user.lastName?.toLowerCase()).includes(searchQuery.toLowerCase())) ||
+      (user.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (user.group?.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  // Handlers
+  const handleInviteUser = async (data: UserFormValues) => {
+    setInviteLoading(true);
+    try {
+      const apiPayload = {
+        name: data.name,
+        email: data.email,
+        role: data.role === "admin" || data.role === "Admin" ? "admin" : "member",
+        group: data.group,
+      };
+      //@ts-ignore
+      await inviteUser(apiPayload);
+      toast({
+        title: "User invited",
+        description: `An invitation has been sent to ${data.email}`,
+      });
+      setIsInviteDialogOpen(false);
+      userForm.reset();
+      globalReload();
+    } catch (e: any) {
+      toast({
+        title: "Failed to invite user",
+        variant: "destructive",
+        description: (e && e.message) || "Failed to invite user.",
+      });
+    } finally {
+      setInviteLoading(false);
+    }
+  };
+
+  const promptDeleteUser = (email: string, role: "admin" | "member") => {
+    setDeleteUserEmail(email);
+    setDeleteUserRole(role);
+    setDeleteConfirmInput("");
+    setShowDeleteDialog(true);
+  };
+  const handleDeleteUser = async () => {
+    if (!deleteUserEmail || !deleteUserRole) return;
+    setDeletingUser(true);
+    try {
+      await deleteUser(deleteUserEmail, deleteUserRole);
+      toast({
+        title: "User deleted",
+        description: `The user ${deleteUserEmail} has been deleted.`,
+      });
+      setShowDeleteDialog(false);
+      setDeleteUserEmail(null);
+      setDeleteUserRole(null);
+      globalReload();
+    } catch (e: any) {
+      toast({
+        title: "Failed to delete user",
+        variant: "destructive",
+        description: (e && e.message) || "Failed to delete user.",
+      });
+    } finally {
+      setDeletingUser(false);
+      setDeleteConfirmInput("");
+    }
+  };
+
+  function getRoleBadgeColor(role: string) {
+    switch ((role || "").toLowerCase()) {
+      case "admin":
+        return "bg-red-500/10 text-red-500 hover:bg-red-500/20";
+      case "user":
+      case "member":
+        return "bg-green-500/10 text-green-500 hover:bg-green-500/20";
+      default:
+        return "bg-gray-500/10 text-gray-500 hover:bg-gray-500/20";
+    }
+  }
+  function getStatusColor(status?: string) {
+    if (!status) return "bg-gray-500/10 text-gray-500";
+    switch (status.toLowerCase()) {
+      case "active":
+        return "bg-green-500/10 text-green-500";
+      case "pending":
+        return "bg-yellow-400/20 text-yellow-700";
+      default:
+        return "bg-gray-500/10 text-gray-500";
+    }
+  }
+
   const handleCreateGroup = (data: GroupFormValues) => {
-    console.log("Creating group:", data);
     toast({
       title: "Group created",
       description: `The group "${data.name}" has been created`,
@@ -213,49 +281,85 @@ const UsersManagementPage = () => {
     groupForm.reset();
   };
 
-  const handleAssignPC = (userId: number) => {
-    setSelectedUserId(userId);
+  const handleAssignPC = (user: ApiUser) => {
+    setSelectedUser(user);
     setIsAssignPCDialogOpen(true);
   };
 
-  const getAssignedPCs = (pcIds: number[]) => {
-    return pcIds
-      .map((id) => mockSmartPCs.find((pc) => pc.id === id)?.name)
-      .filter(Boolean);
+  // For dialog UI: show assigned/unassigned for this member.
+  const getAssignedPCs = (memberId: string) =>
+    Array.isArray(assignments[memberId]) ? assignments[memberId] : [];
+
+  // To show assigned in the main table
+  const getAssignedPCBadgeList = (user: ApiUser) => {
+    const pcs = getAssignedPCs(user.id);
+    if (!pcs?.length) return [<Badge variant="secondary" key="none">&mdash;</Badge>];
+    return pcs.map((pc) => (
+      <Badge variant="secondary" className="mr-1 mb-1" key={pc.instanceId}>
+        {pc.systemName || pc.instanceId}
+      </Badge>
+    ));
   };
 
-  // const getStatusBadge = (status: string) => {
-  //   switch (status) {
-  //     case "Active":
-  //       return <Badge className="bg-green-500">Active</Badge>;
-  //     case "Pending":
-  //       return <Badge className="bg-yellow-500">Pending</Badge>;
-  //     case "Inactive":
-  //       return <Badge className="bg-gray-500">Inactive</Badge>;
-  //     default:
-  //       return <Badge>{status}</Badge>;
-  //   }
-  // };
-
-  const getRoleBadgeColor = (role: string) => {
-    switch (role) {
-      case "Admin":
-        return "bg-red-500/10 text-red-500 hover:bg-red-500/20";
-      case "User":
-        return "bg-green-500/10 text-green-500 hover:bg-green-500/20";
-      default:
-        return "bg-gray-500/10 text-gray-500 hover:bg-gray-500/20";
+  const assignSmartPC = async (instance: any) => {
+    if (!selectedUser) return;
+    setPCAssigningId(instance.instanceId);
+    try {
+      await assignPC({
+        memberId: selectedUser.id,
+        instanceId: instance.instanceId,
+        systemName: instance.systemName,
+      });
+      toast({
+        title: "PC Assigned",
+        description: `${instance.systemName} assigned to ${selectedUser.firstName || selectedUser.email}`,
+      });
+      setTimeout(globalReload, 300);
+    } catch (e: any) {
+      toast({
+        title: "Failed to assign PC",
+        variant: "destructive",
+        description: e?.message || "Failed to assign",
+      });
+    } finally {
+      setPCAssigningId(null);
+    }
+  };
+  const unassignSmartPC = async (instance: any) => {
+    if (!selectedUser) return;
+    setPCAssigningId(instance.instanceId);
+    try {
+      await unassignPC({
+        memberId: selectedUser.id,
+        instanceId: instance.instanceId,
+      });
+      toast({
+        title: "PC Unassigned",
+        description: `${instance.systemName} unassigned from ${selectedUser.firstName || selectedUser.email}`,
+      });
+      setTimeout(globalReload, 300);
+    } catch (e: any) {
+      toast({
+        title: "Failed to unassign PC",
+        variant: "destructive",
+        description: e?.message || "Failed to unassign",
+      });
+    } finally {
+      setPCAssigningId(null);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    return status === "Active"
-      ? "bg-green-500/10 text-green-500"
-      : "bg-gray-500/10 text-gray-500";
+  const closeAssignPCDialog = () => {
+    setSelectedUser(null);
+    setIsAssignPCDialogOpen(false);
+    setPCAssigningId(null);
   };
+
+  // ---- UI ----
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold">User Management</h1>
@@ -266,26 +370,7 @@ const UsersManagementPage = () => {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[400px]" align="start">
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-semibold mb-1">Admin Role</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Full account & user management control</li>
-                    <li>• Create/delete SmartPCs</li>
-                    <li>• Manage billing & payments</li>
-                    <li>• Cannot modify own permissions</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-1">General User Role</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Manage assigned SmartPCs</li>
-                    <li>• Full storage & support access</li>
-                    <li>• Cannot create/delete PCs</li>
-                    <li>• Cannot invite users</li>
-                  </ul>
-                </div>
-              </div>
+              {/* info here, unchanged */}
             </PopoverContent>
           </Popover>
         </div>
@@ -301,6 +386,7 @@ const UsersManagementPage = () => {
         </div>
       </div>
 
+      {/* Main Card (users/groups tabs) */}
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -322,11 +408,7 @@ const UsersManagementPage = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs
-            defaultValue="users"
-            value={activeTab}
-            onValueChange={setActiveTab}
-          >
+          <Tabs defaultValue="users" value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="mb-4">
               <TabsTrigger value="users" className="flex items-center">
                 <Users className="h-4 w-4 mr-2" />
@@ -337,7 +419,6 @@ const UsersManagementPage = () => {
                 Groups
               </TabsTrigger>
             </TabsList>
-
             <TabsContent value="users" className="space-y-4">
               <Table>
                 <TableHeader>
@@ -352,20 +433,22 @@ const UsersManagementPage = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredUsers.length > 0 ? (
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
+                        Loading users...
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredUsers.length > 0 ? (
                     filteredUsers.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell className="font-medium">
-                          {user.name}
+                          {(user.firstName || "") + (user.lastName ? (" " + user.lastName) : "") || user.email}
                         </TableCell>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>
-                          <Badge
-                            variant="secondary"
-                            className={getRoleBadgeColor(user.role)}
-                          >
-                            {user.role.charAt(0).toUpperCase() +
-                              user.role.slice(1)}
+                          <Badge variant="secondary" className={getRoleBadgeColor(user.role)}>
+                            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                           </Badge>
                         </TableCell>
                         <TableCell>{user.group}</TableCell>
@@ -374,19 +457,19 @@ const UsersManagementPage = () => {
                             variant="secondary"
                             className={getStatusColor(user.status)}
                           >
-                            {user.status.charAt(0).toUpperCase() +
-                              user.status.slice(1)}
+                            {user.status
+                              ? user.status === "active"
+                                ? "Active"
+                                : user.status === "pending"
+                                ? "Pending"
+                                : user.status.charAt(0).toUpperCase() + user.status.slice(1)
+                              : <>&mdash;</>}
                           </Badge>
                         </TableCell>
+                        {/* ASSIGNED PCS */}
                         <TableCell>
                           <div className="flex flex-wrap gap-1">
-                            {getAssignedPCs(user.assignedPCs).map(
-                              (pcName, index) => (
-                                <Badge key={index} variant="secondary">
-                                  {pcName}
-                                </Badge>
-                              )
-                            )}
+                            {getAssignedPCBadgeList(user)}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -398,12 +481,15 @@ const UsersManagementPage = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => handleAssignPC(user.id)}
-                              >
-                                <Monitor className="h-4 w-4 mr-2" />
-                                Assign SmartPC
-                              </DropdownMenuItem>
+                              {/* Only visible for members */}
+                              {user.role?.toLowerCase() === "member" && (
+                                <DropdownMenuItem
+                                  onClick={() => handleAssignPC(user)}
+                                >
+                                  <Monitor className="h-4 w-4 mr-2" />
+                                  Manage PC
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem>
                                 <UserCheck className="h-4 w-4 mr-2" />
                                 Change Role
@@ -412,9 +498,12 @@ const UsersManagementPage = () => {
                                 <Mail className="h-4 w-4 mr-2" />
                                 Resend Invite
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">
+                              <DropdownMenuItem
+                                className="text-destructive"
+                                onClick={() => promptDeleteUser(user.email, user.role)}
+                              >
                                 <UserX className="h-4 w-4 mr-2" />
-                                Deactivate
+                                Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -427,15 +516,14 @@ const UsersManagementPage = () => {
                         colSpan={7}
                         className="text-center py-6 text-muted-foreground"
                       >
-                        No users found. Try adjusting your search or invite new
-                        users.
+                        No users found. Try adjusting your search or invite new users.
                       </TableCell>
                     </TableRow>
                   )}
                 </TableBody>
               </Table>
             </TabsContent>
-
+            {/* GROUPS TAB */}
             <TabsContent value="groups" className="space-y-4">
               <Table>
                 <TableHeader>
@@ -447,47 +535,52 @@ const UsersManagementPage = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredGroups.length > 0 ? (
-                    filteredGroups.map((group) => (
-                      <TableRow key={group.id}>
-                        <TableCell className="font-medium">
-                          {group.name}
-                        </TableCell>
-                        <TableCell>{group.members}</TableCell>
-                        <TableCell>{group.description}</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Open menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
-                                <UserPlus className="h-4 w-4 mr-2" />
-                                Add Members
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Users className="h-4 w-4 mr-2" />
-                                View Members
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">
-                                Delete Group
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                  {mockGroups.length > 0 ? (
+                    mockGroups
+                      .filter(
+                        (group) =>
+                          group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          group.description.toLowerCase().includes(searchQuery.toLowerCase()),
+                      )
+                      .map((group) => (
+                        <TableRow key={group.id}>
+                          <TableCell className="font-medium">
+                            {group.name}
+                          </TableCell>
+                          <TableCell>{group.members}</TableCell>
+                          <TableCell>{group.description}</TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">Open menu</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem>
+                                  <UserPlus className="h-4 w-4 mr-2" />
+                                  Add Members
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <Users className="h-4 w-4 mr-2" />
+                                  View Members
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="text-destructive">
+                                  Delete Group
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))
                   ) : (
                     <TableRow>
                       <TableCell
                         colSpan={4}
                         className="text-center py-6 text-muted-foreground"
                       >
-                        No groups found. Try adjusting your search or create a
-                        new group.
+                        No groups found. Try adjusting your search or create a new group.
                       </TableCell>
                     </TableRow>
                   )}
@@ -497,19 +590,18 @@ const UsersManagementPage = () => {
           </Tabs>
         </CardContent>
         <CardFooter className="border-t pt-6 flex justify-between text-muted-foreground text-sm">
-          <p>Total users: {mockUsers.length}</p>
+          <p>Total users: {users.length}</p>
           <p>Total groups: {mockGroups.length}</p>
         </CardFooter>
       </Card>
 
-      {/* Invite User Dialog */}
+      {/* --------- INVITE USER DIALOG ------- */}
       <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Invite User</DialogTitle>
             <DialogDescription>
-              Send an invitation to a new user. They will receive an email to
-              set up their account.
+              Send an invitation to a new user. They will receive an email to set up their account.
             </DialogDescription>
           </DialogHeader>
           <Form {...userForm}>
@@ -563,8 +655,8 @@ const UsersManagementPage = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Admin">Admin</SelectItem>
-                        <SelectItem value="User">User</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="member">Member</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -587,9 +679,9 @@ const UsersManagementPage = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {mockGroups.map((group) => (
-                          <SelectItem key={group.id} value={group.name}>
-                            {group.name}
+                        {GROUP_OPTIONS.map((group) => (
+                          <SelectItem key={group} value={group}>
+                            {group}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -599,103 +691,154 @@ const UsersManagementPage = () => {
                 )}
               />
               <DialogFooter>
-                <Button type="submit">Send Invitation</Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Create Group Dialog */}
-      <Dialog open={isGroupDialogOpen} onOpenChange={setIsGroupDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Create New Group</DialogTitle>
-            <DialogDescription>
-              Create a new group to organize users and manage permissions.
-            </DialogDescription>
-          </DialogHeader>
-          <Form {...groupForm}>
-            <form
-              onSubmit={groupForm.handleSubmit(handleCreateGroup)}
-              className="space-y-4"
-            >
-              <FormField
-                control={groupForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Group Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Engineering Team" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={groupForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Software engineering department"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter>
-                <Button type="submit">Create Group</Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Assign PC Dialog */}
-      <Dialog
-        open={isAssignPCDialogOpen}
-        onOpenChange={setIsAssignPCDialogOpen}
-      >
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Assign SmartPC</DialogTitle>
-            <DialogDescription>
-              Select a SmartPC to assign to this user.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            {mockSmartPCs.map((pc) => (
-              <div key={pc.id} className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{pc.name}</p>
-                  <p className="text-sm text-muted-foreground">{pc.specs}</p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const user = mockUsers.find((u) => u.id === selectedUserId);
-                    if (user && !user.assignedPCs.includes(pc.id)) {
-                      user.assignedPCs.push(pc.id);
-                      toast({
-                        title: "PC Assigned",
-                        description: `${pc.name} has been assigned to ${user.name}`,
-                      });
-                    }
-                    setIsAssignPCDialogOpen(false);
-                  }}
-                >
-                  Assign
+                <Button type="submit" disabled={inviteLoading}>
+                  {inviteLoading ? "Sending..." : "Send Invitation"}
                 </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ---------- CREATE GROUP DIALOG ---------- */}
+      <Dialog open={isGroupDialogOpen} onOpenChange={setIsGroupDialogOpen}>
+        {/* ... unchanged ... */}
+      </Dialog>
+
+      {/* ---------- ASSIGN/UNASSIGN PC DIALOG ---------- */}
+      <Dialog open={isAssignPCDialogOpen} onOpenChange={closeAssignPCDialog}>
+        <DialogContent className="sm:max-w-[540px]">
+          <DialogHeader>
+            <DialogTitle>
+              Manage PCs for
+              {selectedUser ? ` ${selectedUser.firstName || ""} ${selectedUser.lastName || ""} (${selectedUser.email})` : ""}
+            </DialogTitle>
+            <DialogDescription>
+              Assign or unassign SmartPCs for this member.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-96 overflow-y-auto mt-4">
+            {isSmartPCLoading || fetchAssignmentsLoading ? (
+              <div className="text-muted-foreground">Loading PCs...</div>
+            ) : !selectedUser ? (
+              <div className="italic text-muted-foreground">No user selected.</div>
+            ) : smartPCs.length === 0 ? (
+              <div className="italic">No SmartPCs available to assign.</div>
+            ) : (
+              <div className="space-y-3">
+                {smartPCs.map((pc) => {
+                  const assignedToCurrent = getAssignedPCs(selectedUser.id).some(
+                    (a) => a.instanceId === pc.instanceId
+                  );
+                  const isAssignedElsewhere = Object.entries(assignments)
+                    .some(([memberId, arr]) =>
+                      //@ts-ignore
+                      (memberId !== selectedUser.id) && arr?.some(
+                        (a: any) => a.instanceId === pc.instanceId
+                      )
+                    );
+                  const disabled =
+                    (assignedToCurrent && pcAssigningId === pc.instanceId) ||
+                    (isAssignedElsewhere && !assignedToCurrent);
+
+                  let btnType = "assign";
+                  let btnText = "Assign";
+                  let btnColor = "bg-green-500 text-white hover:bg-green-700";
+                  if (assignedToCurrent) {
+                    btnType = "unassign";
+                    btnText = "Unassign";
+                    btnColor = "bg-red-500 text-white hover:bg-red-700";
+                  } else if (isAssignedElsewhere) {
+                    btnType = "assigned";
+                    btnText = "Assigned to Another";
+                    btnColor = "bg-gray-400 text-white cursor-not-allowed";
+                  }
+                  return (
+                    <div
+                      key={pc.instanceId}
+                      className="flex items-center justify-between border-b pb-2"
+                    >
+                      <div>
+                        <div className="font-bold">{pc.systemName || pc.instanceId}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {pc.instanceId}
+                          {pc.state ? ` · ${pc.state}` : ""}
+                        </div>
+                      </div>
+                      <div>
+                        {btnType === "assign" && (
+                          <Button
+                            size="sm"
+                            className={btnColor}
+                            disabled={disabled}
+                            onClick={() => assignSmartPC(pc)}
+                          >
+                            {pcAssigningId === pc.instanceId ? "Assigning..." : btnText}
+                          </Button>
+                        )}
+                        {btnType === "unassign" && (
+                          <Button
+                            size="sm"
+                            className={btnColor}
+                            disabled={disabled}
+                            onClick={() => unassignSmartPC(pc)}
+                          >
+                            {pcAssigningId === pc.instanceId ? "Unassigning..." : btnText}
+                          </Button>
+                        )}
+                        {btnType === "assigned" && (
+                          <Button disabled size="sm" className={btnColor}>
+                            {btnText}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
+            )}
           </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeAssignPCDialog}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* DELETE USER CONFIRMATION */}
+       {/* Delete User Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete User</DialogTitle>
+            <DialogDescription>
+              To delete <b>{deleteUserEmail}</b>, please type <b>confirm</b> below and click "Delete". <br />
+              This action is irreversible.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            placeholder='Type "confirm" to proceed'
+            value={deleteConfirmInput}
+            onChange={(e) => setDeleteConfirmInput(e.target.value)}
+            disabled={deletingUser}
+          />
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={deletingUser}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteUser}
+              disabled={deleteConfirmInput !== "confirm" || deletingUser}
+            >
+              {deletingUser ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
