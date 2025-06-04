@@ -1,19 +1,6 @@
 import React from "react";
 import { getFileIcon } from "../utils";
 
-const getRandomColor = () => {
-  const r = Math.floor(Math.random() * 256)
-    .toString(16)
-    .padStart(2, "0");
-  const g = Math.floor(Math.random() * 256)
-    .toString(16)
-    .padStart(2, "0");
-  const b = Math.floor(Math.random() * 256)
-    .toString(16)
-    .padStart(2, "0");
-  return `#${r}${g}${b}`;
-};
-
 const FileTypeIcon = ({
   index,
   fileName,
@@ -27,8 +14,6 @@ const FileTypeIcon = ({
 }) => {
   const IconComponent = getFileIcon(fileName, fileType);
 
-  const folderColor = fileType === "folder" ? getRandomColor() : undefined;
-
   return (
     <div
       className={`flex items-center justify-center ${
@@ -37,7 +22,7 @@ const FileTypeIcon = ({
     >
       <IconComponent
         className={`w-full h-full text-primary`}
-        style={folderColor ? { color: folderColor } : undefined}
+        style={fileType === "folder" ? { color: "#eab308" } : undefined}
       />
     </div>
   );
