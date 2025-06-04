@@ -94,6 +94,7 @@ import {
 } from "@/api/fileManagerAPI";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
+import ConfirmBulkDeleteDialog from "./confirm-bulk-delete-dialog";
 import ConfirmDeleteDialog from "./confirm-delete-dialog";
 import { useStarFileMutation } from "@/api/fileManagerAPI";
 import { FileItem } from "../types";
@@ -143,6 +144,8 @@ const CloudStorage = () => {
   const [syncInProgress, setSyncInProgress] = useState(false);
   const [lastSynced, setLastSynced] = useState<string | null>(null);
   const [downloadingFile, setDownloadingFile] = useState<string | null>(null);
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+  const [bulkDeleteLoading, setBulkDeleteLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedFilesToDelete, setSelectedFilesToDelete] = useState<string[]>(
     []
@@ -299,6 +302,7 @@ const CloudStorage = () => {
     }
 
     try {
+      setBulkDeleteLoading(true);
       const filesToDelete = data.files.filter((file: FileItem) =>
         selectedFiles.includes(file.id)
       );
@@ -331,6 +335,7 @@ const CloudStorage = () => {
       });
 
       setSelectedFiles([]);
+      setBulkDeleteDialogOpen(false);
     } catch (error) {
       console.error("Error deleting files:", error);
       toast({
@@ -338,6 +343,8 @@ const CloudStorage = () => {
         description: "Some items could not be deleted.",
         variant: "destructive",
       });
+    } finally {
+      setBulkDeleteLoading(false);
     }
   };
 
@@ -962,7 +969,11 @@ const CloudStorage = () => {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-destructive"
-                        onClick={handleDeleteSelected}
+                        onClick={() => {
+                          if (selectedFiles.length !== 0) {
+                            setBulkDeleteDialogOpen(true);
+                          }
+                        }}
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete Selected
@@ -1599,6 +1610,19 @@ const CloudStorage = () => {
         fileNames={selectedFilesToDelete}
         selectedFolder={selectedFolder}
       /> */}
+
+      {/* here it is */}
+
+      <ConfirmBulkDeleteDialog
+        open={bulkDeleteDialogOpen}
+        onClose={() => {
+          setBulkDeleteDialogOpen(false);
+          setBulkDeleteLoading(false);
+        }}
+        isLoading={bulkDeleteLoading}
+        selectedFiles={selectedFiles}
+        onDeleteSelected={handleDeleteSelected}
+      />
 
       <ConfirmDeleteDialog
         open={deleteDialogOpen}

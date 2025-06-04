@@ -1,33 +1,18 @@
 import React from "react";
 import { getFileIcon } from "../utils";
 
-const folderColors = [
-  "#FF6633",
-  "#FF33FF",
-  "#00B3E6",
-  "#E6B333",
-  "#3366E6",
-  "#999966",
-  "#99FF99",
-  "#B34D4D",
-  "#80B300",
-  "#809900",
-  "#E6B3B3",
-  "#6680B3",
-  "#66991A",
-  "#FF99E6",
-  "#CCFF1A",
-  "#FF1A66",
-  "#E6331A",
-  "#33FFCC",
-  "#66994D",
-  "#B366CC",
-  "#4D8000",
-  "#B33300",
-  "#CC80CC",
-  "#66664D",
-  "#991AFF",
-];
+const getRandomColor = () => {
+  const r = Math.floor(Math.random() * 256)
+    .toString(16)
+    .padStart(2, "0");
+  const g = Math.floor(Math.random() * 256)
+    .toString(16)
+    .padStart(2, "0");
+  const b = Math.floor(Math.random() * 256)
+    .toString(16)
+    .padStart(2, "0");
+  return `#${r}${g}${b}`;
+};
 
 const FileTypeIcon = ({
   index,
@@ -42,6 +27,8 @@ const FileTypeIcon = ({
 }) => {
   const IconComponent = getFileIcon(fileName, fileType);
 
+  const folderColor = fileType === "folder" ? getRandomColor() : undefined;
+
   return (
     <div
       className={`flex items-center justify-center ${
@@ -50,9 +37,7 @@ const FileTypeIcon = ({
     >
       <IconComponent
         className={`w-full h-full text-primary`}
-        style={
-          fileType === "folder" ? { color: folderColors[index] } : undefined
-        }
+        style={folderColor ? { color: folderColor } : undefined}
       />
     </div>
   );
