@@ -100,6 +100,7 @@ import { useStarFileMutation } from "@/api/fileManagerAPI";
 import { FileItem } from "../types";
 import { useDebounce } from "@/hooks/useDebounce";
 import FilePreviewDialog from "./file-preview-dialog";
+import BulkShareDialog from "./bulk-share-dialog";
 
 const CloudStorage = () => {
   const router = useRouter();
@@ -113,6 +114,7 @@ const CloudStorage = () => {
   const [sortBy, setSortBy] = useState<"name" | "date" | "size">("date");
   const [selectedRegion, setSelectedRegion] = useState("us-east-1");
   const [showStoragePlans, setShowStoragePlans] = useState(false);
+  const [showBulkShareDialog, setShowBulkShareDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [showNewFolderDialog, setShowNewFolderDialog] = useState(false);
@@ -281,6 +283,10 @@ const CloudStorage = () => {
     } finally {
       setDownloadingFile(null);
     }
+  };
+
+  const handleBulkShare = () => {
+    setShowBulkShareDialog(true);
   };
 
   const handleShare = (file: FileItem) => {
@@ -944,7 +950,10 @@ const CloudStorage = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={handleBulkShare}
+                        disabled={selectedFiles.length === 0}
+                      >
                         <Share2 className="h-4 w-4 mr-2" />
                         Share
                       </DropdownMenuItem>
@@ -1791,6 +1800,15 @@ const CloudStorage = () => {
         open={showStoragePlans}
         onOpenChange={setShowStoragePlans}
         plans={storagePlans}
+      />
+
+      {/* Bulk Share Dialog */}
+      <BulkShareDialog
+        open={showBulkShareDialog}
+        onOpenChange={setShowBulkShareDialog}
+        files={files}
+        selectedFiles={selectedFiles}
+        selectedFolder={selectedFolder}
       />
 
       {/* Share Dialog */}

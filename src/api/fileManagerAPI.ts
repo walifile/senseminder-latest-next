@@ -166,6 +166,14 @@ export const fileManagerAPI = createApi({
       invalidatesTags: ["Files"],
     }),
 
+    shareFiles: builder.mutation({
+      query: (body) => ({
+        url: "share-multiple",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Files"],
+    }),
     shareFile: builder.mutation({
       query: (body) => ({
         url: "share",
@@ -367,6 +375,7 @@ export const {
   useStarFileMutation,
   useUnstarFileMutation,
   useShareFileMutation,
+  useShareFilesMutation,
   useCopyFilesMutation,
   useMoveFilesMutation,
   useGetUsageQuery,
