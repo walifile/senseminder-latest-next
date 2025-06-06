@@ -82,7 +82,12 @@ import StorageSyncDialog from "./storage-sync-dialog";
 import NewFolderDialog from "./new-folder-dialog";
 import { SidebarPanel } from "./storage-sidebar";
 import FileTypeIcon from "./file-type-icon";
-import { formatDate, formatFileSize, formatTimeAgo } from "../utils";
+import {
+  formatDate,
+  formatFileSize,
+  formatTimeAgo,
+  getRelativePath,
+} from "../utils";
 import UploadDialog from "./upload-dialog";
 import {
   useCopyFilesMutation,
@@ -129,9 +134,6 @@ const CloudStorage = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
-  const [selectedFolderForMove, setSelectedFolderForMove] = useState<
-    string | null
-  >(null);
   const [isDragging, setIsDragging] = useState(false);
   const [draggedFiles, setDraggedFiles] = useState<string[]>([]);
   const [copyDialogOpen, setCopyDialogOpen] = useState(false);
@@ -201,10 +203,6 @@ const CloudStorage = () => {
   const [moveFiles] = useMoveFilesMutation();
 
   console.log({ wali: files });
-
-  const getFolderPath = (name: string) => {
-    return folderPath ? `${folderPath}/${name}` : name;
-  };
 
   const handleUpload = () => {
     setShowUploadDialog(true);
@@ -561,22 +559,17 @@ const CloudStorage = () => {
       const fileIds = dragData.fileIds || [];
 
       if (fileIds.length > 0) {
-        const sourceFileNames = files
-          ?.filter(
-            (file: FileItem) =>
-              fileIds.includes(file.id) && file.fileType !== "folder"
-          )
-          ?.map((file: FileItem) => getFolderPath(file.fileName));
+        const sourceFileNames = fileIds.map((id: string) =>
+          getRelativePath(id)
+        );
 
-        const destinationFolder = files?.find(
-          (file: FileItem) => file.id === folderId
-        )?.fileName;
+        const destinationFolder = getRelativePath(folderId);
 
         const filesData = {
           region: "virginia",
           userId,
           sourceFileNames,
-          destinationFolder: getFolderPath(destinationFolder),
+          destinationFolder,
         };
 
         if (operation === "copy") {
@@ -1823,21 +1816,15 @@ const CloudStorage = () => {
       <MoveFilesDialog
         open={moveDialogOpen}
         onOpenChange={setMoveDialogOpen}
-        files={files}
         selectedFiles={selectedFiles}
         setSelectedFiles={setSelectedFiles}
-        selectedFolderId={selectedFolderForMove}
-        setSelectedFolderId={setSelectedFolderForMove}
       />
       {/* Copy Files Dialog */}
       <CopyFilesDialog
         open={copyDialogOpen}
         onOpenChange={setCopyDialogOpen}
-        files={files}
         selectedFiles={selectedFiles}
         setSelectedFiles={setSelectedFiles}
-        selectedFolderId={selectedFolderForMove}
-        setSelectedFolderId={setSelectedFolderForMove}
       />
 
       {/* Storage Sync Dialog */}

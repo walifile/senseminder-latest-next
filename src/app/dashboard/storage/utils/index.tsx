@@ -115,3 +115,7 @@ export function formatBytes(bytes: number): string {
   const tb = gb / 1024;
   return `${tb.toFixed(2)} TB`;
 }
+
+export function getRelativePath(fullPath: string): string {
+  return fullPath.split("/").slice(2).join("/");
+}
