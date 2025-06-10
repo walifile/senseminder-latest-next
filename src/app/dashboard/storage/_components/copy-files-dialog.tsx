@@ -86,6 +86,10 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
     onOpenChange(false);
   };
 
+  const selectedFolderExists = selectedFiles?.some(
+    (id) => id === selectedFolderId
+  );
+
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent className="sm:max-w-[425px]">
@@ -104,6 +108,7 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
           path={path}
           setPath={setPath}
           selectedFolder={selectedFolder}
+          selectedFiles={selectedFiles}
         />
 
         <DialogFooter>
@@ -114,6 +119,7 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
             onClick={handleCopy}
             disabled={
               !selectedFolderId ||
+              selectedFolderExists ||
               selectedFolder?.id === selectedFolderId ||
               selectedFiles.length === 0 ||
               !userId ||

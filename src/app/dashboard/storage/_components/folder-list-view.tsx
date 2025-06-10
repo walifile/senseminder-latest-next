@@ -13,6 +13,7 @@ type FolderListViewProps = {
   path: FileItem[];
   setPath: React.Dispatch<React.SetStateAction<FileItem[]>>;
   selectedFolder: FileItem | null;
+  selectedFiles: string[];
 };
 
 const FolderListView: React.FC<FolderListViewProps> = ({
@@ -23,6 +24,7 @@ const FolderListView: React.FC<FolderListViewProps> = ({
   path,
   setPath,
   selectedFolder,
+  selectedFiles,
 }) => {
   const handleOpenFolder = (folder: FileItem) => {
     setPath((prev) => [...prev, folder]);
@@ -43,12 +45,13 @@ const FolderListView: React.FC<FolderListViewProps> = ({
                 selectedFolderId === folder.id ? "bg-muted" : ""
               }`}
               onClick={() => {
-                if (selectedFolder?.id !== folder.id) {
+                if (
+                  selectedFolder?.id !== folder.id &&
+                  selectedFiles?.some((id) => id !== folder.id)
+                ) {
                   setSelectedFolderId(folder.id);
-                  console.log("check1");
                 } else {
                   setSelectedFolderId(null);
-                  console.log("check2");
                 }
               }}
             >

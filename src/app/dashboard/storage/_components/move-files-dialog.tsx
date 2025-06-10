@@ -88,6 +88,10 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
     onOpenChange(false);
   };
 
+  const selectedFolderExists = selectedFiles?.some(
+    (id) => id === selectedFolderId
+  );
+
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent className="sm:max-w-[425px]">
@@ -106,6 +110,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
           path={path}
           setPath={setPath}
           selectedFolder={selectedFolder}
+          selectedFiles={selectedFiles}
         />
 
         <DialogFooter>
@@ -116,6 +121,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
             onClick={handleMove}
             disabled={
               !selectedFolderId ||
+              selectedFolderExists ||
               selectedFolder?.id === selectedFolderId ||
               selectedFiles.length === 0 ||
               !userId ||
