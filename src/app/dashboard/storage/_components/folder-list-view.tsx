@@ -12,6 +12,7 @@ type FolderListViewProps = {
   setSelectedFolderId: (id: string | null) => void;
   path: FileItem[];
   setPath: React.Dispatch<React.SetStateAction<FileItem[]>>;
+  selectedFolder: FileItem | null;
 };
 
 const FolderListView: React.FC<FolderListViewProps> = ({
@@ -21,6 +22,7 @@ const FolderListView: React.FC<FolderListViewProps> = ({
   setSelectedFolderId,
   path,
   setPath,
+  selectedFolder,
 }) => {
   const handleOpenFolder = (folder: FileItem) => {
     setPath((prev) => [...prev, folder]);
@@ -40,7 +42,15 @@ const FolderListView: React.FC<FolderListViewProps> = ({
               className={`group flex items-center justify-between p-2 rounded-lg cursor-pointer hover:bg-muted/50 ${
                 selectedFolderId === folder.id ? "bg-muted" : ""
               }`}
-              onClick={() => setSelectedFolderId(folder.id)}
+              onClick={() => {
+                if (selectedFolder?.id !== folder.id) {
+                  setSelectedFolderId(folder.id);
+                  console.log("check1");
+                } else {
+                  setSelectedFolderId(null);
+                  console.log("check2");
+                }
+              }}
             >
               <div className="flex items-center gap-2">
                 <Folder className="h-4 w-4" />

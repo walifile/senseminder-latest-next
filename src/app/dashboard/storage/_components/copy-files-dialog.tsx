@@ -21,6 +21,7 @@ type CopyFilesDialogProps = {
   onOpenChange: (open: boolean) => void;
   selectedFiles: string[];
   setSelectedFiles: (ids: string[]) => void;
+  selectedFolder: FileItem | null;
 };
 
 const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
@@ -28,6 +29,7 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
   onOpenChange,
   selectedFiles,
   setSelectedFiles,
+  selectedFolder,
 }) => {
   const { toast } = useToast();
   const userId = useSelector((state: RootState) => state.auth.user?.id);
@@ -47,7 +49,7 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
   );
 
   const handleCopy = async () => {
-    if (!selectedFolderId || !userId) return;
+    if (!selectedFolderId) return;
 
     const sourceFileNames = selectedFiles.map((id) => getRelativePath(id));
 
@@ -101,6 +103,7 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
           setSelectedFolderId={setSelectedFolderId}
           path={path}
           setPath={setPath}
+          selectedFolder={selectedFolder}
         />
 
         <DialogFooter>
@@ -110,7 +113,11 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
           <Button
             onClick={handleCopy}
             disabled={
-              !selectedFolderId || selectedFiles.length === 0 || isLoading
+              !selectedFolderId ||
+              selectedFolder?.id === selectedFolderId ||
+              selectedFiles.length === 0 ||
+              !userId ||
+              isLoading
             }
           >
             {isLoading ? "Copying..." : "Copy Files"}

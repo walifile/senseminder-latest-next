@@ -23,6 +23,7 @@ type MoveFilesDialogProps = {
   onOpenChange: (open: boolean) => void;
   selectedFiles: string[];
   setSelectedFiles: (ids: string[]) => void;
+  selectedFolder: FileItem | null;
 };
 
 const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
@@ -30,6 +31,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
   onOpenChange,
   selectedFiles,
   setSelectedFiles,
+  selectedFolder,
 }) => {
   const { toast } = useToast();
   const userId = useSelector((state: RootState) => state.auth.user?.id);
@@ -49,7 +51,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
   );
 
   const handleMove = async () => {
-    if (!selectedFolderId || !userId) return;
+    if (!selectedFolderId) return;
 
     try {
       const sourceFileNames = selectedFiles.map((id) => getRelativePath(id));
@@ -103,6 +105,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
           setSelectedFolderId={setSelectedFolderId}
           path={path}
           setPath={setPath}
+          selectedFolder={selectedFolder}
         />
 
         <DialogFooter>
@@ -112,7 +115,11 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
           <Button
             onClick={handleMove}
             disabled={
-              !selectedFolderId || selectedFiles.length === 0 || isLoading
+              !selectedFolderId ||
+              selectedFolder?.id === selectedFolderId ||
+              selectedFiles.length === 0 ||
+              !userId ||
+              isLoading
             }
           >
             {isLoading ? "Moving..." : "Move Files"}

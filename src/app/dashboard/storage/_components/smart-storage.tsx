@@ -1818,6 +1818,7 @@ const CloudStorage = () => {
         onOpenChange={setMoveDialogOpen}
         selectedFiles={selectedFiles}
         setSelectedFiles={setSelectedFiles}
+        selectedFolder={selectedFolder}
       />
       {/* Copy Files Dialog */}
       <CopyFilesDialog
@@ -1825,6 +1826,7 @@ const CloudStorage = () => {
         onOpenChange={setCopyDialogOpen}
         selectedFiles={selectedFiles}
         setSelectedFiles={setSelectedFiles}
+        selectedFolder={selectedFolder}
       />
 
       {/* Storage Sync Dialog */}
