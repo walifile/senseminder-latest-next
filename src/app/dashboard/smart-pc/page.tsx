@@ -164,7 +164,7 @@ const CloudPCPage = () => {
   }, [data]);
 
   const handleStop = async (instanceId: string) => {
-    setStoppingInstances((prev) => [...prev, instanceId]);
+    setStoppingInstances(prev => [...prev, instanceId]);
     try {
       await stopVM(instanceId).unwrap();
       toast({
@@ -179,12 +179,12 @@ const CloudPCPage = () => {
         variant: "destructive",
       });
     } finally {
-      setStoppingInstances((prev) => prev.filter((id) => id !== instanceId));
+      setStoppingInstances(prev => prev.filter(id => id !== instanceId));
     }
   };
 
   const handleStart = async (instanceId: string) => {
-    setStartingInstances((prev) => [...prev, instanceId]);
+    setStartingInstances(prev => [...prev, instanceId]);
     try {
       await startVM(instanceId).unwrap();
       toast({
@@ -200,27 +200,24 @@ const CloudPCPage = () => {
         variant: "destructive",
       });
     } finally {
-      setStartingInstances((prev) => prev.filter((id) => id !== instanceId));
+      setStartingInstances(prev => prev.filter(id => id !== instanceId));
     }
   };
 
   const handleLaunch = async (instanceId: string) => {
-    setLaunchingInstances((prev) => [...prev, instanceId]);
+    setLaunchingInstances(prev => [...prev, instanceId]);
     try {
       const response = await launchVM({
         instanceId: instanceId,
         userId: userId,
       }).unwrap();
       console.log({ response });
+      dispatch(setLaunchVMResponse({ ...response, instanceId }));
+      router.push(routes?.pcViewer);
       toast({
         title: "SmartPC Launched",
-        description:
-          "The instance has been launched successfully. Redirecting...",
+        description: "The instance has been launched successfully.",
       });
-      dispatch(setLaunchVMResponse({ ...response, instanceId }));
-      setTimeout(() => {
-        router.push(routes?.pcViewer);
-      }, 4000);
     } catch (error) {
       console.log(error);
       toast({
@@ -229,7 +226,7 @@ const CloudPCPage = () => {
         variant: "destructive",
       });
     } finally {
-      setLaunchingInstances((prev) => prev.filter((id) => id !== instanceId));
+      setLaunchingInstances(prev => prev.filter(id => id !== instanceId));
     }
   };
 
@@ -283,8 +280,8 @@ const CloudPCPage = () => {
     : [];
 
   const handlePCSelection = (index: number) => {
-    setSelectedPCs((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+    setSelectedPCs(prev =>
+      prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
     );
   };
 
@@ -402,7 +399,7 @@ const CloudPCPage = () => {
               placeholder="Search PCs by name, description, or region..."
               className="pl-8"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
             />
           </div>
           <div className="flex items-center border rounded-lg">
@@ -562,7 +559,7 @@ const CloudPCPage = () => {
                             <DropdownMenu>
                               <DropdownMenuTrigger
                                 asChild
-                                onClick={(e) => e.stopPropagation()}
+                                onClick={e => e.stopPropagation()}
                               >
                                 <Button variant="ghost" size="icon">
                                   <MoreVertical className="h-4 w-4" />
@@ -570,7 +567,7 @@ const CloudPCPage = () => {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem
-                                  onClick={(e) => {
+                                  onClick={e => {
                                     e.stopPropagation();
                                     handleScheduleSettings(pc);
                                   }}
@@ -579,7 +576,7 @@ const CloudPCPage = () => {
                                   Schedule
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={(e) => {
+                                  onClick={e => {
                                     e.stopPropagation();
                                     handleIdleSettings(pc);
                                   }}
@@ -588,7 +585,7 @@ const CloudPCPage = () => {
                                   Idle Settings
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={(e) => {
+                                  onClick={e => {
                                     e.stopPropagation();
                                     handleAssignUser(pc);
                                   }}
@@ -675,7 +672,7 @@ const CloudPCPage = () => {
                         <DropdownMenu>
                           <DropdownMenuTrigger
                             asChild
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={e => e.stopPropagation()}
                           >
                             <Button variant="ghost" size="icon">
                               <MoreVertical className="h-4 w-4" />
@@ -683,7 +680,7 @@ const CloudPCPage = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
-                              onClick={(e) => {
+                              onClick={e => {
                                 e.stopPropagation();
                                 handleScheduleSettings(pc);
                               }}
@@ -692,7 +689,7 @@ const CloudPCPage = () => {
                               Schedule
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={(e) => {
+                              onClick={e => {
                                 e.stopPropagation();
                                 handleIdleSettings(pc);
                               }}
@@ -701,7 +698,7 @@ const CloudPCPage = () => {
                               Idle Settings
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={(e) => {
+                              onClick={e => {
                                 e.stopPropagation();
                                 handleAssignUser(pc);
                               }}

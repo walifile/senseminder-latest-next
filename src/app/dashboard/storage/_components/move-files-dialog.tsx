@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,53 +10,63 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Folder } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
 import { useListFilesQuery, useMoveFilesMutation } from "@/api/fileManagerAPI";
 import { FileItem } from "../types";
-import FolderListView from "./folder-list-view";
-import { getRelativePath } from "../utils";
 
 type MoveFilesDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  files?: Array<{
+    id: string;
+    name?: string;
+    type?: string;
+    [key: string]: unknown;
+  }>;
   selectedFiles: string[];
   setSelectedFiles: (ids: string[]) => void;
-  selectedFolder: FileItem | null;
+  selectedFolderId: string | null;
+  setSelectedFolderId: (id: string | null) => void;
 };
 
 const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
   open,
   onOpenChange,
+  files,
   selectedFiles,
   setSelectedFiles,
-  selectedFolder,
+  selectedFolderId,
+  setSelectedFolderId,
 }) => {
   const { toast } = useToast();
+  console.log({ files });
   const userId = useSelector((state: RootState) => state.auth.user?.id);
   const [moveFiles, { isLoading }] = useMoveFilesMutation();
-  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
-  const [path, setPath] = useState<FileItem[]>([]);
-  const folderPath = path.map((f) => f.fileName).join("/");
 
   const { data, isLoading: isFilesLoading } = useListFilesQuery({
     userId,
     region: "virginia",
-    folder: folderPath,
+    type: "folder",
   });
 
-  const folders = data?.files.filter(
-    (file: FileItem) => file.fileType === "folder"
-  );
-
   const handleMove = async () => {
-    if (!selectedFolderId) return;
+    if (!selectedFolderId || !userId || !files) return;
 
     try {
-      const sourceFileNames = selectedFiles.map((id) => getRelativePath(id));
+      const sourceFileNames = files
+        .filter((file) => selectedFiles.includes(file.id))
+        .map((file) => {
+          // Construct relative path name to move (folder or file)
+          const pathParts = file.id.split("/");
+          return pathParts.slice(2).join("/"); // Removes userId/uploads/
+        });
 
-      const destinationFolder = getRelativePath(selectedFolderId);
+      const destinationFolder = files.find(
+        (file) => file.id === selectedFolderId
+      )?.fileName;
 
       await moveFiles({
         region: "virginia",
@@ -71,7 +81,8 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
       });
 
       setSelectedFiles([]);
-      closeDialog();
+      setSelectedFolderId(null);
+      onOpenChange(false);
     } catch (err) {
       toast({
         title: "Move Failed",
@@ -82,18 +93,8 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
     }
   };
 
-  const closeDialog = () => {
-    setPath([]);
-    setSelectedFolderId(null);
-    onOpenChange(false);
-  };
-
-  const selectedFolderExists = selectedFiles?.some(
-    (id) => id === selectedFolderId
-  );
-
   return (
-    <Dialog open={open} onOpenChange={closeDialog}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Move {selectedFiles.length} file(s)</DialogTitle>
@@ -102,30 +103,36 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <FolderListView
-          folders={folders}
-          isLoading={isFilesLoading}
-          selectedFolderId={selectedFolderId}
-          setSelectedFolderId={setSelectedFolderId}
-          path={path}
-          setPath={setPath}
-          selectedFolder={selectedFolder}
-          selectedFiles={selectedFiles}
-        />
+        <div className="py-4">
+          <div className="space-y-2">
+            {isFilesLoading && <p>Loading folders...</p>}
+            {!isFilesLoading && data?.files?.length === 0 && (
+              <p>No folders found.</p>
+            )}
+            {!isFilesLoading &&
+              data?.files?.map((folder: FileItem) => (
+                <div
+                  key={folder.id}
+                  className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-muted/50 ${
+                    selectedFolderId === folder.id ? "bg-muted" : ""
+                  }`}
+                  onClick={() => setSelectedFolderId(folder.id)}
+                >
+                  <Folder className="h-4 w-4" />
+                  <span>{folder.fileName}</span>
+                </div>
+              ))}
+          </div>
+        </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={closeDialog}>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button
             onClick={handleMove}
             disabled={
-              !selectedFolderId ||
-              selectedFolderExists ||
-              selectedFolder?.id === selectedFolderId ||
-              selectedFiles.length === 0 ||
-              !userId ||
-              isLoading
+              !selectedFolderId || selectedFiles.length === 0 || isLoading
             }
           >
             {isLoading ? "Moving..." : "Move Files"}

@@ -3,7 +3,6 @@
 import React from "react";
 import DashboardSidebar from "@/app/dashboard/_components/dashboard-sidebar";
 import DashboardHeader from "@/app/dashboard/_components/dashboard-header";
-import DesktopAppDialog from "./storage/_components/desktop-app-dialog";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -23,14 +22,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <DashboardHeader />
 
           {/* Scrollable content */}
-          <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6">
-            {children}
-          </main>
+          <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6">{children}</main>
         </div>
       </div>
-
-      {/* Dialog mounted globally in dashboard layout */}
-      <DesktopAppDialog />
     </div>
   );
 }

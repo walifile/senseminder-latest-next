@@ -166,14 +166,6 @@ export const fileManagerAPI = createApi({
       invalidatesTags: ["Files"],
     }),
 
-    shareFiles: builder.mutation({
-      query: (body) => ({
-        url: "share-multiple",
-        method: "POST",
-        body,
-      }),
-      invalidatesTags: ["Files"],
-    }),
     shareFile: builder.mutation({
       query: (body) => ({
         url: "share",
@@ -210,8 +202,8 @@ export const fileManagerAPI = createApi({
         modified,
         folder,
         sortBy,
-        limit,
-        page,
+        itemsPerPage,
+        currentPage,
       }) => ({
         // search = "", token = null,
         url: "list",
@@ -226,8 +218,8 @@ export const fileManagerAPI = createApi({
           ...(modified && { modified }),
           ...(folder && { folder }),
           ...(sortBy && { sortBy }),
-          limit,
-          page,
+          itemsPerPage,
+          currentPage,
           // recursive,
         },
       }),
@@ -375,7 +367,6 @@ export const {
   useStarFileMutation,
   useUnstarFileMutation,
   useShareFileMutation,
-  useShareFilesMutation,
   useCopyFilesMutation,
   useMoveFilesMutation,
   useGetUsageQuery,

@@ -1,4 +1,3 @@
-import React from "react";
 import {
   FileText,
   Folder,
@@ -14,26 +13,11 @@ import {
   Archive,
 } from "lucide-react";
 
-const FilledFolderIcon = ({
-  className,
-  style,
-}: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-    style={style}
-    viewBox="0 0 24 24"
-    fill="currentColor"
-  >
-    <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z" />
-  </svg>
-);
-
 export const getFileIcon = (fileName: string, type: string) => {
   const extension = fileName.split(".").pop()?.toLowerCase();
 
   // Folder
-  if (type === "folder") return FilledFolderIcon;
+  if (type === "folder") return Folder;
 
   // Document types
   if (extension === "pdf") return File;
@@ -114,8 +98,4 @@ export function formatBytes(bytes: number): string {
   if (gb < 1024) return `${gb.toFixed(2)} GB`;
   const tb = gb / 1024;
   return `${tb.toFixed(2)} TB`;
-}
-
-export function getRelativePath(fullPath: string): string {
-  return fullPath.split("/").slice(2).join("/");
 }

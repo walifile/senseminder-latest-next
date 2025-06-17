@@ -82,12 +82,7 @@ import StorageSyncDialog from "./storage-sync-dialog";
 import NewFolderDialog from "./new-folder-dialog";
 import { SidebarPanel } from "./storage-sidebar";
 import FileTypeIcon from "./file-type-icon";
-import {
-  formatDate,
-  formatFileSize,
-  formatTimeAgo,
-  getRelativePath,
-} from "../utils";
+import { formatDate, formatFileSize, formatTimeAgo } from "../utils";
 import UploadDialog from "./upload-dialog";
 import {
   useCopyFilesMutation,
@@ -99,13 +94,11 @@ import {
 } from "@/api/fileManagerAPI";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import ConfirmBulkDeleteDialog from "./confirm-bulk-delete-dialog";
 import ConfirmDeleteDialog from "./confirm-delete-dialog";
 import { useStarFileMutation } from "@/api/fileManagerAPI";
 import { FileItem } from "../types";
 import { useDebounce } from "@/hooks/useDebounce";
 import FilePreviewDialog from "./file-preview-dialog";
-import BulkShareDialog from "./bulk-share-dialog";
 
 const CloudStorage = () => {
   const router = useRouter();
@@ -119,7 +112,6 @@ const CloudStorage = () => {
   const [sortBy, setSortBy] = useState<"name" | "date" | "size">("date");
   const [selectedRegion, setSelectedRegion] = useState("us-east-1");
   const [showStoragePlans, setShowStoragePlans] = useState(false);
-  const [showBulkShareDialog, setShowBulkShareDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [showNewFolderDialog, setShowNewFolderDialog] = useState(false);
@@ -130,10 +122,13 @@ const CloudStorage = () => {
 
   // table
   // const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
+  const [selectedFolderForMove, setSelectedFolderForMove] = useState<
+    string | null
+  >(null);
   const [isDragging, setIsDragging] = useState(false);
   const [draggedFiles, setDraggedFiles] = useState<string[]>([]);
   const [copyDialogOpen, setCopyDialogOpen] = useState(false);
@@ -148,8 +143,6 @@ const CloudStorage = () => {
   const [syncInProgress, setSyncInProgress] = useState(false);
   const [lastSynced, setLastSynced] = useState<string | null>(null);
   const [downloadingFile, setDownloadingFile] = useState<string | null>(null);
-  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
-  const [bulkDeleteLoading, setBulkDeleteLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedFilesToDelete, setSelectedFilesToDelete] = useState<string[]>(
     []
@@ -189,12 +182,11 @@ const CloudStorage = () => {
     // folder: selectedFolder?.fileName || "",
     folder: folderPath,
     sortBy,
-    limit,
-    page,
+    itemsPerPage,
+    currentPage,
     // recursive: true,
   });
   const files = data?.files || [];
-  const pagination = data?.pagination || {};
 
   const [triggerDownloadFile] = useLazyDownloadFileQuery();
   const [starFile] = useStarFileMutation();
@@ -205,9 +197,8 @@ const CloudStorage = () => {
 
   console.log({ wali: files });
 
-  // Handle page change
-  const handlePageChange = (page: number) => {
-    setPage(page);
+  const getFolderPath = (name: string) => {
+    return folderPath ? `${folderPath}/${name}` : name;
   };
 
   const handleUpload = () => {
@@ -289,10 +280,6 @@ const CloudStorage = () => {
     }
   };
 
-  const handleBulkShare = () => {
-    setShowBulkShareDialog(true);
-  };
-
   const handleShare = (file: FileItem) => {
     setSelectedFileForShare(file);
     setShowShareDialog(true);
@@ -312,7 +299,6 @@ const CloudStorage = () => {
     }
 
     try {
-      setBulkDeleteLoading(true);
       const filesToDelete = data.files.filter((file: FileItem) =>
         selectedFiles.includes(file.id)
       );
@@ -345,7 +331,6 @@ const CloudStorage = () => {
       });
 
       setSelectedFiles([]);
-      setBulkDeleteDialogOpen(false);
     } catch (error) {
       console.error("Error deleting files:", error);
       toast({
@@ -353,8 +338,6 @@ const CloudStorage = () => {
         description: "Some items could not be deleted.",
         variant: "destructive",
       });
-    } finally {
-      setBulkDeleteLoading(false);
     }
   };
 
@@ -565,17 +548,22 @@ const CloudStorage = () => {
       const fileIds = dragData.fileIds || [];
 
       if (fileIds.length > 0) {
-        const sourceFileNames = fileIds.map((id: string) =>
-          getRelativePath(id)
-        );
+        const sourceFileNames = files
+          ?.filter(
+            (file: FileItem) =>
+              fileIds.includes(file.id) && file.fileType !== "folder"
+          )
+          ?.map((file: FileItem) => getFolderPath(file.fileName));
 
-        const destinationFolder = getRelativePath(folderId);
+        const destinationFolder = files?.find(
+          (file: FileItem) => file.id === folderId
+        )?.fileName;
 
         const filesData = {
           region: "virginia",
           userId,
           sourceFileNames,
-          destinationFolder,
+          destinationFolder: getFolderPath(destinationFolder),
         };
 
         if (operation === "copy") {
@@ -716,6 +704,18 @@ const CloudStorage = () => {
   //   }
   //   return 0;
   // });
+
+  // Paginate files
+  const totalPages = Math.ceil(files.length / itemsPerPage);
+  const paginatedFiles = files.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   return (
     <>
@@ -937,10 +937,7 @@ const CloudStorage = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={handleBulkShare}
-                        disabled={selectedFiles.length === 0}
-                      >
+                      <DropdownMenuItem>
                         <Share2 className="h-4 w-4 mr-2" />
                         Share
                       </DropdownMenuItem>
@@ -965,11 +962,7 @@ const CloudStorage = () => {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-destructive"
-                        onClick={() => {
-                          if (selectedFiles.length !== 0) {
-                            setBulkDeleteDialogOpen(true);
-                          }
-                        }}
+                        onClick={handleDeleteSelected}
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete Selected
@@ -1004,7 +997,7 @@ const CloudStorage = () => {
                     )}
                     {!isFetching && (
                       <ScrollArea className="flex-1 h-full">
-                        {error || files.length === 0 ? (
+                        {error || paginatedFiles.length === 0 ? (
                           <div className="flex flex-col items-center justify-center h-[400px] text-center p-4">
                             <FileText className="h-8 w-8 text-muted-foreground mb-4" />
                             <h3 className="font-medium mb-2">No files found</h3>
@@ -1055,15 +1048,226 @@ const CloudStorage = () => {
                                   </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                  {(files as FileItem[]).map((file, index) => (
-                                    <TableRow
+                                  {(paginatedFiles as FileItem[]).map(
+                                    (file, index) => (
+                                      <TableRow
+                                        key={file.id}
+                                        className={`hover:bg-muted/50 ${
+                                          dragOverFolderId === file.id
+                                            ? "bg-muted ring-2 ring-primary"
+                                            : ""
+                                        }`}
+                                        draggable={true}
+                                        onDragStart={(e) =>
+                                          handleItemDragStart(e, file.id)
+                                        }
+                                        onDragOver={(e) =>
+                                          file.fileType === "folder"
+                                            ? handleFolderDragOver(e, file.id)
+                                            : undefined
+                                        }
+                                        onDragLeave={(e) =>
+                                          file.fileType === "folder"
+                                            ? handleFolderDragLeave(e)
+                                            : undefined
+                                        }
+                                        onDrop={(e) =>
+                                          file.fileType === "folder"
+                                            ? handleFolderDrop(e, file.id)
+                                            : undefined
+                                        }
+                                      >
+                                        <TableCell>
+                                          <div className="flex items-center gap-2">
+                                            <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
+                                            <Checkbox
+                                              checked={selectedFiles.includes(
+                                                file.id
+                                              )}
+                                              onCheckedChange={() =>
+                                                handleFileSelect(file.id)
+                                              }
+                                            />
+                                          </div>
+                                        </TableCell>
+                                        <TableCell>
+                                          <div
+                                            {...(file.fileType === "folder" && {
+                                              title: "Click to open folder",
+                                            })}
+                                            className={`flex items-center gap-2 ${
+                                              file.fileType === "folder" &&
+                                              "cursor-pointer"
+                                            }`}
+                                            onClick={() =>
+                                              handleFolderSelection(file)
+                                            }
+                                          >
+                                            <div className="h-8 w-8 flex items-center justify-center">
+                                              <FileTypeIcon
+                                                index={index}
+                                                fileName={file.fileName}
+                                                fileType={file.fileType}
+                                                size="small"
+                                              />
+                                            </div>
+                                            <div>
+                                              <div className="flex items-center gap-1">
+                                                <span>{file.fileName}</span>
+                                                {file.starred && (
+                                                  <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                                                )}
+                                              </div>
+                                              {file.shared && (
+                                                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                  {/* <Share2 className="h-3 w-3" /> */}
+                                                  {/* <span>
+                                                  Shared with 6 people
+                                                  {file.sharedWith.length} people
+                                                </span> */}
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </TableCell>
+                                        <TableCell>
+                                          {formatFileSize(file?.size)}
+                                        </TableCell>
+                                        <TableCell>
+                                          {formatDate(file.createdAt)}
+                                        </TableCell>
+                                        <TableCell>
+                                          {file.shared ? (
+                                            <Badge
+                                              variant="outline"
+                                              className="bg-green-500/10 text-green-500 border-green-500/20"
+                                            >
+                                              <Share2 className="h-3 w-3 mr-1" />
+                                              Shared
+                                            </Badge>
+                                          ) : (
+                                            <Badge
+                                              variant="outline"
+                                              className="bg-gray-500/10 text-gray-500 border-gray-500/20"
+                                            >
+                                              Private
+                                            </Badge>
+                                          )}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                          <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                              <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8"
+                                              >
+                                                <MoreHorizontal className="h-4 w-4" />
+                                              </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                              {file.type !== "folder" && (
+                                                <>
+                                                  <DropdownMenuItem
+                                                    onClick={() =>
+                                                      setFilePreview(file)
+                                                    }
+                                                  >
+                                                    <Eye className="h-4 w-4 mr-2" />
+                                                    View
+                                                  </DropdownMenuItem>
+
+                                                  <DropdownMenuItem
+                                                    disabled={
+                                                      downloadingFile ===
+                                                      file.fileName
+                                                    }
+                                                    onClick={() =>
+                                                      handleDownload(file)
+                                                    }
+                                                  >
+                                                    {downloadingFile ===
+                                                    file.fileName ? (
+                                                      <>
+                                                        <Loader2 className="h-4 w-4 mr-2 animate-spin text-primary" />
+                                                        Downloading...
+                                                      </>
+                                                    ) : (
+                                                      <>
+                                                        <Download className="h-4 w-4 mr-2" />
+                                                        Download
+                                                      </>
+                                                    )}
+                                                  </DropdownMenuItem>
+                                                </>
+                                              )}
+                                              <DropdownMenuItem
+                                                onClick={() =>
+                                                  handleShare(file)
+                                                }
+                                              >
+                                                <Share2 className="h-4 w-4 mr-2" />
+                                                Share
+                                              </DropdownMenuItem>
+                                              <DropdownMenuItem
+                                                onClick={() => handleStar(file)}
+                                              >
+                                                <Star className="h-4 w-4 mr-2" />
+                                                {file.starred
+                                                  ? "Unstar"
+                                                  : "Star"}
+                                              </DropdownMenuItem>
+                                              {/* <DropdownMenuItem
+                                              onClick={() =>
+                                                handleViewDetails(file.id)
+                                              }
+                                            >
+                                              <Info className="h-4 w-4 mr-2" />
+                                              View Details
+                                            </DropdownMenuItem> */}
+                                              <DropdownMenuSeparator />
+                                              {file.fileType !== "folder" && (
+                                                <DropdownMenuItem
+                                                  onClick={() =>
+                                                    handleMoveSelected(file)
+                                                  }
+                                                >
+                                                  <FolderIcon className="h-4 w-4 mr-2" />
+                                                  Move Selected
+                                                </DropdownMenuItem>
+                                              )}
+                                              <DropdownMenuItem
+                                                className="text-destructive"
+                                                onClick={() => {
+                                                  setSelectedFilesToDelete([
+                                                    file.fileName,
+                                                  ]);
+                                                  setDeleteDialogOpen(true);
+                                                }}
+                                              >
+                                                <Trash2 className="h-4 w-4 mr-2" />
+                                                Delete
+                                              </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                          </DropdownMenu>
+                                        </TableCell>
+                                      </TableRow>
+                                    )
+                                  )}
+                                </TableBody>
+                              </Table>
+                            ) : (
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 p-4">
+                                {(paginatedFiles as FileItem[]).map(
+                                  (file, index) => (
+                                    <div
                                       key={file.id}
-                                      className={`hover:bg-muted/50 ${
+                                      className={`group relative p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors ${
                                         dragOverFolderId === file.id
                                           ? "bg-muted ring-2 ring-primary"
                                           : ""
                                       }`}
-                                      draggable={true}
+                                      draggable
                                       onDragStart={(e) =>
                                         handleItemDragStart(e, file.id)
                                       }
@@ -1083,229 +1287,8 @@ const CloudStorage = () => {
                                           : undefined
                                       }
                                     >
-                                      <TableCell>
-                                        <div className="flex items-center gap-2">
-                                          <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
-                                          <Checkbox
-                                            checked={selectedFiles.includes(
-                                              file.id
-                                            )}
-                                            onCheckedChange={() =>
-                                              handleFileSelect(file.id)
-                                            }
-                                          />
-                                        </div>
-                                      </TableCell>
-                                      <TableCell>
-                                        <div
-                                          {...(file.fileType === "folder" && {
-                                            title: "Click to open folder",
-                                          })}
-                                          className={`flex items-center gap-2 ${
-                                            file.fileType === "folder" &&
-                                            "cursor-pointer"
-                                          }`}
-                                          onClick={() =>
-                                            handleFolderSelection(file)
-                                          }
-                                        >
-                                          <div className="h-8 w-8 flex items-center justify-center">
-                                            <FileTypeIcon
-                                              index={index}
-                                              fileName={file.fileName}
-                                              fileType={file.fileType}
-                                              size="small"
-                                            />
-                                          </div>
-                                          <div>
-                                            <div className="flex items-center gap-1">
-                                              <span>{file.fileName}</span>
-                                              {file.starred && (
-                                                <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
-                                              )}
-                                            </div>
-                                            {file.shared && (
-                                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                                {/* <Share2 className="h-3 w-3" /> */}
-                                                {/* <span>
-                                                  Shared with 6 people
-                                                  {file.sharedWith.length} people
-                                                </span> */}
-                                              </div>
-                                            )}
-                                          </div>
-                                        </div>
-                                      </TableCell>
-                                      <TableCell>
-                                        {formatFileSize(file?.size)}
-                                      </TableCell>
-                                      <TableCell>
-                                        {formatDate(file.createdAt)}
-                                      </TableCell>
-                                      <TableCell>
-                                        {file.shared ? (
-                                          <Badge
-                                            variant="outline"
-                                            className="bg-green-500/10 text-green-500 border-green-500/20"
-                                          >
-                                            <Share2 className="h-3 w-3 mr-1" />
-                                            Shared
-                                          </Badge>
-                                        ) : (
-                                          <Badge
-                                            variant="outline"
-                                            className="bg-gray-500/10 text-gray-500 border-gray-500/20"
-                                          >
-                                            Private
-                                          </Badge>
-                                        )}
-                                      </TableCell>
-                                      <TableCell className="text-right">
-                                        <DropdownMenu>
-                                          <DropdownMenuTrigger asChild>
-                                            <Button
-                                              variant="ghost"
-                                              size="icon"
-                                              className="h-8 w-8"
-                                            >
-                                              <MoreHorizontal className="h-4 w-4" />
-                                            </Button>
-                                          </DropdownMenuTrigger>
-                                          <DropdownMenuContent align="end">
-                                            {file.type !== "folder" && (
-                                              <>
-                                                <DropdownMenuItem
-                                                  onClick={() =>
-                                                    setFilePreview(file)
-                                                  }
-                                                >
-                                                  <Eye className="h-4 w-4 mr-2" />
-                                                  View
-                                                </DropdownMenuItem>
-
-                                                <DropdownMenuItem
-                                                  disabled={
-                                                    downloadingFile ===
-                                                    file.fileName
-                                                  }
-                                                  onClick={() =>
-                                                    handleDownload(file)
-                                                  }
-                                                >
-                                                  {downloadingFile ===
-                                                  file.fileName ? (
-                                                    <>
-                                                      <Loader2 className="h-4 w-4 mr-2 animate-spin text-primary" />
-                                                      Downloading...
-                                                    </>
-                                                  ) : (
-                                                    <>
-                                                      <Download className="h-4 w-4 mr-2" />
-                                                      Download
-                                                    </>
-                                                  )}
-                                                </DropdownMenuItem>
-                                              </>
-                                            )}
-                                            <DropdownMenuItem
-                                              onClick={() => handleShare(file)}
-                                            >
-                                              <Share2 className="h-4 w-4 mr-2" />
-                                              Share
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                              onClick={() => handleStar(file)}
-                                            >
-                                              <Star className="h-4 w-4 mr-2" />
-                                              {file.starred ? "Unstar" : "Star"}
-                                            </DropdownMenuItem>
-                                            {/* <DropdownMenuItem
-                                              onClick={() =>
-                                                handleViewDetails(file.id)
-                                              }
-                                            >
-                                              <Info className="h-4 w-4 mr-2" />
-                                              View Details
-                                            </DropdownMenuItem> */}
-                                            <DropdownMenuSeparator />
-                                            {file.fileType !== "folder" && (
-                                              <DropdownMenuItem
-                                                onClick={() =>
-                                                  handleMoveSelected(file)
-                                                }
-                                              >
-                                                <FolderIcon className="h-4 w-4 mr-2" />
-                                                Move Selected
-                                              </DropdownMenuItem>
-                                            )}
-                                            <DropdownMenuItem
-                                              className="text-destructive"
-                                              onClick={() => {
-                                                setSelectedFilesToDelete([
-                                                  file.fileName,
-                                                ]);
-                                                setDeleteDialogOpen(true);
-                                              }}
-                                            >
-                                              <Trash2 className="h-4 w-4 mr-2" />
-                                              Delete
-                                            </DropdownMenuItem>
-                                          </DropdownMenuContent>
-                                        </DropdownMenu>
-                                      </TableCell>
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
-                            ) : (
-                              <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 p-4">
-                                {(files as FileItem[]).map((file, index) => (
-                                  <div
-                                    key={file.id}
-                                    className={`relative group px-4 rounded-lg border border-border hover:bg-muted/50 transition-colors ${
-                                      dragOverFolderId === file.id
-                                        ? "bg-muted ring-2 ring-primary"
-                                        : ""
-                                    } ${
-                                      file.fileType === "folder"
-                                        ? "py-3"
-                                        : "pt-2 pb-3"
-                                    }`}
-                                    draggable
-                                    onDragStart={(e) =>
-                                      handleItemDragStart(e, file.id)
-                                    }
-                                    onDragOver={(e) =>
-                                      file.fileType === "folder"
-                                        ? handleFolderDragOver(e, file.id)
-                                        : undefined
-                                    }
-                                    onDragLeave={(e) =>
-                                      file.fileType === "folder"
-                                        ? handleFolderDragLeave(e)
-                                        : undefined
-                                    }
-                                    onDrop={(e) =>
-                                      file.fileType === "folder"
-                                        ? handleFolderDrop(e, file.id)
-                                        : undefined
-                                    }
-                                  >
-                                    <div
-                                      className={`${
-                                        file.fileType === "folder"
-                                          ? "h-full flex flex-col justify-between gap-1"
-                                          : "w-full flex items-center gap-1"
-                                      }`}
-                                    >
                                       {/* drag handle + checkbox */}
-                                      <div
-                                        className={`flex items-center gap-2 ${
-                                          file.fileType === "folder"
-                                            ? "absolute top-2 left-2"
-                                            : "flex-shrink-0 mr-2"
-                                        }`}
-                                      >
+                                      <div className="absolute top-2 left-2 flex items-center gap-2">
                                         <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
                                         <Checkbox
                                           checked={selectedFiles.includes(
@@ -1322,21 +1305,17 @@ const CloudStorage = () => {
                                         {...(file.fileType === "folder" && {
                                           title: "Click to open folder",
                                         })}
-                                        className={`flex items-center ${
+                                        className={`flex flex-col items-center text-center mb-3 ${
                                           file.fileType === "folder"
-                                            ? "flex-col cursor-pointer text-center mb-3"
-                                            : "gap-2 flex-1 min-w-0"
+                                            ? "cursor-pointer"
+                                            : ""
                                         }`}
                                         onClick={() =>
                                           file.fileType === "folder" &&
                                           handleFolderSelection(file)
                                         }
                                       >
-                                        <div
-                                          className={`${
-                                            file.fileType === "folder" && "mb-2"
-                                          }`}
-                                        >
+                                        <div className="mb-2">
                                           <FileTypeIcon
                                             index={index}
                                             fileName={file.fileName}
@@ -1344,35 +1323,19 @@ const CloudStorage = () => {
                                             size="large"
                                           />
                                         </div>
-                                        <div
-                                          className={`${
-                                            file.fileType === "folder"
-                                              ? "w-full"
-                                              : "flex-1 min-w-0"
-                                          }`}
-                                        >
-                                          <div
-                                            className={`font-medium truncate text-sm ${
-                                              file.fileType === "folder"
-                                                ? ""
-                                                : "min-w-0"
-                                            }`}
-                                            title={file.fileName}
-                                          >
+                                        <div className="w-full">
+                                          <div className="font-medium truncate text-sm">
                                             {file.fileName}
                                           </div>
-                                          {file.fileType === "folder" && (
-                                            <div className="text-xs text-muted-foreground mt-1">
-                                              {formatFileSize(file.size)}
-                                            </div>
-                                          )}
+                                          <div className="text-xs text-muted-foreground mt-1">
+                                            {formatFileSize(file.size)}
+                                          </div>
                                         </div>
                                       </div>
 
                                       {/* metadata + menu */}
                                       <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                        {file.fileType === "folder" &&
-                                          formatDate(file.createdAt)}
+                                        {formatDate(file.createdAt)}
                                         <div className="flex items-center gap-1">
                                           {file.shared && (
                                             <Share2 className="h-3.5 w-3.5 text-green-500" />
@@ -1382,14 +1345,7 @@ const CloudStorage = () => {
                                           )}
                                         </div>
                                       </div>
-
-                                      <div
-                                        className={`${
-                                          file.fileType === "folder"
-                                            ? "absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            : ""
-                                        }`}
-                                      >
+                                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <DropdownMenu>
                                           <DropdownMenuTrigger asChild>
                                             <Button
@@ -1461,112 +1417,24 @@ const CloudStorage = () => {
                                         </DropdownMenu>
                                       </div>
                                     </div>
-
-                                    {!file?.previewUrl ? null : (
-                                      <div className="flex items-center justify-center mt-3 w-full h-[76px] overflow-hidden rounded">
-                                        {(() => {
-                                          const ext =
-                                            file.fileName
-                                              .split(".")
-                                              .pop()
-                                              ?.toLowerCase() || "";
-                                          const src = file.previewUrl;
-
-                                          if (
-                                            [
-                                              "png",
-                                              "jpg",
-                                              "jpeg",
-                                              "gif",
-                                              "webp",
-                                            ].includes(ext)
-                                          ) {
-                                            return (
-                                              <img
-                                                src={src}
-                                                alt={file.fileName}
-                                                className="size-full rounded object-fit-cover"
-                                              />
-                                            );
-                                          } else if (ext === "pdf") {
-                                            return (
-                                              <iframe
-                                                src={src}
-                                                title={file.fileName}
-                                                className="size-full rounded"
-                                              />
-                                            );
-                                          } else if (
-                                            [
-                                              "doc",
-                                              "docx",
-                                              "xls",
-                                              "xlsx",
-                                              "ppt",
-                                              "pptx",
-                                            ].includes(ext)
-                                          ) {
-                                            const officeSrc = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
-                                              src
-                                            )}`;
-                                            return (
-                                              <iframe
-                                                src={officeSrc}
-                                                title={file.fileName}
-                                                className="size-full rounded"
-                                              />
-                                            );
-                                          } else if (
-                                            ["mp4", "webm", "ogg"].includes(ext)
-                                          ) {
-                                            return (
-                                              <video
-                                                src={src}
-                                                controls
-                                                className="size-full rounded"
-                                              />
-                                            );
-                                          } else if (
-                                            ["mp3", "wav", "ogg"].includes(ext)
-                                          ) {
-                                            return (
-                                              <audio
-                                                src={src}
-                                                controls
-                                                className="size-full rounded"
-                                              />
-                                            );
-                                          } else {
-                                            return (
-                                              <div className="text-muted-foreground size-full flex items-center justify-center rounded">
-                                                <p>
-                                                  Preview not available for this
-                                                  file type.
-                                                </p>
-                                              </div>
-                                            );
-                                          }
-                                        })()}
-                                      </div>
-                                    )}
-                                  </div>
-                                ))}
+                                  )
+                                )}
                               </div>
                             )}
 
                             <div className="flex items-center justify-between px-4 py-4 border-t">
                               <div className="text-sm text-muted-foreground">
                                 Showing{" "}
-                                {pagination.total === 0
-                                  ? 0
-                                  : (pagination.page - 1) * pagination.limit +
-                                    1}{" "}
+                                {Math.min(
+                                  (currentPage - 1) * itemsPerPage + 1,
+                                  files.length
+                                )}{" "}
                                 to{" "}
                                 {Math.min(
-                                  pagination.page * pagination.limit,
-                                  pagination.total
+                                  currentPage * itemsPerPage,
+                                  files.length
                                 )}{" "}
-                                of {pagination.total} files
+                                of {files.length} files
                               </div>
 
                               <div className="flex items-center space-x-4">
@@ -1582,9 +1450,9 @@ const CloudStorage = () => {
                                       Items per page
                                     </DropdownMenuLabel>
                                     <DropdownMenuRadioGroup
-                                      value={String(limit)}
+                                      value={String(itemsPerPage)}
                                       onValueChange={(value) => {
-                                        setLimit(Number(value));
+                                        setItemsPerPage(Number(value));
                                         handlePageChange(1);
                                       }}
                                     >
@@ -1604,21 +1472,23 @@ const CloudStorage = () => {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handlePageChange(page - 1)}
-                                    disabled={!pagination?.hasPrevious}
+                                    onClick={() =>
+                                      handlePageChange(currentPage - 1)
+                                    }
+                                    disabled={currentPage === 1}
                                   >
                                     <ChevronLeft className="h-4 w-4" />
                                     Previous
                                   </Button>
                                   <div className="flex items-center space-x-1">
                                     {Array.from(
-                                      { length: pagination.pages },
+                                      { length: totalPages },
                                       (_, i) => i + 1
                                     ).map((page) => (
                                       <Button
                                         key={page}
                                         variant={
-                                          pagination.page === page
+                                          currentPage === page
                                             ? "default"
                                             : "outline"
                                         }
@@ -1633,8 +1503,10 @@ const CloudStorage = () => {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handlePageChange(page + 1)}
-                                    disabled={!pagination?.hasNext}
+                                    onClick={() =>
+                                      handlePageChange(currentPage + 1)
+                                    }
+                                    disabled={currentPage === totalPages}
                                   >
                                     Next
                                     <ChevronRight className="h-4 w-4 ml-1" />
@@ -1728,19 +1600,6 @@ const CloudStorage = () => {
         selectedFolder={selectedFolder}
       /> */}
 
-      {/* here it is */}
-
-      <ConfirmBulkDeleteDialog
-        open={bulkDeleteDialogOpen}
-        onClose={() => {
-          setBulkDeleteDialogOpen(false);
-          setBulkDeleteLoading(false);
-        }}
-        isLoading={bulkDeleteLoading}
-        selectedFiles={selectedFiles}
-        onDeleteSelected={handleDeleteSelected}
-      />
-
       <ConfirmDeleteDialog
         open={deleteDialogOpen}
         onClose={() => {
@@ -1768,15 +1627,6 @@ const CloudStorage = () => {
         plans={storagePlans}
       />
 
-      {/* Bulk Share Dialog */}
-      <BulkShareDialog
-        open={showBulkShareDialog}
-        onOpenChange={setShowBulkShareDialog}
-        files={files}
-        selectedFiles={selectedFiles}
-        selectedFolder={selectedFolder}
-      />
-
       {/* Share Dialog */}
       <ShareDialog
         open={showShareDialog}
@@ -1789,17 +1639,21 @@ const CloudStorage = () => {
       <MoveFilesDialog
         open={moveDialogOpen}
         onOpenChange={setMoveDialogOpen}
+        files={files}
         selectedFiles={selectedFiles}
         setSelectedFiles={setSelectedFiles}
-        selectedFolder={selectedFolder}
+        selectedFolderId={selectedFolderForMove}
+        setSelectedFolderId={setSelectedFolderForMove}
       />
       {/* Copy Files Dialog */}
       <CopyFilesDialog
         open={copyDialogOpen}
         onOpenChange={setCopyDialogOpen}
+        files={files}
         selectedFiles={selectedFiles}
         setSelectedFiles={setSelectedFiles}
-        selectedFolder={selectedFolder}
+        selectedFolderId={selectedFolderForMove}
+        setSelectedFolderId={setSelectedFolderForMove}
       />
 
       {/* Storage Sync Dialog */}
