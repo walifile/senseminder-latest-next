@@ -1,21 +1,25 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { ArrowLeft, Zap, FolderOpen, HardDrive, Download } from "lucide-react";
+import { Zap, FolderOpen, HardDrive, Download } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
 export default function DesktopAppDialog() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = React.useState(false);
 
   useEffect(() => {
-    const hasSeenDialog = localStorage.getItem("desktopAppDialogShown");
-    localStorage.setItem("desktopAppDialogShown", "true");
-    if (!hasSeenDialog) {
-      setIsOpen(true);
+    if (pathname === "/dashboard/storage") {
+      const hasSeenDialog = localStorage.getItem("desktopAppDialogShown");
+      if (!hasSeenDialog) {
+        localStorage.setItem("desktopAppDialogShown", "true");
+        setIsOpen(true);
+      }
     }
-  }, []);
+  }, [pathname]);
 
   const handleClose = () => {
     localStorage.setItem("desktopAppDialogShown", "true");
