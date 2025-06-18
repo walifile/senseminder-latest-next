@@ -232,6 +232,7 @@ const CloudStorage = () => {
   const handleCategorySelection = (category: string) => {
     setSelectedCategory(category);
     handleCloseFolder();
+    setPage(1);
   };
 
   const handleMoveSelected = (file: FileItem) => {
@@ -397,6 +398,7 @@ const CloudStorage = () => {
   const handleSort = (value: string) => {
     const sort = value as "name" | "date" | "size";
     setSortBy(sort);
+    setPage(1);
   };
 
   // Handle file selection
@@ -717,6 +719,11 @@ const CloudStorage = () => {
   //   return 0;
   // });
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setPage(1);
+  };
+
   return (
     <>
       <Card className="relative">
@@ -796,7 +803,7 @@ const CloudStorage = () => {
                       <Input
                         placeholder="Search files..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={handleSearchChange}
                         className="pl-8"
                       />
                     </div>

@@ -24,11 +24,6 @@ const SocailLogin = () => {
       setIsGoogleLoading(true);
       await googleSignUpService();
 
-      toast({
-        title: "Success",
-        description: "Signed up successfully with Google!",
-      });
-
       router.push(routes?.dashboard);
     } catch (err) {
       const error =
@@ -47,12 +42,6 @@ const SocailLogin = () => {
     try {
       setIsAppleLoading(true);
       await appleSignUpService();
-
-      toast({
-        title: "Success",
-        description: "Signed up successfully with Apple!",
-      });
-
       router.push(routes?.dashboard);
     } catch (err) {
       const error =

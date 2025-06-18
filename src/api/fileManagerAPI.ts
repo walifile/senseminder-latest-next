@@ -4,7 +4,7 @@ import { baseQueryWithReauth } from "./apiUtils";
 export const fileManagerAPI = createApi({
   reducerPath: "fileManagerAPI",
   baseQuery: baseQueryWithReauth(false),
-  tagTypes: ["Files", "VM"],
+  tagTypes: ["Files", "VM", "Hierarchy"],
   endpoints: (builder) => ({
     getEstimate: builder.mutation({
       query: ({ operatingSystem, machineType, storageSize }) => {
@@ -148,6 +148,18 @@ export const fileManagerAPI = createApi({
       invalidatesTags: ["VM"],
     }),
 
+    listHierarchy: builder.query({
+      query: ({ userId, region }) => ({
+        url: "list-hierarchy",
+        method: "GET",
+        params: {
+          userId,
+          region,
+        },
+      }),
+      providesTags: ["Hierarchy"],
+    }),
+
     // storage part
     starFile: builder.mutation({
       query: (payload) => ({
@@ -197,7 +209,7 @@ export const fileManagerAPI = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Files"],
+      invalidatesTags: ["Files", "Hierarchy"],
     }),
     listFiles: builder.query({
       query: ({
@@ -275,7 +287,7 @@ export const fileManagerAPI = createApi({
           folderName,
         },
       }),
-      invalidatesTags: ["Files"],
+      invalidatesTags: ["Files", "Hierarchy"],
     }),
     uploadToPresignedUrl: builder.mutation({
       query: ({ uploadUrl, file }) => ({
@@ -379,4 +391,5 @@ export const {
   useCopyFilesMutation,
   useMoveFilesMutation,
   useGetUsageQuery,
+  useListHierarchyQuery,
 } = fileManagerAPI;

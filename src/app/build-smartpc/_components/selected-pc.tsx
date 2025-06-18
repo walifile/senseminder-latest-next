@@ -38,28 +38,63 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
       const currentPC = cloudPCs[selectedPCs[0]];
       if (!currentPC?.userId || !currentPC?.systemName) return;
 
-      try {
-        const res = await fetch(
-          `https://4oacxj1xyk.execute-api.us-east-1.amazonaws.com/instance-details?userId=${currentPC.userId}&instanceName=${currentPC.systemName}`
-        );
-        const data = await res.json();
-        if (data && data.instanceId) {
-          const updatedPC = {
-            ...currentPC,
-            cpuUsage: parseFloat(data.cpuUsage.replace("%", "")),
-            memoryUsage: 0,
-            region: data.region,
-            uptime: data.uptime,
-            specs: data.specs, // ✅ Use the correct nested object from backend
-          };
+      // try {
+      //   const res = await fetch(
+      //     `https://4oacxj1xyk.execute-api.us-east-1.amazonaws.com/instance-details?userId=${currentPC.userId}&instanceName=${currentPC.systemName}`
+      //   );
+      //   const data = await res.json();
+      //   if (data && data.instanceId) {
+      //     const updatedPC = {
+      //       ...currentPC,
+      //       cpuUsage: parseFloat(data.cpuUsage.replace("%", "")),
+      //       memoryUsage: 0,
+      //       region: data.region,
+      //       uptime: data.uptime,
+      //       specs: data.specs, // ✅ Use the correct nested object from backend
+      //     };
 
-          const updatedCloudPCs = [...cloudPCs];
-          updatedCloudPCs[selectedPCs[0]] = updatedPC;
-          setCloudPCs(updatedCloudPCs);
+      //     const updatedCloudPCs = [...cloudPCs];
+      //     updatedCloudPCs[selectedPCs[0]] = updatedPC;
+      //     setCloudPCs(updatedCloudPCs);
+      //   }
+      // } catch (err) {
+      //   console.error("Failed to load real-time metrics:", err);
+      // }
+      try {
+          const res = await fetch("https://4oacxj1xyk.execute-api.us-east-1.amazonaws.com/instance-details-v2", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              userId: currentPC.userId,
+              instanceNames: [currentPC.systemName], // Send as array, even for one PC
+            }),
+          });
+
+          const data = await res.json();
+
+          //@ts-ignore
+          const matched = data.find((item) => item.systemName === currentPC.systemName && item.instanceId);
+
+          if (matched) {
+            const updatedPC = {
+              ...currentPC,
+              cpuUsage: parseFloat(matched.cpuUsage.replace("%", "")),
+              memoryUsage: 0,
+              region: matched.region,
+              uptime: matched.uptime,
+              specs: matched.specs,
+            };
+
+            const updatedCloudPCs = [...cloudPCs];
+            updatedCloudPCs[selectedPCs[0]] = updatedPC;
+            setCloudPCs(updatedCloudPCs);
+          }
+        } catch (err) {
+          console.error("Failed to load real-time metrics:", err);
         }
-      } catch (err) {
-        console.error("Failed to load real-time metrics:", err);
-      }
+
     };
 
     fetchMetrics();
@@ -213,64 +248,6 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                     </Button>
                   </div>
 
-                  {pc[0]?.assignedUsers && pc[0]?.assignedUsers?.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {pc[0].assignedUsers.map((user) => (
-                        <div
-                          key={user.id}
-                          className="group flex items-center gap-2 bg-muted/30 hover:bg-muted/50 px-2 py-1 rounded-md"
-                        >
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                              {user.name?.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="text-xs font-medium leading-none">
-                              {user.name}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {user.email}
-                            </p>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (pc[0]?.assignedUsers) {
-                                const updatedPC = {
-                                  ...pc[0],
-                                  assignedUsers: pc[0].assignedUsers.filter(
-                                    (u) => u.email !== user.email
-                                  ),
-                                };
-                                setCloudPCs(
-                                  cloudPCs.map((p) =>
-                                    p.instanceId === pc[0].instanceId
-                                      ? updatedPC
-                                      : p
-                                  )
-                                );
-                                toast({
-                                  title: "User Removed",
-                                  description: `${user.name} has been removed from ${pc[0].name}`,
-                                });
-                              }
-                            }}
-                            className="opacity-0 group-hover:opacity-100 h-6 w-6 ml-1"
-                          >
-                            <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center gap-2 py-3 text-xs text-muted-foreground">
-                      <Users className="h-4 w-4" />
-                      No assigned users
-                    </div>
-                  )}
                 </div>
               </div>
             )}

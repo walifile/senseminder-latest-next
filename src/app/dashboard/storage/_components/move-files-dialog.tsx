@@ -13,7 +13,11 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
-import { useListFilesQuery, useMoveFilesMutation } from "@/api/fileManagerAPI";
+import {
+  useListFilesQuery,
+  useListHierarchyQuery,
+  useMoveFilesMutation,
+} from "@/api/fileManagerAPI";
 import { FileItem } from "../types";
 import FolderListView from "./folder-list-view";
 import { getRelativePath } from "../utils";
@@ -46,9 +50,16 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
     folder: folderPath,
   });
 
+  // const { data, isLoading: isFilesLoading } = useListHierarchyQuery({
+  //   region: "virginia",
+  //   userId,
+  // });
+
   const folders = data?.files.filter(
     (file: FileItem) => file.fileType === "folder"
   );
+
+  // const folders = data?.folders || [];
 
   const handleMove = async () => {
     if (!selectedFolderId) return;

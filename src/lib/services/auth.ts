@@ -97,6 +97,7 @@ export const getUserAttributes = async () => {
       // organization: attributes['custom:organization'] || '',
       role: attributes["custom:role"] || "user",
       id: attributes["sub"] || "",
+      ownerid: attributes["custom:ownerid"] || attributes["ownerid"] || "",
       // cellPhone: attributes.phone_number || '',
       // country: attributes['custom:country'] || ''
     };

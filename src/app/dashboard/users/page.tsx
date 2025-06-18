@@ -26,7 +26,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   UserPlus, MoreHorizontal, UserCheck, UserX, Users, Search, Mail,
-  Users2, Info, Monitor,
+  Info, Monitor,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "@/hooks/use-toast";
@@ -37,27 +37,12 @@ import { assignPC, unassignPC, getAssignments } from "@/api/assignpc";
 import { inviteUser, getUsers, deleteUser } from "@/api/user";
 import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
 
-const GROUP_OPTIONS = [
-  "Engineering", "Support", "IT", "Marketing", "Sales",
-];
-const mockGroups = [
-  { id: 1, name: "Management", members: 2, description: "Company management team" },
-  { id: 2, name: "Engineering", members: 2, description: "Software engineering team" },
-  { id: 3, name: "Marketing", members: 1, description: "Marketing department" },
-  { id: 4, name: "Sales", members: 0, description: "Sales team" },
-  { id: 5, name: "Support", members: 0, description: "Support desk" },
-  { id: 6, name: "IT", members: 0, description: "IT department" },
-];
+// --- Remove all group-related types, options, sample data ---
 
 type UserFormValues = {
   name: string;
   email: string;
   role: string;
-  group: string;
-};
-type GroupFormValues = {
-  name: string;
-  description: string;
 };
 
 type ApiUser = {
@@ -67,7 +52,6 @@ type ApiUser = {
   id: string;
   role: "admin" | "member";
   owner_id: string;
-  group: string;
   createdAt: string;
   country?: string;
   organization?: string;
@@ -75,16 +59,13 @@ type ApiUser = {
   status?: "active" | "pending" | string;
 };
 
-
 const UsersManagementPage = () => {
   const [users, setUsers] = useState<ApiUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [reloadFlag, setReloadFlag] = useState(0);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
-  const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
   const [isAssignPCDialogOpen, setIsAssignPCDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("users");
   const [inviteLoading, setInviteLoading] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteUserEmail, setDeleteUserEmail] = useState<string | null>(null);
@@ -105,11 +86,7 @@ const UsersManagementPage = () => {
       name: "",
       email: "",
       role: "",
-      group: "",
     },
-  });
-  const groupForm = useForm<GroupFormValues>({
-    defaultValues: { name: "", description: "" },
   });
 
   // Fetch users
@@ -173,19 +150,17 @@ const UsersManagementPage = () => {
   // "Reload everything" fn
   const globalReload = () => {
     setReloadFlag((r) => r + 1);
-    // refetchSmartPCs();
-      if (mainUser) {         
+    if (mainUser) {         
       refetchSmartPCs();
     }
     fetchAssignments();
   };
 
-  // Filter users
+  // Filter users (remove group search)
   const filteredUsers = users.filter(
     (user) =>
       ((user.firstName?.toLowerCase() + " " + user.lastName?.toLowerCase()).includes(searchQuery.toLowerCase())) ||
-      (user.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (user.group?.toLowerCase().includes(searchQuery.toLowerCase()))
+      (user.email.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   // Handlers
@@ -196,7 +171,7 @@ const UsersManagementPage = () => {
         name: data.name,
         email: data.email,
         role: data.role === "admin" || data.role === "Admin" ? "admin" : "member",
-        group: data.group,
+        group: "", // always send blank
       };
       //@ts-ignore
       await inviteUser(apiPayload);
@@ -271,15 +246,6 @@ const UsersManagementPage = () => {
         return "bg-gray-500/10 text-gray-500";
     }
   }
-
-  const handleCreateGroup = (data: GroupFormValues) => {
-    toast({
-      title: "Group created",
-      description: `The group "${data.name}" has been created`,
-    });
-    setIsGroupDialogOpen(false);
-    groupForm.reset();
-  };
 
   const handleAssignPC = (user: ApiUser) => {
     setSelectedUser(user);
@@ -375,10 +341,6 @@ const UsersManagementPage = () => {
           </Popover>
         </div>
         <div className="flex space-x-2">
-          <Button onClick={() => setIsGroupDialogOpen(true)} variant="outline">
-            <Users className="h-4 w-4 mr-2" />
-            New Group
-          </Button>
           <Button onClick={() => setIsInviteDialogOpen(true)}>
             <UserPlus className="h-4 w-4 mr-2" />
             Invite User
@@ -386,20 +348,20 @@ const UsersManagementPage = () => {
         </div>
       </div>
 
-      {/* Main Card (users/groups tabs) */}
+      {/* Main Card (users tab only) */}
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Manage Users & Groups</CardTitle>
+              <CardTitle>Manage Users</CardTitle>
               <CardDescription>
-                Invite, organize, and manage user access
+                Invite and manage user access
               </CardDescription>
             </div>
             <div className="relative w-64">
               <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search users or groups..."
+                placeholder="Search users..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-8"
@@ -408,15 +370,11 @@ const UsersManagementPage = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="users" value={activeTab} onValueChange={setActiveTab}>
+          <Tabs defaultValue="users" value="users">
             <TabsList className="mb-4">
               <TabsTrigger value="users" className="flex items-center">
                 <Users className="h-4 w-4 mr-2" />
                 Users
-              </TabsTrigger>
-              <TabsTrigger value="groups" className="flex items-center">
-                <Users2 className="h-4 w-4 mr-2" />
-                Groups
               </TabsTrigger>
             </TabsList>
             <TabsContent value="users" className="space-y-4">
@@ -426,7 +384,6 @@ const UsersManagementPage = () => {
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
-                    <TableHead>Group</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Assigned PCs</TableHead>
                     <TableHead></TableHead>
@@ -435,7 +392,7 @@ const UsersManagementPage = () => {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
+                      <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
                         Loading users...
                       </TableCell>
                     </TableRow>
@@ -451,7 +408,6 @@ const UsersManagementPage = () => {
                             {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                           </Badge>
                         </TableCell>
-                        <TableCell>{user.group}</TableCell>
                         <TableCell>
                           <Badge
                             variant="secondary"
@@ -481,7 +437,6 @@ const UsersManagementPage = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              {/* Only visible for members */}
                               {user.role?.toLowerCase() === "member" && (
                                 <DropdownMenuItem
                                   onClick={() => handleAssignPC(user)}
@@ -513,74 +468,10 @@ const UsersManagementPage = () => {
                   ) : (
                     <TableRow>
                       <TableCell
-                        colSpan={7}
+                        colSpan={6}
                         className="text-center py-6 text-muted-foreground"
                       >
                         No users found. Try adjusting your search or invite new users.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TabsContent>
-            {/* GROUPS TAB */}
-            <TabsContent value="groups" className="space-y-4">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Group Name</TableHead>
-                    <TableHead>Members</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mockGroups.length > 0 ? (
-                    mockGroups
-                      .filter(
-                        (group) =>
-                          group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          group.description.toLowerCase().includes(searchQuery.toLowerCase()),
-                      )
-                      .map((group) => (
-                        <TableRow key={group.id}>
-                          <TableCell className="font-medium">
-                            {group.name}
-                          </TableCell>
-                          <TableCell>{group.members}</TableCell>
-                          <TableCell>{group.description}</TableCell>
-                          <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                  <span className="sr-only">Open menu</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
-                                  <UserPlus className="h-4 w-4 mr-2" />
-                                  Add Members
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <Users className="h-4 w-4 mr-2" />
-                                  View Members
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="text-destructive">
-                                  Delete Group
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={4}
-                        className="text-center py-6 text-muted-foreground"
-                      >
-                        No groups found. Try adjusting your search or create a new group.
                       </TableCell>
                     </TableRow>
                   )}
@@ -591,7 +482,6 @@ const UsersManagementPage = () => {
         </CardContent>
         <CardFooter className="border-t pt-6 flex justify-between text-muted-foreground text-sm">
           <p>Total users: {users.length}</p>
-          <p>Total groups: {mockGroups.length}</p>
         </CardFooter>
       </Card>
 
@@ -663,33 +553,6 @@ const UsersManagementPage = () => {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={userForm.control}
-                name="group"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Group</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a group" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {GROUP_OPTIONS.map((group) => (
-                          <SelectItem key={group} value={group}>
-                            {group}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <DialogFooter>
                 <Button type="submit" disabled={inviteLoading}>
                   {inviteLoading ? "Sending..." : "Send Invitation"}
@@ -698,11 +561,6 @@ const UsersManagementPage = () => {
             </form>
           </Form>
         </DialogContent>
-      </Dialog>
-
-      {/* ---------- CREATE GROUP DIALOG ---------- */}
-      <Dialog open={isGroupDialogOpen} onOpenChange={setIsGroupDialogOpen}>
-        {/* ... unchanged ... */}
       </Dialog>
 
       {/* ---------- ASSIGN/UNASSIGN PC DIALOG ---------- */}
@@ -807,7 +665,6 @@ const UsersManagementPage = () => {
       </Dialog>
 
       {/* DELETE USER CONFIRMATION */}
-       {/* Delete User Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
           <DialogHeader>

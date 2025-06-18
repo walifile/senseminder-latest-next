@@ -10,7 +10,7 @@ import { FaApple } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { handleSignUp } from "@/lib/services/auth";
 import { useToast } from "@/hooks/use-toast";
-
+import SocailLogin from "../_components/socail-login";
 export default function SignUp() {
   const router = useRouter();
   const { toast } = useToast();
@@ -216,8 +216,8 @@ export default function SignUp() {
           </span>
         </div>
       </div>
-
-      <div className="grid grid-cols-2 gap-4">
+      <SocailLogin />
+      {/* <div className="grid grid-cols-2 gap-4">
         <Button
           variant="outline"
           className="w-full border-gray-200 bg-white/50 text-gray-700 hover:bg-gray-50 dark:border-[#ffffff1a] dark:bg-[#ffffff0f] dark:text-white dark:hover:bg-[#ffffff1a]"
@@ -232,7 +232,7 @@ export default function SignUp() {
           <FaApple className="mr-2 h-4 w-4" />
           Apple
         </Button>
-      </div>
+      </div> */}
 
       <p className="text-center text-sm text-gray-500 dark:text-gray-400">
         Already have an account?{" "}

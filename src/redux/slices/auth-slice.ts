@@ -10,6 +10,8 @@ interface User {
   // organization: string;
   id?: string; // Add optional 'id' property
   role: string;
+  ownerid?: string;
+
   // cellPhone: string;
 }
 

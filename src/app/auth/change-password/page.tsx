@@ -7,8 +7,10 @@ import { useRouter } from "next/navigation";
 import { confirmSignIn } from "aws-amplify/auth";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser, setLoading, setTempUser } from "@/redux/slices/auth-slice";
-import { RootState } from "@/redux/store"; // Adjust this path to your Redux store
+import { RootState } from "@/redux/store";
 import { routes } from "@/constants/routes";
+import { handleSignOut } from "@/lib/services/auth";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ChangePasswordPage() {
   const [newPassword, setNewPassword] = useState("");
@@ -18,6 +20,7 @@ export default function ChangePasswordPage() {
   const router = useRouter();
   const dispatch = useDispatch();
   const tempUser = useSelector((state: RootState) => state.auth.tempUser);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!tempUser) {
@@ -39,12 +42,14 @@ export default function ChangePasswordPage() {
       });
       console.log("Password change result:", result);
       if (result.isSignedIn) {
-        // Optionally, fetch user attributes here and dispatch setUser
-        //@ts-ignore
-        dispatch(setUser({ user: {/* user data */}, token: "token" }));
+        // Sign out and show toast, redirect to login
+        await handleSignOut();
+        toast({
+          title: "Password changed!",
+          description: "You can now log in with your new password.",
+        });
         dispatch(setTempUser(null));
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        router.push("/dashboard/smart-pc");
+        router.push("/auth");
       } else if (result.nextStep?.signInStep === "CONTINUE_SIGN_IN_WITH_TOTP_SETUP") {
         router.push("/auth");
       } else {

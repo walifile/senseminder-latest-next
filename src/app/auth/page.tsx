@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { handleSignIn } from "@/lib/services/auth";
 import SocailLogin from "./_components/socail-login";
+// import SocialSignIn from "./_components/social-signin";
 import { useToast } from "@/hooks/use-toast";
 import { routes } from "@/constants/routes";
 
@@ -163,6 +164,7 @@ export default function SignIn() {
       </div>
 
       <SocailLogin />
+     
 
       <p className="text-center text-sm text-gray-500 dark:text-gray-400">
         Don't have an account?{" "}

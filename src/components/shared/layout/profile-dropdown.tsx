@@ -22,6 +22,8 @@ const ProfileDropdown = () => {
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useSelector((state: RootState) => state.auth);
+  console.log("Current user in Redux:", user);
+
 
   const handleLogout = async () => {
     try {
