@@ -32,6 +32,8 @@ import {
   Usb,
   Glasses,
   Loader2,
+  ChevronLeft,
+  X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -74,6 +76,9 @@ const PCViewerContent = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [usbEnabled, setUsbEnabled] = useState(true);
   const [vrEnabled, setVrEnabled] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedMenuItem, setSelectedMenuItem] = useState(null);
   // const { theme } = useTheme();
   // const poweringOn = false;
   // const poweringOff = false;
@@ -142,7 +147,7 @@ const PCViewerContent = () => {
       console.log("Updating resolution:", width, height);
       connRef.current
         .requestResolution(width, height)
-        .catch(e => console.warn("Failed to request resolution:", e));
+        .catch((e) => console.warn("Failed to request resolution:", e));
     }
   };
 
@@ -214,7 +219,7 @@ const PCViewerContent = () => {
     if (connRef.current) {
       try {
         const stats = await connRef.current.getStats();
-        setConnectionStats(prev => ({
+        setConnectionStats((prev) => ({
           ...prev,
           latency: `${Math.round(stats.latency)}ms`,
           fps: `${Math.round(stats.fps)}`,
@@ -267,10 +272,7 @@ const PCViewerContent = () => {
   return (
     <div className="flex h-screen bg-white dark:bg-gray-950">
       {/* Main Remote Desktop Area */}
-      <div
-        id="remote-desktop"
-        className="flex-1 bg-gradient-to-br from-gray-900 to-black relative overflow-hidden"
-      >
+      <div id="remote-desktop" className="flex-1  relative overflow-hidden">
         {/* TV On/Off Animation */}
         <AnimatePresence>
           {/* tvEffect === "on" */}
@@ -440,7 +442,7 @@ const PCViewerContent = () => {
               setIsConnected(false);
               setDcvSession(null);
             }}
-            onError={error => {
+            onError={(error) => {
               setDcvError(error);
               setConnectionState("DISCONNECTED");
               setIsConnected(false);
@@ -478,217 +480,250 @@ const PCViewerContent = () => {
           </div>
         )} */}
       </div>
+      {/* sidebar  */}
+      <div className="relative flex">
+        {!isFullscreen && !isSidebarOpen && (
+          <Button
+            variant="outline"
+            className="absolute right-0 top-4 z-10 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        )}
 
-      {/* Side Control Panel - Hidden in fullscreen mode */}
-      {!isFullscreen && (
-        <div className="ml-auto min-w-[20%] max-w-[55%] w-80 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 p-4 flex flex-col gap-6 overflow-y-auto">
-          {/* Connection Status */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Connection Status</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Status</span>
-                <Badge
-                  variant={
-                    connectionState === "CONNECTED" ? "default" : "secondary"
-                  }
-                  className={cn(
-                    "font-medium",
-                    connectionState === "CONNECTED" &&
-                      "bg-green-500/10 text-green-500",
-                    connectionState === "DISCONNECTED" &&
-                      "bg-red-500/10 text-red-500",
-                    connectionState === "RECONNECTING" &&
-                      "bg-yellow-500/10 text-yellow-500"
-                  )}
-                >
-                  {connectionState}
-                </Badge>
-              </div>
-
-              {connectionState === "CONNECTED" && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      Latency
-                    </span>
-                    <Badge variant="outline" className="font-mono">
-                      {connectionStats.latency}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">FPS</span>
-                    <Badge variant="outline" className="font-mono">
-                      {connectionStats.fps}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      Quality
-                    </span>
-                    <Badge variant="outline" className="font-mono">
-                      {connectionStats.quality}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      Data Transferred
-                    </span>
-                    <Badge variant="outline" className="font-mono">
-                      {connectionStats.dataTransferred}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      Uptime
-                    </span>
-                    <Badge variant="outline" className="font-mono">
-                      {connectionStats.uptime}
-                    </Badge>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Quality Settings */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Quality Settings</h3>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label>Quality Preset</Label>
-                  <Select value={quality} onValueChange={handleQualityChange}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue placeholder="Select quality" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                      <SelectItem value="auto">Auto</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label>Bandwidth Limit</Label>
-                  <span className="text-sm text-muted-foreground">
-                    {bandwidth}%
-                  </span>
-                </div>
-                <Slider
-                  value={[bandwidth]}
-                  onValueChange={value => setBandwidth(value[0])}
-                  max={100}
-                  step={1}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Input Settings */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Input Settings</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Keyboard className="h-4 w-4 text-muted-foreground" />
-                  <Label>Keyboard</Label>
-                </div>
-                <Switch
-                  checked={keyboardEnabled}
-                  onCheckedChange={setKeyboardEnabled}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Mouse className="h-4 w-4 text-muted-foreground" />
-                  <Label>Mouse</Label>
-                </div>
-                <Switch
-                  checked={mouseEnabled}
-                  onCheckedChange={setMouseEnabled}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Volume2 className="h-4 w-4 text-muted-foreground" />
-                  <Label>Audio</Label>
-                </div>
-                <Switch
-                  checked={audioEnabled}
-                  onCheckedChange={setAudioEnabled}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-muted-foreground" />
-                  <Label>Encryption</Label>
-                </div>
-                <Switch checked={encryption} onCheckedChange={setEncryption} />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Usb className="h-4 w-4 text-muted-foreground" />
-                  <Label>USB Devices</Label>
-                </div>
-                <Switch checked={usbEnabled} onCheckedChange={setUsbEnabled} />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Glasses className="h-4 w-4 text-muted-foreground" />
-                  <Label>VR Mode</Label>
-                </div>
-                <Switch checked={vrEnabled} onCheckedChange={setVrEnabled} />
-              </div>
-            </div>
-          </div>
-
-          {/* Connection Actions */}
-          <div className="mt-auto space-y-2">
-            {isConnected ? (
-              <Button
-                variant="destructive"
-                className="w-full"
-                onClick={handleDisconnect}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Power className="h-4 w-4 mr-2" />
-                )}
-                {isLoading ? "Disconnecting..." : "Disconnect"}
-              </Button>
-            ) : (
-              <Button
-                variant="default"
-                className="w-full"
-                onClick={handleConnect}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Power className="h-4 w-4 mr-2" />
-                )}
-                {isLoading ? "Connecting..." : "Connect"}
-              </Button>
+        {!isFullscreen && (
+          <div
+            className={cn(
+              "fixed right-0 top-0 h-full min-w-[25%] max-w-[55%] w-80 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 p-4 flex flex-col gap-6 overflow-y-auto transform transition-transform duration-300 ease-in-out z-50",
+              isSidebarOpen ? "translate-x-0" : "translate-x-full"
             )}
-
+          >
             <Button
-              variant="outline"
-              className="w-full"
-              onClick={openNewSession}
+              variant="ghost"
+              className="self-end"
+              onClick={() => setIsSidebarOpen(false)}
             >
-              <MonitorPlay className="h-4 w-4 mr-2" />
-              Open New Session
+              <X className="h-5 w-5 text-muted-foreground" />
             </Button>
+
+            {/* Connection Status */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Connection Status</h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Status</span>
+                  <Badge
+                    variant={
+                      connectionState === "CONNECTED" ? "default" : "secondary"
+                    }
+                    className={cn(
+                      "font-medium",
+                      connectionState === "CONNECTED" &&
+                        "bg-green-500/10 text-green-500",
+                      connectionState === "DISCONNECTED" &&
+                        "bg-red-500/10 text-red-500",
+                      connectionState === "RECONNECTING" &&
+                        "bg-yellow-500/10 text-yellow-500"
+                    )}
+                  >
+                    {connectionState}
+                  </Badge>
+                </div>
+
+                {connectionState === "CONNECTED" && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        Latency
+                      </span>
+                      <Badge variant="outline" className="font-mono">
+                        {connectionStats.latency}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">FPS</span>
+                      <Badge variant="outline" className="font-mono">
+                        {connectionStats.fps}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        Quality
+                      </span>
+                      <Badge variant="outline" className="font-mono">
+                        {connectionStats.quality}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        Data Transferred
+                      </span>
+                      <Badge variant="outline" className="font-mono">
+                        {connectionStats.dataTransferred}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        Uptime
+                      </span>
+                      <Badge variant="outline" className="font-mono">
+                        {connectionStats.uptime}
+                      </Badge>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Quality Settings */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Quality Settings</h3>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label>Quality Preset</Label>
+                    {/* <Select value={quality} onValueChange={handleQualityChange}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue placeholder="Select quality" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="auto">Auto</SelectItem>
+                      </SelectContent>
+                    </Select> */}
+                    <Badge variant="outline" className="font-mono">
+                      Auto
+                    </Badge>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label>Bandwidth Limit</Label>
+                    <span className="text-sm text-muted-foreground">
+                      {bandwidth}%
+                    </span>
+                  </div>
+                  <Slider
+                    value={[bandwidth]}
+                    onValueChange={(value) => setBandwidth(value[0])}
+                    max={100}
+                    step={1}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Input Settings */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Input Settings</h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Keyboard className="h-4 w-4 text-muted-foreground" />
+                    <Label>Keyboard</Label>
+                  </div>
+                  <Switch
+                    checked={keyboardEnabled}
+                    onCheckedChange={setKeyboardEnabled}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Mouse className="h-4 w-4 text-muted-foreground" />
+                    <Label>Mouse</Label>
+                  </div>
+                  <Switch
+                    checked={mouseEnabled}
+                    onCheckedChange={setMouseEnabled}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Volume2 className="h-4 w-4 text-muted-foreground" />
+                    <Label>Audio</Label>
+                  </div>
+                  <Switch
+                    checked={audioEnabled}
+                    onCheckedChange={setAudioEnabled}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-muted-foreground" />
+                    <Label>Encryption</Label>
+                  </div>
+                  <Switch
+                    checked={encryption}
+                    onCheckedChange={setEncryption}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Usb className="h-4 w-4 text-muted-foreground" />
+                    <Label>USB Devices</Label>
+                  </div>
+                  <Switch
+                    checked={usbEnabled}
+                    onCheckedChange={setUsbEnabled}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Glasses className="h-4 w-4 text-muted-foreground" />
+                    <Label>VR Mode</Label>
+                  </div>
+                  <Switch checked={vrEnabled} onCheckedChange={setVrEnabled} />
+                </div>
+              </div>
+            </div>
+
+            {/* Connection Actions */}
+            <div className="mt-auto space-y-2">
+              {isConnected ? (
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  onClick={handleDisconnect}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Power className="h-4 w-4 mr-2" />
+                  )}
+                  {isLoading ? "Disconnecting..." : "Disconnect"}
+                </Button>
+              ) : (
+                <Button
+                  variant="default"
+                  className="w-full"
+                  onClick={handleConnect}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Power className="h-4 w-4 mr-2" />
+                  )}
+                  {isLoading ? "Connecting..." : "Connect"}
+                </Button>
+              )}
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={openNewSession}
+              >
+                <MonitorPlay className="h-4 w-4 mr-2" />
+                Open New Session
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
