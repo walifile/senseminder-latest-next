@@ -1,39 +1,30 @@
 "use client";
 
-import React, { useState, useEffect, Suspense, useRef } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-// import { useTheme } from "next-themes";
 import { useSearchParams } from "next/navigation";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  // MonitorOff,
   Power,
   Keyboard,
   Mouse,
   Volume2,
   Shield,
-  Maximize2 as Maximize,
+  Maximize,
   Monitor,
-  // RefreshCw,
   Signal,
   MonitorPlay,
-  // AlertCircle,
   Minimize,
   Usb,
   Glasses,
   Loader2,
   ChevronLeft,
   X,
+  ChevronRight,
+  Menu,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -62,11 +53,9 @@ interface DcvConnection {
 // Create a separate client component that uses useSearchParams
 const PCViewerContent = () => {
   const searchParams = useSearchParams();
-  // const pcName = searchParams?.get("name") || "SmartPC";
   const [isConnected, setIsConnected] = useState(false);
   const [connectionState, setConnectionState] =
     useState<ConnectionState>("DISCONNECTED");
-  // const [imageError, setImageError] = useState(false);
   const [quality, setQuality] = useState("auto");
   const [bandwidth, setBandwidth] = useState(75);
   const [keyboardEnabled, setKeyboardEnabled] = useState(true);
@@ -77,11 +66,9 @@ const PCViewerContent = () => {
   const [usbEnabled, setUsbEnabled] = useState(true);
   const [vrEnabled, setVrEnabled] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [selectedMenuItem, setSelectedMenuItem] = useState(null);
-  // const { theme } = useTheme();
-  // const poweringOn = false;
-  // const poweringOff = false;
+  const [showLeftIcons, setShowLeftIcons] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
   const [tvEffect, setTvEffect] = useState<"on" | "off" | null>("on");
   const [dcvError, setDcvError] = useState<Error | null>(null);
   const dcvConfig = {
@@ -114,6 +101,24 @@ const PCViewerContent = () => {
   const authToken = launchVMResponse?.sessionToken;
   const url = launchVMResponse?.dnsName;
   const [isLoading, setIsLoading] = useState(false);
+
+  // Check if mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Close sidebar on mobile by default
+  useEffect(() => {
+    if (isMobile) {
+      setIsSidebarOpen(false);
+    }
+  }, [isMobile]);
 
   // Function to handle quality change
   const handleQualityChange = (value: string) => {
@@ -270,12 +275,17 @@ const PCViewerContent = () => {
   }, []);
 
   return (
-    <div className="flex h-screen bg-white dark:bg-gray-950">
+    <div className="flex h-screen w-full overflow-hidden bg-gray-50 dark:bg-gray-950">
       {/* Main Remote Desktop Area */}
-      <div id="remote-desktop" className="flex-1  relative overflow-hidden">
+      <div
+        id="remote-desktop"
+        className={cn(
+          "flex-1 relative overflow-hidden bg-black",
+          isSidebarOpen && !isMobile ? "mr-80" : "mr-0"
+        )}
+      >
         {/* TV On/Off Animation */}
         <AnimatePresence>
-          {/* tvEffect === "on" */}
           {isLoading && (
             <>
               <motion.div
@@ -283,7 +293,7 @@ const PCViewerContent = () => {
                 animate={{ scaleY: 1, opacity: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 1.5, ease: [0.4, 0, 0.2, 1] }}
-                className="absolute inset-0 bg-white dark:bg-blue-50 origin-center z-30"
+                className="absolute inset-0 bg-white dark:bg-gray-900 origin-center z-30"
                 style={{
                   backgroundImage:
                     "linear-gradient(0deg, transparent 0%, rgba(255, 255, 255, 0.1) 2%, transparent 3%)",
@@ -330,7 +340,7 @@ const PCViewerContent = () => {
             scale: isConnected ? 1 : 0.95,
           }}
           transition={{ duration: 0.5 }}
-          className="absolute inset-0 flex items-center justify-center"
+          className="absolute inset-0 flex items-center justify-center pointer-events-none"
         >
           <div className="w-32 h-32 text-white/10">
             <svg viewBox="0 0 88 88" xmlns="http://www.w3.org/2000/svg">
@@ -342,63 +352,49 @@ const PCViewerContent = () => {
           </div>
         </motion.div>
 
-        {/* Disconnected State */}
-        {/* <AnimatePresence>
-          {!isConnected && !poweringOn && !poweringOff && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 backdrop-blur-sm z-20"
-            >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                transition={{ delay: 0.2 }}
-                className="flex flex-col items-center gap-4"
-              >
-                <MonitorOff className="h-16 w-16 text-white/50" />
-                <span className="text-white/70 text-sm">Not Connected</span>
-                <Button
-                  variant="outline"
-                  className="bg-white/10 hover:bg-white/20 text-white border-white/20"
-                  onClick={handleConnect}
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Connect
-                </Button>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence> */}
+        {/* Mobile Sidebar Toggle - Top Left */}
+        {isMobile && !isFullscreen && (
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute top-4 left-4 z-40 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-0 shadow-lg"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <Menu className="h-4 w-4" />
+          </Button>
+        )}
 
-        {/* Toolbar - Hidden in fullscreen */}
-        {!isFullscreen && (
-          <div className="absolute top-4 right-4 flex gap-2 z-[999]">
+        {/* Desktop Toolbar - Left Side */}
+        {!isMobile && isSidebarOpen && showLeftIcons && !isFullscreen && (
+          <div className="absolute top-4 left-4 flex flex-col gap-2 z-40">
+            {/* Network Button */}
             <Button
               variant="outline"
               size="icon"
-              className="h-8 w-8 bg-white/80 dark:bg-gray-800/80 border-0 hover:bg-white/90 dark:hover:bg-gray-800/90 backdrop-blur-sm"
+              className="h-8 w-8 bg-white/90 dark:bg-gray-800/90 border-0 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm shadow-sm"
               onClick={() => {
-                // Toggle network settings functionality can be added here
+                /* Toggle network settings */
               }}
             >
               <Signal className="h-4 w-4 text-gray-600 dark:text-gray-300" />
             </Button>
+
+            {/* New Window Button */}
             <Button
               variant="outline"
               size="icon"
               title="Open in New Window"
-              className="h-8 w-8 bg-white/80 dark:bg-gray-800/80 border-0 hover:bg-white/90 dark:hover:bg-gray-800/90 backdrop-blur-sm"
+              className="h-8 w-8 bg-white/90 dark:bg-gray-800/90 border-0 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm shadow-sm"
               onClick={openNewSession}
             >
               <Monitor className="h-4 w-4 text-gray-600 dark:text-gray-300" />
             </Button>
+
+            {/* Keyboard Button */}
             <Button
               variant="outline"
               size="icon"
-              className="h-8 w-8 bg-white/80 dark:bg-gray-800/80 border-0 hover:bg-white/90 dark:hover:bg-gray-800/90 backdrop-blur-sm"
+              className="h-8 w-8 bg-white/90 dark:bg-gray-800/90 border-0 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm shadow-sm"
               onClick={() => {
                 if (connRef.current) {
                   connRef.current.sendKeyboardShortcut([
@@ -413,10 +409,11 @@ const PCViewerContent = () => {
               <Keyboard className="h-4 w-4 text-gray-600 dark:text-gray-300" />
             </Button>
 
+            {/* Fullscreen Toggle Button */}
             <Button
               variant="outline"
               size="icon"
-              className="h-8 w-8 bg-white/80 dark:bg-gray-800/80 border-0 hover:bg-white/90 dark:hover:bg-gray-800/90 backdrop-blur-sm"
+              className="h-8 w-8 bg-white/90 dark:bg-gray-800/90 border-0 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm shadow-sm"
               onClick={toggleFullscreen}
             >
               {isFullscreen ? (
@@ -426,6 +423,18 @@ const PCViewerContent = () => {
               )}
             </Button>
           </div>
+        )}
+
+        {/* Desktop Sidebar Toggle - Right Side */}
+        {!isMobile && !isFullscreen && !isSidebarOpen && (
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute top-4 right-4 z-40 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-0 shadow-lg"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
         )}
 
         {/* DCV Viewer */}
@@ -457,56 +466,65 @@ const PCViewerContent = () => {
             }}
           />
         )}
-
-        {/* Error Display */}
-        {/* {dcvError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50">
-            <div className="bg-red-500/10 backdrop-blur-sm p-6 rounded-lg max-w-md text-center">
-              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-red-500 mb-2">
-                Connection Error
-              </h3>
-              <p className="text-gray-200 mb-4">{dcvError.message}</p>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setDcvError(null);
-                  handleConnect();
-                }}
-              >
-                Try Again
-              </Button>
-            </div>
-          </div>
-        )} */}
       </div>
-      {/* sidebar  */}
-      <div className="relative flex">
-        {!isFullscreen && !isSidebarOpen && (
-          <Button
-            variant="outline"
-            className="absolute right-0 top-4 z-10 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-            onClick={() => setIsSidebarOpen(true)}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-        )}
 
-        {!isFullscreen && (
-          <div
-            className={cn(
-              "fixed right-0 top-0 h-full min-w-[25%] max-w-[55%] w-80 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 p-4 flex flex-col gap-6 overflow-y-auto transform transition-transform duration-300 ease-in-out z-50",
-              isSidebarOpen ? "translate-x-0" : "translate-x-full"
-            )}
-          >
+      {/* Sidebar Overlay for Mobile */}
+      {isMobile && isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      {!isFullscreen && (
+        <div
+          className={cn(
+            "bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden z-50",
+            // Mobile styles
+            isMobile
+              ? [
+                  "fixed top-0 right-0 h-full w-80 max-w-[85vw] transform transition-transform duration-300 ease-in-out",
+                  isSidebarOpen ? "translate-x-0" : "translate-x-full",
+                ]
+              : [
+                  // Desktop styles
+                  "fixed top-0 right-0 h-full w-80 transform transition-transform duration-300 ease-in-out",
+                  isSidebarOpen ? "translate-x-0" : "translate-x-full",
+                ]
+          )}
+        >
+          {/* Sidebar Header */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+            <div className="flex items-center gap-2">
+              {!isMobile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setShowLeftIcons(!showLeftIcons)}
+                >
+                  {showLeftIcons ? (
+                    <ChevronLeft className="h-4 w-4" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
+              <h2 className="text-lg font-semibold">PC Controls</h2>
+            </div>
             <Button
               variant="ghost"
-              className="self-end"
+              size="icon"
+              className="h-8 w-8"
               onClick={() => setIsSidebarOpen(false)}
             >
-              <X className="h-5 w-5 text-muted-foreground" />
+              <X className="h-4 w-4" />
             </Button>
+          </div>
 
+          {/* Sidebar Content */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-6">
             {/* Connection Status */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Connection Status</h3>
@@ -520,11 +538,11 @@ const PCViewerContent = () => {
                     className={cn(
                       "font-medium",
                       connectionState === "CONNECTED" &&
-                        "bg-green-500/10 text-green-500",
+                        "bg-green-500/10 text-green-500 border-green-500/20",
                       connectionState === "DISCONNECTED" &&
-                        "bg-red-500/10 text-red-500",
+                        "bg-red-500/10 text-red-500 border-red-500/20",
                       connectionState === "RECONNECTING" &&
-                        "bg-yellow-500/10 text-yellow-500"
+                        "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
                     )}
                   >
                     {connectionState}
@@ -583,17 +601,6 @@ const PCViewerContent = () => {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label>Quality Preset</Label>
-                    {/* <Select value={quality} onValueChange={handleQualityChange}>
-                      <SelectTrigger className="w-32">
-                        <SelectValue placeholder="Select quality" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="auto">Auto</SelectItem>
-                      </SelectContent>
-                    </Select> */}
                     <Badge variant="outline" className="font-mono">
                       Auto
                     </Badge>
@@ -679,51 +686,51 @@ const PCViewerContent = () => {
                 </div>
               </div>
             </div>
-
-            {/* Connection Actions */}
-            <div className="mt-auto space-y-2">
-              {isConnected ? (
-                <Button
-                  variant="destructive"
-                  className="w-full"
-                  onClick={handleDisconnect}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Power className="h-4 w-4 mr-2" />
-                  )}
-                  {isLoading ? "Disconnecting..." : "Disconnect"}
-                </Button>
-              ) : (
-                <Button
-                  variant="default"
-                  className="w-full"
-                  onClick={handleConnect}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Power className="h-4 w-4 mr-2" />
-                  )}
-                  {isLoading ? "Connecting..." : "Connect"}
-                </Button>
-              )}
-
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={openNewSession}
-              >
-                <MonitorPlay className="h-4 w-4 mr-2" />
-                Open New Session
-              </Button>
-            </div>
           </div>
-        )}
-      </div>
+
+          {/* Sidebar Footer */}
+          <div className="p-4 border-t border-gray-200 dark:border-gray-800 space-y-2">
+            {isConnected ? (
+              <Button
+                variant="destructive"
+                className="w-full"
+                onClick={handleDisconnect}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Power className="h-4 w-4 mr-2" />
+                )}
+                {isLoading ? "Disconnecting..." : "Disconnect"}
+              </Button>
+            ) : (
+              <Button
+                variant="default"
+                className="w-full"
+                onClick={handleConnect}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Power className="h-4 w-4 mr-2" />
+                )}
+                {isLoading ? "Connecting..." : "Connect"}
+              </Button>
+            )}
+
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={openNewSession}
+            >
+              <MonitorPlay className="h-4 w-4 mr-2" />
+              Open New Session
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -733,9 +740,11 @@ const PCViewerPage = () => {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center min-h-screen">
-          <Loader2 className="h-8 w-8 animate-spin" />
-          <span className="ml-2">Loading...</span>
+        <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <span className="text-lg">Loading PC Viewer...</span>
+          </div>
         </div>
       }
     >
