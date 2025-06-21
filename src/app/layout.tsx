@@ -15,9 +15,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body suppressHydrationWarning>
         <ReduxProvider>
-          
           <AmplifyProvider>
             <ThemeWrapper>
               <div className="flex min-h-screen flex-col overflow-x-hidden">
@@ -27,7 +26,6 @@ export default function RootLayout({
               </div>
             </ThemeWrapper>
           </AmplifyProvider>
-          
         </ReduxProvider>
       </body>
     </html>

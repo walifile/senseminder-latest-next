@@ -25,6 +25,7 @@ import {
   X,
   ChevronRight,
   Menu,
+  Settings,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -68,7 +69,7 @@ const PCViewerContent = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showLeftIcons, setShowLeftIcons] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-
+  const [showQuickActions, setShowQuickActions] = useState(false);
   const [tvEffect, setTvEffect] = useState<"on" | "off" | null>("on");
   const [dcvError, setDcvError] = useState<Error | null>(null);
   const dcvConfig = {
@@ -274,6 +275,18 @@ const PCViewerContent = () => {
     };
   }, []);
 
+  const openSidebar = () => {
+    setIsSidebarOpen(true);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+
+  const toggleQuickActions = () => {
+    setShowQuickActions(!showQuickActions);
+  };
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-gray-50 dark:bg-gray-950">
       {/* Main Remote Desktop Area */}
@@ -353,89 +366,97 @@ const PCViewerContent = () => {
         </motion.div>
 
         {/* Mobile Sidebar Toggle - Top Left */}
-        {isMobile && !isFullscreen && (
-          <Button
-            variant="outline"
-            size="icon"
-            className="absolute top-4 left-4 z-40 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-0 shadow-lg"
-            onClick={() => setIsSidebarOpen(true)}
-          >
-            <Menu className="h-4 w-4" />
-          </Button>
-        )}
-
-        {/* Desktop Toolbar - Left Side */}
-        {!isMobile && isSidebarOpen && showLeftIcons && !isFullscreen && (
-          <div className="absolute top-4 left-4 flex flex-col gap-2 z-40">
-            {/* Network Button */}
+        {!isFullscreen && (
+          <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-40">
+            {/* Left side - Menu button */}
             <Button
               variant="outline"
               size="icon"
-              className="h-8 w-8 bg-white/90 dark:bg-gray-800/90 border-0 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm shadow-sm"
-              onClick={() => {
-                /* Toggle network settings */
-              }}
+              className="bg-white/90 z-50 dark:bg-gray-800/90 backdrop-blur-sm border-0 shadow-lg hover:bg-white dark:hover:bg-gray-800"
+              onClick={openSidebar}
             >
-              <Signal className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              <Menu className="h-4 w-4" />
             </Button>
 
-            {/* New Window Button */}
+            {/* Right side - Settings button */}
             <Button
               variant="outline"
               size="icon"
-              title="Open in New Window"
-              className="h-8 w-8 bg-white/90 dark:bg-gray-800/90 border-0 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm shadow-sm"
-              onClick={openNewSession}
+              className="bg-white/90 z-50 dark:bg-gray-800/90 backdrop-blur-sm border-0 shadow-lg hover:bg-white dark:hover:bg-gray-800"
+              onClick={toggleQuickActions}
             >
-              <Monitor className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-            </Button>
-
-            {/* Keyboard Button */}
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 bg-white/90 dark:bg-gray-800/90 border-0 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm shadow-sm"
-              onClick={() => {
-                if (connRef.current) {
-                  connRef.current.sendKeyboardShortcut([
-                    { key: "Control", location: 1 },
-                    { key: "Meta", location: 1 },
-                    { key: "o", location: 0 },
-                  ]);
-                  console.log("Sent Ctrl + Win + O to open OSK");
-                }
-              }}
-            >
-              <Keyboard className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-            </Button>
-
-            {/* Fullscreen Toggle Button */}
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 bg-white/90 dark:bg-gray-800/90 border-0 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm shadow-sm"
-              onClick={toggleFullscreen}
-            >
-              {isFullscreen ? (
-                <Minimize className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              ) : (
-                <Maximize className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              )}
+              <Settings className="h-4 w-4" />
             </Button>
           </div>
         )}
 
-        {/* Desktop Sidebar Toggle - Right Side */}
-        {!isMobile && !isFullscreen && !isSidebarOpen && (
-          <Button
-            variant="outline"
-            size="icon"
-            className="absolute top-4 right-4 z-40 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-0 shadow-lg"
-            onClick={() => setIsSidebarOpen(true)}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-        )}
+        {/* Desktop Toolbar - Left Side */}
+        <AnimatePresence>
+          {!isMobile && showQuickActions && !isFullscreen && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="absolute top-16 right-4 flex flex-col gap-2 z-40"
+            >
+              {/* Network Button */}
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-10 w-10 bg-white/90 dark:bg-gray-800/90 border-0 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm shadow-lg"
+                title="Network Status"
+              >
+                <Signal className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              </Button>
+
+              {/* New Window Button */}
+              <Button
+                variant="outline"
+                size="icon"
+                title="Open in New Window"
+                className="h-10 w-10 bg-white/90 dark:bg-gray-800/90 border-0 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm shadow-lg"
+                onClick={openNewSession}
+              >
+                <Monitor className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              </Button>
+
+              {/* Keyboard Button */}
+              <Button
+                variant="outline"
+                size="icon"
+                title="Open On-Screen Keyboard"
+                className="h-10 w-10 bg-white/90 dark:bg-gray-800/90 border-0 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm shadow-lg"
+                onClick={() => {
+                  if (connRef.current) {
+                    connRef.current.sendKeyboardShortcut([
+                      { key: "Control", location: 1 },
+                      { key: "Meta", location: 1 },
+                      { key: "o", location: 0 },
+                    ]);
+                    console.log("Sent Ctrl + Win + O to open OSK");
+                  }
+                }}
+              >
+                <Keyboard className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              </Button>
+
+              {/* Fullscreen Toggle Button */}
+              <Button
+                variant="outline"
+                size="icon"
+                title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                className="h-10 w-10 bg-white/90 dark:bg-gray-800/90 border-0 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm shadow-lg"
+                onClick={toggleFullscreen}
+              >
+                {isFullscreen ? (
+                  <Minimize className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                ) : (
+                  <Maximize className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                )}
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* DCV Viewer */}
         {isConnected && !tvEffect && dcvSession && (
@@ -472,265 +493,258 @@ const PCViewerContent = () => {
       {isMobile && isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40"
-          onClick={() => setIsSidebarOpen(false)}
+          onClick={closeSidebar}
         />
       )}
 
       {/* Sidebar */}
-      {!isFullscreen && (
-        <div
-          className={cn(
-            "bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden z-50",
-            // Mobile styles
-            isMobile
-              ? [
-                  "fixed top-0 right-0 h-full w-80 max-w-[85vw] transform transition-transform duration-300 ease-in-out",
-                  isSidebarOpen ? "translate-x-0" : "translate-x-full",
-                ]
-              : [
-                  // Desktop styles
-                  "fixed top-0 right-0 h-full w-80 transform transition-transform duration-300 ease-in-out",
-                  isSidebarOpen ? "translate-x-0" : "translate-x-full",
-                ]
-          )}
-        >
-          {/* Sidebar Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
-            <div className="flex items-center gap-2">
-              {!isMobile && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setShowLeftIcons(!showLeftIcons)}
-                >
-                  {showLeftIcons ? (
-                    <ChevronLeft className="h-4 w-4" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4" />
-                  )}
-                </Button>
-              )}
+      <AnimatePresence>
+        {isSidebarOpen && !isFullscreen && (
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className={cn(
+              "bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden z-50",
+              isMobile
+                ? "fixed top-0 right-0 h-full w-80 max-w-[85vw]"
+                : "fixed top-0 right-0 h-full w-80"
+            )}
+          >
+            {/* Sidebar Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
               <h2 className="text-lg font-semibold">PC Controls</h2>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => setIsSidebarOpen(false)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Sidebar Content */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-6">
-            {/* Connection Status */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Connection Status</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Status</span>
-                  <Badge
-                    variant={
-                      connectionState === "CONNECTED" ? "default" : "secondary"
-                    }
-                    className={cn(
-                      "font-medium",
-                      connectionState === "CONNECTED" &&
-                        "bg-green-500/10 text-green-500 border-green-500/20",
-                      connectionState === "DISCONNECTED" &&
-                        "bg-red-500/10 text-red-500 border-red-500/20",
-                      connectionState === "RECONNECTING" &&
-                        "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
-                    )}
-                  >
-                    {connectionState}
-                  </Badge>
-                </div>
-
-                {connectionState === "CONNECTED" && (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
-                        Latency
-                      </span>
-                      <Badge variant="outline" className="font-mono">
-                        {connectionStats.latency}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">FPS</span>
-                      <Badge variant="outline" className="font-mono">
-                        {connectionStats.fps}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
-                        Quality
-                      </span>
-                      <Badge variant="outline" className="font-mono">
-                        {connectionStats.quality}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
-                        Data Transferred
-                      </span>
-                      <Badge variant="outline" className="font-mono">
-                        {connectionStats.dataTransferred}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
-                        Uptime
-                      </span>
-                      <Badge variant="outline" className="font-mono">
-                        {connectionStats.uptime}
-                      </Badge>
-                    </div>
-                  </>
-                )}
-              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={closeSidebar}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
 
-            {/* Quality Settings */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Quality Settings</h3>
-              <div className="space-y-4">
-                <div className="space-y-2">
+            {/* Sidebar Content */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+              {/* Connection Status */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">
+                  Connection Status
+                </h3>
+                <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <Label>Quality Preset</Label>
-                    <Badge variant="outline" className="font-mono">
-                      Auto
+                    <span className="text-sm text-muted-foreground">
+                      Status
+                    </span>
+                    <Badge
+                      variant={
+                        connectionState === "CONNECTED"
+                          ? "default"
+                          : "secondary"
+                      }
+                      className={cn(
+                        "font-medium",
+                        connectionState === "CONNECTED" &&
+                          "bg-green-500/10 text-green-500 border-green-500/20",
+                        connectionState === "DISCONNECTED" &&
+                          "bg-red-500/10 text-red-500 border-red-500/20",
+                        connectionState === "RECONNECTING" &&
+                          "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
+                      )}
+                    >
+                      {connectionState}
                     </Badge>
                   </div>
+
+                  {connectionState === "CONNECTED" && (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          Latency
+                        </span>
+                        <Badge variant="outline" className="font-mono">
+                          {connectionStats.latency}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          FPS
+                        </span>
+                        <Badge variant="outline" className="font-mono">
+                          {connectionStats.fps}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          Quality
+                        </span>
+                        <Badge variant="outline" className="font-mono">
+                          {connectionStats.quality}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          Data Transferred
+                        </span>
+                        <Badge variant="outline" className="font-mono">
+                          {connectionStats.dataTransferred}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          Uptime
+                        </span>
+                        <Badge variant="outline" className="font-mono">
+                          {connectionStats.uptime}
+                        </Badge>
+                      </div>
+                    </>
+                  )}
                 </div>
-                <div className="space-y-2">
+              </div>
+
+              {/* Quality Settings */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Quality Settings</h3>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Quality Preset</Label>
+                      <Badge variant="outline" className="font-mono">
+                        Auto
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Bandwidth Limit</Label>
+                      <span className="text-sm text-muted-foreground">
+                        {bandwidth}%
+                      </span>
+                    </div>
+                    <Slider
+                      value={[bandwidth]}
+                      onValueChange={(value) => setBandwidth(value[0])}
+                      max={100}
+                      step={1}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Input Settings */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Input Settings</h3>
+                <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <Label>Bandwidth Limit</Label>
-                    <span className="text-sm text-muted-foreground">
-                      {bandwidth}%
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <Keyboard className="h-4 w-4 text-muted-foreground" />
+                      <Label>Keyboard</Label>
+                    </div>
+                    <Switch
+                      checked={keyboardEnabled}
+                      onCheckedChange={setKeyboardEnabled}
+                    />
                   </div>
-                  <Slider
-                    value={[bandwidth]}
-                    onValueChange={(value) => setBandwidth(value[0])}
-                    max={100}
-                    step={1}
-                  />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Mouse className="h-4 w-4 text-muted-foreground" />
+                      <Label>Mouse</Label>
+                    </div>
+                    <Switch
+                      checked={mouseEnabled}
+                      onCheckedChange={setMouseEnabled}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Volume2 className="h-4 w-4 text-muted-foreground" />
+                      <Label>Audio</Label>
+                    </div>
+                    <Switch
+                      checked={audioEnabled}
+                      onCheckedChange={setAudioEnabled}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-muted-foreground" />
+                      <Label>Encryption</Label>
+                    </div>
+                    <Switch
+                      checked={encryption}
+                      onCheckedChange={setEncryption}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Usb className="h-4 w-4 text-muted-foreground" />
+                      <Label>USB Devices</Label>
+                    </div>
+                    <Switch
+                      checked={usbEnabled}
+                      onCheckedChange={setUsbEnabled}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Glasses className="h-4 w-4 text-muted-foreground" />
+                      <Label>VR Mode</Label>
+                    </div>
+                    <Switch
+                      checked={vrEnabled}
+                      onCheckedChange={setVrEnabled}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Input Settings */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Input Settings</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Keyboard className="h-4 w-4 text-muted-foreground" />
-                    <Label>Keyboard</Label>
-                  </div>
-                  <Switch
-                    checked={keyboardEnabled}
-                    onCheckedChange={setKeyboardEnabled}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Mouse className="h-4 w-4 text-muted-foreground" />
-                    <Label>Mouse</Label>
-                  </div>
-                  <Switch
-                    checked={mouseEnabled}
-                    onCheckedChange={setMouseEnabled}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Volume2 className="h-4 w-4 text-muted-foreground" />
-                    <Label>Audio</Label>
-                  </div>
-                  <Switch
-                    checked={audioEnabled}
-                    onCheckedChange={setAudioEnabled}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-muted-foreground" />
-                    <Label>Encryption</Label>
-                  </div>
-                  <Switch
-                    checked={encryption}
-                    onCheckedChange={setEncryption}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Usb className="h-4 w-4 text-muted-foreground" />
-                    <Label>USB Devices</Label>
-                  </div>
-                  <Switch
-                    checked={usbEnabled}
-                    onCheckedChange={setUsbEnabled}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Glasses className="h-4 w-4 text-muted-foreground" />
-                    <Label>VR Mode</Label>
-                  </div>
-                  <Switch checked={vrEnabled} onCheckedChange={setVrEnabled} />
-                </div>
-              </div>
+            {/* Sidebar Footer */}
+            <div className="p-4 border-t border-gray-200 dark:border-gray-800 space-y-2">
+              {isConnected ? (
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  onClick={handleDisconnect}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Power className="h-4 w-4 mr-2" />
+                  )}
+                  {isLoading ? "Disconnecting..." : "Disconnect"}
+                </Button>
+              ) : (
+                <Button
+                  variant="default"
+                  className="w-full"
+                  onClick={handleConnect}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Power className="h-4 w-4 mr-2" />
+                  )}
+                  {isLoading ? "Connecting..." : "Connect"}
+                </Button>
+              )}
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={openNewSession}
+              >
+                <MonitorPlay className="h-4 w-4 mr-2" />
+                Open New Session
+              </Button>
             </div>
-          </div>
-
-          {/* Sidebar Footer */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-800 space-y-2">
-            {isConnected ? (
-              <Button
-                variant="destructive"
-                className="w-full"
-                onClick={handleDisconnect}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Power className="h-4 w-4 mr-2" />
-                )}
-                {isLoading ? "Disconnecting..." : "Disconnect"}
-              </Button>
-            ) : (
-              <Button
-                variant="default"
-                className="w-full"
-                onClick={handleConnect}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Power className="h-4 w-4 mr-2" />
-                )}
-                {isLoading ? "Connecting..." : "Connect"}
-              </Button>
-            )}
-
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={openNewSession}
-            >
-              <MonitorPlay className="h-4 w-4 mr-2" />
-              Open New Session
-            </Button>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
