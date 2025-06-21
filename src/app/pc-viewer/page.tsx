@@ -26,6 +26,7 @@ import {
   ChevronRight,
   Menu,
   Settings,
+  ChevronsRightLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -67,7 +68,6 @@ const PCViewerContent = () => {
   const [usbEnabled, setUsbEnabled] = useState(true);
   const [vrEnabled, setVrEnabled] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [showLeftIcons, setShowLeftIcons] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [tvEffect, setTvEffect] = useState<"on" | "off" | null>("on");
@@ -353,7 +353,7 @@ const PCViewerContent = () => {
             scale: isConnected ? 1 : 0.95,
           }}
           transition={{ duration: 0.5 }}
-          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          className="absolute inset-0 flex items-center  justify-center pointer-events-none"
         >
           <div className="w-32 h-32 text-white/10">
             <svg viewBox="0 0 88 88" xmlns="http://www.w3.org/2000/svg">
@@ -366,8 +366,8 @@ const PCViewerContent = () => {
         </motion.div>
 
         {/* Mobile Sidebar Toggle - Top Left */}
-        {!isFullscreen && (
-          <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-40">
+        {!isFullscreen && !isSidebarOpen && (
+          <div className="absolute top-4 right-4 flex items-center gap-2 z-50">
             {/* Left side - Menu button */}
             <Button
               variant="outline"
@@ -375,29 +375,19 @@ const PCViewerContent = () => {
               className="bg-white/90 z-50 dark:bg-gray-800/90 backdrop-blur-sm border-0 shadow-lg hover:bg-white dark:hover:bg-gray-800"
               onClick={openSidebar}
             >
-              <Menu className="h-4 w-4" />
-            </Button>
-
-            {/* Right side - Settings button */}
-            <Button
-              variant="outline"
-              size="icon"
-              className="bg-white/90 z-50 dark:bg-gray-800/90 backdrop-blur-sm border-0 shadow-lg hover:bg-white dark:hover:bg-gray-800"
-              onClick={toggleQuickActions}
-            >
-              <Settings className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4" />
             </Button>
           </div>
         )}
 
         {/* Desktop Toolbar - Left Side */}
         <AnimatePresence>
-          {!isMobile && showQuickActions && !isFullscreen && (
+          {!isMobile && !showQuickActions && !isFullscreen && (
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="absolute top-16 right-4 flex flex-col gap-2 z-40"
+              className="absolute top-4 right-4 flex flex-col gap-2 z-40"
             >
               {/* Network Button */}
               <Button
@@ -514,12 +504,25 @@ const PCViewerContent = () => {
           >
             {/* Sidebar Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
-              <h2 className="text-lg font-semibold">PC Controls</h2>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="bg-white/90 z-50 dark:bg-gray-800/90 backdrop-blur-sm border-0 shadow-lg hover:bg-white dark:hover:bg-gray-800"
+                  onClick={toggleQuickActions}
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
+                <h2 className="text-lg font-semibold">PC Controls</h2>
+              </div>
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8"
-                onClick={closeSidebar}
+                onClick={() => {
+                  closeSidebar();
+                  setShowQuickActions(true);
+                }}
               >
                 <X className="h-4 w-4" />
               </Button>
