@@ -106,7 +106,12 @@ import { FileItem } from "../types";
 import { useDebounce } from "@/hooks/useDebounce";
 import FilePreviewDialog from "./file-preview-dialog";
 import BulkShareDialog from "./bulk-share-dialog";
-
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 const CloudStorage = () => {
   const router = useRouter();
   const { toast } = useToast();
@@ -295,6 +300,7 @@ const CloudStorage = () => {
   };
 
   const handleShare = (file: FileItem) => {
+    if (selectedFiles.length !== 1) return; // prevent misuse
     setSelectedFileForShare(file);
     setShowShareDialog(true);
   };
@@ -1214,12 +1220,40 @@ const CloudStorage = () => {
                                                 </DropdownMenuItem>
                                               </>
                                             )}
-                                            <DropdownMenuItem
-                                              onClick={() => handleShare(file)}
-                                            >
-                                              <Share2 className="h-4 w-4 mr-2" />
-                                              Share
-                                            </DropdownMenuItem>
+                                            <TooltipProvider>
+                                              <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                  <div className="w-full">
+                                                    <DropdownMenuItem
+                                                      onClick={() =>
+                                                        handleShare(file)
+                                                      }
+                                                      disabled={
+                                                        selectedFiles.length !==
+                                                        1
+                                                      }
+                                                      className={
+                                                        selectedFiles.length !==
+                                                        1
+                                                          ? "cursor-not-allowed opacity-50 pointer-events-none w-full"
+                                                          : "w-full"
+                                                      }
+                                                    >
+                                                      <Share2 className="h-4 w-4 mr-2" />
+                                                      Share
+                                                    </DropdownMenuItem>
+                                                  </div>
+                                                </TooltipTrigger>
+
+                                                {selectedFiles.length !== 1 && (
+                                                  <TooltipContent side="left">
+                                                    You can only share one file
+                                                    at a time
+                                                  </TooltipContent>
+                                                )}
+                                              </Tooltip>
+                                            </TooltipProvider>
+
                                             <DropdownMenuItem
                                               onClick={() => handleStar(file)}
                                             >
@@ -1429,12 +1463,40 @@ const CloudStorage = () => {
                                                 </DropdownMenuItem>
                                               </>
                                             )}
-                                            <DropdownMenuItem
-                                              onClick={() => handleShare(file)}
-                                            >
-                                              <Share2 className="h-4 w-4 mr-2" />
-                                              Share
-                                            </DropdownMenuItem>
+                                            <TooltipProvider>
+                                              <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                  <div className="w-full">
+                                                    <DropdownMenuItem
+                                                      onClick={() =>
+                                                        handleShare(file)
+                                                      }
+                                                      disabled={
+                                                        selectedFiles.length !==
+                                                        1
+                                                      }
+                                                      className={
+                                                        selectedFiles.length !==
+                                                        1
+                                                          ? "cursor-not-allowed opacity-50 pointer-events-none w-full"
+                                                          : "w-full"
+                                                      }
+                                                    >
+                                                      <Share2 className="h-4 w-4 mr-2" />
+                                                      Share
+                                                    </DropdownMenuItem>
+                                                  </div>
+                                                </TooltipTrigger>
+
+                                                {selectedFiles.length !== 1 && (
+                                                  <TooltipContent side="left">
+                                                    You can only share one file
+                                                    at a time
+                                                  </TooltipContent>
+                                                )}
+                                              </Tooltip>
+                                            </TooltipProvider>
+
                                             <DropdownMenuItem
                                               onClick={() => handleStar(file)}
                                             >
