@@ -143,7 +143,15 @@ const Hero = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-3xl md:text-4xl font-semibold relative"
             >
-              <span className="bg-gradient-to-r from-primary to-primary/50 text-transparent bg-clip-text">
+              <span
+                className="bg-gradient-to-r from-primary to-primary/50"
+                style={{
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
                 Welcome to SmartPC
               </span>
               <div className="absolute inset-0 blur-2xl bg-primary/10 dark:bg-primary/20 -z-10"></div>

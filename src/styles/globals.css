@@ -60,7 +60,6 @@
 }
 
 @layer utilities {
-
   /* Glass Effects */
   .glass-effect {
     @apply backdrop-blur-md bg-background/80;
@@ -85,9 +84,13 @@
   }
 
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/80 to-primary;
+    @apply text-transparent bg-gradient-to-r from-primary via-primary/80 to-primary;
     background-size: 200% auto;
     animation: shine 5s linear infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
   }
 
   .gradient-text-hover {
@@ -96,8 +99,12 @@
   }
 
   .gradient-text-hover:hover {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/80 to-primary;
+    @apply text-transparent bg-gradient-to-r from-primary via-primary/80 to-primary;
     animation: shine 5s linear infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
   }
 
   /* Hover Effects */
@@ -127,7 +134,11 @@
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-foreground;
+    @apply text-transparent bg-gradient-to-r from-primary to-primary-foreground;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
   }
 
   .text-gradient-animated {
@@ -199,7 +210,6 @@
 }
 
 @keyframes float {
-
   0%,
   100% {
     transform: translateY(0);
@@ -211,7 +221,6 @@
 }
 
 @keyframes pulse {
-
   0%,
   100% {
     opacity: 1;

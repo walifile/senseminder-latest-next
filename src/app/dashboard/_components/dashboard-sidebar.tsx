@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/shared/layout/Logo";
 
 const navItems = [
   {
@@ -125,7 +126,7 @@ const DashboardSidebar = () => {
           <div className="h-16 px-4 border-b border-border flex items-center justify-between">
             {!collapsed && (
               <Link href="/" className="flex items-center">
-                <span className="font-bold gradient-text text-lg">SmartPC</span>
+                <Logo />
               </Link>
             )}
 

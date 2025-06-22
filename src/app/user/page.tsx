@@ -24,11 +24,22 @@ import {
   FolderIcon,
   ChevronRight,
   Home,
+  MoreHorizontal,
+  Download,
+  Trash2,
+  Eye,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Enhanced mock data with nested folder structure
 const mockFolderStructure: Record<string, any[]> = {
@@ -329,15 +340,15 @@ const StaticStoragePage = () => {
       <Card className="relative my-20 p-3 m-20">
         <CardHeader className="pb-2">
           <div className="flex justify-between items-center">
-            <div className="">
+            <div>
               <CardTitle>Smart Storage</CardTitle>
-              <CardDescription className="mt-2">
-                Manage your all files and folders
+              <CardDescription className="mt-3">
+                Manage your files and folders
               </CardDescription>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent className="p-0 mt-3">
           <div className="flex flex-col md:flex-row min-h-[600px] relative">
             <div className="flex-1 overflow-hidden flex flex-col">
               <Breadcrumbs
@@ -358,10 +369,10 @@ const StaticStoragePage = () => {
                             <TableRow>
                               <TableHead className="w-[50%]">Name</TableHead>
                               <TableHead className="w-[15%]">Size</TableHead>
-                              <TableHead className="w-[20%]">
+                              <TableHead className="w-[15%]">
                                 Uploaded
                               </TableHead>
-                              <TableHead className="w-[15%]">Status</TableHead>
+                              <TableHead className="w-[5%]">Actions</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -406,23 +417,30 @@ const StaticStoragePage = () => {
                                     {formatDate(file.createdAt)}
                                   </span>
                                 </TableCell>
+
                                 <TableCell className="py-4">
-                                  {file.shared ? (
-                                    <Badge
-                                      variant="outline"
-                                      className="bg-green-500/10 text-green-500 border-green-500/20"
-                                    >
-                                      <Share2 className="h-3 w-3 mr-1" />
-                                      Shared
-                                    </Badge>
-                                  ) : (
-                                    <Badge
-                                      variant="outline"
-                                      className="bg-gray-500/10 text-gray-500 border-gray-500/20"
-                                    >
-                                      Private
-                                    </Badge>
-                                  )}
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      {file.fileType !== "folder" && (
+                                        <>
+                                          <DropdownMenuItem>
+                                            <Download className="h-4 w-4 mr-2" />
+                                            Download
+                                          </DropdownMenuItem>
+                                        </>
+                                      )}
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
                                 </TableCell>
                               </TableRow>
                             ))}

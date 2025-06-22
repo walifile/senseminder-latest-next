@@ -13,6 +13,7 @@ import Link from "next/link";
 import { ThemeToggle } from "@/components/shared/layout/theme-toggle";
 import { cn } from "@/lib/utils";
 import ProfileDropdown from "@/components/shared/layout/profile-dropdown";
+import { Logo } from "@/components/shared/layout/Logo";
 
 const DashboardHeader = () => {
   const [notifications] = useState([
@@ -77,7 +78,7 @@ const DashboardHeader = () => {
 
       {sidebarCollapsed && (
         <Link href="/" className="flex items-center">
-          <span className="font-bold gradient-text text-lg">SmartPC</span>
+          <Logo />
         </Link>
       )}
 
