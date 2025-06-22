@@ -332,7 +332,7 @@ const StaticStoragePage = () => {
             <div className="">
               <CardTitle>Smart Storage</CardTitle>
               <CardDescription className="mt-2">
-                Manage your files and folders
+                Manage your all files and folders
               </CardDescription>
             </div>
           </div>
