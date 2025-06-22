@@ -20,11 +20,13 @@ import { RootState } from "@/redux/store";
 interface NewFolderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  folderPath: string;
 }
 
 const NewFolderDialog: React.FC<NewFolderDialogProps> = ({
   open,
   onOpenChange,
+  folderPath,
 }) => {
   const { toast } = useToast();
   const userId = useSelector((state: RootState) => state.auth.user?.id);
@@ -38,11 +40,18 @@ const NewFolderDialog: React.FC<NewFolderDialogProps> = ({
   const handleCreate = async () => {
     if (!folderName.trim() || !userId) return;
 
+    const trimmedName = folderName.trim();
+    if (!trimmedName || !userId) return;
+
+    const fullFolderPath = folderPath
+      ? `${folderPath.replace(/\/+$/, "")}/${trimmedName}`
+      : trimmedName;
+
     try {
       await createFolder({
         region: "virginia",
         userId,
-        folderName: folderName.trim(),
+        folderName: fullFolderPath,
       }).unwrap();
 
       toast({

@@ -27,9 +27,14 @@ import {
 interface UploadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  folderPath?: string;
 }
 
-const UploadDialog: React.FC<UploadDialogProps> = ({ open, onOpenChange }) => {
+const UploadDialog: React.FC<UploadDialogProps> = ({
+  open,
+  onOpenChange,
+  folderPath,
+}) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [region, setRegion] = useState("north-virginia");
@@ -49,7 +54,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ open, onOpenChange }) => {
 
     const updatedFiles: File[] = [];
 
-    fileArray.forEach(file => {
+    fileArray.forEach((file) => {
       let finalName = file.name;
       const baseName = file.name.replace(/(\.\w+)$/, "");
       const ext = file.name.match(/(\.\w+)$/)?.[0] || "";
@@ -58,8 +63,8 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ open, onOpenChange }) => {
 
       // Only modify name if already selected
       while (
-        selectedFiles.some(f => f.name === finalName) ||
-        updatedFiles.some(f => f.name === finalName)
+        selectedFiles.some((f) => f.name === finalName) ||
+        updatedFiles.some((f) => f.name === finalName)
       ) {
         finalName = `${baseName} (${counter})${ext}`;
         counter++;
@@ -72,7 +77,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ open, onOpenChange }) => {
       updatedFiles.push(renamedFile);
     });
 
-    setSelectedFiles(prev => [...prev, ...updatedFiles]);
+    setSelectedFiles((prev) => [...prev, ...updatedFiles]);
   };
 
   const handleFileRemove = (index: number) => {
@@ -83,11 +88,11 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ open, onOpenChange }) => {
 
   const handleUpload = async () => {
     const newStatus = { ...uploadStatus };
-    selectedFiles.forEach(file => (newStatus[file.name] = "loading"));
+    selectedFiles.forEach((file) => (newStatus[file.name] = "loading"));
     setUploadStatus(newStatus);
 
     await Promise.all(
-      selectedFiles.map(async file => {
+      selectedFiles.map(async (file) => {
         try {
           const { uploadUrl } = await uploadFile({
             fileName: file.name,
@@ -97,14 +102,15 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ open, onOpenChange }) => {
             size: file.size.toString(),
             status: "private",
             starred: false,
+            folder: folderPath,
           }).unwrap();
 
           await uploadToPresignedUrl({ uploadUrl, file }).unwrap();
-          setUploadStatus(prev => ({ ...prev, [file.name]: "success" }));
+          setUploadStatus((prev) => ({ ...prev, [file.name]: "success" }));
           closeDialog();
         } catch (err) {
           console.error(err);
-          setUploadStatus(prev => ({ ...prev, [file.name]: "error" }));
+          setUploadStatus((prev) => ({ ...prev, [file.name]: "error" }));
         }
       })
     );
@@ -154,7 +160,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ open, onOpenChange }) => {
             className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition bg-muted/50 hover:bg-muted ${
               isDragging ? "border-primary bg-gray-100" : ""
             }`}
-            onDragOver={e => {
+            onDragOver={(e) => {
               e.preventDefault();
               setIsDragging(true);
             }}
@@ -177,7 +183,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({ open, onOpenChange }) => {
               className="hidden"
               multiple
               ref={fileInputRef}
-              onChange={e => {
+              onChange={(e) => {
                 handleFileChange(e.target.files);
                 e.target.value = "";
               }}

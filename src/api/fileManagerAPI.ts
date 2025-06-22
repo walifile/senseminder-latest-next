@@ -262,6 +262,7 @@ export const fileManagerAPI = createApi({
         size,
         status,
         starred,
+        folder,
       }) => ({
         url: "upload",
         method: "POST",
@@ -273,10 +274,26 @@ export const fileManagerAPI = createApi({
           size,
           status,
           starred,
+          folder,
         },
       }),
       invalidatesTags: ["Files"],
     }),
+    downloadFolder: builder.query<
+      { downloadUrl: string },
+      { userId: string; region: string; folder: string }
+    >({
+      query: ({ userId, region, folder }) => ({
+        url: "download-folder",
+        method: "GET",
+        params: {
+          userId,
+          region,
+          folder,
+        },
+      }),
+    }),
+
     createFolder: builder.mutation({
       query: ({ region, userId, folderName }) => ({
         url: `create-folder`,
@@ -392,4 +409,5 @@ export const {
   useMoveFilesMutation,
   useGetUsageQuery,
   useListHierarchyQuery,
+  useLazyDownloadFolderQuery,
 } = fileManagerAPI;
