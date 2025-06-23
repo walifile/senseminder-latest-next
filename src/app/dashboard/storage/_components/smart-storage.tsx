@@ -177,12 +177,12 @@ const CloudStorage = () => {
 
   const folderPath = path.map((f) => f.fileName).join("/");
 
-  // console.log({ folderPath, path });
+  console.log({ '>>>>>>>>>>>>': folderPath, path });
 
   // console.log(path);
 
   const selectedType =
-    selectedCategory === "All Files" || selectedFolder
+    selectedCategory === "All Files"
       ? ""
       : selectedCategory.toLowerCase();
 
@@ -214,12 +214,15 @@ const CloudStorage = () => {
 
   console.log({ wali: files });
 
+
+  const paths = path.map((f) => f.fileName).join("/");
+  console.log("<><><> ~ paths:", paths)
   const handleDownloadClick = async () => {
     try {
       const { downloadUrl } = await triggerFolderDownload({
         userId, // get from Redux or props
         region: "virginia",
-        folder: "y", // your folder in root
+        folder: paths, // your folder in root
       }).unwrap();
 
       // Trigger browser download
@@ -253,10 +256,21 @@ const CloudStorage = () => {
     setSelectedFolder(newPath[newPath.length - 1] || null);
     setSelectedFiles([]);
   };
+  const handleCloseFolderback = () => {
+    if (path.length > 0) {
+      const root = path[0];
+      setPath(root ? [root] : []);
+      setSelectedFolder(root || null);
+    } else {
+      setPath([]);
+      setSelectedFolder(null);
+    }
+    setSelectedFiles([]);
+  };
 
   const handleCategorySelection = (category: string) => {
     setSelectedCategory(category);
-    handleCloseFolder();
+    handleCloseFolderback();
     setPage(1);
   };
 
@@ -364,9 +378,8 @@ const CloudStorage = () => {
       }).unwrap();
 
       toast({
-        title: `${fileNames.length} ${
-          fileNames.length === 1 ? "item" : "items"
-        } deleted`,
+        title: `${fileNames.length} ${fileNames.length === 1 ? "item" : "items"
+          } deleted`,
         description: "The selected files and folders have been moved to trash.",
         variant: "destructive",
       });
@@ -399,9 +412,8 @@ const CloudStorage = () => {
 
       toast({
         title: file.starred ? "Unstarred" : "Starred",
-        description: `"${file.fileName}" was ${
-          file.starred ? "removed from" : "added to"
-        } your starred items`,
+        description: `"${file.fileName}" was ${file.starred ? "removed from" : "added to"
+          } your starred items`,
       });
     } catch (err) {
       console.error("Star/unstar error:", err);
@@ -614,9 +626,8 @@ const CloudStorage = () => {
 
         toast({
           title: `Files ${operation === "copy" ? "Copied" : "Moved"}`,
-          description: `${fileIds.length} file(s) ${
-            operation === "copy" ? "copied" : "moved"
-          } successfully`,
+          description: `${fileIds.length} file(s) ${operation === "copy" ? "copied" : "moved"
+            } successfully`,
         });
 
         setSelectedFiles([]);
@@ -784,9 +795,8 @@ const CloudStorage = () => {
         </CardHeader>
         <CardContent className="p-0">
           <div
-            className={`flex flex-col md:flex-row min-h-[600px] relative ${
-              isDragging ? "bg-muted/50" : ""
-            }`}
+            className={`flex flex-col md:flex-row min-h-[600px] relative ${isDragging ? "bg-muted/50" : ""
+              }`}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -973,13 +983,41 @@ const CloudStorage = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={handleBulkShare}
-                        disabled={selectedFiles.length === 0}
-                      >
-                        <Share2 className="h-4 w-4 mr-2" />
-                        Share
-                      </DropdownMenuItem>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="w-full">
+                              <DropdownMenuItem
+                                onClick={handleBulkShare}
+                                disabled={
+                                  selectedFiles.length !==
+                                  1
+                                }
+                                className={
+                                  selectedFiles.length !==
+                                    1
+                                    ? "cursor-not-allowed opacity-50 pointer-events-none w-full"
+                                    : "w-full"
+                                }
+
+                                className={"w-full"
+                                }
+                              >
+                                <Share2 className="h-4 w-4 mr-2" />
+                                Share
+                              </DropdownMenuItem>
+                            </div>
+                          </TooltipTrigger>
+
+                          {selectedFiles.length !== 1 && (
+                            <TooltipContent side="left">
+                              You can only share one file
+                              at a time
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </TooltipProvider>
+
                       <DropdownMenuItem
                         onClick={handleBulkDownload}
                         disabled={
@@ -1094,11 +1132,10 @@ const CloudStorage = () => {
                                   {(files as FileItem[]).map((file, index) => (
                                     <TableRow
                                       key={file.id}
-                                      className={`hover:bg-muted/50 ${
-                                        dragOverFolderId === file.id
+                                      className={`hover:bg-muted/50 ${dragOverFolderId === file.id
                                           ? "bg-muted ring-2 ring-primary"
                                           : ""
-                                      }`}
+                                        }`}
                                       draggable={true}
                                       onDragStart={(e) =>
                                         handleItemDragStart(e, file.id)
@@ -1137,10 +1174,9 @@ const CloudStorage = () => {
                                           {...(file.fileType === "folder" && {
                                             title: "Click to open folder",
                                           })}
-                                          className={`flex items-center gap-2 ${
-                                            file.fileType === "folder" &&
+                                          className={`flex items-center gap-2 ${file.fileType === "folder" &&
                                             "cursor-pointer"
-                                          }`}
+                                            }`}
                                           onClick={() =>
                                             handleFolderSelection(file)
                                           }
@@ -1229,7 +1265,7 @@ const CloudStorage = () => {
                                                   }
                                                 >
                                                   {downloadingFile ===
-                                                  file.fileName ? (
+                                                    file.fileName ? (
                                                     <>
                                                       <Loader2 className="h-4 w-4 mr-2 animate-spin text-primary" />
                                                       Downloading...
@@ -1251,15 +1287,18 @@ const CloudStorage = () => {
                                                       onClick={() =>
                                                         handleShare(file)
                                                       }
-                                                      disabled={
-                                                        selectedFiles.length !==
-                                                        1
-                                                      }
-                                                      className={
-                                                        selectedFiles.length !==
-                                                        1
-                                                          ? "cursor-not-allowed opacity-50 pointer-events-none w-full"
-                                                          : "w-full"
+                                                      // disabled={
+                                                      //   selectedFiles.length !==
+                                                      //   1
+                                                      // }
+                                                      // className={
+                                                      //   selectedFiles.length !==
+                                                      //   1
+                                                      //     ? "cursor-not-allowed opacity-50 pointer-events-none w-full"
+                                                      //     : "w-full"
+                                                      // }
+
+                                                      className={"w-full"
                                                       }
                                                     >
                                                       <Share2 className="h-4 w-4 mr-2" />
@@ -1326,15 +1365,13 @@ const CloudStorage = () => {
                                 {(files as FileItem[]).map((file, index) => (
                                   <div
                                     key={file.id}
-                                    className={`relative group px-4 rounded-lg border border-border hover:bg-muted/50 transition-colors ${
-                                      dragOverFolderId === file.id
+                                    className={`relative group px-4 rounded-lg border border-border hover:bg-muted/50 transition-colors ${dragOverFolderId === file.id
                                         ? "bg-muted ring-2 ring-primary"
                                         : ""
-                                    } ${
-                                      file.fileType === "folder"
+                                      } ${file.fileType === "folder"
                                         ? "py-3"
                                         : "pt-2 pb-3"
-                                    }`}
+                                      }`}
                                     draggable
                                     onDragStart={(e) =>
                                       handleItemDragStart(e, file.id)
@@ -1356,19 +1393,17 @@ const CloudStorage = () => {
                                     }
                                   >
                                     <div
-                                      className={`${
-                                        file.fileType === "folder"
+                                      className={`${file.fileType === "folder"
                                           ? "h-full flex flex-col justify-between gap-1"
                                           : "w-full flex items-center gap-1"
-                                      }`}
+                                        }`}
                                     >
                                       {/* drag handle + checkbox */}
                                       <div
-                                        className={`flex items-center gap-2 ${
-                                          file.fileType === "folder"
+                                        className={`flex items-center gap-2 ${file.fileType === "folder"
                                             ? "absolute top-2 left-2"
                                             : "flex-shrink-0 mr-2"
-                                        }`}
+                                          }`}
                                       >
                                         <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
                                         <Checkbox
@@ -1386,41 +1421,37 @@ const CloudStorage = () => {
                                         {...(file.fileType === "folder" && {
                                           title: "Click to open folder",
                                         })}
-                                        className={`flex items-center ${
-                                          file.fileType === "folder"
+                                        className={`flex items-center ${file.fileType === "folder"
                                             ? "flex-col cursor-pointer text-center mb-3"
                                             : "gap-2 flex-1 min-w-0"
-                                        }`}
+                                          }`}
                                         onClick={() =>
                                           file.fileType === "folder" &&
                                           handleFolderSelection(file)
                                         }
                                       >
                                         <div
-                                          className={`${
-                                            file.fileType === "folder" && "mb-2"
-                                          }`}
+                                          className={`${file.fileType === "folder" && "mb-2"
+                                            }`}
                                         >
-                                          <FileTypeIcon
+                                          {/* <FileTypeIcon
                                             index={index}
                                             fileName={file.fileName}
                                             fileType={file.fileType}
                                             size="large"
-                                          />
+                                          /> */}
                                         </div>
                                         <div
-                                          className={`${
-                                            file.fileType === "folder"
+                                          className={`${file.fileType === "folder"
                                               ? "w-full"
                                               : "flex-1 min-w-0"
-                                          }`}
+                                            }`}
                                         >
                                           <div
-                                            className={`font-medium truncate text-sm ${
-                                              file.fileType === "folder"
+                                            className={`font-medium truncate text-sm ${file.fileType === "folder"
                                                 ? ""
                                                 : "min-w-0"
-                                            }`}
+                                              }`}
                                             title={file.fileName}
                                           >
                                             {file.fileName}
@@ -1448,11 +1479,10 @@ const CloudStorage = () => {
                                       </div>
 
                                       <div
-                                        className={`${
-                                          file.fileType === "folder"
+                                        className={`${file.fileType === "folder"
                                             ? "absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                                             : ""
-                                        }`}
+                                          }`}
                                       >
                                         <DropdownMenu>
                                           <DropdownMenuTrigger asChild>
@@ -1500,7 +1530,7 @@ const CloudStorage = () => {
                                                       }
                                                       className={
                                                         selectedFiles.length !==
-                                                        1
+                                                          1
                                                           ? "cursor-not-allowed opacity-50 pointer-events-none w-full"
                                                           : "w-full"
                                                       }
@@ -1652,7 +1682,7 @@ const CloudStorage = () => {
                                 {pagination.total === 0
                                   ? 0
                                   : (pagination.page - 1) * pagination.limit +
-                                    1}{" "}
+                                  1}{" "}
                                 to{" "}
                                 {Math.min(
                                   pagination.page * pagination.limit,
@@ -1899,8 +1929,8 @@ const CloudStorage = () => {
         open={showUploadDialog}
         onOpenChange={setShowUploadDialog}
         folderPath={folderPath}
-        // handleFileUpload={handleFileUpload}
-        // uploadProgress={uploadProgress}
+      // handleFileUpload={handleFileUpload}
+      // uploadProgress={uploadProgress}
       />
 
       {/* Storage Sync Dialog */}
@@ -1919,7 +1949,7 @@ const CloudStorage = () => {
         open={showNewFolderDialog}
         onOpenChange={setShowNewFolderDialog}
         folderPath={folderPath}
-        // onCreate={handleCreateFolder}
+      // onCreate={handleCreateFolder}
       />
     </>
   );
