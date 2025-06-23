@@ -177,14 +177,12 @@ const CloudStorage = () => {
 
   const folderPath = path.map((f) => f.fileName).join("/");
 
-  console.log({ '>>>>>>>>>>>>': folderPath, path });
+  console.log({ ">>>>>>>>>>>>": folderPath, path });
 
   // console.log(path);
 
   const selectedType =
-    selectedCategory === "All Files"
-      ? ""
-      : selectedCategory.toLowerCase();
+    selectedCategory === "All Files" ? "" : selectedCategory.toLowerCase();
 
   const { data, error, isFetching } = useListFilesQuery({
     userId,
@@ -214,15 +212,16 @@ const CloudStorage = () => {
 
   console.log({ wali: files });
 
-
   const paths = path.map((f) => f.fileName).join("/");
-  console.log("<><><> ~ paths:", paths)
+  console.log({ paths });
   const handleDownloadClick = async () => {
+    if (!userId) return;
+
     try {
       const { downloadUrl } = await triggerFolderDownload({
-        userId, // get from Redux or props
+        userId,
         region: "virginia",
-        folder: paths, // your folder in root
+        folder: "",
       }).unwrap();
 
       // Trigger browser download
@@ -230,6 +229,31 @@ const CloudStorage = () => {
     } catch (err) {
       console.error("Download failed", err);
       alert("Failed to download folder");
+    }
+  };
+
+  const handleFolderDownload = async (file: FileItem) => {
+    if (!userId) return;
+
+    // Build the folder path relative to uploads (or however your API expects it)
+    // Example: wali, wali/walichild, wali/walichild/subchild
+    const folderPath = getRelativePath(file.id); // Ensure this returns the right S3 folder path
+
+    try {
+      const { downloadUrl } = await triggerFolderDownload({
+        userId,
+        region: "virginia",
+        folder: folderPath,
+      }).unwrap();
+
+      window.location.href = downloadUrl;
+    } catch (err) {
+      console.error("Folder download failed", err);
+      toast({
+        title: "Download Error",
+        description: "Failed to download folder",
+        variant: "destructive",
+      });
     }
   };
 
@@ -378,8 +402,9 @@ const CloudStorage = () => {
       }).unwrap();
 
       toast({
-        title: `${fileNames.length} ${fileNames.length === 1 ? "item" : "items"
-          } deleted`,
+        title: `${fileNames.length} ${
+          fileNames.length === 1 ? "item" : "items"
+        } deleted`,
         description: "The selected files and folders have been moved to trash.",
         variant: "destructive",
       });
@@ -412,8 +437,9 @@ const CloudStorage = () => {
 
       toast({
         title: file.starred ? "Unstarred" : "Starred",
-        description: `"${file.fileName}" was ${file.starred ? "removed from" : "added to"
-          } your starred items`,
+        description: `"${file.fileName}" was ${
+          file.starred ? "removed from" : "added to"
+        } your starred items`,
       });
     } catch (err) {
       console.error("Star/unstar error:", err);
@@ -626,8 +652,9 @@ const CloudStorage = () => {
 
         toast({
           title: `Files ${operation === "copy" ? "Copied" : "Moved"}`,
-          description: `${fileIds.length} file(s) ${operation === "copy" ? "copied" : "moved"
-            } successfully`,
+          description: `${fileIds.length} file(s) ${
+            operation === "copy" ? "copied" : "moved"
+          } successfully`,
         });
 
         setSelectedFiles([]);
@@ -795,8 +822,9 @@ const CloudStorage = () => {
         </CardHeader>
         <CardContent className="p-0">
           <div
-            className={`flex flex-col md:flex-row min-h-[600px] relative ${isDragging ? "bg-muted/50" : ""
-              }`}
+            className={`flex flex-col md:flex-row min-h-[600px] relative ${
+              isDragging ? "bg-muted/50" : ""
+            }`}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -989,19 +1017,13 @@ const CloudStorage = () => {
                             <div className="w-full">
                               <DropdownMenuItem
                                 onClick={handleBulkShare}
-                                disabled={
-                                  selectedFiles.length !==
-                                  1
-                                }
+                                disabled={selectedFiles.length !== 1}
                                 className={
-                                  selectedFiles.length !==
-                                    1
+                                  selectedFiles.length !== 1
                                     ? "cursor-not-allowed opacity-50 pointer-events-none w-full"
                                     : "w-full"
                                 }
-
-                                className={"w-full"
-                                }
+                                // className={"w-full"}
                               >
                                 <Share2 className="h-4 w-4 mr-2" />
                                 Share
@@ -1011,8 +1033,7 @@ const CloudStorage = () => {
 
                           {selectedFiles.length !== 1 && (
                             <TooltipContent side="left">
-                              You can only share one file
-                              at a time
+                              You can only share one file at a time
                             </TooltipContent>
                           )}
                         </Tooltip>
@@ -1132,10 +1153,11 @@ const CloudStorage = () => {
                                   {(files as FileItem[]).map((file, index) => (
                                     <TableRow
                                       key={file.id}
-                                      className={`hover:bg-muted/50 ${dragOverFolderId === file.id
+                                      className={`hover:bg-muted/50 ${
+                                        dragOverFolderId === file.id
                                           ? "bg-muted ring-2 ring-primary"
                                           : ""
-                                        }`}
+                                      }`}
                                       draggable={true}
                                       onDragStart={(e) =>
                                         handleItemDragStart(e, file.id)
@@ -1174,9 +1196,10 @@ const CloudStorage = () => {
                                           {...(file.fileType === "folder" && {
                                             title: "Click to open folder",
                                           })}
-                                          className={`flex items-center gap-2 ${file.fileType === "folder" &&
+                                          className={`flex items-center gap-2 ${
+                                            file.fileType === "folder" &&
                                             "cursor-pointer"
-                                            }`}
+                                          }`}
                                           onClick={() =>
                                             handleFolderSelection(file)
                                           }
@@ -1260,12 +1283,20 @@ const CloudStorage = () => {
                                                     downloadingFile ===
                                                     file.fileName
                                                   }
-                                                  onClick={() =>
-                                                    handleDownload(file)
-                                                  }
+                                                  onClick={() => {
+                                                    if (
+                                                      file.fileType === "folder"
+                                                    ) {
+                                                      handleFolderDownload(
+                                                        file
+                                                      );
+                                                    } else {
+                                                      handleDownload(file);
+                                                    }
+                                                  }}
                                                 >
                                                   {downloadingFile ===
-                                                    file.fileName ? (
+                                                  file.fileName ? (
                                                     <>
                                                       <Loader2 className="h-4 w-4 mr-2 animate-spin text-primary" />
                                                       Downloading...
@@ -1298,8 +1329,7 @@ const CloudStorage = () => {
                                                       //     : "w-full"
                                                       // }
 
-                                                      className={"w-full"
-                                                      }
+                                                      className={"w-full"}
                                                     >
                                                       <Share2 className="h-4 w-4 mr-2" />
                                                       Share
@@ -1365,13 +1395,15 @@ const CloudStorage = () => {
                                 {(files as FileItem[]).map((file, index) => (
                                   <div
                                     key={file.id}
-                                    className={`relative group px-4 rounded-lg border border-border hover:bg-muted/50 transition-colors ${dragOverFolderId === file.id
+                                    className={`relative group px-4 rounded-lg border border-border hover:bg-muted/50 transition-colors ${
+                                      dragOverFolderId === file.id
                                         ? "bg-muted ring-2 ring-primary"
                                         : ""
-                                      } ${file.fileType === "folder"
+                                    } ${
+                                      file.fileType === "folder"
                                         ? "py-3"
                                         : "pt-2 pb-3"
-                                      }`}
+                                    }`}
                                     draggable
                                     onDragStart={(e) =>
                                       handleItemDragStart(e, file.id)
@@ -1393,17 +1425,19 @@ const CloudStorage = () => {
                                     }
                                   >
                                     <div
-                                      className={`${file.fileType === "folder"
+                                      className={`${
+                                        file.fileType === "folder"
                                           ? "h-full flex flex-col justify-between gap-1"
                                           : "w-full flex items-center gap-1"
-                                        }`}
+                                      }`}
                                     >
                                       {/* drag handle + checkbox */}
                                       <div
-                                        className={`flex items-center gap-2 ${file.fileType === "folder"
+                                        className={`flex items-center gap-2 ${
+                                          file.fileType === "folder"
                                             ? "absolute top-2 left-2"
                                             : "flex-shrink-0 mr-2"
-                                          }`}
+                                        }`}
                                       >
                                         <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
                                         <Checkbox
@@ -1421,18 +1455,20 @@ const CloudStorage = () => {
                                         {...(file.fileType === "folder" && {
                                           title: "Click to open folder",
                                         })}
-                                        className={`flex items-center ${file.fileType === "folder"
+                                        className={`flex items-center ${
+                                          file.fileType === "folder"
                                             ? "flex-col cursor-pointer text-center mb-3"
                                             : "gap-2 flex-1 min-w-0"
-                                          }`}
+                                        }`}
                                         onClick={() =>
                                           file.fileType === "folder" &&
                                           handleFolderSelection(file)
                                         }
                                       >
                                         <div
-                                          className={`${file.fileType === "folder" && "mb-2"
-                                            }`}
+                                          className={`${
+                                            file.fileType === "folder" && "mb-2"
+                                          }`}
                                         >
                                           {/* <FileTypeIcon
                                             index={index}
@@ -1442,16 +1478,18 @@ const CloudStorage = () => {
                                           /> */}
                                         </div>
                                         <div
-                                          className={`${file.fileType === "folder"
+                                          className={`${
+                                            file.fileType === "folder"
                                               ? "w-full"
                                               : "flex-1 min-w-0"
-                                            }`}
+                                          }`}
                                         >
                                           <div
-                                            className={`font-medium truncate text-sm ${file.fileType === "folder"
+                                            className={`font-medium truncate text-sm ${
+                                              file.fileType === "folder"
                                                 ? ""
                                                 : "min-w-0"
-                                              }`}
+                                            }`}
                                             title={file.fileName}
                                           >
                                             {file.fileName}
@@ -1479,10 +1517,11 @@ const CloudStorage = () => {
                                       </div>
 
                                       <div
-                                        className={`${file.fileType === "folder"
+                                        className={`${
+                                          file.fileType === "folder"
                                             ? "absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                                             : ""
-                                          }`}
+                                        }`}
                                       >
                                         <DropdownMenu>
                                           <DropdownMenuTrigger asChild>
@@ -1530,7 +1569,7 @@ const CloudStorage = () => {
                                                       }
                                                       className={
                                                         selectedFiles.length !==
-                                                          1
+                                                        1
                                                           ? "cursor-not-allowed opacity-50 pointer-events-none w-full"
                                                           : "w-full"
                                                       }
@@ -1682,7 +1721,7 @@ const CloudStorage = () => {
                                 {pagination.total === 0
                                   ? 0
                                   : (pagination.page - 1) * pagination.limit +
-                                  1}{" "}
+                                    1}{" "}
                                 to{" "}
                                 {Math.min(
                                   pagination.page * pagination.limit,
@@ -1929,8 +1968,8 @@ const CloudStorage = () => {
         open={showUploadDialog}
         onOpenChange={setShowUploadDialog}
         folderPath={folderPath}
-      // handleFileUpload={handleFileUpload}
-      // uploadProgress={uploadProgress}
+        // handleFileUpload={handleFileUpload}
+        // uploadProgress={uploadProgress}
       />
 
       {/* Storage Sync Dialog */}
@@ -1949,7 +1988,7 @@ const CloudStorage = () => {
         open={showNewFolderDialog}
         onOpenChange={setShowNewFolderDialog}
         folderPath={folderPath}
-      // onCreate={handleCreateFolder}
+        // onCreate={handleCreateFolder}
       />
     </>
   );
