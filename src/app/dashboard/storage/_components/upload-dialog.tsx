@@ -35,6 +35,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   onOpenChange,
   folderPath,
 }) => {
+  console.log("🚀 ~ folderPath:", folderPath)
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [region, setRegion] = useState("north-virginia");
@@ -133,8 +134,9 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Upload Files</DialogTitle>
           <DialogDescription>
-            Select files from your computer to upload
+            Choose files from your device to upload{folderPath ? ` to the folder "${folderPath}"` : ""}.
           </DialogDescription>
+
         </DialogHeader>
         <div className="py-4 space-y-4">
           <div className="space-y-1">
@@ -157,9 +159,8 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
           {/* File upload zone */}
           <label
             htmlFor="file-upload"
-            className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition bg-muted/50 hover:bg-muted ${
-              isDragging ? "border-primary bg-gray-100" : ""
-            }`}
+            className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition bg-muted/50 hover:bg-muted ${isDragging ? "border-primary bg-gray-100" : ""
+              }`}
             onDragOver={(e) => {
               e.preventDefault();
               setIsDragging(true);

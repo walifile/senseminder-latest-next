@@ -77,8 +77,9 @@ const NewFolderDialog: React.FC<NewFolderDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Create New Folder</DialogTitle>
           <DialogDescription>
-            Enter a name for your new folder
+            Enter a name for your new folder{folderPath ? ` located in "${folderPath}"` : ""}
           </DialogDescription>
+
         </DialogHeader>
         <div className="py-4 space-y-4">
           <div className="space-y-2">
