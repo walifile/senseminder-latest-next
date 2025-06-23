@@ -7,7 +7,7 @@ const FileTypeIcon = ({
   fileType,
   size = "small",
 }: {
-  index: number;
+  index?: number;
   fileName: string;
   fileType: string;
   size?: "small" | "large";

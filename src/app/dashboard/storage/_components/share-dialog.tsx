@@ -89,7 +89,10 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
         ...(sharePasswordEnabled && { password: sharePassword }),
       }).unwrap();
 
-      setShareLink(result.shareLink);
+      if (result.shareLink) {
+        const encodedUrl = encodeURIComponent(result.shareLink);
+        setShareLink(`${window.location.origin}/view/${encodedUrl}`);
+      }
 
       toast({
         title: `${isFolder ? "Folder" : "File"} Shared`,
