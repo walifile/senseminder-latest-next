@@ -93,6 +93,7 @@ import {
   useCopyFilesMutation,
   useDeleteFilesMutation,
   useLazyDownloadFileQuery,
+  useLazyDownloadFolderQuery,
   useListFilesQuery,
   useMoveFilesMutation,
   useUnstarFileMutation,
@@ -176,7 +177,9 @@ const CloudStorage = () => {
 
   const folderPath = path.map((f) => f.fileName).join("/");
 
-  console.log(path);
+  // console.log({ folderPath, path });
+
+  // console.log(path);
 
   const selectedType =
     selectedCategory === "All Files" || selectedFolder
@@ -202,6 +205,7 @@ const CloudStorage = () => {
   const pagination = data?.pagination || {};
 
   const [triggerDownloadFile] = useLazyDownloadFileQuery();
+  const [triggerFolderDownload] = useLazyDownloadFolderQuery();
   const [starFile] = useStarFileMutation();
   const [unstarFile] = useUnstarFileMutation();
   const [deleteFiles] = useDeleteFilesMutation();
@@ -209,6 +213,22 @@ const CloudStorage = () => {
   const [moveFiles] = useMoveFilesMutation();
 
   console.log({ wali: files });
+
+  const handleDownloadClick = async () => {
+    try {
+      const { downloadUrl } = await triggerFolderDownload({
+        userId, // get from Redux or props
+        region: "virginia",
+        folder: "y", // your folder in root
+      }).unwrap();
+
+      // Trigger browser download
+      window.location.href = downloadUrl;
+    } catch (err) {
+      console.error("Download failed", err);
+      alert("Failed to download folder");
+    }
+  };
 
   // Handle page change
   const handlePageChange = (page: number) => {
@@ -736,6 +756,9 @@ const CloudStorage = () => {
         <CardHeader className="pb-2">
           <div className="flex justify-between items-center">
             <div>
+              <Button onClick={handleDownloadClick} disabled={isFetching}>
+                {isFetching ? "Downloading..." : "Download Folder"}
+              </Button>
               <CardTitle>Smart Storage</CardTitle>
               <CardDescription>Manage your files and folders</CardDescription>
             </div>
@@ -1875,6 +1898,7 @@ const CloudStorage = () => {
       <UploadDialog
         open={showUploadDialog}
         onOpenChange={setShowUploadDialog}
+        folderPath={folderPath}
         // handleFileUpload={handleFileUpload}
         // uploadProgress={uploadProgress}
       />
@@ -1894,6 +1918,7 @@ const CloudStorage = () => {
       <NewFolderDialog
         open={showNewFolderDialog}
         onOpenChange={setShowNewFolderDialog}
+        folderPath={folderPath}
         // onCreate={handleCreateFolder}
       />
     </>
