@@ -186,6 +186,16 @@ export const fileManagerAPI = createApi({
       }),
       invalidatesTags: ["Files"],
     }),
+    publicSharedList: builder.query({
+      query: ({ region, key }) => ({
+        url: "public-shared-list",
+        method: "GET",
+        params: {
+          region,
+          key,
+        },
+      }),
+    }),
     shareFile: builder.mutation({
       query: (body) => ({
         url: "share",
@@ -410,4 +420,5 @@ export const {
   useGetUsageQuery,
   useListHierarchyQuery,
   useLazyDownloadFolderQuery,
+  usePublicSharedListQuery,
 } = fileManagerAPI;

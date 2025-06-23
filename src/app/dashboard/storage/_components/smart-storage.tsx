@@ -358,7 +358,6 @@ const CloudStorage = () => {
   };
 
   const handleShare = (file: FileItem) => {
-    if (selectedFiles.length !== 1) return; // prevent misuse
     setSelectedFileForShare(file);
     setShowShareDialog(true);
   };
@@ -1318,18 +1317,6 @@ const CloudStorage = () => {
                                                       onClick={() =>
                                                         handleShare(file)
                                                       }
-                                                      // disabled={
-                                                      //   selectedFiles.length !==
-                                                      //   1
-                                                      // }
-                                                      // className={
-                                                      //   selectedFiles.length !==
-                                                      //   1
-                                                      //     ? "cursor-not-allowed opacity-50 pointer-events-none w-full"
-                                                      //     : "w-full"
-                                                      // }
-
-                                                      className={"w-full"}
                                                     >
                                                       <Share2 className="h-4 w-4 mr-2" />
                                                       Share
@@ -1562,16 +1549,6 @@ const CloudStorage = () => {
                                                     <DropdownMenuItem
                                                       onClick={() =>
                                                         handleShare(file)
-                                                      }
-                                                      disabled={
-                                                        selectedFiles.length !==
-                                                        1
-                                                      }
-                                                      className={
-                                                        selectedFiles.length !==
-                                                        1
-                                                          ? "cursor-not-allowed opacity-50 pointer-events-none w-full"
-                                                          : "w-full"
                                                       }
                                                     >
                                                       <Share2 className="h-4 w-4 mr-2" />
