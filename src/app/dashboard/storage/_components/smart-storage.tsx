@@ -266,13 +266,26 @@ const CloudStorage = () => {
     setShowUploadDialog(true);
   };
 
-  const handleFolderSelection = (file: FileItem) => {
-    if (file.fileType !== "folder") return;
-    setPath((prev) => [...prev, file]);
-    setSelectedFolder(file);
-    setSelectedFiles([]);
-  };
-
+  // const handleFolderSelection = (file: FileItem) => {
+  //   if (file.fileType !== "folder") return;
+  //   setPath((prev) => [...prev, file]);
+  //   setSelectedFolder(file);
+  //   setSelectedFiles([]);
+  // };
+const handleFolderSelection = (file: FileItem) => {
+  // if (file.fileType !== "folder") return;
+  
+  // Add folder to selected files
+  setSelectedFiles((prev) => {
+    if (!prev.includes(file.id)) {
+      return [...prev, file.id];
+    }
+    return prev;
+  });
+  
+  setPath((prev) => [...prev, file]);
+  setSelectedFolder(file);
+};
   const handleCloseFolder = () => {
     // remove last folder
     const newPath = path.slice(0, -1);
@@ -1457,12 +1470,13 @@ const CloudStorage = () => {
                                             file.fileType === "folder" && "mb-2"
                                           }`}
                                         >
-                                          {/* <FileTypeIcon
+                                          {file.fileType === "folder" &&
+                                          <FileTypeIcon
                                             index={index}
                                             fileName={file.fileName}
-                                            fileType={file.fileType}
+                                            fileType={file.fileType }
                                             size="large"
-                                          /> */}
+                                          />}
                                         </div>
                                         <div
                                           className={`${
