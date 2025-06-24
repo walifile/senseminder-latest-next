@@ -150,7 +150,7 @@ const SmartPCConfigDialog = ({
               control={control}
               name="operatingSystem"
               render={({ field }) => (
-                <Select {...field}>
+                <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select Operating System" />
                   </SelectTrigger>
@@ -202,7 +202,7 @@ const SmartPCConfigDialog = ({
                 control={control}
                 name="cpu"
                 render={({ field }) => (
-                  <Select {...field}>
+                  <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select CPU size" />
                     </SelectTrigger>
@@ -227,7 +227,7 @@ const SmartPCConfigDialog = ({
                 control={control}
                 name="storage"
                 render={({ field }) => (
-                  <Select {...field}>
+                  <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select storage size" />
                     </SelectTrigger>
@@ -252,7 +252,7 @@ const SmartPCConfigDialog = ({
                 control={control}
                 name="region"
                 render={({ field }) => (
-                  <Select {...field}>
+                  <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select nearest datacenter" />
                     </SelectTrigger>
