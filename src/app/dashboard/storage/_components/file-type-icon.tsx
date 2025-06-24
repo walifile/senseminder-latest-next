@@ -2,7 +2,6 @@ import React from "react";
 import { getFileIcon } from "../utils";
 
 const FileTypeIcon = ({
-  index,
   fileName,
   fileType,
   size = "small",

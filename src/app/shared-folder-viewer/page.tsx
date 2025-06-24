@@ -23,20 +23,15 @@ import {
   FolderIcon,
   ChevronRight,
   Home,
-  MoreHorizontal,
   Download,
   Users,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { usePublicSharedListQuery } from "@/api/fileManagerAPI";
+  usePublicSharedListQuery,
+  useLazyDownloadFolderQuery,
+} from "@/api/fileManagerAPI";
 
 const formatFileSize = (bytes: number) => {
   if (bytes === 0) return "0 Bytes";
@@ -52,18 +47,12 @@ const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString();
 };
 
-const FileTypeIcon = ({
-  fileType,
-  size = "small",
-}: {
-  fileType: string;
-  size?: "small" | "large";
-}) => {
-  const iconSize = size === "large" ? "h-12 w-12" : "h-6 w-6";
-  if (fileType === "folder") {
-    return <FolderIcon className={`${iconSize} text-blue-500`} />;
-  }
-  return <FileText className={`${iconSize} text-gray-500`} />;
+const FileTypeIcon = ({ fileType }: { fileType: string }) => {
+  return fileType === "folder" ? (
+    <FolderIcon className="h-6 w-6 text-blue-500" />
+  ) : (
+    <FileText className="h-6 w-6 text-gray-500" />
+  );
 };
 
 const Breadcrumbs = ({
@@ -71,13 +60,13 @@ const Breadcrumbs = ({
   onNavigate,
 }: {
   path: Array<{ id: string; name: string }>;
-  onNavigate: (folderId: string) => void;
+  onNavigate: (folderPath: string) => void;
 }) => (
   <div className="flex items-center gap-2 px-4 py-3 border-b bg-muted/20">
     <Button
       variant="ghost"
       size="sm"
-      onClick={() => onNavigate("root")}
+      onClick={() => onNavigate("")}
       className="h-8 px-2"
     >
       <Home className="h-4 w-4" />
@@ -106,165 +95,161 @@ const StaticStoragePage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const region = searchParams.get("region") || "virginia";
-  const key = searchParams.get("key") || "root";
-
-  const { data, isLoading } = usePublicSharedListQuery({ region, key });
+  const key = searchParams.get("key") || "";
+  const { data, isLoading } = usePublicSharedListQuery({
+    key,
+    region: "virginia",
+  });
+  const [triggerDownloadFolder, { isFetching }] = useLazyDownloadFolderQuery();
 
   const [breadcrumbPath, setBreadcrumbPath] = useState<
     Array<{ id: string; name: string }>
   >([]);
 
   useEffect(() => {
-    if (key === "root") {
+    if (!key) {
       setBreadcrumbPath([]);
-    } else {
-      setBreadcrumbPath((prev) => {
-        if (prev.find((p) => p.id === key)) {
-          return prev;
-        }
-        const currentName = key.split("/").filter(Boolean).slice(-1)[0];
-        return [...prev, { id: key, name: currentName }];
-      });
+      return;
     }
+
+    const parts = key.split("/").filter(Boolean);
+    if (parts.length <= 1) {
+      setBreadcrumbPath([]);
+      return;
+    }
+
+    const meaningfulParts = parts.slice(1);
+    const pathArr = meaningfulParts.map((part, idx) => {
+      const id = parts.slice(0, idx + 2).join("/") + "/";
+      return { id, name: part };
+    });
+
+    setBreadcrumbPath(pathArr);
   }, [key]);
 
   const handleFolderClick = (file: any) => {
     if (file.fileType === "folder") {
-      router.push(`?region=${region}&key=${encodeURIComponent(file.id)}`);
+      const newPath = key ? `${key}${file.fileName}/` : `${file.fileName}/`;
+      router.push(`/shared-folder-viewer?key=${encodeURIComponent(newPath)}`);
     }
   };
 
-  const handleBreadcrumbNavigate = (folderId: string) => {
-    router.push(`?region=${region}&key=${encodeURIComponent(folderId)}`);
+  const handleBreadcrumbNavigate = (folderPath: string) => {
+    router.push(
+      folderPath
+        ? `/shared-folder-viewer?key=${encodeURIComponent(folderPath)}`
+        : `/shared-folder-viewer`
+    );
+  };
+
+  const handleDownloadFolder = async () => {
+    if (!key) {
+      alert("You are at root. Please navigate into a folder to download.");
+      return;
+    }
+
+    try {
+      const res = await triggerDownloadFolder({
+        region: "virginia",
+        key,
+      }).unwrap();
+
+      if (res?.downloadUrl) {
+        window.location.href = res.downloadUrl;
+      } else {
+        alert("Download URL not available.");
+      }
+    } catch (err) {
+      console.error("Download failed", err);
+      alert("Failed to download folder.");
+    }
   };
 
   const files = data?.files || [];
 
   return (
     <Card className="relative my-20 p-3 m-20">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle>Smart Storage</CardTitle>
-            <CardDescription className="mt-3">
-              Manage your files and folders
-            </CardDescription>
-          </div>
+      <CardHeader className="pb-2 flex flex-row justify-between items-center w-full">
+        <div>
+          <CardTitle>Smart Storage</CardTitle>
+          <CardDescription className="mt-3">
+            Manage your files and folders
+          </CardDescription>
         </div>
+        <Button onClick={handleDownloadFolder} disabled={isFetching}>
+          <Download className="h-4 w-4 mr-2" />
+          {isFetching ? "Preparing..." : "Download Folder"}
+        </Button>
       </CardHeader>
       <CardContent className="p-0 mt-3">
-        <div className="flex flex-col md:flex-row min-h-[600px] relative">
-          <div className="flex-1 overflow-hidden flex flex-col">
-            <Breadcrumbs
-              path={breadcrumbPath}
-              onNavigate={handleBreadcrumbNavigate}
-            />
-            <Tabs defaultValue="files" className="flex-1 flex flex-col">
-              <div className="flex-1 overflow-hidden">
-                <TabsContent
-                  value="files"
-                  className="h-full m-0 p-0 data-[state=active]:flex flex-col"
-                >
-                  <ScrollArea className="flex-1 h-full">
-                    {isLoading ? (
-                      <div className="flex justify-center items-center h-full">
-                        Loading...
-                      </div>
-                    ) : (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="w-[50%]">Name</TableHead>
-                            <TableHead className="w-[15%]">Size</TableHead>
-                            <TableHead className="w-[15%]">Uploaded</TableHead>
-                            <TableHead className="w-[5%]">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {files.map((file: any) => (
-                            <TableRow
-                              key={file.id}
-                              className={`hover:bg-muted/50 ${
-                                file.fileType === "folder"
-                                  ? "cursor-pointer"
-                                  : ""
-                              }`}
-                              onClick={() => handleFolderClick(file)}
-                            >
-                              <TableCell className="py-4">
-                                <div className="flex items-center gap-3">
-                                  <div className="h-8 w-8 flex items-center justify-center flex-shrink-0">
-                                    <FileTypeIcon fileType={file.fileType} />
-                                  </div>
-                                  <div className="min-w-0 flex-1">
-                                    <div className="flex items-center gap-2">
-                                      <span className="font-medium truncate">
-                                        {file.fileName}
-                                      </span>
-                                      {file.starred && (
-                                        <Star className="h-3 w-3 text-yellow-500 fill-yellow-500 flex-shrink-0" />
-                                      )}
-                                    </div>
-                                  </div>
+        <div className="flex flex-col min-h-[600px]">
+          <Breadcrumbs
+            path={breadcrumbPath}
+            onNavigate={handleBreadcrumbNavigate}
+          />
+          <Tabs defaultValue="files" className="flex-1 flex flex-col">
+            <TabsContent
+              value="files"
+              className="h-full m-0 p-0 data-[state=active]:flex flex-col"
+            >
+              <ScrollArea className="flex-1 h-full">
+                {isLoading ? (
+                  <div className="flex justify-center items-center h-full">
+                    Loading...
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[50%]">Name</TableHead>
+                        <TableHead className="w-[15%]">Size</TableHead>
+                        <TableHead className="w-[15%]">Uploaded</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {files.map((file: any) => (
+                        <TableRow
+                          key={file.id}
+                          className={`hover:bg-muted/50 ${
+                            file.fileType === "folder" ? "cursor-pointer" : ""
+                          }`}
+                          onClick={() => handleFolderClick(file)}
+                        >
+                          <TableCell className="py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="h-8 w-8 flex items-center justify-center flex-shrink-0">
+                                <FileTypeIcon fileType={file.fileType} />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium truncate">
+                                    {file.fileName}
+                                  </span>
+                                  {file.starred && (
+                                    <Star className="h-3 w-3 text-yellow-500 fill-yellow-500 flex-shrink-0" />
+                                  )}
                                 </div>
-                              </TableCell>
-                              <TableCell className="py-4">
-                                <span className="text-sm text-muted-foreground">
-                                  {formatFileSize(file.size)}
-                                </span>
-                              </TableCell>
-                              <TableCell className="py-4">
-                                <span className="text-sm text-muted-foreground">
-                                  {formatDate(file.createdAt)}
-                                </span>
-                              </TableCell>
-                              <TableCell className="py-4">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    {file.fileType !== "folder" && (
-                                      <DropdownMenuItem>
-                                        <Download className="h-4 w-4 mr-2" />
-                                        Download
-                                      </DropdownMenuItem>
-                                    )}
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    )}
-                  </ScrollArea>
-                </TabsContent>
-                <TabsContent
-                  value="shared"
-                  className="h-full m-0 p-0 data-[state=active]:flex flex-col"
-                >
-                  <ScrollArea className="flex-1">
-                    <div className="flex flex-col items-center justify-center h-[400px] text-center p-4">
-                      <Users className="h-8 w-8 text-muted-foreground mb-4" />
-                      <h3 className="font-medium mb-2">No shared files</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Files shared with you will appear here
-                      </p>
-                    </div>
-                  </ScrollArea>
-                </TabsContent>
-              </div>
-            </Tabs>
-          </div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <span className="text-sm text-muted-foreground">
+                              {formatFileSize(file.size || 0)}
+                            </span>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <span className="text-sm text-muted-foreground">
+                              {formatDate(file.createdAt)}
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </ScrollArea>
+            </TabsContent>
+          </Tabs>
         </div>
       </CardContent>
     </Card>

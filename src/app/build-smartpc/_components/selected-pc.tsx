@@ -12,14 +12,14 @@ import {
   Settings,
   Users,
   Plus,
-  X,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
 import { SelectedPcProps } from "../types";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useToast } from "@/hooks/use-toast";
+import type { PC } from "../types"; // adjust the path based on your folder structure
+
 
 const SelectedPc: React.FC<SelectedPcProps> = ({
   selectedPCs,
@@ -29,7 +29,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
   setCloudPCs,
   handleAssignUser,
 }) => {
-  const { toast } = useToast();
+  //const { toast } = useToast();
 
   useEffect(() => {
     const fetchMetrics = async () => {
@@ -61,6 +61,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
       //   console.error("Failed to load real-time metrics:", err);
       // }
       try {
+          console.log("Selected PC:", pc[0]);
           const res = await fetch("https://4oacxj1xyk.execute-api.us-east-1.amazonaws.com/instance-details-v2", {
             method: "POST",
             headers: {
@@ -74,8 +75,10 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
 
           const data = await res.json();
 
-          //@ts-ignore
-          const matched = data.find((item) => item.systemName === currentPC.systemName && item.instanceId);
+          // //@ts-expect error
+          // const matched = data.find((item) => item.systemName === currentPC.systemName && item.instanceId);
+          const matched = data.find((item: PC) => item.systemName === currentPC.systemName && item.instanceId);
+
 
           if (matched) {
             const updatedPC = {
@@ -105,6 +108,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
   return (
     <>
       {selectedPCs.length > 0 && pc[0] && (
+        
         <motion.div
           initial={{ height: 0 }}
           animate={{ height: "auto" }}
@@ -227,7 +231,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                 </div>
 
                 {/* Assigned Users */}
-                <div className="col-span-full mt-4 border-t pt-4">
+                {/* <div className="col-span-full mt-4 border-t pt-4">
                   <div className="flex items-center gap-3 mb-3">
                     <Users className="h-4 w-4 text-muted-foreground" />
                     <h4 className="text-sm font-medium">
@@ -248,6 +252,39 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                     </Button>
                   </div>
 
+                </div> */}
+                {/* Assigned Users */}
+                <div className="col-span-full mt-4 border-t pt-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <h4 className="text-sm font-medium">
+                      Assigned Users ({pc[0]?.assignedUsers?.length ?? 0})
+                    </h4>
+                    <div className="flex-1 border-b border-border/50" />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAssignUser(pc[0]);
+                      }}
+                      className="h-7 px-2 text-xs hover:bg-primary/5 hover:text-primary"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Assign
+                    </Button>
+                  </div>
+                  <div>
+                    {(pc[0]?.assignedUsers ?? []).map(user => (
+                      <div key={user.id} className="flex items-center gap-2 mb-2">
+                        <Avatar className="h-7 w-7">
+                          <AvatarFallback>{user?.name?.[0] || "?"}</AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium">{user.name}</span>
+                        <span className="text-sm text-muted-foreground">{user.email}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

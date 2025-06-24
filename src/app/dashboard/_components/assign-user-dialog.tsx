@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import {
@@ -49,7 +50,8 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
     try {
       const res = await getUsers();
       setUsers((res && res.users) || []);
-    } catch (e: any) {
+    } catch (e: unknown) {
+      console.error(e);
       toast({ title: "Failed to fetch users", variant: "destructive" });
     } finally {
       setLoading(false);
@@ -96,13 +98,14 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
       try {
         await unassignPC({ instanceId: pc.instanceId, memberId: assignedUser.id });
       } catch (e) {
+        console.error("Failed to unassign before assigning:", e);
         toast({ title: "Failed to unassign before assigning", variant: "destructive" });
         setLoadingAssign(false);
         return;
       }
     }
     try {
-      //@ts-ignore
+      //@ts-expect-error abc
       await assignPC({ instanceId: pc.instanceId, memberId: user.id, systemName: pc.systemName });
       toast({ title: "Assigned!", description: `${pc.systemName} now assigned to ${user.firstName || user.email}` });
       onOpenChange(false);

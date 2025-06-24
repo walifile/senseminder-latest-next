@@ -793,9 +793,9 @@ const CloudStorage = () => {
         <CardHeader className="pb-2">
           <div className="flex justify-between items-center">
             <div>
-              <Button onClick={handleDownloadClick} disabled={isFetching}>
+              {/* <Button onClick={handleDownloadClick} disabled={isFetching}>
                 {isFetching ? "Downloading..." : "Download Folder"}
-              </Button>
+              </Button> */}
               <CardTitle>Smart Storage</CardTitle>
               <CardDescription>Manage your files and folders</CardDescription>
             </div>

@@ -105,10 +105,15 @@ const ProfilePage = () => {
         setFullName(name);
         setCountry(data.country || "");
         setOrgInput(data.organization || "");
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Could not fetch profile.";
+
         toast({
           title: "Error loading profile",
-          description: error.message || "Could not fetch profile.",
+          description: message,
         });
       } finally {
         setLoading(false);
@@ -153,7 +158,7 @@ const ProfilePage = () => {
   const handleSave = async () => {
     setSaving(true);
     const { firstName, lastName } = parseNameForApi(fullName);
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const payload: any = {
       firstName,
       lastName,
@@ -190,10 +195,15 @@ const ProfilePage = () => {
       setCountry(data.country || "");
       setOrgInput(data.organization || "");
       setOrgEditing(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to save changes.";
+
       toast({
         title: "Error updating profile",
-        description: error.message || "Failed to save changes.",
+        description: message,
       });
     }
     setSaving(false);
@@ -213,12 +223,17 @@ const ProfilePage = () => {
         title: "Organization Updated",
         description: "Organization name updated successfully.",
       });
-    } catch (err: any) {
-      toast({
-        title: "Error updating organization",
-        description: err.message || "Could not update organization.",
-      });
-    }
+    } catch (err: unknown) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Could not update organization.";
+
+        toast({
+          title: "Error updating organization",
+          description: message,
+        });
+      }
     setSaving(false);
   };
 
@@ -229,6 +244,7 @@ const ProfilePage = () => {
   };
 
   // ===== Prevent Default Submit =====
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function prevent(e: any) {
     e.preventDefault();
   }
@@ -290,7 +306,7 @@ const ProfilePage = () => {
       console.error("Failed to send verification code:", error);
     }
   };
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleRevokeSession = (sessionId: number) => {
     toast({
       title: "Session Revoked",

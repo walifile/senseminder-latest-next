@@ -36,7 +36,6 @@
 // } from "@/components/ui/dropdown-menu";
 // import { Input } from "@/components/ui/input";
 // import SmartPCConfigDialog from "@/app/build-smartpc/_components/smart-pc-config-dialog";
-// // import AssignUserDialog from "@/app/build-smartpc/_components/assign-user-dialog";
 // import { useRouter } from "next/navigation";
 // import { useDispatch, useSelector } from "react-redux";
 // import { RootState } from "@/redux/store";
@@ -54,7 +53,6 @@
 //   getStatusText,
 //   isBusy,
 // } from "@/app/build-smartpc/utils";
-// // import SelectedPc from "@/app/build-smartpc/_components/selected-pc";
 // import SmartPCEmptyState from "@/app/build-smartpc/_components/smart-pc-empty-state";
 // import ScheduleDialog from "@/app/build-smartpc/_components/schedule-dialog";
 // import IdleSettingsDialog from "@/app/build-smartpc/_components/idle-settings-dialog";
@@ -64,18 +62,33 @@
 // import { Checkbox } from "@/components/ui/checkbox";
 // import SelectedPc from "@/app/build-smartpc/_components/selected-pc";
 
-// const CloudPCPage = () => {
+// // REALTIME API IMPORT - NEW
+// import { fetchInstanceDetails, InstanceDetail } from "@/api/realtime";
 
+// const CloudPCPage = () => {
 //   const router = useRouter();
 //   const dispatch = useDispatch();
 //   const { toast } = useToast();
 
-//   const userId = useSelector((state: RootState) => state.auth.user?.id);
+//   // --- USER LOGIC START ---
 //   const { user } = useSelector((state: RootState) => state.auth);
-//   const isMember = user?.role === "member";
-//   // console.log("member:", isMember);
 
-//   // console.log({ userId });
+//   function getApiUserId(user: any) {
+//     if (!user) return "";
+//     // Support either ownerid or "custom:ownerid"
+//     if (user.role === "member" || user.role === "admin") {
+//       return user.ownerid;
+//     }
+//     console.log("DEBUG: ownerid");
+//     console.log(user);
+//     return user.id;
+//   }
+//   const apiUserId = getApiUserId(user);
+
+//   const isMember = user?.role === "member";
+//   // --- USER LOGIC END ---
+
+//   const userId = useSelector((state: RootState) => state.auth.user?.id);
 
 //   const [shouldPoll, setShouldPoll] = useState(true);
 //   const [currentModal, setCurrentModal] = useState<
@@ -91,8 +104,6 @@
 
 //   const [selectedPCs, setSelectedPCs] = useState<number[]>([]);
 //   const [showDetails, setShowDetails] = useState(true);
-
-//   // const [showCreationModal, setShowCreationModal] = useState(false);
 
 //   const {
 //     isError,
@@ -116,8 +127,6 @@
 //   const [launchVM] = useLaunchVMMutation();
 //   const [deleteVM, { isLoading: isDeleting }] = useDeleteVMMutation();
 
-//   // cdfdff
-
 //   const [cloudPCs, setCloudPCs] = useState<PC[]>([]);
 //   const [searchQuery, setSearchQuery] = useState("");
 //   const [showNewPCDialog, setShowNewPCDialog] = useState(false);
@@ -125,11 +134,10 @@
 
 //   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
 //   const [showIdleDialog, setShowIdleDialog] = useState(false);
-//   // const [showAssignUserDialog, setShowAssignUserDialog] = useState(false);
-//   // const [selectedPCForUsers, setSelectedPCForUsers] = useState<PC | null>(null);
 //   const [showAssignUserDialog, setShowAssignUserDialog] = useState(false);
-//   const [selectedPCForAssign, setSelectedPCForAssign] = useState<PC | null>(null);
-//   // const [editingPC, setEditingPC] = useState<PC | null>(null);
+//   const [selectedPCForAssign, setSelectedPCForAssign] = useState<PC | null>(
+//     null
+//   );
 
 //   const [selectedIdleTimeout, setSelectedIdleTimeout] = useState<string>("30");
 //   const [selectedTimeZone, setSelectedTimeZone] = useState("UTC");
@@ -138,6 +146,13 @@
 //   const [autoStopTime, setAutoStopTime] = useState("");
 //   const [customStartDate, setCustomStartDate] = useState("");
 //   const [customEndDate, setCustomEndDate] = useState("");
+
+//   // --- REALTIME PC STATE START ---
+//   // { [systemName]: InstanceDetail }
+//   const [realtimePcInfo, setRealtimePcInfo] = useState<
+//     Record<string, InstanceDetail>
+//   >({});
+//   // --- REALTIME PC STATE END ---
 
 //   useEffect(() => {
 //     if (isError) {
@@ -169,8 +184,34 @@
 //     setCloudPCs(enriched);
 //   }, [data]);
 
+//   // --- FETCH REALTIME INSTANCE METRICS ---
+//   useEffect(() => {
+//     console.log("DEBUG EFFECT: apiUserId", apiUserId);
+//     console.log("DEBUG EFFECT: cloudPCs", cloudPCs);
+//     // Only fetch if you have API user id and at least one PC
+//     if (!apiUserId || !Array.isArray(cloudPCs) || cloudPCs.length === 0) return;
+//     const instanceNames = cloudPCs.map((pc) => pc.systemName);
+
+//     // Fetch real-time details
+//     fetchInstanceDetails(apiUserId, instanceNames)
+//       .then((details) => {
+//         console.log("Realtime details", details);
+//         const map: Record<string, InstanceDetail> = {};
+//         details.forEach((d) => {
+//           if (d.systemName) map[d.systemName] = d;
+//         });
+//         setRealtimePcInfo(map);
+//       })
+//       .catch((err) => {
+//         setRealtimePcInfo({});
+//         console.error("Failed to fetch real-time PC info", err);
+//       });
+//   }, [apiUserId, cloudPCs]);
+
+//   //---------------------------------
+
 //   const handleStop = async (instanceId: string) => {
-//     setStoppingInstances(prev => [...prev, instanceId]);
+//     setStoppingInstances((prev) => [...prev, instanceId]);
 //     try {
 //       await stopVM(instanceId).unwrap();
 //       toast({
@@ -185,12 +226,12 @@
 //         variant: "destructive",
 //       });
 //     } finally {
-//       setStoppingInstances(prev => prev.filter(id => id !== instanceId));
+//       setStoppingInstances((prev) => prev.filter((id) => id !== instanceId));
 //     }
 //   };
 
 //   const handleStart = async (instanceId: string) => {
-//     setStartingInstances(prev => [...prev, instanceId]);
+//     setStartingInstances((prev) => [...prev, instanceId]);
 //     try {
 //       await startVM(instanceId).unwrap();
 //       toast({
@@ -206,24 +247,27 @@
 //         variant: "destructive",
 //       });
 //     } finally {
-//       setStartingInstances(prev => prev.filter(id => id !== instanceId));
+//       setStartingInstances((prev) => prev.filter((id) => id !== instanceId));
 //     }
 //   };
 
 //   const handleLaunch = async (instanceId: string) => {
-//     setLaunchingInstances(prev => [...prev, instanceId]);
+//     setLaunchingInstances((prev) => [...prev, instanceId]);
 //     try {
 //       const response = await launchVM({
 //         instanceId: instanceId,
 //         userId: userId,
 //       }).unwrap();
 //       console.log({ response });
-//       dispatch(setLaunchVMResponse({ ...response, instanceId }));
-//       router.push(routes?.pcViewer);
 //       toast({
 //         title: "SmartPC Launched",
-//         description: "The instance has been launched successfully.",
+//         description:
+//           "The instance has been launched successfully. Redirecting...",
 //       });
+//       dispatch(setLaunchVMResponse({ ...response, instanceId }));
+//       setTimeout(() => {
+//         router.push(routes?.pcViewer);
+//       }, 4000);
 //     } catch (error) {
 //       console.log(error);
 //       toast({
@@ -232,7 +276,7 @@
 //         variant: "destructive",
 //       });
 //     } finally {
-//       setLaunchingInstances(prev => prev.filter(id => id !== instanceId));
+//       setLaunchingInstances((prev) => prev.filter((id) => id !== instanceId));
 //     }
 //   };
 
@@ -286,8 +330,8 @@
 //     : [];
 
 //   const handlePCSelection = (index: number) => {
-//     setSelectedPCs(prev =>
-//       prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
+//     setSelectedPCs((prev) =>
+//       prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
 //     );
 //   };
 
@@ -300,8 +344,6 @@
 //   };
 
 //   const handleScheduleSettings = (pc: PC) => {
-//     console.log(pc);
-//     // setEditingPC(pc);
 //     setSelectedTimeZone(pc.schedule?.timeZone || "UTC");
 //     setScheduleFrequency(pc.schedule?.frequency || "everyday");
 //     setAutoStartTime(pc.schedule?.start || "");
@@ -312,17 +354,9 @@
 //   };
 
 //   const handleIdleSettings = (pc: PC) => {
-//     // setEditingPC(pc);
 //     setSelectedIdleTimeout(String(pc.idleTimeout || "30"));
 //     setShowIdleDialog(true);
 //   };
-
-//   // const handleAssignUser = (pc: PC) => {
-//   //   console.log(pc);
-
-//   //   setSelectedPCForUsers(pc);
-//   //   setShowAssignUserDialog(true);
-//   // };
 
 //   const handleAssignUser = (pc: PC) => {
 //     setSelectedPCForAssign(pc);
@@ -330,15 +364,11 @@
 //   };
 
 //   const handleSaveIdleSettings = () => {
-
 //     setShowIdleDialog(false);
-
 //   };
 
 //   const handleSaveSchedule = () => {
-
 //     setShowScheduleDialog(false);
-
 //   };
 
 //   return (
@@ -355,7 +385,7 @@
 //               placeholder="Search PCs by name, description, or region..."
 //               className="pl-8"
 //               value={searchQuery}
-//               onChange={e => setSearchQuery(e.target.value)}
+//               onChange={(e) => setSearchQuery(e.target.value)}
 //             />
 //           </div>
 //           <div className="flex items-center border rounded-lg">
@@ -376,18 +406,12 @@
 //               <List className="h-4 w-4" />
 //             </Button>
 //           </div>
-//           {/* <Button onClick={() => setShowNewPCDialog(true)}>
-//             <Plus className="h-4 w-4 mr-2" />
-//             Build SmartPC
-//           </Button> */}
-
 //           {!isMember && (
 //             <Button onClick={() => setShowNewPCDialog(true)}>
 //               <Plus className="h-4 w-4 mr-2" />
 //               Build SmartPC
 //             </Button>
 //           )}
-
 //         </div>
 //       </div>
 
@@ -397,7 +421,6 @@
 //             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
 //           </div>
 //         )}
-
 //         {/* Empty State */}
 //         {!isLoading &&
 //           (!filteredPCs || filteredPCs.length === 0 || isError) && (
@@ -407,9 +430,9 @@
 //               isError={isError}
 //             />
 //           )}
-
 //         {!isError && filteredPCs && filteredPCs.length > 0 && (
 //           <>
+//             {/* --- LIST VIEW --- */}
 //             {viewMode === "list" ? (
 //               <div className="bg-card rounded-lg border border-border">
 //                 <div className="p-4">
@@ -424,133 +447,268 @@
 //                   </div>
 
 //                   <div className="space-y-1">
-//                     {(filteredPCs as PC[]).map((pc, index) => (
-//                       <div
-//                         key={pc.id}
-//                         className={`p-3 rounded-lg border cursor-pointer ${
-//                           selectedPCs.includes(index)
-//                             ? "border-primary bg-primary/5"
-//                             : "border-border"
-//                         }`}
-//                         onClick={() => handlePCSelection(index)}
-//                       >
-//                         <div className="flex items-center justify-between">
-//                           <div className="flex items-center gap-3">
+//                     {(filteredPCs as PC[]).map((pc, index) => {
+//                       const pcInfo = realtimePcInfo[pc.systemName];
+
+//                       return (
+//                         <div
+//                           key={pc.id}
+//                           className={`p-3 rounded-lg border cursor-pointer ${
+//                             selectedPCs.includes(index)
+//                               ? "border-primary bg-primary/5"
+//                               : "border-border"
+//                           }`}
+//                           onClick={() => handlePCSelection(index)}
+//                         >
+//                           <div className="flex items-center justify-between">
+//                             <div className="flex items-center gap-3">
+//                               <Checkbox
+//                                 checked={selectedPCs.includes(index)}
+//                                 onCheckedChange={() => handlePCSelection(index)}
+//                               />
+//                               <div>
+//                                 <div className="flex items-center gap-3">
+//                                   <span className="font-medium">
+//                                     {pc?.systemName}
+//                                   </span>
+//                                   <div
+//                                     className={`px-2 py-0.5 rounded-md flex items-center gap-1.5 ${
+//                                       pc.state === "running"
+//                                         ? "bg-green-500/10 text-green-500"
+//                                         : pc.state === "stopped"
+//                                         ? "bg-red-500/10 text-red-500"
+//                                         : pc.state === "initializing"
+//                                         ? "bg-yellow-500/10 text-yellow-500"
+//                                         : pc.state === "initialization"
+//                                         ? "bg-yellow-500/10 text-yellow-500"
+//                                         : pc.state === "pending"
+//                                         ? "bg-yellow-500/10 text-yellow-500"
+//                                         : pc.state === "stopping"
+//                                         ? "bg-orange-500/10 text-orange-500"
+//                                         : pc.state === "idle"
+//                                         ? "bg-blue-500/10 text-blue-500"
+//                                         : "bg-gray-500/10 text-gray-500"
+//                                     }`}
+//                                   >
+//                                     {getStatusIcon(pc.state)}
+//                                     <span className="text-xs font-medium">
+//                                       {getStatusText(pc.state)}
+//                                     </span>
+//                                   </div>
+//                                 </div>
+//                                 <span className="text-xs text-muted-foreground">
+//                                   {pc?.description ||
+//                                     "High-performance compute instanc"}
+//                                 </span>
+//                               </div>
+//                             </div>
+//                             <div className="flex items-center gap-2">
+//                               <Button
+//                                 size="sm"
+//                                 variant="default"
+//                                 onClick={() => handleLaunch(pc.instanceId)}
+//                                 disabled={
+//                                   isBusy(pc.state) || pc.state !== "running"
+//                                 }
+//                                 className="h-8"
+//                               >
+//                                 <ExternalLink className="h-4 w-4 mr-1.5" />
+//                                 {launchingInstances.includes(pc.instanceId)
+//                                   ? "Launching..."
+//                                   : "Launch"}
+//                               </Button>
+//                               {pc.state === "running" ? (
+//                                 <Button
+//                                   size="sm"
+//                                   variant="outline"
+//                                   onClick={() => handleStop(pc.instanceId)}
+//                                   className="h-8"
+//                                   disabled={
+//                                     isBusy(pc.state) ||
+//                                     stoppingInstances.includes(pc.instanceId)
+//                                   }
+//                                 >
+//                                   <StopCircle className="h-4 w-4 mr-1.5" />
+//                                   Stop
+//                                 </Button>
+//                               ) : (
+//                                 <Button
+//                                   size="sm"
+//                                   variant="outline"
+//                                   onClick={() => handleStart(pc.instanceId)}
+//                                   className="h-8"
+//                                   disabled={
+//                                     isBusy(pc.state) ||
+//                                     startingInstances.includes(pc.instanceId)
+//                                   }
+//                                 >
+//                                   <Play className="h-4 w-4 mr-1.5" />
+//                                   Start
+//                                 </Button>
+//                               )}
+//                               <DropdownMenu>
+//                                 <DropdownMenuTrigger
+//                                   asChild
+//                                   onClick={(e) => e.stopPropagation()}
+//                                 >
+//                                   <Button variant="ghost" size="icon">
+//                                     <MoreVertical className="h-4 w-4" />
+//                                   </Button>
+//                                 </DropdownMenuTrigger>
+//                                 <DropdownMenuContent align="end">
+//                                   <DropdownMenuItem
+//                                     onClick={(e) => {
+//                                       e.stopPropagation();
+//                                       handleScheduleSettings(pc);
+//                                     }}
+//                                   >
+//                                     <CalendarClock className="h-4 w-4 mr-2" />
+//                                     Schedule
+//                                   </DropdownMenuItem>
+//                                   <DropdownMenuItem
+//                                     onClick={(e) => {
+//                                       e.stopPropagation();
+//                                       handleIdleSettings(pc);
+//                                     }}
+//                                   >
+//                                     <Moon className="h-4 w-4 mr-2" />
+//                                     Idle Settings
+//                                   </DropdownMenuItem>
+//                                   {!isMember && (
+//                                     <DropdownMenuItem
+//                                       onClick={(e) => {
+//                                         e.stopPropagation();
+//                                         handleAssignUser(pc);
+//                                       }}
+//                                     >
+//                                       <Plus className="h-4 w-4 mr-2" />
+//                                       Assign User
+//                                     </DropdownMenuItem>
+//                                   )}
+//                                   <DropdownMenuSeparator />
+//                                   {!isMember && (
+//                                     <DropdownMenuItem
+//                                       className="text-destructive"
+//                                       onClick={() => {
+//                                         setSelectedInstance({
+//                                           id: pc.instanceId,
+//                                           name: pc.systemName,
+//                                         });
+//                                         setCurrentModal("delete");
+//                                       }}
+//                                     >
+//                                       <Trash2 className="h-4 w-4 mr-2" />
+//                                       Delete
+//                                     </DropdownMenuItem>
+//                                   )}
+//                                 </DropdownMenuContent>
+//                               </DropdownMenu>
+//                             </div>
+//                           </div>
+//                           {/* --- REALTIME INFO --- */}
+//                           <div className="grid grid-cols-2 gap-4 mt-2 text-sm">
+//                             <div className="flex items-center gap-2">
+//                               <Clock className="h-4 w-4 text-muted-foreground" />
+//                               <span>{pcInfo?.uptime || "—"}</span>
+//                             </div>
+//                             <div className="flex items-center gap-2">
+//                               <Shield className="h-4 w-4 text-muted-foreground" />
+//                               <span>{pcInfo?.region || "—"}</span>
+//                             </div>
+//                           </div>
+//                           {/* --- END REALTIME INFO --- */}
+//                         </div>
+//                       );
+//                     })}
+//                   </div>
+//                 </div>
+//               </div>
+//             ) : (
+//               // --- GRID VIEW ---
+//               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+//                 {(filteredPCs as PC[]).map((pc, index) => {
+//                   const pcInfo = realtimePcInfo[pc.systemName];
+//                   return (
+//                     <Card
+//                       key={pc.id}
+//                       className={`relative ${
+//                         selectedPCs.includes(index) ? "border-primary" : ""
+//                       }`}
+//                       onClick={() => handlePCSelection(index)}
+//                     >
+//                       <CardHeader>
+//                         <div className="flex items-start justify-between">
+//                           <div className="flex items-start gap-3">
 //                             <Checkbox
 //                               checked={selectedPCs.includes(index)}
 //                               onCheckedChange={() => handlePCSelection(index)}
+//                               className="mt-1"
 //                             />
 //                             <div>
-//                               <div className="flex items-center gap-3">
-//                                 <span className="font-medium">
-//                                   {pc?.systemName}
+//                               <CardTitle className="mb-2">
+//                                 {pc?.systemName}
+//                               </CardTitle>
+//                               <div
+//                                 className={`px-2 py-1 rounded-md inline-flex items-center gap-2 ${
+//                                   pc.state === "running"
+//                                     ? "bg-green-500/10 text-green-500"
+//                                     : pc.state === "stopped"
+//                                     ? "bg-red-500/10 text-red-500"
+//                                     : pc.state === "initializing"
+//                                     ? "bg-yellow-500/10 text-yellow-500"
+//                                     : pc.state === "initialization"
+//                                     ? "bg-yellow-500/10 text-yellow-500"
+//                                     : pc.state === "pending"
+//                                     ? "bg-yellow-500/10 text-yellow-500"
+//                                     : pc.state === "stopping"
+//                                     ? "bg-orange-500/10 text-orange-500"
+//                                     : pc.state === "idle"
+//                                     ? "bg-blue-500/10 text-blue-500"
+//                                     : "bg-gray-500/10 text-gray-500"
+//                                 }`}
+//                               >
+//                                 {getStatusIcon(pc.state)}
+//                                 <span className="text-sm font-medium">
+//                                   {getStatusText(pc.state)}
 //                                 </span>
-//                                 <div
-//                                   className={`px-2 py-0.5 rounded-md flex items-center gap-1.5 ${
-//                                     pc.state === "running"
-//                                       ? "bg-green-500/10 text-green-500"
-//                                       : pc.state === "stopped"
-//                                       ? "bg-red-500/10 text-red-500"
-//                                       : pc.state === "initializing"
-//                                       ? "bg-yellow-500/10 text-yellow-500"
-//                                       : pc.state === "initialization"
-//                                       ? "bg-yellow-500/10 text-yellow-500"
-//                                       : pc.state === "pending"
-//                                       ? "bg-yellow-500/10 text-yellow-500"
-//                                       : pc.state === "stopping"
-//                                       ? "bg-orange-500/10 text-orange-500"
-//                                       : pc.state === "idle"
-//                                       ? "bg-blue-500/10 text-blue-500"
-//                                       : "bg-gray-500/10 text-gray-500"
-//                                   }`}
-//                                 >
-//                                   {getStatusIcon(pc.state)}
-//                                   <span className="text-xs font-medium">
-//                                     {getStatusText(pc.state)}
-//                                   </span>
-//                                 </div>
 //                               </div>
-//                               <span className="text-xs text-muted-foreground">
+//                               <CardDescription className="mt-2">
 //                                 {pc?.description ||
 //                                   "High-performance compute instanc"}
-//                               </span>
+//                               </CardDescription>
 //                             </div>
 //                           </div>
-//                           <div className="flex items-center gap-2">
-//                             <Button
-//                               size="sm"
-//                               variant="default"
-//                               onClick={() => handleLaunch(pc.instanceId)}
-//                               disabled={
-//                                 isBusy(pc.state) || pc.state !== "running"
-//                               }
-//                               className="h-8"
+//                           <DropdownMenu>
+//                             <DropdownMenuTrigger
+//                               asChild
+//                               onClick={(e) => e.stopPropagation()}
 //                             >
-//                               <ExternalLink className="h-4 w-4 mr-1.5" />
-//                               {launchingInstances.includes(pc.instanceId)
-//                                 ? "Launching..."
-//                                 : "Launch"}
-//                             </Button>
-//                             {pc.state === "running" ? (
-//                               <Button
-//                                 size="sm"
-//                                 variant="outline"
-//                                 onClick={() => handleStop(pc.instanceId)}
-//                                 className="h-8"
-//                                 disabled={
-//                                   isBusy(pc.state) ||
-//                                   stoppingInstances.includes(pc.instanceId)
-//                                 }
-//                               >
-//                                 <StopCircle className="h-4 w-4 mr-1.5" />
-//                                 Stop
+//                               <Button variant="ghost" size="icon">
+//                                 <MoreVertical className="h-4 w-4" />
 //                               </Button>
-//                             ) : (
-//                               <Button
-//                                 size="sm"
-//                                 variant="outline"
-//                                 onClick={() => handleStart(pc.instanceId)}
-//                                 className="h-8"
-//                                 disabled={
-//                                   isBusy(pc.state) ||
-//                                   startingInstances.includes(pc.instanceId)
-//                                 }
+//                             </DropdownMenuTrigger>
+//                             <DropdownMenuContent align="end">
+//                               <DropdownMenuItem
+//                                 onClick={(e) => {
+//                                   e.stopPropagation();
+//                                   handleScheduleSettings(pc);
+//                                 }}
 //                               >
-//                                 <Play className="h-4 w-4 mr-1.5" />
-//                                 Start
-//                               </Button>
-//                             )}
-//                             <DropdownMenu>
-//                               <DropdownMenuTrigger
-//                                 asChild
-//                                 onClick={e => e.stopPropagation()}
+//                                 <CalendarClock className="h-4 w-4 mr-2" />
+//                                 Schedule
+//                               </DropdownMenuItem>
+//                               <DropdownMenuItem
+//                                 onClick={(e) => {
+//                                   e.stopPropagation();
+//                                   handleIdleSettings(pc);
+//                                 }}
 //                               >
-//                                 <Button variant="ghost" size="icon">
-//                                   <MoreVertical className="h-4 w-4" />
-//                                 </Button>
-//                               </DropdownMenuTrigger>
-//                               <DropdownMenuContent align="end">
+//                                 <Moon className="h-4 w-4 mr-2" />
+//                                 Idle Settings
+//                               </DropdownMenuItem>
+//                               {!isMember && (
 //                                 <DropdownMenuItem
-//                                   onClick={e => {
-//                                     e.stopPropagation();
-//                                     handleScheduleSettings(pc);
-//                                   }}
-//                                 >
-//                                   <CalendarClock className="h-4 w-4 mr-2" />
-//                                   Schedule
-//                                 </DropdownMenuItem>
-//                                 <DropdownMenuItem
-//                                   onClick={e => {
-//                                     e.stopPropagation();
-//                                     handleIdleSettings(pc);
-//                                   }}
-//                                 >
-//                                   <Moon className="h-4 w-4 mr-2" />
-//                                   Idle Settings
-//                                 </DropdownMenuItem>
-//                                 {!isMember && (
-//                                 <DropdownMenuItem
-//                                   onClick={e => {
+//                                   onClick={(e) => {
 //                                     e.stopPropagation();
 //                                     handleAssignUser(pc);
 //                                   }}
@@ -559,233 +717,108 @@
 //                                   Assign User
 //                                 </DropdownMenuItem>
 //                               )}
-//                                 <DropdownMenuSeparator />
-//                                 {!isMember && (
-//                                   <DropdownMenuItem
-//                                     className="text-destructive"
-//                                     onClick={() => {
-//                                       setSelectedInstance({
-//                                         id: pc.instanceId,
-//                                         name: pc.systemName,
-//                                       });
-//                                       setCurrentModal("delete");
-//                                     }}
-//                                   >
-//                                     <Trash2 className="h-4 w-4 mr-2" />
-//                                     Delete
-//                                   </DropdownMenuItem>
-
-//                                 )}
-//                                 {/* <DropdownMenuItem
-//                                   onClick={e => {
-//                                     e.stopPropagation();
-//                                     handleAssignUser(pc);
+//                               <DropdownMenuSeparator />
+//                               {!isMember && (
+//                                 <DropdownMenuItem
+//                                   className="text-destructive"
+//                                   onClick={() => {
+//                                     setSelectedInstance({
+//                                       id: pc.instanceId,
+//                                       name: pc.systemName,
+//                                     });
+//                                     setCurrentModal("delete");
 //                                   }}
 //                                 >
-//                                   <Plus className="h-4 w-4 mr-2" />
-//                                   Assign User
-//                                 </DropdownMenuItem> */}
-
-//                               </DropdownMenuContent>
-//                             </DropdownMenu>
-//                           </div>
+//                                   <Trash2 className="h-4 w-4 mr-2" />
+//                                   Delete
+//                                 </DropdownMenuItem>
+//                               )}
+//                             </DropdownMenuContent>
+//                           </DropdownMenu>
 //                         </div>
-//                       </div>
-//                     ))}
-//                   </div>
-//                 </div>
-//               </div>
-//             ) : (
-//               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-//                 {(filteredPCs as PC[]).map((pc, index) => (
-//                   <Card
-//                     key={pc.id}
-//                     // className={`relative`}
-//                     className={`relative ${
-//                       selectedPCs.includes(index) ? "border-primary" : ""
-//                     }`}
-//                     onClick={() => handlePCSelection(index)}
-//                   >
-//                     <CardHeader>
-//                       <div className="flex items-start justify-between">
-//                         <div className="flex items-start gap-3">
-//                           <Checkbox
-//                             checked={selectedPCs.includes(index)}
-//                             onCheckedChange={() => handlePCSelection(index)}
-//                             className="mt-1"
-//                           />
-//                           <div>
-//                             <CardTitle className="mb-2">
-//                               {pc?.systemName}
-//                             </CardTitle>
-//                             <div
-//                               className={`px-2 py-1 rounded-md inline-flex items-center gap-2 ${
-//                                 pc.state === "running"
-//                                   ? "bg-green-500/10 text-green-500"
-//                                   : pc.state === "stopped"
-//                                   ? "bg-red-500/10 text-red-500"
-//                                   : pc.state === "initializing"
-//                                   ? "bg-yellow-500/10 text-yellow-500"
-//                                   : pc.state === "initialization"
-//                                   ? "bg-yellow-500/10 text-yellow-500"
-//                                   : pc.state === "pending"
-//                                   ? "bg-yellow-500/10 text-yellow-500"
-//                                   : pc.state === "stopping"
-//                                   ? "bg-orange-500/10 text-orange-500"
-//                                   : pc.state === "idle"
-//                                   ? "bg-blue-500/10 text-blue-500"
-//                                   : "bg-gray-500/10 text-gray-500"
-//                               }`}
-//                             >
-//                               {getStatusIcon(pc.state)}
-//                               <span className="text-sm font-medium">
-//                                 {getStatusText(pc.state)}
-//                               </span>
+//                       </CardHeader>
+//                       <CardContent>
+//                         <div className="space-y-4">
+//                           {/* --- REALTIME INFO --- */}
+//                           <div className="grid grid-cols-2 gap-4 text-sm">
+//                             <div className="flex items-center gap-2">
+//                               <Clock className="h-4 w-4 text-muted-foreground" />
+//                               <span>{pcInfo?.uptime || "—"}</span>
 //                             </div>
-//                             <CardDescription className="mt-2">
-//                               {pc?.description ||
-//                                 "High-performance compute instanc"}
-//                             </CardDescription>
+//                             <div className="flex items-center gap-2">
+//                               <Shield className="h-4 w-4 text-muted-foreground" />
+//                               <span>{pcInfo?.region || "—"}</span>
+//                             </div>
+//                             <div className="flex items-center gap-2 text-muted-foreground">
+//                               <CalendarClock className="h-4 w-4" />
+//                               <span>09:00 - 17:00</span>
+//                             </div>
+//                             <div className="flex items-center gap-2 text-muted-foreground">
+//                               <Clock className="h-4 w-4" />
+//                               <span>Idle: 15m</span>
+//                             </div>
 //                           </div>
-//                         </div>
-//                         <DropdownMenu>
-//                           <DropdownMenuTrigger
-//                             asChild
-//                             onClick={e => e.stopPropagation()}
-//                           >
-//                             <Button variant="ghost" size="icon">
-//                               <MoreVertical className="h-4 w-4" />
-//                             </Button>
-//                           </DropdownMenuTrigger>
-//                           <DropdownMenuContent align="end">
-//                             <DropdownMenuItem
-//                               onClick={e => {
-//                                 e.stopPropagation();
-//                                 handleScheduleSettings(pc);
-//                               }}
-//                             >
-//                               <CalendarClock className="h-4 w-4 mr-2" />
-//                               Schedule
-//                             </DropdownMenuItem>
-//                             <DropdownMenuItem
-//                               onClick={e => {
-//                                 e.stopPropagation();
-//                                 handleIdleSettings(pc);
-//                               }}
-//                             >
-//                               <Moon className="h-4 w-4 mr-2" />
-//                               Idle Settings
-//                             </DropdownMenuItem>
-//                             {!isMember && (
-//                             <DropdownMenuItem
-//                               onClick={e => {
-//                                 e.stopPropagation();
-//                                 handleAssignUser(pc);
-//                               }}
-//                             >
-//                               <Plus className="h-4 w-4 mr-2" />
-//                               Assign User
-//                             </DropdownMenuItem>
-//                           )}
-//                             <DropdownMenuSeparator />
-//                             {!isMember && (
-//                             <DropdownMenuItem
-//                               className="text-destructive"
-//                               onClick={() => {
-//                                 setSelectedInstance({
-//                                   id: pc.instanceId,
-//                                   name: pc.systemName,
-//                                 });
-//                                 setCurrentModal("delete");
-//                               }}
-//                             >
-//                               <Trash2 className="h-4 w-4 mr-2" />
-//                               Delete
-//                             </DropdownMenuItem>
-//                           )}
-//                           </DropdownMenuContent>
-//                         </DropdownMenu>
-//                       </div>
-//                     </CardHeader>
-//                     <CardContent>
-//                       <div className="space-y-4">
-//                         <div className="grid grid-cols-2 gap-4 text-sm">
-//                           <div className="flex items-center gap-2">
-//                             <Clock className="h-4 w-4 text-muted-foreground" />
-//                             <span>2h 36m uptime</span>
-//                           </div>
-//                           <div className="flex items-center gap-2">
-//                             <Shield className="h-4 w-4 text-muted-foreground" />
-//                             <span>us-east-1</span>
-//                           </div>
-//                           <div className="flex items-center gap-2 text-muted-foreground">
-//                             <CalendarClock className="h-4 w-4" />
-//                             <span>09:00 - 17:00</span>
-//                           </div>
-//                           <div className="flex items-center gap-2 text-muted-foreground">
-//                             <Clock className="h-4 w-4" />
-//                             <span>Idle: 15m</span>
-//                           </div>
-//                         </div>
-//                         <div className="flex items-center justify-between border-t pt-4 mt-2">
-//                           <div className="flex items-center gap-2">
-//                             <AlertCircle className="h-4 w-4 text-muted-foreground" />
-//                             <span className="text-sm">$42.99 this month</span>
-//                           </div>
-//                           <div className="flex items-center gap-4">
-//                             <Button
-//                               size="sm"
-//                               variant="default"
-//                               onClick={() => handleLaunch(pc.instanceId)}
-//                               disabled={
-//                                 isBusy(pc.state) || pc.state !== "running"
-//                               }
-//                               className="h-8"
-//                             >
-//                               <ExternalLink className="h-4 w-4 mr-1.5" />
-//                               {launchingInstances.includes(pc.instanceId)
-//                                 ? "Launching..."
-//                                 : "Launch"}
-//                             </Button>
-//                             {pc.state === "running" ? (
+//                           {/* --- END REALTIME INFO --- */}
+//                           <div className="flex items-center justify-between border-t pt-4 mt-2">
+//                             <div className="flex items-center gap-2">
+//                               <AlertCircle className="h-4 w-4 text-muted-foreground" />
+//                               <span className="text-sm">$42.99 this month</span>
+//                             </div>
+//                             <div className="flex items-center gap-4">
 //                               <Button
 //                                 size="sm"
-//                                 variant="outline"
-//                                 onClick={() => handleStop(pc.instanceId)}
-//                                 className="h-8"
+//                                 variant="default"
+//                                 onClick={() => handleLaunch(pc.instanceId)}
 //                                 disabled={
-//                                   isBusy(pc.state) ||
-//                                   stoppingInstances.includes(pc.instanceId)
+//                                   isBusy(pc.state) || pc.state !== "running"
 //                                 }
-//                               >
-//                                 <StopCircle className="h-4 w-4 mr-1.5" />
-//                                 {stoppingInstances.includes(pc.instanceId)
-//                                   ? "Stopping..."
-//                                   : "Stop"}
-//                               </Button>
-//                             ) : (
-//                               <Button
-//                                 size="sm"
-//                                 variant="outline"
-//                                 onClick={() => handleStart(pc.instanceId)}
 //                                 className="h-8"
-//                                 disabled={
-//                                   isBusy(pc.state) ||
-//                                   startingInstances.includes(pc.instanceId)
-//                                 }
 //                               >
-//                                 <Play className="h-4 w-4 mr-1.5" />
-//                                 {startingInstances.includes(pc.instanceId)
-//                                   ? "Starting..."
-//                                   : "Start"}
+//                                 <ExternalLink className="h-4 w-4 mr-1.5" />
+//                                 {launchingInstances.includes(pc.instanceId)
+//                                   ? "Launching..."
+//                                   : "Launch"}
 //                               </Button>
-//                             )}
+//                               {pc.state === "running" ? (
+//                                 <Button
+//                                   size="sm"
+//                                   variant="outline"
+//                                   onClick={() => handleStop(pc.instanceId)}
+//                                   className="h-8"
+//                                   disabled={
+//                                     isBusy(pc.state) ||
+//                                     stoppingInstances.includes(pc.instanceId)
+//                                   }
+//                                 >
+//                                   <StopCircle className="h-4 w-4 mr-1.5" />
+//                                   {stoppingInstances.includes(pc.instanceId)
+//                                     ? "Stopping..."
+//                                     : "Stop"}
+//                                 </Button>
+//                               ) : (
+//                                 <Button
+//                                   size="sm"
+//                                   variant="outline"
+//                                   onClick={() => handleStart(pc.instanceId)}
+//                                   className="h-8"
+//                                   disabled={
+//                                     isBusy(pc.state) ||
+//                                     startingInstances.includes(pc.instanceId)
+//                                   }
+//                                 >
+//                                   <Play className="h-4 w-4 mr-1.5" />
+//                                   {startingInstances.includes(pc.instanceId)
+//                                     ? "Starting..."
+//                                     : "Start"}
+//                                 </Button>
+//                               )}
+//                             </div>
 //                           </div>
 //                         </div>
-//                       </div>
-//                     </CardContent>
-//                   </Card>
-//                 ))}
+//                       </CardContent>
+//                     </Card>
+//                   );
+//                 })}
 //               </div>
 //             )}
 //           </>
@@ -829,7 +862,6 @@
 //       <IdleSettingsDialog
 //         open={showIdleDialog}
 //         onOpenChange={setShowIdleDialog}
-//         // editingPC={editingPC}
 //         selectedIdleTimeout={selectedIdleTimeout}
 //         setSelectedIdleTimeout={setSelectedIdleTimeout}
 //         onSave={handleSaveIdleSettings}
@@ -846,27 +878,23 @@
 //       )}
 
 //       {/* Assign User Dialog */}
-//       {/* <AssignUserDialog
-//       open={showAssignUserDialog}
-//       onOpenChange={setShowAssignUserDialog}
-//       //@ts-ignore
-//       pc={selectedPCForUsers}
-//       onSuccess={refetchRemoteDesktops} // (or a reload/refresh handler so list is up to date)
-//     /> */}
-//     <AssignUserDialog
-//       open={showAssignUserDialog}
-//       onOpenChange={setShowAssignUserDialog}
-//       pc={selectedPCForAssign}
-//       onSuccess={refetchRemoteDesktops}
-//     />
-
+//       <AssignUserDialog
+//         open={showAssignUserDialog}
+//         onOpenChange={setShowAssignUserDialog}
+//         pc={selectedPCForAssign}
+//         onSuccess={refetchRemoteDesktops}
+//       />
 //     </div>
 //   );
 // };
 
 // export default CloudPCPage;
 
+
+
+
 "use client";
+
 import AssignUserDialog from "../_components/assign-user-dialog";
 import React, { useState, useEffect } from "react";
 import {
@@ -929,9 +957,14 @@ import { setLaunchVMResponse } from "@/redux/slices/dcv/dcv-slice";
 import { routes } from "@/constants/routes";
 import { Checkbox } from "@/components/ui/checkbox";
 import SelectedPc from "@/app/build-smartpc/_components/selected-pc";
-
-// REALTIME API IMPORT - NEW
 import { fetchInstanceDetails, InstanceDetail } from "@/api/realtime";
+
+// --- IDLE TIMEOUT API ---
+import {
+  setIdleTimeout,
+  getIdleTimeout,
+  deleteIdleTimeout,
+} from "@/api/smartPC-Idle-settings";
 
 const CloudPCPage = () => {
   const router = useRouter();
@@ -940,10 +973,9 @@ const CloudPCPage = () => {
 
   // --- USER LOGIC START ---
   const { user } = useSelector((state: RootState) => state.auth);
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getApiUserId(user: any) {
     if (!user) return "";
-    // Support either ownerid or "custom:ownerid"
     if (user.role === "member" || user.role === "admin") {
       return user.ownerid;
     }
@@ -955,6 +987,14 @@ const CloudPCPage = () => {
 
   const isMember = user?.role === "member";
   // --- USER LOGIC END ---
+  function formatIdleTime(mins: number): string {
+    console.log("DEBUG: formatIdleTime called with", mins);
+    if (isNaN(mins)) return "Idle Timeout: —";
+    if (mins < 60) return `Idle Timeout: ${mins}m`;
+    const hours = Math.floor(mins / 60);
+    const minutes = mins % 60;
+    return `Idle Timeout: ${hours}h ${minutes}m`;
+  }
 
   const userId = useSelector((state: RootState) => state.auth.user?.id);
 
@@ -1007,6 +1047,9 @@ const CloudPCPage = () => {
     null
   );
 
+  // --- NEW: Track which PC Idle dialog is for
+  const [selectedPCForIdle, setSelectedPCForIdle] = useState<PC | null>(null);
+
   const [selectedIdleTimeout, setSelectedIdleTimeout] = useState<string>("30");
   const [selectedTimeZone, setSelectedTimeZone] = useState("UTC");
   const [scheduleFrequency, setScheduleFrequency] = useState("everyday");
@@ -1056,11 +1099,9 @@ const CloudPCPage = () => {
   useEffect(() => {
     console.log("DEBUG EFFECT: apiUserId", apiUserId);
     console.log("DEBUG EFFECT: cloudPCs", cloudPCs);
-    // Only fetch if you have API user id and at least one PC
     if (!apiUserId || !Array.isArray(cloudPCs) || cloudPCs.length === 0) return;
     const instanceNames = cloudPCs.map((pc) => pc.systemName);
 
-    // Fetch real-time details
     fetchInstanceDetails(apiUserId, instanceNames)
       .then((details) => {
         console.log("Realtime details", details);
@@ -1222,8 +1263,17 @@ const CloudPCPage = () => {
     setShowScheduleDialog(true);
   };
 
-  const handleIdleSettings = (pc: PC) => {
-    setSelectedIdleTimeout(String(pc.idleTimeout || "30"));
+  // ----------- REPLACED: match to API! -------------
+  // Fetch current idle timeout for the PC from API on open, fallback to "30" on error
+  const handleIdleSettings = async (pc: PC) => {
+    setSelectedPCForIdle(pc);
+    try {
+      const res = await getIdleTimeout(pc.instanceId);
+      setSelectedIdleTimeout(String(res.timeout));
+    } catch (error) {
+      console.error("Failed to fetch idle timeout:", error);
+      setSelectedIdleTimeout("30");
+    }
     setShowIdleDialog(true);
   };
 
@@ -1232,8 +1282,42 @@ const CloudPCPage = () => {
     setShowAssignUserDialog(true);
   };
 
-  const handleSaveIdleSettings = () => {
-    setShowIdleDialog(false);
+  // Handle saving idle timeout: if "none" selected, delete entry, else set
+  const handleSaveIdleSettings = async () => {
+    if (!selectedPCForIdle) {
+      setShowIdleDialog(false);
+      return;
+    }
+
+    // User picked "No idle timeout" (adapt according to your dialog - ""/null/0/"none")
+    // Ensure this matches the "no timeout" value in your IdleSettingsDialog!
+    const noneValues = ["", "none", "0"];
+    const trimmed = String(selectedIdleTimeout).trim().toLowerCase();
+
+    try {
+      if (noneValues.includes(trimmed)) {
+        await deleteIdleTimeout(selectedPCForIdle.instanceId);
+        toast({
+          title: "Idle Timeout Removed",
+          description: `Idle timeout was cleared for ${selectedPCForIdle.systemName}`
+        });
+      } else {
+        await setIdleTimeout(selectedPCForIdle.instanceId, Number(selectedIdleTimeout));
+        toast({
+          title: "Idle Timeout Saved",
+          description: `Timeout set to ${selectedIdleTimeout} minutes for ${selectedPCForIdle.systemName}`,
+        });
+      }
+      // Optionally refresh data here if you want
+    } catch (e) {
+      console.error("Failed to save idle timeout:", e);
+      toast({
+        title: "Idle Timeout Change Failed",
+        description:"Could not update idle timeout"
+      });
+    } finally {
+      setShowIdleDialog(false);
+    }
   };
 
   const handleSaveSchedule = () => {
@@ -1435,9 +1519,9 @@ const CloudPCPage = () => {
                                     Schedule
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    onClick={(e) => {
+                                    onClick={async (e) => {
                                       e.stopPropagation();
-                                      handleIdleSettings(pc);
+                                      await handleIdleSettings(pc);
                                     }}
                                   >
                                     <Moon className="h-4 w-4 mr-2" />
@@ -1497,6 +1581,7 @@ const CloudPCPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {(filteredPCs as PC[]).map((pc, index) => {
                   const pcInfo = realtimePcInfo[pc.systemName];
+
                   return (
                     <Card
                       key={pc.id}
@@ -1567,14 +1652,15 @@ const CloudPCPage = () => {
                                 Schedule
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={(e) => {
+                                onClick={async (e) => {
                                   e.stopPropagation();
-                                  handleIdleSettings(pc);
+                                  await handleIdleSettings(pc);
                                 }}
                               >
                                 <Moon className="h-4 w-4 mr-2" />
                                 Idle Settings
                               </DropdownMenuItem>
+                              
                               {!isMember && (
                                 <DropdownMenuItem
                                   onClick={(e) => {
@@ -1609,7 +1695,7 @@ const CloudPCPage = () => {
                       <CardContent>
                         <div className="space-y-4">
                           {/* --- REALTIME INFO --- */}
-                          <div className="grid grid-cols-2 gap-4 text-sm">
+                          {/* <div className="grid grid-cols-2 gap-4 text-sm">
                             <div className="flex items-center gap-2">
                               <Clock className="h-4 w-4 text-muted-foreground" />
                               <span>{pcInfo?.uptime || "—"}</span>
@@ -1626,8 +1712,34 @@ const CloudPCPage = () => {
                               <Clock className="h-4 w-4" />
                               <span>Idle: 15m</span>
                             </div>
-                          </div>
+                          </div> */}
                           {/* --- END REALTIME INFO --- */}
+                          {/* --- REALTIME INFO --- */}
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4 text-muted-foreground" />
+                                <span>{pcInfo?.uptime || "—"}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Shield className="h-4 w-4 text-muted-foreground" />
+                                <span>{pcInfo?.region || "—"}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <CalendarClock className="h-4 w-4" />
+                                <span>09:00 - 17:00</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Clock className="h-4 w-4" />
+                                <span>
+                                {typeof pcInfo?.idleTimeout === "number"
+                                  ? formatIdleTime(pcInfo.idleTimeout)
+                                  : "Idle Timeout: —"}
+                              </span>
+                              </div>
+                            </div>
+                            {/* --- END REALTIME INFO --- */}
+
+                          
                           <div className="flex items-center justify-between border-t pt-4 mt-2">
                             <div className="flex items-center gap-2">
                               <AlertCircle className="h-4 w-4 text-muted-foreground" />
@@ -1745,8 +1857,9 @@ const CloudPCPage = () => {
           isDeleting={isDeleting || isLoading || isStopping}
         />
       )}
-
+      
       {/* Assign User Dialog */}
+      
       <AssignUserDialog
         open={showAssignUserDialog}
         onOpenChange={setShowAssignUserDialog}

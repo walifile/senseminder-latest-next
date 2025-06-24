@@ -27,4 +27,5 @@ export const publicRoutes: string[] = [
   routes.changePassword,
   "/login",
   "/index",
+  "/shared-folder-viewer",
 ];

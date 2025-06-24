@@ -23,7 +23,7 @@ const SocailLogin = () => {
     try {
       setIsGoogleLoading(true);
       await googleSignUpService();
-
+      
       router.push(routes?.dashboard);
     } catch (err) {
       const error =

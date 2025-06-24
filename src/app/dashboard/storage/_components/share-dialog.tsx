@@ -89,13 +89,21 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
         ...(sharePasswordEnabled && { password: sharePassword }),
       }).unwrap();
 
-      setShareLink(result.shareLink);
+      let link = result.shareLink;
+
+      // Make absolute URL if not already
+      if (!/^https?:\/\//i.test(link)) {
+        const origin = window.location.origin;
+        link = `${origin}${link.startsWith("/") ? "" : "/"}${link}`;
+      }
+
+      setShareLink(link);
 
       toast({
         title: `${isFolder ? "Folder" : "File"} Shared`,
         description: `Your ${
           isFolder ? "folder and its contents" : "file"
-        } have been shared successfully`,
+        } have been shared successfully.`,
       });
     } catch (error) {
       console.error("Share error:", error);

@@ -5,8 +5,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FcGoogle } from "react-icons/fc";
-import { FaApple } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { handleSignUp } from "@/lib/services/auth";
 import { useToast } from "@/hooks/use-toast";

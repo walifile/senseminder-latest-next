@@ -1,7 +1,6 @@
 import React from "react";
 import {
   FileText,
-  Folder,
   Image,
   FileVideo2,
   Presentation,

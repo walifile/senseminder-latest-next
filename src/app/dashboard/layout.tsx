@@ -3,7 +3,7 @@
 import React from "react";
 import DashboardSidebar from "@/app/dashboard/_components/dashboard-sidebar";
 import DashboardHeader from "@/app/dashboard/_components/dashboard-header";
-import DesktopAppDialog from "./storage/_components/desktop-app-dialog";
+// import DesktopAppDialog from "./storage/_components/desktop-app-dialog";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -30,7 +30,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
 
       {/* Dialog mounted globally in dashboard layout */}
-      <DesktopAppDialog />
+      {/* <DesktopAppDialog /> */}
     </div>
   );
 }

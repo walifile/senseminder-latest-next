@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { routes } from "@/constants/routes";
 import { syncAuthState } from "@/lib/utils/auth-sync";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";

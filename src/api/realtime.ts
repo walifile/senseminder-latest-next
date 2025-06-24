@@ -11,6 +11,7 @@ export interface InstanceDetail {
   instanceId?: string;
   region?: string;
   uptime?: string;
+  idleTimeout?: number;//mewly added by me
   cpuUsage?: string;
   memoryUsage?: string;
   specs?: InstanceSpecs;

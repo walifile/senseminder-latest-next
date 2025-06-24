@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -110,12 +111,13 @@ const UsersManagementPage = () => {
 
   // Find owner/admin for fetching remote desktops
   const mainUser = users.find(
-    // @ts-ignore
+    // @ts-expect-error smv
     (u) => u.role === "owner" || u.role === "admin" || u.role === "member"
   );
   const {
     data: fetchedSmartPCs,
     isLoading: isSmartPCLoading,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     error: smartPCError,
     refetch: refetchSmartPCs,
   } = useListRemoteDesktopQuery(
@@ -173,7 +175,7 @@ const UsersManagementPage = () => {
         role: data.role === "admin" || data.role === "Admin" ? "admin" : "member",
         group: "", // always send blank
       };
-      //@ts-ignore
+      //@ts-expect-error avc
       await inviteUser(apiPayload);
       toast({
         title: "User invited",
@@ -590,7 +592,7 @@ const UsersManagementPage = () => {
                   );
                   const isAssignedElsewhere = Object.entries(assignments)
                     .some(([memberId, arr]) =>
-                      //@ts-ignore
+                      //@ts-expect-error abc
                       (memberId !== selectedUser.id) && arr?.some(
                         (a: any) => a.instanceId === pc.instanceId
                       )

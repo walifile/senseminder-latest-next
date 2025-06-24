@@ -6,9 +6,8 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { confirmSignIn } from "aws-amplify/auth";
 import { useDispatch, useSelector } from "react-redux";
-import { setUser, setLoading, setTempUser } from "@/redux/slices/auth-slice";
+import {setLoading, setTempUser } from "@/redux/slices/auth-slice";
 import { RootState } from "@/redux/store";
-import { routes } from "@/constants/routes";
 import { handleSignOut } from "@/lib/services/auth";
 import { useToast } from "@/hooks/use-toast";
 

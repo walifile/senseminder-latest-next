@@ -54,7 +54,7 @@ const IdleSettingsDialog: React.FC<IdleSettingsDialogProps> = ({
               <SelectValue placeholder="Select timeout duration" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">None (Always On)</SelectItem>
+              <SelectItem value="none">none</SelectItem>
               <SelectItem value="15">15 minutes</SelectItem>
               <SelectItem value="30">30 minutes</SelectItem>
               <SelectItem value="45">45 minutes</SelectItem>

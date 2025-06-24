@@ -291,19 +291,37 @@ export const fileManagerAPI = createApi({
     }),
     downloadFolder: builder.query<
       { downloadUrl: string },
-      { userId: string; region: string; folder: string }
+      {
+        region: string;
+        key?: string; // for public/shared
+        userId?: string; // for private
+        folder?: string; // for private
+      }
     >({
-      query: ({ userId, region, folder }) => ({
-        url: "download-folder",
-        method: "GET",
-        params: {
-          userId,
+      query: ({ region, key, userId, folder }) => {
+        const params: Record<string, string> = {
           region,
-          folder,
-        },
-      }),
-    }),
+        };
 
+        if (key && key.trim() !== "") {
+          params.key = key;
+        }
+
+        if (userId && userId.trim() !== "") {
+          params.userId = userId;
+        }
+
+        if (folder && folder.trim() !== "") {
+          params.folder = folder;
+        }
+
+        return {
+          url: "download-folder",
+          method: "GET",
+          params,
+        };
+      },
+    }),
     createFolder: builder.mutation({
       query: ({ region, userId, folderName }) => ({
         url: `create-folder`,
