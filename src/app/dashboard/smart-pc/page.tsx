@@ -1133,9 +1133,10 @@ const CloudPCPage = () => {
           "The instance has been launched successfully. Redirecting...",
       });
       dispatch(setLaunchVMResponse({ ...response, instanceId }));
-      setTimeout(() => {
-        router.push(routes?.pcViewer);
-      }, 4000);
+      // setTimeout(() => {
+      //   router.push(routes?.pcViewer);
+      // }, 4000);
+      window.open(routes?.pcViewer, "_blank", "noopener,noreferrer");
     } catch (error) {
       console.log(error);
       toast({

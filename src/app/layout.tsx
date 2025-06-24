@@ -15,7 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body suppressHydrationWarning>
+      <body>
         <ReduxProvider>
           <AmplifyProvider>
             <ThemeWrapper>
