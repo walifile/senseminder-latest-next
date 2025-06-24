@@ -293,17 +293,12 @@ const handleFolderSelection = (file: FileItem) => {
     setSelectedFolder(newPath[newPath.length - 1] || null);
     setSelectedFiles([]);
   };
-  const handleCloseFolderback = () => {
-    if (path.length > 0) {
-      const root = path[0];
-      setPath(root ? [root] : []);
-      setSelectedFolder(root || null);
-    } else {
-      setPath([]);
-      setSelectedFolder(null);
-    }
-    setSelectedFiles([]);
-  };
+ const handleCloseFolderback = () => {
+  // Clear the entire path to go back to root
+  setPath([]);
+  setSelectedFolder(null);
+  setSelectedFiles([]);
+};
 
   const handleCategorySelection = (category: string) => {
     setSelectedCategory(category);
