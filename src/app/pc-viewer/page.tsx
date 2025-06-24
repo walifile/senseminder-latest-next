@@ -277,10 +277,16 @@ const PCViewerContent = () => {
 
   const openSidebar = () => {
     setIsSidebarOpen(true);
+    setTimeout(() => {
+      updateResolution();
+    });
   };
 
   const closeSidebar = () => {
     setIsSidebarOpen(false);
+    setTimeout(() => {
+      updateResolution();
+    });
   };
 
   const toggleQuickActions = () => {
