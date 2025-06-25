@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, useRef } from "react";
+import { useState, useEffect, Suspense, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -102,6 +102,8 @@ const PCViewerContent = () => {
   const authToken = launchVMResponse?.sessionToken;
   const url = launchVMResponse?.dnsName;
   const [isLoading, setIsLoading] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+
 
   // Check if mobile
   useEffect(() => {
@@ -145,17 +147,19 @@ const PCViewerContent = () => {
   };
 
   // Adjust resolution
-  const updateResolution = () => {
-    const container = document.getElementById("remote-desktop");
-    if (connRef.current && container) {
-      const width = container.clientWidth;
-      const height = window.innerHeight;
-      console.log("Updating resolution:", width, height);
-      connRef.current
-        .requestResolution(width, height)
-        .catch((e) => console.warn("Failed to request resolution:", e));
-    }
-  };
+  const updateResolution = useCallback(() => {
+    requestAnimationFrame(() => {
+      const container = document.getElementById("remote-desktop");
+      if (connRef.current && container) {
+        const width = container.clientWidth;
+        const height = window.innerHeight;
+        console.log("Updating resolution:", width, height);
+        connRef.current
+          .requestResolution(width, height)
+          .catch((e) => console.warn("Failed to request resolution:", e));
+      }
+    });
+  }, []);
 
   // Function to connect to DCV
   const connectToDcv = async () => {
@@ -188,7 +192,18 @@ const PCViewerContent = () => {
         // Save connection reference
         connRef.current = conn;
 
-        window.addEventListener("resize", updateResolution);
+        const handleResize = () => {
+          if (isResizing) return;
+
+          setIsResizing(true);
+          updateResolution();
+
+          setTimeout(() => {
+            setIsResizing(false);
+          }, 100);
+        };
+
+        window.addEventListener("resize", handleResize);
       } catch (error) {
         console.error("Connection failed:", error);
         setDcvError(error as Error);
@@ -555,11 +570,11 @@ const PCViewerContent = () => {
                       className={cn(
                         "font-medium",
                         connectionState === "CONNECTED" &&
-                          "bg-green-500/10 text-green-500 border-green-500/20",
+                        "bg-green-500/10 text-green-500 border-green-500/20",
                         connectionState === "DISCONNECTED" &&
-                          "bg-red-500/10 text-red-500 border-red-500/20",
+                        "bg-red-500/10 text-red-500 border-red-500/20",
                         connectionState === "RECONNECTING" &&
-                          "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
+                        "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
                       )}
                     >
                       {connectionState}

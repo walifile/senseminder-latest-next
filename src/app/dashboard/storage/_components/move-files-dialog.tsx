@@ -89,12 +89,10 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
   }, [data, path]);
 
   const handleMove = async () => {
-    console.log("🚀 ~ selectedFolderId:", selectedFolderId);
-    console.log("🚀 ~ selectedFiles:", selectedFiles);
-    console.log("🚀 ~ userId:", userId);
+
 
     if (!selectedFolderId) {
-      console.error("❌ No destination folder selected");
+      console.error(" No destination folder selected");
       toast({
         title: "Move Failed",
         description: "Please select a destination folder",
@@ -104,7 +102,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
     }
 
     if (!userId) {
-      console.error("❌ No userId available");
+      console.error("No userId available");
       toast({
         title: "Move Failed", 
         description: "User authentication required",
@@ -114,7 +112,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
     }
 
     if (selectedFiles.length === 0) {
-      console.error("❌ No files selected");
+      console.error(" No files selected");
       toast({
         title: "Move Failed",
         description: "No files selected to move",
@@ -127,21 +125,18 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
       // Debug the path transformations
       const sourceFileNames = selectedFiles.map((id) => {
         const relativePath = getRelativePath(id);
-        console.log(`🚀 ~ Source file: ${id} → ${relativePath}`);
         return relativePath;
       });
 
       const destinationFolder = getRelativePath(selectedFolderId);
-      console.log(`🚀 ~ Destination folder: ${selectedFolderId} → ${destinationFolder}`);
 
       // Check if getRelativePath is working correctly
       if (sourceFileNames.some(name => !name || name.trim() === '')) {
-        console.error("❌ Some source file names are empty after getRelativePath");
         throw new Error("Invalid source file paths");
       }
 
       if (!destinationFolder || destinationFolder.trim() === '') {
-        console.error("❌ Destination folder is empty after getRelativePath");
+        console.error(" Destination folder is empty after getRelativePath");
         throw new Error("Invalid destination folder path");
       }
 
@@ -151,23 +146,16 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
         sourceFileNames,
         destinationFolder,
       };
-
-      console.log("🚀 ~ Move API payload:", movePayload);
-
       const result = await moveFiles(movePayload).unwrap();
-      
-      console.log("✅ ~ Move operation successful:", result);
-
       toast({
         title: "Move Complete",
         description: `${sourceFileNames.length} item(s) moved to "${destinationFolder}"`,
       });
-
       setSelectedFiles([]);
       closeDialog();
 
     } catch (err: any) {
-      console.error("❌ ~ Move operation failed:", err);
+      console.error(" Move operation failed:", err);
       
       // More detailed error handling
       let errorMessage = "Could not move selected items. Please try again.";
@@ -180,7 +168,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
         errorMessage = err;
       }
 
-      console.error("❌ ~ Error details:", {
+      console.error(" Error details:", {
         status: err?.status,
         data: err?.data,
         message: err?.message,
@@ -205,7 +193,6 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
   const selectedFolderExists = selectedFiles?.some((id) => {
     const exists = id === selectedFolderId;
     if (exists) {
-      console.log("⚠️ ~ Trying to move folder into itself:", id);
     }
     return exists;
   });
@@ -222,7 +209,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
                   userId && 
                   !isLoading;
 
-  console.log("🚀 ~ Move button enabled:", canMove, {
+  console.log(" Move button enabled:", canMove, {
     selectedFolderId: !!selectedFolderId,
     selectedFolderExists,
     isSameAsCurrentFolder,

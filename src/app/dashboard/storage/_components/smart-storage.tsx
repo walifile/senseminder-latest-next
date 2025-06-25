@@ -177,7 +177,7 @@ const CloudStorage = () => {
 
   const folderPath = path.map((f) => f.fileName).join("/");
 
-  console.log({ ">>>>>>>>>>>>": folderPath, path });
+  // console.log({ ">>>>>>>>>>>>": folderPath, path });
 
   // console.log(path);
 

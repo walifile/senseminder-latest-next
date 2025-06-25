@@ -100,15 +100,14 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
 
     const sourceFileNames = selectedFiles.map((id) => {
       const relPath = getRelativePath(id);
-      console.log(`🚀 ~ Source: ${id} → ${relPath}`);
       return relPath;
     });
 
     const destinationFolder = getRelativePath(selectedFolderId);
-    console.log(`🚀 ~ Destination: ${selectedFolderId} → ${destinationFolder}`);
+    // console.log(`🚀 ~ Destination: ${selectedFolderId} → ${destinationFolder}`);
 
     if (sourceFileNames.some(name => !name?.trim()) || !destinationFolder?.trim()) {
-      console.error("❌ Invalid paths in copy");
+      console.error("Invalid paths in copy");
       toast({
         title: "Copy Failed",
         description: "Invalid file or folder path(s)",
@@ -125,7 +124,6 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
         destinationFolder,
       }).unwrap();
 
-      console.log("✅ ~ Copy success:", result);
 
       toast({
         title: "Items Copied",
@@ -135,7 +133,6 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
       setSelectedFiles([]);
       closeDialog();
     } catch (err: any) {
-      console.error("❌ ~ Copy failed:", err);
       let errorMessage = "Could not copy items. Please try again.";
 
       if (err?.data?.message) errorMessage = err.data.message;
@@ -159,14 +156,14 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
   const selectedFolderExists = selectedFiles?.some((id) => {
     const exists = id === selectedFolderId;
     if (exists) {
-      console.log("⚠️ ~ Trying to copy into itself:", id);
+      // console.log("⚠️ ~ Trying to copy into itself:", id);
     }
     return exists;
   });
 
   const isSameAsCurrentFolder = selectedFolder?.id === selectedFolderId;
   if (isSameAsCurrentFolder) {
-    console.log("⚠️ ~ Copying to same folder:", selectedFolder?.id);
+    // console.log(" ~ Copying to same folder:", selectedFolder?.id);
   }
 
   const canCopy =
