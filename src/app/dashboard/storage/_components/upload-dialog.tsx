@@ -199,7 +199,17 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
                   key={file.name}
                   className="flex items-center justify-between bg-muted px-3 py-2 rounded text-sm"
                 >
-                  <span className="truncate w-40">{file.name}</span>
+                  {/* <span className="truncate w-40">{file.name}</span> */}
+                    {file?.name?.length > 10 ? (
+                    <span
+                      className="truncate w-40"
+                      title={file?.name}
+                    >
+                      {`${file?.name.slice(0, 6)}...${file?.name?.slice(file?.name?.lastIndexOf("."))}`}
+                    </span>
+                  ) : (
+                    <span className="truncate w-40">{file.name}</span>
+                  )}
                   <div className="flex items-center gap-2">
                     {uploadStatus[file.name] === "loading" && (
                       <Loader2 className="w-4 h-4 animate-spin text-blue-500" />

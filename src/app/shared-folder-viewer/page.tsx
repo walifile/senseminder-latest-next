@@ -133,6 +133,30 @@ const StaticStoragePage = () => {
       router.push(`/shared-folder-viewer?key=${encodeURIComponent(newPath)}`);
     }
   };
+  //   const handleFolderClick = (file: any) => {
+  //   if (file.fileType === "folder") {
+  //     const cleanKey = key.endsWith("/") ? key.slice(0, -1) : key;
+  //     const keyParts = cleanKey.split("/").filter(Boolean);
+      
+  //     // Check if we're already in this folder by checking the last part of the path
+  //     const lastFolder = keyParts[keyParts.length - 1];
+  //     if (lastFolder === file.fileName) {
+  //       console.log("Already in this folder, not navigating");
+  //       return;
+  //     }
+      
+  //     // Check if this folder already exists in the current path (parent trying to add child that's already in path)
+  //     const folderExistsInPath = keyParts.includes(file.fileName);
+  //     if (folderExistsInPath) {
+  //       console.log("Folder already exists in path, not adding again");
+  //       return;
+  //     }
+      
+  //     // Build the new path
+  //     const newPath = key ? `${key}${file.fileName}/` : `${file.fileName}/`;
+  //     router.push(`/shared-folder-viewer?key=${encodeURIComponent(newPath)}`);
+  //   }
+  // };
 
   const handleBreadcrumbNavigate = (folderPath: string) => {
     router.push(
