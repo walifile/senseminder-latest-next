@@ -146,21 +146,28 @@ const PCViewerContent = () => {
     }
   };
 
-  // Adjust resolution
-  const updateResolution = useCallback(() => {
-    requestAnimationFrame(() => {
-      const container = document.getElementById("remote-desktop");
-      if (connRef.current && container) {
-        const width = container.clientWidth;
-        const height = window.innerHeight;
-        console.log("Updating resolution:", width, height);
-        connRef.current
-          .requestResolution(width, height)
-          .catch((e) => console.warn("Failed to request resolution:", e));
-      }
-    });
-  }, []);
+// Adjust resolution
+const lastResolutionKeyRef = useRef<string | null>(null);
 
+const updateResolution = useCallback(() => {
+  const container = document.getElementById("remote-desktop");
+  if (!connRef.current || !container) return;
+  
+  // Get actual computed dimensions
+  const rect = container.getBoundingClientRect();
+  const width = Math.floor(rect.width);
+  const height = Math.floor(window.innerHeight);
+  
+  // Only update if dimensions actually changed
+  const currentKey = `${width}x${height}`;
+  if (lastResolutionKeyRef.current === currentKey) return;
+  lastResolutionKeyRef.current = currentKey;
+  
+  console.log("Updating resolution:", width, height);
+  connRef.current
+    .requestResolution(width, height)
+    .catch((e) => console.warn("Failed to request resolution:", e));
+}, []);
   // Function to connect to DCV
   const connectToDcv = async () => {
     if (sessionId && authToken) {
@@ -218,6 +225,25 @@ const PCViewerContent = () => {
   useEffect(() => {
     connectToDcv();
   }, []);
+
+
+useEffect(() => {
+  let rafId: number;
+  
+  const handleResize = () => {
+    cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(() => {
+      updateResolution();
+    });
+  };
+
+  window.addEventListener("resize", handleResize, { passive: true });
+  
+  return () => {
+    window.removeEventListener("resize", handleResize);
+    cancelAnimationFrame(rafId);
+  };
+}, [updateResolution]);
 
   const handleConnect = () => {
     if (!connRef.current && sessionId && authToken) {
@@ -290,19 +316,44 @@ const PCViewerContent = () => {
     };
   }, []);
 
-  const openSidebar = () => {
-    setIsSidebarOpen(true);
-    setTimeout(() => {
-      updateResolution();
-    });
-  };
+const openSidebar = useCallback(() => {
+  setIsSidebarOpen(true);
+  // Immediate resize after sidebar opens
+  setTimeout(() => {
+    updateResolution();
+  }, 0);
+}, [updateResolution]);
 
-  const closeSidebar = () => {
-    setIsSidebarOpen(false);
-    setTimeout(() => {
+const closeSidebar = useCallback(() => {
+  setIsSidebarOpen(false);
+  // Immediate resize after sidebar closes
+  setTimeout(() => {
+    updateResolution();
+  }, 0);
+}, [updateResolution]);
+
+// Also, replace the existing useEffect that handles sidebar state changes with this:
+
+useEffect(() => {
+  // Trigger immediate resize on sidebar state change
+  updateResolution();
+}, [isSidebarOpen, updateResolution]);
+
+useEffect(() => {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  
+  const handleUpdate = () => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
       updateResolution();
-    });
+    }, 250); // Wait for CSS transition to complete
   };
+  
+  // Trigger on sidebar state change
+  handleUpdate();
+  
+  return () => clearTimeout(timeoutId);
+}, [isSidebarOpen, updateResolution]);
 
   const toggleQuickActions = () => {
     setShowQuickActions(!showQuickActions);
@@ -311,13 +362,13 @@ const PCViewerContent = () => {
   return (
     <div className="flex h-screen w-full overflow-hidden bg-gray-50 dark:bg-gray-950">
       {/* Main Remote Desktop Area */}
-      <div
-        id="remote-desktop"
-        className={cn(
-          "flex-1 relative overflow-hidden bg-black",
-          isSidebarOpen && !isMobile ? "mr-80" : "mr-0"
-        )}
-      >
+       <div
+  id="remote-desktop"
+  className="flex-1 relative overflow-hidden bg-black transition-all duration-200 ease-out"
+  style={{
+    marginRight: isSidebarOpen && !isMobile ? '320px' : '0px'
+  }}
+>
         {/* TV On/Off Animation */}
         <AnimatePresence>
           {isLoading && (
@@ -511,18 +562,22 @@ const PCViewerContent = () => {
       {/* Sidebar */}
       <AnimatePresence>
         {isSidebarOpen && !isFullscreen && (
-          <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className={cn(
-              "bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden z-50",
-              isMobile
-                ? "fixed top-0 right-0 h-full w-80 max-w-[85vw]"
-                : "fixed top-0 right-0 h-full w-80"
-            )}
-          >
+<motion.div
+  initial={{ x: "100%" }}
+  animate={{ x: 0 }}
+  exit={{ x: "100%" }}
+  transition={{ 
+    type: "tween", // Change from spring to tween for predictable timing
+    duration: 0.2, // Match CSS transition duration
+    ease: "easeOut"
+  }}
+  className={cn(
+    "bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden z-50",
+    isMobile
+      ? "fixed top-0 right-0 h-full w-80 max-w-[85vw]"
+      : "fixed top-0 right-0 h-full w-80"
+  )}
+>
             {/* Sidebar Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
               <div className="flex items-center gap-2">
@@ -790,5 +845,4 @@ const PCViewerPage = () => {
     </Suspense>
   );
 };
-
 export default PCViewerPage;
