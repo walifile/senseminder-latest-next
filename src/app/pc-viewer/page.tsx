@@ -34,6 +34,12 @@ import DCVViewer from "@/app/pc-viewer/_components/dcv-viewer";
 import { useSelector } from "react-redux";
 import { selectLaunchVMResponse } from "@/redux/slices/dcv/dcv-slice";
 import dcv from "../../../public/dcvjs/dcv";
+import { FileTransferManager } from "./_components/file-trasfer";
+import { ClipboardManager } from "./_components/clipboard";
+import { DisplayManager } from "./_components/configure-maager";
+import { PerformanceMonitor } from "./_components/performance-monitor";
+import { AudioVideoManager } from "./_components/audio-video-manager";
+import { AccessibilityManager } from "./_components/accessibility-manager";
 
 // Add ConnectionState type
 type ConnectionState = "CONNECTED" | "DISCONNECTED" | "RECONNECTING";
@@ -44,12 +50,45 @@ interface KeyboardShortcutKey {
   location: number;
 }
 
+// Import FileTransferSession type if not already imported
+// import type { FileTransferSession } from "./_components/file-trasfer";
+
+interface FileTransferSession {
+  // Add the properties that match your actual FileTransferSession type
+  sessionId: string;
+  fileName: string;
+  status: string;
+  // ...other properties as needed
+}
+
 interface DcvConnection {
   requestResolution: (width: number, height: number) => Promise<void>;
   disconnect: () => Promise<void>;
   getStats: () => Promise<{ latency: number; fps: number }>;
   sendKeyboardShortcut: (keys: KeyboardShortcutKey[]) => void;
   setDisplayQuality: (min: number, max: number) => void;
+  // File transfer methods required by FileTransferManagerProps
+  startFileTransfer: (...args: any[]) => Promise<FileTransferSession>;
+  getFileTransferSessions: () => Promise<any>;
+  cancelFileTransfer: (sessionId: string) => Promise<void>;
+  pauseFileTransfer: (sessionId: string) => Promise<void>;
+  resumeFileTransfer: (sessionId: string) => Promise<void>;
+
+  // Audio/Video methods expected by AudioVideoManagerProps
+  setAudioEnabled: (enabled: boolean) => void;
+  setAudioInputDevice: (deviceId: string) => void;
+  setAudioOutputDevice: (deviceId: string) => void;
+  setAudioInputVolume: (volume: number) => void;
+  setAudioOutputVolume: (volume: number) => void;
+  getAudioInputDevices: () => Promise<Array<{ deviceId: string; label: string }>>;
+  getAudioOutputDevices: () => Promise<Array<{ deviceId: string; label: string }>>;
+  getCurrentAudioInputDevice: () => Promise<{ deviceId: string; label: string }>;
+  getCurrentAudioOutputDevice: () => Promise<{ deviceId: string; label: string }>;
+  isAudioEnabled: () => boolean;
+  isVideoEnabled?: () => boolean;
+  setVideoEnabled?: (enabled: boolean) => void;
+  getVideoDevices?: () => Promise<Array<{ deviceId: string; label: string }>>;
+  setVideoDevice?: (deviceId: string) => void;
 }
 
 // Create a separate client component that uses useSearchParams
@@ -146,28 +185,28 @@ const PCViewerContent = () => {
     }
   };
 
-// Adjust resolution
-const lastResolutionKeyRef = useRef<string | null>(null);
+  // Adjust resolution
+  const lastResolutionKeyRef = useRef<string | null>(null);
 
-const updateResolution = useCallback(() => {
-  const container = document.getElementById("remote-desktop");
-  if (!connRef.current || !container) return;
-  
-  // Get actual computed dimensions
-  const rect = container.getBoundingClientRect();
-  const width = Math.floor(rect.width);
-  const height = Math.floor(window.innerHeight);
-  
-  // Only update if dimensions actually changed
-  const currentKey = `${width}x${height}`;
-  if (lastResolutionKeyRef.current === currentKey) return;
-  lastResolutionKeyRef.current = currentKey;
-  
-  console.log("Updating resolution:", width, height);
-  connRef.current
-    .requestResolution(width, height)
-    .catch((e) => console.warn("Failed to request resolution:", e));
-}, []);
+  const updateResolution = useCallback(() => {
+    const container = document.getElementById("remote-desktop");
+    if (!connRef.current || !container) return;
+
+    // Get actual computed dimensions
+    const rect = container.getBoundingClientRect();
+    const width = Math.floor(rect.width);
+    const height = Math.floor(window.innerHeight);
+
+    // Only update if dimensions actually changed
+    const currentKey = `${width}x${height}`;
+    if (lastResolutionKeyRef.current === currentKey) return;
+    lastResolutionKeyRef.current = currentKey;
+
+    console.log("Updating resolution:", width, height);
+    connRef.current
+      .requestResolution(width, height)
+      .catch((e) => console.warn("Failed to request resolution:", e));
+  }, []);
   // Function to connect to DCV
   const connectToDcv = async () => {
     if (sessionId && authToken) {
@@ -227,23 +266,23 @@ const updateResolution = useCallback(() => {
   }, []);
 
 
-useEffect(() => {
-  let rafId: number;
-  
-  const handleResize = () => {
-    cancelAnimationFrame(rafId);
-    rafId = requestAnimationFrame(() => {
-      updateResolution();
-    });
-  };
+  useEffect(() => {
+    let rafId: number;
 
-  window.addEventListener("resize", handleResize, { passive: true });
-  
-  return () => {
-    window.removeEventListener("resize", handleResize);
-    cancelAnimationFrame(rafId);
-  };
-}, [updateResolution]);
+    const handleResize = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        updateResolution();
+      });
+    };
+
+    window.addEventListener("resize", handleResize, { passive: true });
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      cancelAnimationFrame(rafId);
+    };
+  }, [updateResolution]);
 
   const handleConnect = () => {
     if (!connRef.current && sessionId && authToken) {
@@ -316,44 +355,44 @@ useEffect(() => {
     };
   }, []);
 
-const openSidebar = useCallback(() => {
-  setIsSidebarOpen(true);
-  // Immediate resize after sidebar opens
-  setTimeout(() => {
-    updateResolution();
-  }, 0);
-}, [updateResolution]);
-
-const closeSidebar = useCallback(() => {
-  setIsSidebarOpen(false);
-  // Immediate resize after sidebar closes
-  setTimeout(() => {
-    updateResolution();
-  }, 0);
-}, [updateResolution]);
-
-// Also, replace the existing useEffect that handles sidebar state changes with this:
-
-useEffect(() => {
-  // Trigger immediate resize on sidebar state change
-  updateResolution();
-}, [isSidebarOpen, updateResolution]);
-
-useEffect(() => {
-  let timeoutId: ReturnType<typeof setTimeout>;
-  
-  const handleUpdate = () => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
+  const openSidebar = useCallback(() => {
+    setIsSidebarOpen(true);
+    // Immediate resize after sidebar opens
+    setTimeout(() => {
       updateResolution();
-    }, 250); // Wait for CSS transition to complete
-  };
-  
-  // Trigger on sidebar state change
-  handleUpdate();
-  
-  return () => clearTimeout(timeoutId);
-}, [isSidebarOpen, updateResolution]);
+    }, 0);
+  }, [updateResolution]);
+
+  const closeSidebar = useCallback(() => {
+    setIsSidebarOpen(false);
+    // Immediate resize after sidebar closes
+    setTimeout(() => {
+      updateResolution();
+    }, 0);
+  }, [updateResolution]);
+
+  // Also, replace the existing useEffect that handles sidebar state changes with this:
+
+  useEffect(() => {
+    // Trigger immediate resize on sidebar state change
+    updateResolution();
+  }, [isSidebarOpen, updateResolution]);
+
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const handleUpdate = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        updateResolution();
+      }, 250); // Wait for CSS transition to complete
+    };
+
+    // Trigger on sidebar state change
+    handleUpdate();
+
+    return () => clearTimeout(timeoutId);
+  }, [isSidebarOpen, updateResolution]);
 
   const toggleQuickActions = () => {
     setShowQuickActions(!showQuickActions);
@@ -362,13 +401,13 @@ useEffect(() => {
   return (
     <div className="flex h-screen w-full overflow-hidden bg-gray-50 dark:bg-gray-950">
       {/* Main Remote Desktop Area */}
-       <div
-  id="remote-desktop"
-  className="flex-1 relative overflow-hidden bg-black transition-all duration-200 ease-out"
-  style={{
-    marginRight: isSidebarOpen && !isMobile ? '320px' : '0px'
-  }}
->
+      <div
+        id="remote-desktop"
+        className="flex-1 relative overflow-hidden bg-black transition-all duration-200 ease-out"
+        style={{
+          marginRight: isSidebarOpen && !isMobile ? '320px' : '0px'
+        }}
+      >
         {/* TV On/Off Animation */}
         <AnimatePresence>
           {isLoading && (
@@ -562,22 +601,22 @@ useEffect(() => {
       {/* Sidebar */}
       <AnimatePresence>
         {isSidebarOpen && !isFullscreen && (
-<motion.div
-  initial={{ x: "100%" }}
-  animate={{ x: 0 }}
-  exit={{ x: "100%" }}
-  transition={{ 
-    type: "tween", // Change from spring to tween for predictable timing
-    duration: 0.2, // Match CSS transition duration
-    ease: "easeOut"
-  }}
-  className={cn(
-    "bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden z-50",
-    isMobile
-      ? "fixed top-0 right-0 h-full w-80 max-w-[85vw]"
-      : "fixed top-0 right-0 h-full w-80"
-  )}
->
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{
+              type: "tween", // Change from spring to tween for predictable timing
+              duration: 0.2, // Match CSS transition duration
+              ease: "easeOut"
+            }}
+            className={cn(
+              "bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden z-50",
+              isMobile
+                ? "fixed top-0 right-0 h-full w-80 max-w-[85vw]"
+                : "fixed top-0 right-0 h-full w-80"
+            )}
+          >
             {/* Sidebar Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
               <div className="flex items-center gap-2">
@@ -684,6 +723,7 @@ useEffect(() => {
               </div>
 
               {/* Quality Settings */}
+
               <div>
                 <h3 className="text-lg font-semibold mb-4">Quality Settings</h3>
                 <div className="space-y-4">
@@ -712,6 +752,21 @@ useEffect(() => {
                 </div>
               </div>
 
+              <AccessibilityManager
+                connection={connRef.current}
+                isConnected={isConnected}
+              />
+              <FileTransferManager
+                connection={connRef.current}
+                isConnected={isConnected}
+              />
+              <AudioVideoManager
+                connection={connRef.current}
+                isConnected={isConnected}
+              />
+              <PerformanceMonitor />
+              <ClipboardManager />
+              <DisplayManager />
               {/* Input Settings */}
               <div>
                 <h3 className="text-lg font-semibold mb-4">Input Settings</h3>
