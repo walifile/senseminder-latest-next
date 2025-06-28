@@ -34,12 +34,12 @@ import DCVViewer from "@/app/pc-viewer/_components/dcv-viewer";
 import { useSelector } from "react-redux";
 import { selectLaunchVMResponse } from "@/redux/slices/dcv/dcv-slice";
 import dcv from "../../../public/dcvjs/dcv";
-import { FileTransferManager } from "./_components/file-trasfer";
 import { ClipboardManager } from "./_components/clipboard";
 import { DisplayManager } from "./_components/configure-maager";
 import { PerformanceMonitor } from "./_components/performance-monitor";
 import { AudioVideoManager } from "./_components/audio-video-manager";
 import { AccessibilityManager } from "./_components/accessibility-manager";
+import { EnhancedFileTransferManager } from "./_components/file-trasfer";
 
 // Add ConnectionState type
 type ConnectionState = "CONNECTED" | "DISCONNECTED" | "RECONNECTING";
@@ -721,10 +721,8 @@ const PCViewerContent = () => {
                   )}
                 </div>
               </div>
-
               {/* Quality Settings */}
-
-              <div>
+               <div>
                 <h3 className="text-lg font-semibold mb-4">Quality Settings</h3>
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -751,22 +749,23 @@ const PCViewerContent = () => {
                   </div>
                 </div>
               </div>
-
+              <EnhancedFileTransferManager
+                connection={connRef.current}
+                isConnected={isConnected}
+              />
               <AccessibilityManager
-                connection={connRef.current}
-                isConnected={isConnected}
+              connection={connRef.current}
+              isConnected={isConnected}
               />
-              <FileTransferManager
-                connection={connRef.current}
-                isConnected={isConnected}
-              />
+              <DisplayManager /> 
+
+              {/* <PerformanceMonitor />   */}
               <AudioVideoManager
                 connection={connRef.current}
                 isConnected={isConnected}
               />
-              <PerformanceMonitor />
               <ClipboardManager />
-              <DisplayManager />
+
               {/* Input Settings */}
               <div>
                 <h3 className="text-lg font-semibold mb-4">Input Settings</h3>
