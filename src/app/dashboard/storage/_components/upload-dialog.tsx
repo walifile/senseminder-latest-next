@@ -35,7 +35,6 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   onOpenChange,
   folderPath,
 }) => {
-  console.log("🚀 ~ folderPath:", folderPath)
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [region, setRegion] = useState("north-virginia");

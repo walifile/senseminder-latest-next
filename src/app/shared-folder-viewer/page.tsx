@@ -55,41 +55,67 @@ const FileTypeIcon = ({ fileType }: { fileType: string }) => {
   );
 };
 
-const Breadcrumbs = ({
+// Enhanced Breadcrumbs component with duplicate prevention
+const EnhancedBreadcrumbs = ({
   path,
   onNavigate,
+  currentKey,
 }: {
   path: Array<{ id: string; name: string }>;
   onNavigate: (folderPath: string) => void;
-}) => (
-  <div className="flex items-center gap-2 px-4 py-3 border-b bg-muted/20">
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => onNavigate("")}
-      className="h-8 px-2"
-    >
-      <Home className="h-4 w-4" />
-    </Button>
-    {path.map((folder, index) => (
-      <div key={folder.id} className="flex items-center gap-2">
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onNavigate(folder.id)}
-          className={`h-8 px-2 ${
-            index === path.length - 1
-              ? "font-medium text-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          {folder.name}
-        </Button>
-      </div>
-    ))}
-  </div>
-);
+  currentKey: string;
+}) => {
+  const handleClick = (folderPath: string) => {
+    // Normalize paths for comparison
+    const normalizedCurrent = currentKey.endsWith("/") ? currentKey : currentKey + "/";
+    const normalizedTarget = folderPath.endsWith("/") ? folderPath : folderPath + "/";
+    
+    // Don't navigate if we're already at this path
+    if (normalizedCurrent === normalizedTarget) {
+      console.log("Already at this path, not navigating");
+      return;
+    }
+    
+    onNavigate(folderPath);
+  };
+
+  return (
+    <div className="flex items-center gap-2 px-4 py-3 border-b bg-muted/20">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => handleClick("")}
+        className="h-8 px-2"
+        disabled={!currentKey} // Disable if already at root
+      >
+        <Home className="h-4 w-4" />
+      </Button>
+      {path.map((folder, index) => {
+        const isCurrentFolder = index === path.length - 1;
+        const isClickable = !isCurrentFolder; // Don't allow clicking on current folder
+        
+        return (
+          <div key={`${folder.id}-${index}`} className="flex items-center gap-2">
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => isClickable && handleClick(folder.id)}
+              disabled={!isClickable}
+              className={`h-8 px-2 ${
+                isCurrentFolder
+                  ? "font-medium text-foreground cursor-default"
+                  : "text-muted-foreground hover:text-foreground cursor-pointer"
+              }`}
+            >
+              {folder.name}
+            </Button>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 const StaticStoragePage = () => {
   const router = useRouter();
@@ -106,6 +132,7 @@ const StaticStoragePage = () => {
     Array<{ id: string; name: string }>
   >([]);
 
+  // Enhanced breadcrumb path calculation
   useEffect(() => {
     if (!key) {
       setBreadcrumbPath([]);
@@ -118,52 +145,113 @@ const StaticStoragePage = () => {
       return;
     }
 
+    // Remove the first part (usually the root identifier) and build meaningful path
     const meaningfulParts = parts.slice(1);
-    const pathArr = meaningfulParts.map((part, idx) => {
-      const id = parts.slice(0, idx + 2).join("/") + "/";
-      return { id, name: part };
-    });
+    const pathArr = [];
+    
+    for (let i = 0; i < meaningfulParts.length; i++) {
+      const pathUpToHere = parts.slice(0, i + 2).join("/") + "/";
+      pathArr.push({
+        id: pathUpToHere,
+        name: meaningfulParts[i]
+      });
+    }
 
     setBreadcrumbPath(pathArr);
   }, [key]);
 
+  // Smart folder navigation that handles both child and sibling navigation
   const handleFolderClick = (file: any) => {
-    if (file.fileType === "folder") {
-      const newPath = key ? `${key}${file.fileName}/` : `${file.fileName}/`;
-      router.push(`/shared-folder-viewer?key=${encodeURIComponent(newPath)}`);
-    }
-  };
-  //   const handleFolderClick = (file: any) => {
-  //   if (file.fileType === "folder") {
-  //     const cleanKey = key.endsWith("/") ? key.slice(0, -1) : key;
-  //     const keyParts = cleanKey.split("/").filter(Boolean);
-      
-  //     // Check if we're already in this folder by checking the last part of the path
-  //     const lastFolder = keyParts[keyParts.length - 1];
-  //     if (lastFolder === file.fileName) {
-  //       console.log("Already in this folder, not navigating");
-  //       return;
-  //     }
-      
-  //     // Check if this folder already exists in the current path (parent trying to add child that's already in path)
-  //     const folderExistsInPath = keyParts.includes(file.fileName);
-  //     if (folderExistsInPath) {
-  //       console.log("Folder already exists in path, not adding again");
-  //       return;
-  //     }
-      
-  //     // Build the new path
-  //     const newPath = key ? `${key}${file.fileName}/` : `${file.fileName}/`;
-  //     router.push(`/shared-folder-viewer?key=${encodeURIComponent(newPath)}`);
-  //   }
-  // };
+    if (file.fileType !== "folder") return;
 
+    // Clean the current key (remove trailing slash for consistency)
+    const cleanKey = key.endsWith("/") ? key.slice(0, -1) : key;
+    const keyParts = cleanKey.split("/").filter(Boolean);
+    
+    // Get the current folder we're in (last part of the path)
+    const currentFolder = keyParts[keyParts.length - 1];
+    
+    // If we're clicking on the same folder we're already in, don't navigate
+    if (currentFolder === file.fileName) {
+      console.log("Already in this folder, not navigating");
+      return;
+    }
+
+    // Check if this folder already exists somewhere in our current path
+    const folderExistsInPath = keyParts.includes(file.fileName);
+    
+    let newPath;
+    
+    if (folderExistsInPath) {
+      // This folder exists somewhere in our path - navigate to that level
+      // This handles going back to a parent folder
+      const folderIndex = keyParts.indexOf(file.fileName);
+      const pathToFolder = keyParts.slice(0, folderIndex + 1);
+      
+      // Rebuild the full path including the root part
+      if (keyParts.length > 0) {
+        const rootPart = keyParts[0];
+        newPath = [rootPart, ...pathToFolder.slice(1)].join("/") + "/";
+      } else {
+        newPath = pathToFolder.join("/") + "/";
+      }
+    } else {
+      // This is a new folder - determine if it's a child or sibling
+      // Since we're showing current directory contents, we need to determine
+      // if this should replace the current folder (sibling) or be added (child)
+      
+      // For now, we'll assume it's a child navigation (standard file browser behavior)
+      // If you need sibling detection, you'd need additional logic here
+      newPath = key ? `${key}${file.fileName}/` : `${file.fileName}/`;
+    }
+    
+    router.push(`/shared-folder-viewer?key=${encodeURIComponent(newPath)}`);
+  };
+
+  // Enhanced breadcrumb navigation with duplicate prevention
   const handleBreadcrumbNavigate = (folderPath: string) => {
+    // Normalize paths for comparison
+    const normalizedCurrent = key.endsWith("/") ? key : key + "/";
+    const normalizedTarget = folderPath.endsWith("/") ? folderPath : folderPath + "/";
+    
+    // Don't navigate if we're already at this path
+    if (normalizedCurrent === normalizedTarget) {
+      console.log("Already at this path, not navigating");
+      return;
+    }
+
     router.push(
       folderPath
         ? `/shared-folder-viewer?key=${encodeURIComponent(folderPath)}`
         : `/shared-folder-viewer`
     );
+  };
+
+  // Alternative: Explicit sibling navigation (uncomment if needed)
+  const handleSiblingNavigation = (file: any) => {
+    if (file.fileType !== "folder") return;
+
+    const cleanKey = key.endsWith("/") ? key.slice(0, -1) : key;
+    const keyParts = cleanKey.split("/").filter(Boolean);
+    
+    if (keyParts.length === 0) {
+      // At root level - just navigate to the folder
+      const newPath = `${file.fileName}/`;
+      router.push(`/shared-folder-viewer?key=${encodeURIComponent(newPath)}`);
+      return;
+    }
+
+    // For sibling navigation, replace the last folder in the path
+    const parentParts = keyParts.slice(0, -1);
+    let newPath;
+    
+    if (parentParts.length === 0) {
+      newPath = `${file.fileName}/`;
+    } else {
+      newPath = `${parentParts.join("/")}/${file.fileName}/`;
+    }
+    
+    router.push(`/shared-folder-viewer?key=${encodeURIComponent(newPath)}`);
   };
 
   const handleDownloadFolder = async () => {
@@ -207,9 +295,10 @@ const StaticStoragePage = () => {
       </CardHeader>
       <CardContent className="p-0 mt-3">
         <div className="flex flex-col min-h-[600px]">
-          <Breadcrumbs
+          <EnhancedBreadcrumbs
             path={breadcrumbPath}
             onNavigate={handleBreadcrumbNavigate}
+            currentKey={key}
           />
           <Tabs defaultValue="files" className="flex-1 flex flex-col">
             <TabsContent

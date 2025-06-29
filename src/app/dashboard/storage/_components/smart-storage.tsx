@@ -177,12 +177,15 @@ const CloudStorage = () => {
 
   const folderPath = path.map((f) => f.fileName).join("/");
 
-  // console.log({ ">>>>>>>>>>>>": folderPath, path });
+  console.log({ ">>>>>>>>>>>>": folderPath, path });
 
   // console.log(path);
 
-  const selectedType =
-    selectedCategory === "All Files" ? "" : selectedCategory.toLowerCase();
+  const selectedType = (() => {
+    if (selectedCategory === "All Files") return "";
+    if (selectedCategory === "Folders") return "folder"; // Add this line
+    return selectedCategory.toLowerCase();
+  })();
 
   const { data, error, isFetching } = useListFilesQuery({
     userId,
@@ -273,19 +276,17 @@ const CloudStorage = () => {
   //   setSelectedFiles([]);
   // };
 const handleFolderSelection = (file: FileItem) => {
-  // if (file.fileType !== "folder") return;
-  
-  // Add folder to selected files
-  setSelectedFiles((prev) => {
-    if (!prev.includes(file.id)) {
-      return [...prev, file.id];
-    }
-    return prev;
-  });
-  
+  if (file.fileType !== "folder") return;
+
+  // Navigate into folder
   setPath((prev) => [...prev, file]);
   setSelectedFolder(file);
+  setSelectedFiles([]);
+  
+  // This ensures you see all content inside the folder, not just folders
+  // setSelectedCategory("folders");
 };
+
   const handleCloseFolder = () => {
     // remove last folder
     const newPath = path.slice(0, -1);
@@ -293,16 +294,16 @@ const handleFolderSelection = (file: FileItem) => {
     setSelectedFolder(newPath[newPath.length - 1] || null);
     setSelectedFiles([]);
   };
- const handleCloseFolderback = () => {
-  // Clear the entire path to go back to root
-  setPath([]);
-  setSelectedFolder(null);
-  setSelectedFiles([]);
-};
+  const handleCloseFolderback = () => {
+    // Clear the entire path to go back to root
+    setPath([]);
+    setSelectedFolder(null);
+    setSelectedFiles([]);
+  };
 
   const handleCategorySelection = (category: string) => {
     setSelectedCategory(category);
-    handleCloseFolderback();
+    handleCloseFolderback(); // This clears the path and goes to root
     setPage(1);
   };
 
@@ -409,9 +410,8 @@ const handleFolderSelection = (file: FileItem) => {
       }).unwrap();
 
       toast({
-        title: `${fileNames.length} ${
-          fileNames.length === 1 ? "item" : "items"
-        } deleted`,
+        title: `${fileNames.length} ${fileNames.length === 1 ? "item" : "items"
+          } deleted`,
         description: "The selected files and folders have been moved to trash.",
         variant: "destructive",
       });
@@ -444,9 +444,8 @@ const handleFolderSelection = (file: FileItem) => {
 
       toast({
         title: file.starred ? "Unstarred" : "Starred",
-        description: `"${file.fileName}" was ${
-          file.starred ? "removed from" : "added to"
-        } your starred items`,
+        description: `"${file.fileName}" was ${file.starred ? "removed from" : "added to"
+          } your starred items`,
       });
     } catch (err) {
       console.error("Star/unstar error:", err);
@@ -659,9 +658,8 @@ const handleFolderSelection = (file: FileItem) => {
 
         toast({
           title: `Files ${operation === "copy" ? "Copied" : "Moved"}`,
-          description: `${fileIds.length} file(s) ${
-            operation === "copy" ? "copied" : "moved"
-          } successfully`,
+          description: `${fileIds.length} file(s) ${operation === "copy" ? "copied" : "moved"
+            } successfully`,
         });
 
         setSelectedFiles([]);
@@ -722,6 +720,7 @@ const handleFolderSelection = (file: FileItem) => {
           region: "virginia",
           key: file.id,
         });
+
 
         if (downloadData?.downloadUrl) {
           const blobResp = await fetch(downloadData.downloadUrl);
@@ -829,9 +828,8 @@ const handleFolderSelection = (file: FileItem) => {
         </CardHeader>
         <CardContent className="p-0">
           <div
-            className={`flex flex-col md:flex-row min-h-[600px] relative ${
-              isDragging ? "bg-muted/50" : ""
-            }`}
+            className={`flex flex-col md:flex-row min-h-[600px] relative ${isDragging ? "bg-muted/50" : ""
+              }`}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -1030,7 +1028,7 @@ const handleFolderSelection = (file: FileItem) => {
                                     ? "cursor-not-allowed opacity-50 pointer-events-none w-full"
                                     : "w-full"
                                 }
-                                // className={"w-full"}
+                              // className={"w-full"}
                               >
                                 <Share2 className="h-4 w-4 mr-2" />
                                 Share
@@ -1160,11 +1158,10 @@ const handleFolderSelection = (file: FileItem) => {
                                   {(files as FileItem[]).map((file, index) => (
                                     <TableRow
                                       key={file.id}
-                                      className={`hover:bg-muted/50 ${
-                                        dragOverFolderId === file.id
-                                          ? "bg-muted ring-2 ring-primary"
-                                          : ""
-                                      }`}
+                                      className={`hover:bg-muted/50 ${dragOverFolderId === file.id
+                                        ? "bg-muted ring-2 ring-primary"
+                                        : ""
+                                        }`}
                                       draggable={true}
                                       onDragStart={(e) =>
                                         handleItemDragStart(e, file.id)
@@ -1203,13 +1200,14 @@ const handleFolderSelection = (file: FileItem) => {
                                           {...(file.fileType === "folder" && {
                                             title: "Click to open folder",
                                           })}
-                                          className={`flex items-center gap-2 ${
-                                            file.fileType === "folder" &&
-                                            "cursor-pointer"
-                                          }`}
-                                          onClick={() =>
-                                            handleFolderSelection(file)
-                                          }
+                                          className={`flex items-center gap-2 ${file.fileType === "folder" && "cursor-pointer"
+                                            }`}
+                                          onClick={() => {
+                                            // Only navigate if it's a folder and we're not in "Folders" category view
+                                            if (file.fileType === "folder") {
+                                              handleFolderSelection(file);
+                                            }
+                                          }}
                                         >
                                           <div className="h-8 w-8 flex items-center justify-center">
                                             <FileTypeIcon
@@ -1303,7 +1301,7 @@ const handleFolderSelection = (file: FileItem) => {
                                                   }}
                                                 >
                                                   {downloadingFile ===
-                                                  file.fileName ? (
+                                                    file.fileName ? (
                                                     <>
                                                       <Loader2 className="h-4 w-4 mr-2 animate-spin text-primary" />
                                                       Downloading...
@@ -1390,15 +1388,13 @@ const handleFolderSelection = (file: FileItem) => {
                                 {(files as FileItem[]).map((file, index) => (
                                   <div
                                     key={file.id}
-                                    className={`relative group px-4 rounded-lg border border-border hover:bg-muted/50 transition-colors ${
-                                      dragOverFolderId === file.id
-                                        ? "bg-muted ring-2 ring-primary"
-                                        : ""
-                                    } ${
-                                      file.fileType === "folder"
+                                    className={`relative group px-4 rounded-lg border border-border hover:bg-muted/50 transition-colors ${dragOverFolderId === file.id
+                                      ? "bg-muted ring-2 ring-primary"
+                                      : ""
+                                      } ${file.fileType === "folder"
                                         ? "py-3"
                                         : "pt-2 pb-3"
-                                    }`}
+                                      }`}
                                     draggable
                                     onDragStart={(e) =>
                                       handleItemDragStart(e, file.id)
@@ -1420,19 +1416,17 @@ const handleFolderSelection = (file: FileItem) => {
                                     }
                                   >
                                     <div
-                                      className={`${
-                                        file.fileType === "folder"
-                                          ? "h-full flex flex-col justify-between gap-1"
-                                          : "w-full flex items-center gap-1"
-                                      }`}
+                                      className={`${file.fileType === "folder"
+                                        ? "h-full flex flex-col justify-between gap-1"
+                                        : "w-full flex items-center gap-1"
+                                        }`}
                                     >
                                       {/* drag handle + checkbox */}
                                       <div
-                                        className={`flex items-center gap-2 ${
-                                          file.fileType === "folder"
-                                            ? "absolute top-2 left-2"
-                                            : "flex-shrink-0 mr-2"
-                                        }`}
+                                        className={`flex items-center gap-2 ${file.fileType === "folder"
+                                          ? "absolute top-2 left-2"
+                                          : "flex-shrink-0 mr-2"
+                                          }`}
                                       >
                                         <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
                                         <Checkbox
@@ -1450,42 +1444,40 @@ const handleFolderSelection = (file: FileItem) => {
                                         {...(file.fileType === "folder" && {
                                           title: "Click to open folder",
                                         })}
-                                        className={`flex items-center ${
-                                          file.fileType === "folder"
-                                            ? "flex-col cursor-pointer text-center mb-3"
-                                            : "gap-2 flex-1 min-w-0"
-                                        }`}
-                                        onClick={() =>
-                                          file.fileType === "folder" &&
-                                          handleFolderSelection(file)
-                                        }
+                                        className={`flex items-center ${file.fileType === "folder"
+                                          ? "flex-col cursor-pointer text-center mb-3"
+                                          : "gap-2 flex-1 min-w-0"
+                                          }`}
+                                        onClick={() => {
+                                          // Only navigate if it's a folder and we're not in "Folders" category view
+                                          if (file.fileType === "folder") {
+                                            handleFolderSelection(file);
+                                          }
+                                        }}
                                       >
                                         <div
-                                          className={`${
-                                            file.fileType === "folder" && "mb-2"
-                                          }`}
+                                          className={`${file.fileType === "folder" && "mb-2"
+                                            }`}
                                         >
                                           {file.fileType === "folder" &&
-                                          <FileTypeIcon
-                                            index={index}
-                                            fileName={file.fileName}
-                                            fileType={file.fileType }
-                                            size="large"
-                                          />}
+                                            <FileTypeIcon
+                                              index={index}
+                                              fileName={file.fileName}
+                                              fileType={file.fileType}
+                                              size="large"
+                                            />}
                                         </div>
                                         <div
-                                          className={`${
-                                            file.fileType === "folder"
-                                              ? "w-full"
-                                              : "flex-1 min-w-0"
-                                          }`}
+                                          className={`${file.fileType === "folder"
+                                            ? "w-full"
+                                            : "flex-1 min-w-0"
+                                            }`}
                                         >
                                           <div
-                                            className={`font-medium truncate text-sm ${
-                                              file.fileType === "folder"
-                                                ? ""
-                                                : "min-w-0"
-                                            }`}
+                                            className={`font-medium truncate text-sm ${file.fileType === "folder"
+                                              ? ""
+                                              : "min-w-0"
+                                              }`}
                                             title={file.fileName}
                                           >
                                             {file.fileName}
@@ -1513,11 +1505,10 @@ const handleFolderSelection = (file: FileItem) => {
                                       </div>
 
                                       <div
-                                        className={`${
-                                          file.fileType === "folder"
-                                            ? "absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            : ""
-                                        }`}
+                                        className={`${file.fileType === "folder"
+                                          ? "absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                          : ""
+                                          }`}
                                       >
                                         <DropdownMenu>
                                           <DropdownMenuTrigger asChild>
@@ -1707,7 +1698,7 @@ const handleFolderSelection = (file: FileItem) => {
                                 {pagination.total === 0
                                   ? 0
                                   : (pagination.page - 1) * pagination.limit +
-                                    1}{" "}
+                                  1}{" "}
                                 to{" "}
                                 {Math.min(
                                   pagination.page * pagination.limit,
@@ -1954,8 +1945,8 @@ const handleFolderSelection = (file: FileItem) => {
         open={showUploadDialog}
         onOpenChange={setShowUploadDialog}
         folderPath={folderPath}
-        // handleFileUpload={handleFileUpload}
-        // uploadProgress={uploadProgress}
+      // handleFileUpload={handleFileUpload}
+      // uploadProgress={uploadProgress}
       />
 
       {/* Storage Sync Dialog */}
@@ -1974,7 +1965,7 @@ const handleFolderSelection = (file: FileItem) => {
         open={showNewFolderDialog}
         onOpenChange={setShowNewFolderDialog}
         folderPath={folderPath}
-        // onCreate={handleCreateFolder}
+      // onCreate={handleCreateFolder}
       />
     </>
   );
