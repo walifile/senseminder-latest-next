@@ -52,7 +52,6 @@ def lambda_handler(event, context):
                         "body": json.dumps([])
                     }
 
-                # Fetch assigned instances for this member
                 assignment_response = assignment_table.query(
                     KeyConditionExpression=Key("ownerId").eq(owner_id)
                 )
@@ -71,17 +70,12 @@ def lambda_handler(event, context):
 
                 print(f"Member assigned instanceIds: {assigned_instance_ids}")
 
-                # Fetch instance details from SmartPC-UserData using owner_id
                 user_response = user_data_table.query(
                     IndexName="UserIdIndex",
                     KeyConditionExpression=Key("userId").eq(owner_id)
                 )
                 all_instances = user_response.get("Items", [])
-
-                # Filter only those that match assigned_instance_ids
-                instances = [
-                    inst for inst in all_instances if inst["instanceId"] in assigned_instance_ids
-                ]
+                instances = [inst for inst in all_instances if inst["instanceId"] in assigned_instance_ids]
             else:
                 print("Other role detected. Proceeding with original user_id.")
                 instances = []
@@ -89,7 +83,6 @@ def lambda_handler(event, context):
             print("User not found in senseminder-user table.")
             instances = []
 
-        # If instances not already populated (admin or other role)
         if not user_info or role != "member":
             print(f"Fetching instances for userId: {user_id}")
             user_response = user_data_table.query(
@@ -107,24 +100,30 @@ def lambda_handler(event, context):
 
         try:
             ec2_response = ec2.describe_instances(InstanceIds=instance_ids)
+
             for reservation in ec2_response.get("Reservations", []):
                 for ec2_instance in reservation.get("Instances", []):
                     instance_id = ec2_instance["InstanceId"]
                     valid_instance_ids.append(instance_id)
 
                     instance_state = ec2_instance["State"]["Name"]
-                    status_response = ec2.describe_instance_status(InstanceIds=[instance_id])
-                    status_checks = status_response.get("InstanceStatuses", [])
 
-                    is_initialized = any(
-                        "Status" in check and check["Status"] == "ok"
-                        for instance_status in status_checks
-                        for check in [
-                            instance_status.get("SystemStatus", {}),
-                            instance_status.get("InstanceStatus", {})
-                        ]
+                    # Fetch real-time health check status
+                    status_response = ec2.describe_instance_status(
+                        InstanceIds=[instance_id],
+                        IncludeAllInstances=True
                     )
+                    status_checks = status_response.get("InstanceStatuses", [])
+                    is_initialized = False
 
+                    if status_checks:
+                        instance_status = status_checks[0]
+                        sys_status = instance_status.get("SystemStatus", {}).get("Status", "")
+                        inst_status = instance_status.get("InstanceStatus", {}).get("Status", "")
+                        if sys_status == "ok" and inst_status == "ok":
+                            is_initialized = True
+
+                    # Adjust status to match AWS Console behavior
                     if instance_state == "running" and not is_initialized:
                         instance_state = "initializing"
 
@@ -138,7 +137,7 @@ def lambda_handler(event, context):
                         "tags": ec2_instance.get("Tags", []),
                     }
 
-                    # Update instance state in SmartPC-UserData
+                    # Sync state to DynamoDB
                     user_data_table.update_item(
                         Key={"userId": user_id, "instanceId": instance_id},
                         UpdateExpression="SET #st = :s",
@@ -150,10 +149,8 @@ def lambda_handler(event, context):
             print(f"Error describing EC2 instances: {str(e)}")
             return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
 
-        # Filter and enrich instances
         filtered_instances = [inst for inst in instances if inst["instanceId"] in valid_instance_ids]
 
-        # Attach schedules
         for inst in filtered_instances:
             schedule_response = schedule_table.query(
                 KeyConditionExpression=Key("instanceId").eq(inst["instanceId"])
