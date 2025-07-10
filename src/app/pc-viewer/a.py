@@ -626,6 +626,20 @@ def create_instance(config_id, system_name, region, user_id, storage_size_input)
                 "statusCode": 403,
                 "body": json.dumps({"message": "Quota exceeded. Please request an increase to create more SmartPCs."})
             }
+        # Check if the same system name exists for this user
+        user_pc_data_table = dynamodb.Table(DYNAMODB_USER_PC_DATA_TABLE)
+        response = user_pc_data_table.scan(
+            FilterExpression=Key("userId").eq(user_id)
+        )
+        existing = response.get("Items", [])
+        for item in existing:
+            if item.get("systemName", "").lower() == system_name.lower():
+                return {
+                    "statusCode": 400,
+                    "body": json.dumps({
+                        "message": f"You already have a SmartPC named '{system_name}'. Please choose a different name."
+                    })
+                }
 
         # Get the least-used subnet
         subnet_id, current_count = get_least_used_subnet(region)
@@ -1292,6 +1306,22 @@ def update_resource_tracking_status(resource_id, status, resource_type):
         print(f"Error updating resource tracking status for resourceId {resource_id}: {e}")
         raise
 
+def is_system_name_unique_for_user(system_name, user_id):
+    """
+    Checks if the given systemName already exists for the given userId in SmartPC-UserData.
+    Returns True if unique, False if already used.
+    """
+    try:
+        table = dynamodb.Table(DYNAMODB_USER_PC_DATA_TABLE)
+        response = table.query(
+            IndexName="userId-systemName-index",  # assumes GSI on (userId, systemName)
+            KeyConditionExpression=Key("userId").eq(user_id) & Key("systemName").eq(system_name)
+        )
+        items = response.get("Items", [])
+        return len(items) == 0
+    except Exception as e:
+        print(f"[ERROR] Uniqueness check failed for userId={user_id}, systemName='{system_name}': {e}")
+        raise
 
 
 
