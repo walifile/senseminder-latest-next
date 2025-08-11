@@ -1,5 +1,6 @@
-'use client';
+"use client";
 import { X } from "lucide-react";
+import { sanitizeFilename } from "@/lib/utils/index";
 
 interface Props {
   files: File[];
@@ -7,9 +8,11 @@ interface Props {
   onRemove: (index: number) => void;
 }
 
-export default function AttachmentUploader({ files, onUpload, onRemove }: Props) {
-  const sanitize = (filename: string) => filename.replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 50);
-
+export default function AttachmentUploader({
+  files,
+  onUpload,
+  onRemove,
+}: Props) {
   return (
     <div>
       <label className="text-sm font-medium mb-1 block">
@@ -36,7 +39,7 @@ export default function AttachmentUploader({ files, onUpload, onRemove }: Props)
             className="flex items-center gap-1 text-sm border p-1 rounded"
           >
             <span className="truncate max-w-[120px]">
-              {sanitize(file.name)}
+              {sanitizeFilename(file.name)}
             </span>
             <button type="button" onClick={() => onRemove(idx)}>
               <X className="h-4 w-4 text-red-500" />

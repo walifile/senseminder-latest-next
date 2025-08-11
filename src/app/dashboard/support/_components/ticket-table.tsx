@@ -1,4 +1,3 @@
-
 // 'use client';
 
 // import { useState, useMemo } from 'react';
@@ -140,24 +139,28 @@
 //   );
 // }
 
-'use client';
-import { format } from 'date-fns';
+"use client";
+import { format } from "date-fns";
 
-import { useState, useMemo } from 'react';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, ArrowDownUp, ArrowDown, ArrowUp } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-
-interface Ticket {
-  ticketId: string;
-  subject: string;
-  status: string;
-  priority: string;
-  createdAt: string;
-  lastUpdated?: string;
-}
+import { useState, useMemo } from "react";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Search, ArrowDown, ArrowUp } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { Ticket } from "../types";
 
 interface Props {
   tickets: Ticket[];
@@ -165,40 +168,41 @@ interface Props {
 }
 
 export default function TicketTable({ tickets, onClick }: Props) {
-  const [query, setQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('any');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("any");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const toggleSort = () => {
-    setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
   };
 
   const filtered = useMemo(() => {
     const sorted = [...tickets].sort((a, b) => {
       const dateA = new Date(a.createdAt).getTime();
       const dateB = new Date(b.createdAt).getTime();
-      return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+      return sortDirection === "asc" ? dateA - dateB : dateB - dateA;
     });
 
     return sorted.filter((t) => {
       const matchQuery =
         t.subject.toLowerCase().includes(query.toLowerCase()) ||
         t.ticketId.toLowerCase().includes(query.toLowerCase());
-      const matchStatus = statusFilter === 'any' || t.status.toLowerCase() === statusFilter;
+      const matchStatus =
+        statusFilter === "any" || t.status.toLowerCase() === statusFilter;
       return matchQuery && matchStatus;
     });
   }, [tickets, query, statusFilter, sortDirection]);
 
   const getStatusBadgeClass = (status: string) => {
-    const base = 'px-2 py-0.5 text-xs rounded-full font-medium';
+    const base = "px-2 py-0.5 text-xs rounded-full font-medium";
     switch (status.toLowerCase()) {
-      case 'resolved':
+      case "resolved":
         return `${base} bg-yellow-100 text-yellow-800`;
-      case 'closed':
+      case "closed":
         return `${base} bg-gray-200 text-gray-700`;
-      case 'open':
+      case "open":
         return `${base} bg-green-100 text-green-700`;
-      case 'in-progress':
+      case "in-progress":
         return `${base} bg-blue-100 text-blue-700`;
       default:
         return `${base} bg-muted text-muted-foreground`;
@@ -206,7 +210,7 @@ export default function TicketTable({ tickets, onClick }: Props) {
   };
 
   const SortIcon = () =>
-    sortDirection === 'asc' ? (
+    sortDirection === "asc" ? (
       <ArrowUp className="inline h-4 w-4 ml-1" />
     ) : (
       <ArrowDown className="inline h-4 w-4 ml-1" />
@@ -252,7 +256,10 @@ export default function TicketTable({ tickets, onClick }: Props) {
       <CardContent>
         <div className="rounded-md border">
           <div className="grid grid-cols-4 md:grid-cols-6 p-4 font-medium border-b bg-muted/50 text-sm text-muted-foreground">
-            <div className="col-span-1 flex items-center cursor-pointer" onClick={toggleSort}>
+            <div
+              className="col-span-1 flex items-center cursor-pointer"
+              onClick={toggleSort}
+            >
               Created <SortIcon />
             </div>
             <div className="col-span-1">ID</div>
@@ -268,25 +275,29 @@ export default function TicketTable({ tickets, onClick }: Props) {
                 onClick={() => onClick(ticket.ticketId)}
                 className="grid grid-cols-4 md:grid-cols-6 p-4 cursor-pointer hover:bg-muted/50 text-sm"
               >
-                <div>
-                  {format(new Date(ticket.createdAt), 'dd/MM/yyyy')}
-                </div>
+                <div>{format(new Date(ticket.createdAt), "dd/MM/yyyy")}</div>
                 <div className="text-muted-foreground">#{ticket.ticketId}</div>
                 <div className="col-span-2 truncate">{ticket.subject}</div>
                 <div className="hidden md:block">
-                  {formatDistanceToNow(new Date(ticket.lastUpdated || ticket.createdAt), {
-                    addSuffix: true,
-                  })}
+                  {formatDistanceToNow(
+                    new Date(ticket.lastUpdated || ticket.createdAt),
+                    {
+                      addSuffix: true,
+                    }
+                  )}
                 </div>
                 <div className="hidden md:block">
                   <span className={getStatusBadgeClass(ticket.status)}>
-                    {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
+                    {ticket.status.charAt(0).toUpperCase() +
+                      ticket.status.slice(1)}
                   </span>
                 </div>
               </div>
             ))
           ) : (
-            <div className="p-6 text-center text-muted-foreground">No tickets found.</div>
+            <div className="p-6 text-center text-muted-foreground">
+              No tickets found.
+            </div>
           )}
         </div>
       </CardContent>

@@ -1,5 +1,3 @@
-
-
 // "use client";
 
 // import React, { useEffect, useRef, useState } from "react";
@@ -305,6 +303,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { fetchWithUserId } from "@/lib/fetchWithUserId";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
+import { Message } from "../types";
+import { sanitizeFilename } from "@/lib/utils/index";
 
 interface Props {
   ticketId: string;
@@ -313,22 +313,6 @@ interface Props {
   ticketStatus: string;
   senderType?: "customer" | "agent";
   onReplySent?: () => void;
-}
-
-export interface Message {
-  messageId: string;
-  senderId: string;
-  senderType: string;
-  senderName?: string;
-  type: string;
-  content: string;
-  timestamp: string;
-  attachments?: {
-    name: string;
-    size: string;
-    type: string;
-    fileKey: string;
-  }[];
 }
 
 const API_BASE = "https://lvir6hp7hb.execute-api.us-east-1.amazonaws.com/dev";
@@ -351,36 +335,49 @@ const TicketConversation: React.FC<Props> = ({
   const [attachments, setAttachments] = useState<File[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const sanitizeFileName = (name: string) =>
-    name.replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 50);
-
   const uploadAttachment = async (file: File) => {
-    const sanitized = sanitizeFileName(file.name);
-    const meta = { fileName: sanitized, fileType: file.type, fileSize: file.size };
-    const res = await fetchWithUserId(`${API_BASE}/ticket/${ticketId}/presign-upload`, {
-      method: "POST",
-      userId,
-      body: meta,
-    });
-    const { uploadUrl, fileKey } = await res.json();
-    await fetch(uploadUrl, {
-      method: "PUT",
-      headers: { "Content-Type": file.type },
-      body: file,
-    });
-    return {
-      name: sanitized,
-      size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
-      type: file.type,
-      fileKey,
-    };
+    if (!userId) return null;
+    try {
+      const sanitized = sanitizeFilename(file.name);
+      const meta = {
+        fileName: sanitized,
+        fileType: file.type,
+        fileSize: file.size,
+      };
+      const res = await fetchWithUserId(
+        `${API_BASE}/ticket/${ticketId}/presign-upload`,
+        {
+          method: "POST",
+          userId,
+          body: meta,
+        }
+      );
+      const { uploadUrl, fileKey } = await res.json();
+      await fetch(uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      return {
+        name: sanitized,
+        size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
+        type: file.type,
+        fileKey,
+      };
+    } catch (err) {
+      toast({ title: `Upload failed for ${file.name}` });
+      return null;
+    }
   };
 
   const fetchMessages = async () => {
-    const res = await fetchWithUserId(`${API_BASE}/ticket/${ticketId}/messages`, {
-      method: "GET",
-      userId,
-    });
+    const res = await fetchWithUserId(
+      `${API_BASE}/ticket/${ticketId}/messages`,
+      {
+        method: "GET",
+        userId,
+      }
+    );
     const data = await res.json();
     setMessages(data);
   };
@@ -448,7 +445,10 @@ const TicketConversation: React.FC<Props> = ({
   }, [ticketId, userId]);
 
   useEffect(() => {
-    containerRef.current?.scrollTo({ top: containerRef.current.scrollHeight, behavior: "smooth" });
+    containerRef.current?.scrollTo({
+      top: containerRef.current.scrollHeight,
+      behavior: "smooth",
+    });
   }, [messages]);
 
   const formatDateLabel = (dateStr: string) => {
@@ -462,9 +462,11 @@ const TicketConversation: React.FC<Props> = ({
 
   return (
     <div className="space-y-6 w-full">
-        
       {/* Message Thread */}
-      <div ref={containerRef} className="space-y-4 max-h-[500px] overflow-y-auto">
+      <div
+        ref={containerRef}
+        className="space-y-4 max-h-[500px] overflow-y-auto"
+      >
         {messages.map((msg) => {
           const msgDate = msg.timestamp.split("T")[0];
           const localDate = new Date(msg.timestamp);
@@ -486,31 +488,42 @@ const TicketConversation: React.FC<Props> = ({
               > */}
               <div
                 className={`flex items-start gap-3 p-4 rounded border shadow-sm w-full ${
-                    msg.senderType === "agent"
+                  msg.senderType === "agent"
                     ? "bg-muted/50"
                     : "bg-white text-black dark:bg-[#0f1e1b]/50 dark:text-white dark:backdrop-blur-sm dark:ring-1 dark:ring-white/10"
                 }`}
-                >
+              >
                 <Avatar className="h-9 w-9 bg-muted">
-                  <AvatarFallback>{msg.senderName?.slice(0, 2).toUpperCase()}</AvatarFallback>
+                  <AvatarFallback>
+                    {msg.senderName?.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <div className="flex justify-between">
-                    <div className="font-semibold">{msg.senderName || "Me"}</div>
-                    <div className="text-sm text-muted-foreground">{formattedTime}</div>
+                    <div className="font-semibold">
+                      {msg.senderName || "Me"}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {formattedTime}
+                    </div>
                   </div>
-                  <div className="mt-1 text-base whitespace-pre-wrap">{msg.content}</div>
-                  {Array.isArray(msg.attachments) && msg.attachments.length > 0 && (
-                    <div className="mt-2 space-y-1">
+                  <div className="mt-1 text-base whitespace-pre-wrap">
+                    {msg.content}
+                  </div>
+                  {Array.isArray(msg.attachments) &&
+                    msg.attachments.length > 0 && (
+                      <div className="mt-2 space-y-1">
                         {msg.attachments.map((file, i) => (
-                        <div key={i} className="flex items-center gap-2 text-sm">
+                          <div
+                            key={i}
+                            className="flex items-center gap-2 text-sm"
+                          >
                             <FileText className="h-4 w-4" />
                             <span>{file.name}</span>
-                        </div>
+                          </div>
                         ))}
-                    </div>
+                      </div>
                     )}
-
                 </div>
               </div>
             </React.Fragment>
@@ -521,7 +534,8 @@ const TicketConversation: React.FC<Props> = ({
       {/* Reply Form */}
       {isClosed ? (
         <div className="bg-muted p-4 rounded-md text-sm text-muted-foreground border">
-          This ticket is closed. If you need further assistance, please open a new ticket.
+          This ticket is closed. If you need further assistance, please open a
+          new ticket.
         </div>
       ) : (
         <Card>
@@ -532,7 +546,8 @@ const TicketConversation: React.FC<Props> = ({
             <form onSubmit={handleReplySubmit} className="space-y-4">
               {ticketStatus === "resolved" && (
                 <div className="bg-yellow-100 text-yellow-800 text-sm p-3 rounded">
-                  This ticket has been marked as resolved. Your reply will reopen it.
+                  This ticket has been marked as resolved. Your reply will
+                  reopen it.
                 </div>
               )}
 

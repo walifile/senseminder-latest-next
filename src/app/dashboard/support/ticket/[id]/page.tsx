@@ -1,21 +1,12 @@
-
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  ChevronLeft,
-  CheckCircle2,
-} from "lucide-react";
+import { ChevronLeft, CheckCircle2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -25,21 +16,9 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { fetchWithUserId } from "@/lib/fetchWithUserId";
-import TicketConversation from "../../_components/TicketConversation";
+import TicketConversation from "../../_components/ticket-conversation";
 import { format } from "date-fns";
-
-interface Ticket {
-  ticketId: string;
-  subject: string;
-  description: string;
-  status: string;
-  category: string;
-  priority: string;
-  createdAt: string;
-  email: string;
-  role?: string;
-  attachments?: any[];
-}
+import { Ticket } from "../../types";
 
 const getStatusBadgeClass = (status: string) => {
   const base = "px-2 py-0.5 text-xs rounded-full font-medium";
@@ -142,7 +121,6 @@ const TicketDetailPage = () => {
         </div>
       </div>
 
-
       {/* Description */}
       <div className="bg-muted/50 p-4 border text-sm text-muted-foreground rounded-md whitespace-pre-line">
         {ticket.description}
@@ -164,7 +142,6 @@ const TicketDetailPage = () => {
 
         {/* Right: Ticket Info */}
         <div className="w-full space-y-6">
-
           <Card>
             <CardHeader>
               <CardTitle>Ticket Info</CardTitle>
@@ -224,7 +201,6 @@ const TicketDetailPage = () => {
               )}
             </CardContent>
           </Card>
-          
         </div>
       </div>
     </div>
