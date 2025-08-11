@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Select,
@@ -54,6 +54,7 @@ const CostCalculator = () => {
     useGetEstimateMutation();
 
   const {
+    setValue,
     control,
     handleSubmit,
     formState: { errors },
@@ -118,6 +119,10 @@ const CostCalculator = () => {
   const cpuOptionsForOS = isLinuxOS
     ? linuxCategoryCpuOptions
     : cpuOptions[selectedOS] || [];
+
+  useEffect(() => {
+    setValue("cpu", "");
+  }, [selectedOS, selectedLinuxCategory, setValue]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
