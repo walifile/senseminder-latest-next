@@ -19,6 +19,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
+  cpuCategories,
   cpuOptions,
   locationOptions,
   osOptions,
@@ -64,6 +65,7 @@ const CostCalculator = () => {
       cpu: "",
       storage: "",
       region: "",
+      linuxCategory: "Ubuntu_24.04_LTS_X64",
     },
   });
 
@@ -105,6 +107,17 @@ const CostCalculator = () => {
       console.error("Error fetching estimate:", err);
     }
   };
+
+  const selectedOS = watch("operatingSystem");
+  const selectedLinuxCategory = watch("linuxCategory");
+
+  const isLinuxOS = selectedOS === "Linux";
+  const linuxCategoryCpuOptions =
+    cpuCategories.Linux[`${selectedLinuxCategory}`] || [];
+
+  const cpuOptionsForOS = isLinuxOS
+    ? linuxCategoryCpuOptions
+    : cpuOptions[selectedOS] || [];
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -197,7 +210,9 @@ const CostCalculator = () => {
                       className="min-w-[220px] flex-shrink-0 rounded-xl border border-border bg-white/80 dark:bg-background/50 backdrop-blur-md p-4 shadow-sm hover:shadow-md transition"
                     >
                       <div>
-                        <h4 className={`text-sm font-semibold flex items-center gap-1 mb-1 ${plan.color}`}>
+                        <h4
+                          className={`text-sm font-semibold flex items-center gap-1 mb-1 ${plan.color}`}
+                        >
                           {plan.emoji} {plan.label}
                           {plan.tag && (
                             <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full ml-1">
@@ -293,14 +308,69 @@ const CostCalculator = () => {
                     }}
                   />
 
+                  {/* Linux Category */}
+                  {isLinuxOS && (
+                    <Controller
+                      control={control}
+                      name="linuxCategory"
+                      render={({ field }) => {
+                        return (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <label className="text-sm font-medium block">
+                                  Category
+                                </label>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  Select Linux category
+                                </p>
+                              </div>
+
+                              {field.value && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <Info className="h-4 w-4 text-muted-foreground" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="font-medium">
+                                        {field.value}
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                            </div>
+
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              disabled={!selectedOS}
+                            >
+                              <SelectTrigger className="h-11">
+                                <SelectValue placeholder="Select Linux Category" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Object.keys(cpuCategories.Linux).map(
+                                  (category) => (
+                                    <SelectItem key={category} value={category}>
+                                      {category}
+                                    </SelectItem>
+                                  )
+                                )}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        );
+                      }}
+                    />
+                  )}
+
                   {/* CPU */}
                   <Controller
                     control={control}
                     name="cpu"
                     render={({ field }) => {
-                      const selectedOS = watch("operatingSystem");
-                      const availableCPUs = cpuOptions[selectedOS] ?? [];
-
                       return (
                         <div className="space-y-4">
                           <div className="flex items-center justify-between">
@@ -342,7 +412,7 @@ const CostCalculator = () => {
                               />
                             </SelectTrigger>
                             <SelectContent>
-                              {availableCPUs.map((cpu) => (
+                              {cpuOptionsForOS.map((cpu) => (
                                 <SelectItem key={cpu.value} value={cpu.value}>
                                   {cpu.label}
                                 </SelectItem>

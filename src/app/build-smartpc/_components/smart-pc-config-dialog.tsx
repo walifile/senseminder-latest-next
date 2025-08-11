@@ -43,7 +43,6 @@
 // import { useRouter } from "next/navigation";
 // import { useState } from "react"; // If not already imported
 
-
 // const SmartPCConfigDialog = ({
 //   showNewPCDialog,
 //   setShowNewPCDialog,
@@ -84,18 +83,18 @@
 //       region: config.region || locationOptions[0].value,
 //       billingPlan: "hourly",
 //     },
-//   });  
+//   });
 
 //   const selectedOS = useWatch({ control, name: "operatingSystem" });
 //   const cpuOptionsForOS = cpuOptions[selectedOS] || [];
 //   useEffect(() => {
 //     const currentCpu = getValues("cpu");
 //     const defaultCpu = cpuOptions[selectedOS]?.[0]?.value;
-  
+
 //     if (!currentCpu && defaultCpu) {
 //       setValue("cpu", defaultCpu);
 //     }
-//   }, [selectedOS, cpuOptions, getValues, setValue]);  
+//   }, [selectedOS, cpuOptions, getValues, setValue]);
 
 //   const billingPlan = useWatch({ control, name: "billingPlan" });
 // const cpu = useWatch({ control, name: "cpu" });
@@ -206,7 +205,7 @@
 
 //   const onSubmit = async (data: FormValues) => {
 //     if (!deleteConfirmed) return;
-  
+
 //     try {
 //         const paymentCheck = await getPaymentMethods();
 //         const hasCard = paymentCheck.paymentMethods?.length > 0;
@@ -224,19 +223,19 @@
 //         storageSize: parseInt(data.storage, 10),
 //         billingPlan: data.billingPlan,
 //       }).unwrap();
-  
+
 //       while (true) {
 //         const fetchResult = await refetchRemoteDesktops();
 //         if (fetchResult.status === "fulfilled") break;
 //         await new Promise((res) => setTimeout(res, 2000));
 //       }
-  
+
 //       toast({
 //         title: "Sense PC Created",
 //         description: `${data.pcName} has been successfully created.`,
 //         variant: "default",
 //       });
-  
+
 //       reset();
 //       setShowNewPCDialog(false);
 //       setShowConfirmation(false);   // ✅ Always hide modal
@@ -247,23 +246,23 @@
 //       const errorMsg =
 //         errorData?.message ??
 //         "Something went wrong. Please try again or contact support.";
-  
+
 //       const requiredMin = errorData?.requiredMinimum;
 //       const description = requiredMin
 //         ? `${errorMsg} Minimum required: $${parseFloat(requiredMin).toFixed(2)}`
 //         : errorMsg;
-  
+
 //       toast({
 //         title: "Failed to Create Computer",
 //         description,
 //         variant: "destructive",
 //       });
-  
+
 //       setShowConfirmation(false);  // ✅ Hide on error
 //       setDeleteConfirmed(false);   // ✅ Reset checkbox
 //       return false;
 //     }
-//   };   
+//   };
 
 //   return (
 //     <Dialog
@@ -590,15 +589,12 @@
 //   </DialogContent>
 // </Dialog>
 
-  
 //   </>
-    
+
 //   );
 // };
 
 // export default SmartPCConfigDialog;
-
-
 
 import React, { useEffect, useState } from "react";
 import { useForm, Controller, useWatch } from "react-hook-form";
@@ -627,6 +623,7 @@ import {
 } from "@/components/ui/select";
 import { formSchema, FormValues } from "../schema";
 import {
+  cpuCategories,
   cpuOptions,
   locationOptions,
   osOptions,
@@ -677,69 +674,80 @@ const SmartPCConfigDialog = ({
       storage: config.storage || storageOptions[0].value,
       region: config.region || locationOptions[0].value,
       billingPlan: "hourly",
+      linuxCategory: "Ubuntu_24.04_LTS_X64",
     },
-  });  
+  });
 
   const selectedOS = useWatch({ control, name: "operatingSystem" });
-  const cpuOptionsForOS = cpuOptions[selectedOS] || [];
+  const isLinuxOS = selectedOS === "Linux";
+  const selectedLinuxCategory = useWatch({ control, name: "linuxCategory" });
+  const linuxCategoryCpuOptions =
+    cpuCategories.Linux[`${selectedLinuxCategory}`] || [];
+
+  const cpuOptionsForOS = isLinuxOS
+    ? linuxCategoryCpuOptions
+    : cpuOptions[selectedOS] || [];
+
   useEffect(() => {
     const currentCpu = getValues("cpu");
     const defaultCpu = cpuOptions[selectedOS]?.[0]?.value;
-  
+
     if (!currentCpu && defaultCpu) {
       setValue("cpu", defaultCpu);
     }
-  }, [selectedOS, cpuOptions, getValues, setValue]);  
+  }, [selectedOS, cpuOptions, getValues, setValue]);
 
   const billingPlan = useWatch({ control, name: "billingPlan" });
-const cpu = useWatch({ control, name: "cpu" });
-const region = useWatch({ control, name: "region" });
-const storage = useWatch({ control, name: "storage" });
-const [showConfirmation, setShowConfirmation] = useState(false);
-const [deleteConfirmed, setDeleteConfirmed] = useState(false);
-const [confirmationAccepted, setConfirmationAccepted] = useState(false);
+  const cpu = useWatch({ control, name: "cpu" });
+  const region = useWatch({ control, name: "region" });
+  const storage = useWatch({ control, name: "storage" });
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [deleteConfirmed, setDeleteConfirmed] = useState(false);
+  const [confirmationAccepted, setConfirmationAccepted] = useState(false);
 
-const getFormattedTotalPrice = () => {
-  if (isLoading || !data?.total) return "...";
+  const getFormattedTotalPrice = () => {
+    if (isLoading || !data?.total) return "...";
 
-  const price =
-    billingPlan === "hourly"
-      ? data.total.pricePerHour?.toFixed(3)
-      : billingPlan === "daily"
-      ? data.total.pricePerDay?.toFixed(2)
-      : data.total.pricePerMonth?.toFixed(2);
+    const price =
+      billingPlan === "hourly"
+        ? data.total.pricePerHour?.toFixed(3)
+        : billingPlan === "daily"
+        ? data.total.pricePerDay?.toFixed(2)
+        : data.total.pricePerMonth?.toFixed(2);
 
-  const suffix =
-    billingPlan === "hourly"
-      ? "/hour"
-      : billingPlan === "daily"
-      ? "/day"
-      : "/month";
+    const suffix =
+      billingPlan === "hourly"
+        ? "/hour"
+        : billingPlan === "daily"
+        ? "/day"
+        : "/month";
 
-  return `$${price} ${suffix}`;
-};
+    return `$${price} ${suffix}`;
+  };
 
-useEffect(() => {
-  if (!cpu || !storage || !region) return;
+  useEffect(() => {
+    if (!cpu || !storage || !region) return;
 
-  const timeout = setTimeout(() => {
-    getEstimate({
-      configId: cpu,
-      storageSize: storage,
-      region,
-    }).unwrap().catch((err) => {
-      console.error("Auto estimate error:", err);
-    });
-  }, 300); // Debounce slightly to avoid rapid re-renders
+    const timeout = setTimeout(() => {
+      getEstimate({
+        configId: cpu,
+        storageSize: storage,
+        region,
+      })
+        .unwrap()
+        .catch((err) => {
+          console.error("Auto estimate error:", err);
+        });
+    }, 300); // Debounce slightly to avoid rapid re-renders
 
-  return () => clearTimeout(timeout);
-}, [cpu, storage, region, billingPlan]);
+    return () => clearTimeout(timeout);
+  }, [cpu, storage, region, billingPlan]);
 
-// useEffect(() => {
-//   if (data) {
-//     console.log("🧪 Estimate API response:", data);
-//   }
-// }, [data]);
+  // useEffect(() => {
+  //   if (data) {
+  //     console.log("🧪 Estimate API response:", data);
+  //   }
+  // }, [data]);
 
   // useEffect(() => {
   //   if (cpuOptionsForOS.length > 0) {
@@ -800,7 +808,7 @@ useEffect(() => {
 
   const onSubmit = async (data: FormValues) => {
     if (!deleteConfirmed) return;
-  
+
     try {
       await createVM({
         action: "create",
@@ -810,46 +818,46 @@ useEffect(() => {
         storageSize: parseInt(data.storage, 10),
         billingPlan: data.billingPlan,
       }).unwrap();
-  
+
       while (true) {
         const fetchResult = await refetchRemoteDesktops();
         if (fetchResult.status === "fulfilled") break;
         await new Promise((res) => setTimeout(res, 2000));
       }
-  
+
       toast({
         title: "Sense PC Created",
         description: `${data.pcName} has been successfully created.`,
         variant: "default",
       });
-  
+
       reset();
       setShowNewPCDialog(false);
-      setShowConfirmation(false);   // ✅ Always hide modal
-      setDeleteConfirmed(false);    // ✅ Reset checkbox
+      setShowConfirmation(false); // ✅ Always hide modal
+      setDeleteConfirmed(false); // ✅ Reset checkbox
       return true;
     } catch (err) {
       const errorData = (err as { data?: any })?.data;
       const errorMsg =
         errorData?.message ??
         "Something went wrong. Please try again or contact support.";
-  
+
       const requiredMin = errorData?.requiredMinimum;
       const description = requiredMin
         ? `${errorMsg} Minimum required: $${parseFloat(requiredMin).toFixed(2)}`
         : errorMsg;
-  
+
       toast({
         title: "Failed to Create Computer",
         description,
         variant: "destructive",
       });
-  
-      setShowConfirmation(false);  // ✅ Hide on error
-      setDeleteConfirmed(false);   // ✅ Reset checkbox
+
+      setShowConfirmation(false); // ✅ Hide on error
+      setDeleteConfirmed(false); // ✅ Reset checkbox
       return false;
     }
-  };   
+  };
 
   return (
     <Dialog
@@ -909,7 +917,8 @@ useEffect(() => {
                 required: "Computer name is required",
                 pattern: {
                   value: /^[a-zA-Z0-9-_ ]{1,30}$/,
-                  message: "Only letters, numbers, spaces, dash and underscore allowed (max 30)",
+                  message:
+                    "Only letters, numbers, spaces, dash and underscore allowed (max 30)",
                 },
               }}
               render={({ field }) => (
@@ -932,6 +941,33 @@ useEffect(() => {
 
           <div className="space-y-4">
             <h3 className="text-sm font-medium">Select Configuration</h3>
+
+            {isLinuxOS && (
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <Controller
+                  control={control}
+                  name="linuxCategory"
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Linux category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.keys(cpuCategories.Linux).map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.cpu && (
+                  <p className="text-red-500 text-sm">{errors.cpu.message}</p>
+                )}
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label>CPU (Core)</Label>
@@ -1028,7 +1064,9 @@ useEffect(() => {
             />
           </div>
           <div className="rounded-md px-4 py-3 mt-2 bg-blue-50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-400">
-            <p className="text-sm font-semibold mb-2">Estimated Cost Breakdown:</p>
+            <p className="text-sm font-semibold mb-2">
+              Estimated Cost Breakdown:
+            </p>
 
             <div className="space-y-1 text-sm">
               <div>
@@ -1100,7 +1138,8 @@ useEffect(() => {
           <DialogHeader>
             <DialogTitle>Confirm Your Purchase</DialogTitle>
             <DialogDescription>
-              You are about to be charged upfront for this Computer based on your selected plan.
+              You are about to be charged upfront for this Computer based on
+              your selected plan.
               <br />
               <span className="mt-2 inline-block text-sm font-semibold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded-md">
                 Estimated total: {getFormattedTotalPrice()}
@@ -1125,7 +1164,10 @@ useEffect(() => {
           </div>
 
           <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setShowConfirmation(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmation(false)}
+            >
               Cancel
             </Button>
             <Button

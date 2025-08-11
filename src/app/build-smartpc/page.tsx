@@ -41,7 +41,13 @@ import { useCreateVMMutation } from "@/api/vmManagement";
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
 import { formSchema, FormValues } from "./schema";
-import { cpuOptions, locationOptions, osOptions, storageOptions } from "./data";
+import {
+  cpuCategories,
+  cpuOptions,
+  locationOptions,
+  osOptions,
+  storageOptions,
+} from "./data";
 
 export default function BuildSmartPCPage() {
   const router = useRouter();
@@ -65,7 +71,7 @@ export default function BuildSmartPCPage() {
       storage: storageOptions[0].value,
       region: locationOptions[0].value,
       billingPlan: "hourly",
-
+      linuxCategory: "Ubuntu_24.04_LTS_X64",
     },
   });
 
@@ -76,10 +82,29 @@ export default function BuildSmartPCPage() {
     control: form.control,
     name: "operatingSystem",
   });
+  const selectedLinuxCategory = useWatch({
+    control: form.control,
+    name: "linuxCategory",
+  });
+
+  const isLinuxOS = selectedOS === "Linux";
+  const linuxCategoryCpuOptions =
+    cpuCategories.Linux[`${selectedLinuxCategory}`] || [];
+
+  const cpuOptionsForOS = isLinuxOS
+    ? linuxCategoryCpuOptions
+    : cpuOptions[selectedOS] || [];
+
+  useEffect(() => {
+    if (isLinuxOS && selectedLinuxCategory) {
+      form.setValue("cpu", linuxCategoryCpuOptions[0].value);
+    }
+  }, [isLinuxOS, selectedLinuxCategory, linuxCategoryCpuOptions, form]);
 
   useEffect(() => {
     if (cpuOptions[selectedOS] && cpuOptions[selectedOS].length > 0) {
       form.setValue("cpu", cpuOptions[selectedOS][0].value);
+      form.setValue("linuxCategory", "Ubuntu_24.04_LTS_X64");
     }
   }, [selectedOS, form]);
 
@@ -157,8 +182,6 @@ export default function BuildSmartPCPage() {
       });
     }
   };
-
-  const cpuOptionsForOS = cpuOptions[selectedOS] || [];
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0A0A1B]">
@@ -256,6 +279,41 @@ export default function BuildSmartPCPage() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                      {isLinuxOS && (
+                        <FormField
+                          control={form.control}
+                          name="linuxCategory"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Category</FormLabel>
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {Object.keys(cpuCategories.Linux).map(
+                                    (category) => (
+                                      <SelectItem
+                                        key={category}
+                                        value={category}
+                                      >
+                                        {category}
+                                      </SelectItem>
+                                    )
+                                  )}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+
                       <FormField
                         control={form.control}
                         name="cpu"

@@ -18,6 +18,7 @@ export const formSchema = baseFormSchema.extend({
       "PC name can only contain letters, numbers, dash (-), underscore (_), and no spaces or consecutive special characters"
     ),
   billingPlan: z.string().min(1, "Billing plan is required"),
+  linuxCategory: z.string().optional(),
 });
 
 export type FormValues = z.infer<typeof formSchema>;

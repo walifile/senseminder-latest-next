@@ -6,6 +6,87 @@ export const osOptions: Option[] = [
   { value: "Linux", label: "Linux" },
 ];
 
+export const cpuCategories: Record<string, Record<string, Option[]>> = {
+  Linux: {
+    "Ubuntu_24.04_LTS_X64": [
+      {
+        value: "Ubuntu_24.04_LTS_X64_Token_Test",
+        label: "Token_Test",
+      },
+      {
+        value: "Ubuntu_24.04_LTS_X64_2core_4gbRam",
+        label: "2core_4gbRam",
+      },
+      {
+        value: "Ubuntu_24.04_LTS_X64_4core_8gbRam",
+        label: "4core_8gbRam",
+      },
+      {
+        value: "Ubuntu_24.04_LTS_X64_8core_16gbRam",
+        label: "8core_16gbRam",
+      },
+      {
+        value: "Ubuntu_24.04_LTS_X64_16core_32gbRam",
+        label: "16core_32gbRam",
+      },
+    ],
+    "Ubuntu_24.04_LTS_ARM": [
+      {
+        value: "Ubuntu_24.04_LTS_ARM_2core_4gbRam",
+        label: "2core_4gbRam",
+      },
+      {
+        value: "Ubuntu_24.04_LTS_ARM_4core_8gbRam",
+        label: "4core_8gbRam",
+      },
+      {
+        value: "Ubuntu_24.04_LTS_ARM_8core_16gbRam",
+        label: "8core_16gbRam",
+      },
+      {
+        value: "Ubuntu_24.04_LTS_ARM_16core_32gbRam",
+        label: "16core_32gbRam",
+      },
+    ],
+    "Ubuntu_22.04_LTS_X64": [
+      {
+        value: "Ubuntu_22.04_LTS_X64_2core_4gbRam",
+        label: "2core_4gbRam",
+      },
+      {
+        value: "Ubuntu_22.04_LTS_X64_4core_8gbRam",
+        label: "4core_8gbRam",
+      },
+      {
+        value: "Ubuntu_22.04_LTS_X64_8core_16gbRam",
+        label: "8core_16gbRam",
+      },
+      {
+        value: "Ubuntu_22.04_LTS_X64_16core_32gbRam",
+        label: "16core_32gbRam",
+      },
+    ],
+    "Ubuntu_22.04_LTS_ARM": [
+      {
+        value: "Ubuntu_22.04_LTS_ARM_2core_4gbRam",
+        label: "2core_4gbRam",
+      },
+      {
+        value: "Ubuntu_22.04_LTS_ARM_4core_8gbRam",
+        label: "4core_8gbRam",
+      },
+      {
+        value: "Ubuntu_22.04_LTS_ARM_8core_16gbRam",
+        label: "8core_16gbRam",
+      },
+      {
+        value: "Ubuntu_22.04_LTS_ARM_16core_32gbRam",
+        label: "16core_32gbRam",
+      },
+    ],
+  },
+};
+
 export const cpuOptions: Record<string, Option[]> = {
   "Windows 11": [
     { value: "Basic_win11_2core_4gbRam", label: "Basic_win11_2core_4gbRam" },
