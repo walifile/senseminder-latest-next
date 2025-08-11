@@ -18,6 +18,7 @@ export type PC = {
   status: string;
   instanceId: string;
   description?: string;
+  configId?: string;
   region?: string;
   userId?: string;
   // for dummy data
@@ -30,16 +31,16 @@ export type PC = {
   cost?: number;
   createdAt?: Date;
   idleTimeout?: number; // minutes until PC goes to sleep
+  billingPlan?: string;
+  billingPlanDescription?: string;
   schedule?: {
-    timeZone: string;
-    frequency: string;
-    start: string | null;
-    end: string | null;
-    days: string[];
-    customDateRange?: {
-      startDate: string;
-      endDate: string;
-    };
+  enabled: boolean;
+  autoStartTime?: string;
+  autoStopTime?: string;
+  frequency?: "everyday" | "weekdays" | "weekends" | "custom";
+  startDate?: string | null;
+  endDate?: string | null;
+  timeZone?: string;
   };
   idleTime?: string;
   specs?: {
@@ -50,6 +51,11 @@ export type PC = {
     os: string;
   };
   assignedUsers?: AssignedUser[];
+  // assignedUsers?: { id: string; name: string; email: string }[];
+  assignedUser?: {
+    name: string;
+    email: string;
+  };
 };
 export interface CloudPC {
   id?: string;

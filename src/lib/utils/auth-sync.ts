@@ -11,6 +11,6 @@ export const syncAuthState = (
       sameSite: "strict",
     });
   } else {
-    deleteCookie("auth.state");
+    // deleteCookie("auth.state");
   }
 };

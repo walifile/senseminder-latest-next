@@ -36,17 +36,15 @@ const FutureVision = () => {
       <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/5 rounded-full blur-3xl"></div>
 
       <div className="container mx-auto px-4 md:px-6 relative">
-        <div className="text-center mb-16 max-w-3xl mx-auto">
+        <div className="text-center mb-16 max-w-5xl mx-auto">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-3xl md:text-4xl font-bold mb-6"
+            className="text-3xl md:text-3xl font-bold mb-6"
           >
-            The Future of Computing
-            <br />
-            <span className="gradient-text">No Hardware Required</span>
+            The Future of Computing <span className="gradient-text">No Hardware Required</span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -99,8 +97,8 @@ const FutureVision = () => {
           transition={{ duration: 0.5, delay: 0.6 }}
           className="text-center max-w-3xl mx-auto"
         >
-          <h3 className="text-2xl md:text-3xl font-bold mb-6">
-            SenseMinder SmartPC—
+          <h3 className="text-2xl md:text-2xl font-bold mb-6">
+            SenseMinder Sense PC—
             <span className="gradient-text">Revolutionizing</span> the Way We
             Compute
           </h3>

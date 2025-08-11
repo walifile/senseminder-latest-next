@@ -6,6 +6,7 @@ export function AmplifyProvider({ children }: { children: React.ReactNode }) {
   const [isConfigured, setIsConfigured] = useState(false);
 
   useEffect(() => {
+    console.log("typeof window L: " + typeof window);
     if (typeof window !== "undefined" && !isConfigured) {
       configureAmplify();
       setIsConfigured(true);

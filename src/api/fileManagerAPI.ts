@@ -1,25 +1,52 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "./apiUtils";
 
+import { fetchAuthSession } from "aws-amplify/auth";
+
+const requiredEnv = {
+  NEXT_PUBLIC_ESTIMATION_URL: process.env.NEXT_PUBLIC_ESTIMATION_URL,
+  NEXT_PUBLIC_FETCH_PC_URL: process.env.NEXT_PUBLIC_FETCH_PC_URL,
+  NEXT_PUBLIC_VM_MANAGEMENT_URL: process.env.NEXT_PUBLIC_VM_MANAGEMENT_URL,
+  NEXT_PUBLIC_VM_SESSION_URL: process.env.NEXT_PUBLIC_VM_SESSION_URL,
+  NEXT_PUBLIC_VM_VALIDATE_SESSION_URL:
+    process.env.NEXT_PUBLIC_VM_VALIDATE_SESSION_URL,
+  NEXT_PUBLIC_VM_STOP_SESSION_URL: process.env.NEXT_PUBLIC_VM_STOP_SESSION_URL,
+  NEXT_PUBLIC_VM_EXTEND_SESSION_URL:
+    process.env.NEXT_PUBLIC_VM_EXTEND_SESSION_URL,
+  NEXT_PUBLIC_VM_SCHEDULES_URL: process.env.NEXT_PUBLIC_VM_SCHEDULES_URL,
+};
+
+for (const [key, value] of Object.entries(requiredEnv)) {
+  if (!value) {
+    throw new Error(`Missing ${key} in .env file`);
+  }
+}
+
+export const ESTIMATION_URL = requiredEnv.NEXT_PUBLIC_ESTIMATION_URL!;
+export const FETCH_PC_URL = requiredEnv.NEXT_PUBLIC_FETCH_PC_URL!;
+export const VM_MANAGEMENT_URL = requiredEnv.NEXT_PUBLIC_VM_MANAGEMENT_URL!;
+export const VM_SESSION_URL = requiredEnv.NEXT_PUBLIC_VM_SESSION_URL!;
+export const VM_VALIDATE_SESSION_URL =
+  requiredEnv.NEXT_PUBLIC_VM_VALIDATE_SESSION_URL!;
+export const VM_STOP_SESSION_URL = requiredEnv.NEXT_PUBLIC_VM_STOP_SESSION_URL!;
+export const VM_EXTEND_SESSION_URL =
+  requiredEnv.NEXT_PUBLIC_VM_EXTEND_SESSION_URL!;
+export const VM_SCHEDULES_URL = requiredEnv.NEXT_PUBLIC_VM_SCHEDULES_URL!;
+
 export const fileManagerAPI = createApi({
   reducerPath: "fileManagerAPI",
   baseQuery: baseQueryWithReauth(false),
   tagTypes: ["Files", "VM", "Hierarchy"],
   endpoints: (builder) => ({
     getEstimate: builder.mutation({
-      query: ({ operatingSystem, machineType, storageSize }) => {
-        const ssdSizeWithGb = storageSize.endsWith("gb")
-          ? storageSize
-          : `${storageSize}gb`;
-
+      query: ({ configId, storageSize, region }) => {
         return {
-          url: "https://zxxx3xjbb0.execute-api.us-east-1.amazonaws.com/calculate-cost",
+          url: ESTIMATION_URL,
           method: "POST",
           body: {
-            operatingSystem,
-            instanceSize: machineType,
-            region: "n.virginia-usa",
-            ssdSize: ssdSizeWithGb,
+            configId,
+            storageSize: parseInt(storageSize),
+            region,
           },
           headers: {
             "Content-Type": "application/json",
@@ -27,9 +54,10 @@ export const fileManagerAPI = createApi({
         };
       },
     }),
+
     listRemoteDesktop: builder.query({
       query: ({ userId }) => ({
-        url: "https://vj9idlbwf7.execute-api.us-east-1.amazonaws.com/prod/FetchPCdata",
+        url: FETCH_PC_URL,
         method: "GET",
         params: {
           userId,
@@ -37,42 +65,183 @@ export const fileManagerAPI = createApi({
       }),
       providesTags: ["VM"],
     }),
+    // stopVM: builder.mutation({
+    //   query: (instanceId) => ({
+    //     url: "https://lul5oxdwic.execute-api.us-east-1.amazonaws.com/dev/instance",
+    //     method: "POST",
+    //     body: {
+    //       action: "stop",
+    //       instanceId: instanceId,
+    //       region: "us-east-1",
+    //     },
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //   }),
+    //   invalidatesTags: ["VM"],
+    // }),
     stopVM: builder.mutation({
-      query: (instanceId) => ({
-        url: "https://lul5oxdwic.execute-api.us-east-1.amazonaws.com/dev/instance",
-        method: "POST",
-        body: {
-          action: "stop",
-          instanceId: instanceId,
-          region: "us-east-1",
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
+      async queryFn(instanceId: string) {
+        try {
+          const session = await fetchAuthSession();
+          const token = session.tokens?.idToken?.toString();
+          if (!token) throw new Error("No ID token found");
+
+          const response = await fetch(VM_MANAGEMENT_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+            body: JSON.stringify({
+              action: "stop",
+              instanceId,
+              region: "us-east-1",
+            }),
+          });
+
+          const text = await response.text();
+          let data;
+
+          try {
+            data = JSON.parse(text);
+          } catch {
+            data = { message: text };
+          }
+
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data:
+                  data?.message ||
+                  "Something went wrong while stopping the PC.",
+              },
+            };
+          }
+
+          return { data };
+        } catch (error) {
+          return {
+            error: {
+              status: 500,
+              data: error instanceof Error ? error.message : "Unknown error",
+            },
+          };
+        }
+      },
       invalidatesTags: ["VM"],
     }),
 
+    // startVM: builder.mutation({
+    //   query: (instanceId) => ({
+    //     url: "https://lul5oxdwic.execute-api.us-east-1.amazonaws.com/dev/instance",
+    //     method: "POST",
+    //     body: {
+    //       action: "start",
+    //       instanceId: instanceId,
+    //       region: "us-east-1",
+    //     },
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //   }),
+    //   invalidatesTags: ["VM"],
+    // }),
+    // startVM: builder.mutation({
+    //   async queryFn(instanceId: string) {
+    //     try {
+    //       const session = await fetchAuthSession();
+    //       const token = session.tokens?.idToken?.toString();
+    //       if (!token) throw new Error("No ID token found");
+
+    //       const response = await fetch("https://lul5oxdwic.execute-api.us-east-1.amazonaws.com/dev/instance", {
+    //         method: "POST",
+    //         headers: {
+    //           "Content-Type": "application/json",
+    //           Authorization: token,
+    //         },
+    //         body: JSON.stringify({
+    //           action: "start",
+    //           instanceId,
+    //           region: "us-east-1",
+    //         }),
+    //       });
+
+    //       const data = await response.json();
+
+    //       if (!response.ok) {
+    //         return { error: { status: response.status, data } };
+    //       }
+
+    //       return { data };
+    //     } catch (error) {
+    //       return {
+    //         error: {
+    //           status: 500,
+    //           data: error instanceof Error ? error.message : "Unknown error",
+    //         },
+    //       };
+    //     }
+    //   },
+    //   invalidatesTags: ["VM"],
+    // }),
     startVM: builder.mutation({
-      query: (instanceId) => ({
-        url: "https://lul5oxdwic.execute-api.us-east-1.amazonaws.com/dev/instance",
-        method: "POST",
-        body: {
-          action: "start",
-          instanceId: instanceId,
-          region: "us-east-1",
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
+      async queryFn(instanceId: string) {
+        try {
+          const session = await fetchAuthSession();
+          const token = session.tokens?.idToken?.toString();
+          if (!token) throw new Error("No ID token found");
+
+          const response = await fetch(VM_MANAGEMENT_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+            body: JSON.stringify({
+              action: "start",
+              instanceId,
+              region: "us-east-1",
+            }),
+          });
+
+          const text = await response.text();
+          let data;
+
+          try {
+            data = JSON.parse(text);
+          } catch {
+            data = { message: text };
+          }
+
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data:
+                  data?.message ||
+                  "Something went wrong while starting the PC.",
+              },
+            };
+          }
+
+          return { data };
+        } catch (error) {
+          return {
+            error: {
+              status: 500,
+              data: error instanceof Error ? error.message : "Unknown error",
+            },
+          };
+        }
+      },
       invalidatesTags: ["VM"],
     }),
 
     launchVM: builder.mutation({
       query: ({ instanceId, userId }) => ({
-        url: "https://hxmwrrakc6.execute-api.us-east-1.amazonaws.com/dev/start-session",
-        // url: "https://o1jxe42die.execute-api.us-east-1.amazonaws.com/prod/dcv-integration",
+        url: VM_SESSION_URL,
         method: "POST",
         body: {
           action: "start-session",
@@ -88,7 +257,7 @@ export const fileManagerAPI = createApi({
 
     validateSession: builder.mutation({
       query: ({ instanceId, userId, sessionToken }) => ({
-        url: "https://hxmwrrakc6.execute-api.us-east-1.amazonaws.com/dev/validate-session",
+        url: VM_VALIDATE_SESSION_URL,
         method: "POST",
         body: {
           action: "validate-session",
@@ -105,7 +274,7 @@ export const fileManagerAPI = createApi({
 
     stopSession: builder.mutation({
       query: ({ instanceId, userId }) => ({
-        url: "https://hxmwrrakc6.execute-api.us-east-1.amazonaws.com/dev/stop-session",
+        url: VM_STOP_SESSION_URL,
         method: "POST",
         body: {
           action: "stop-session",
@@ -121,7 +290,7 @@ export const fileManagerAPI = createApi({
 
     extendSession: builder.mutation({
       query: ({ instanceId, userId, sessionToken }) => ({
-        url: "https://hxmwrrakc6.execute-api.us-east-1.amazonaws.com/dev/extend-session",
+        url: VM_EXTEND_SESSION_URL,
         method: "POST",
         body: {
           action: "extend-session",
@@ -138,7 +307,7 @@ export const fileManagerAPI = createApi({
 
     scheduleVM: builder.mutation({
       query: (scheduleData) => ({
-        url: `https://cufbznlyqa.execute-api.us-east-1.amazonaws.com/dev/schedules`,
+        url: VM_SCHEDULES_URL,
         method: "POST",
         body: scheduleData,
         headers: {

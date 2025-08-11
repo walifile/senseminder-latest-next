@@ -803,7 +803,7 @@ const handleFolderSelection = (file: FileItem) => {
               {/* <Button onClick={handleDownloadClick} disabled={isFetching}>
                 {isFetching ? "Downloading..." : "Download Folder"}
               </Button> */}
-              <CardTitle>Smart Storage</CardTitle>
+              <CardTitle>Sense Storage</CardTitle>
               <CardDescription>Manage your files and folders</CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -1081,9 +1081,9 @@ const handleFolderSelection = (file: FileItem) => {
 
               <Tabs defaultValue="files" className="flex-1 flex flex-col">
                 <TabsList className="border-b px-4">
-                  <TabsTrigger value="files">Files</TabsTrigger>
-                  <TabsTrigger value="recent">Recent Activity</TabsTrigger>
-                  <TabsTrigger value="shared">Shared with Me</TabsTrigger>
+                  {/* <TabsTrigger value="files">Files</TabsTrigger> */}
+                  {/* <TabsTrigger value="recent">Recent Activity</TabsTrigger>
+                  <TabsTrigger value="shared">Shared with Me</TabsTrigger> */}
                 </TabsList>
 
                 <div className="flex-1 overflow-hidden">
@@ -1098,7 +1098,7 @@ const handleFolderSelection = (file: FileItem) => {
                           Fetching your files...
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          Please wait while we load your smart storage.
+                          Please wait while we load your sense storage.
                         </p>
                       </div>
                     )}
@@ -1388,31 +1388,24 @@ const handleFolderSelection = (file: FileItem) => {
                                 {(files as FileItem[]).map((file, index) => (
                                   <div
                                     key={file.id}
-                                    className={`relative group px-4 rounded-lg border border-border hover:bg-muted/50 transition-colors ${dragOverFolderId === file.id
-                                      ? "bg-muted ring-2 ring-primary"
-                                      : ""
-                                      } ${file.fileType === "folder"
-                                        ? "py-3"
-                                        : "pt-2 pb-3"
-                                      }`}
+                                    onDoubleClick={() => {
+                                      if (file.fileType !== "folder") {
+                                        setFilePreview(file);
+                                      }
+                                    }}
+                                    className={`relative group px-4 rounded-lg border border-border hover:bg-muted/50 transition-colors ${
+                                      dragOverFolderId === file.id ? "bg-muted ring-2 ring-primary" : ""
+                                    } ${file.fileType === "folder" ? "py-3" : "pt-2 pb-3"}`}
                                     draggable
-                                    onDragStart={(e) =>
-                                      handleItemDragStart(e, file.id)
-                                    }
+                                    onDragStart={(e) => handleItemDragStart(e, file.id)}
                                     onDragOver={(e) =>
-                                      file.fileType === "folder"
-                                        ? handleFolderDragOver(e, file.id)
-                                        : undefined
+                                      file.fileType === "folder" ? handleFolderDragOver(e, file.id) : undefined
                                     }
                                     onDragLeave={(e) =>
-                                      file.fileType === "folder"
-                                        ? handleFolderDragLeave(e)
-                                        : undefined
+                                      file.fileType === "folder" ? handleFolderDragLeave(e) : undefined
                                     }
                                     onDrop={(e) =>
-                                      file.fileType === "folder"
-                                        ? handleFolderDrop(e, file.id)
-                                        : undefined
+                                      file.fileType === "folder" ? handleFolderDrop(e, file.id) : undefined
                                     }
                                   >
                                     <div
@@ -1623,7 +1616,7 @@ const handleFolderSelection = (file: FileItem) => {
                                               <img
                                                 src={src}
                                                 alt={file.fileName}
-                                                className="size-full rounded object-fit-cover"
+                                                className="w-full h-20 object-contain rounded bg-white dark:bg-background p-1"
                                               />
                                             );
                                           } else if (ext === "pdf") {
@@ -1903,7 +1896,6 @@ const handleFolderSelection = (file: FileItem) => {
       <StoragePlansDialog
         open={showStoragePlans}
         onOpenChange={setShowStoragePlans}
-        plans={storagePlans}
       />
 
       {/* Bulk Share Dialog */}

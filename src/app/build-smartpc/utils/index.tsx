@@ -8,6 +8,8 @@ import {
   Loader2,
   PowerOff,
 } from "lucide-react";
+import { removeStartingInstance } from "@/redux/slices/dcv/starting-instances-slice";
+import { AppDispatch } from "@/redux/store";
 
 export const isBuilding = (state: string) =>
   ["initializing", "initialization", "pending"].includes(state);
@@ -47,14 +49,16 @@ export const formatUptime = (seconds: number): string => {
   return `${minutes}m`;
 };
 
-export const getStatusText = (status: PC["status"]): string => {
+export const getStatusText = (
+  status: PC["status"],
+  isStarting = false
+): string => {
+  if (isStarting) return "Starting";
+
   switch (status) {
     case "pending":
-      return "Building";
     case "initializing":
-      return "Building";
     case "initialization":
-      return "Building";
     case "building":
       return "Building";
     case "running":
@@ -99,4 +103,16 @@ export const getStatusIcon = (status: PC["status"]) => {
     default:
       return <Circle className="h-4 w-4" />;
   }
+};
+
+export const isStartingInstance = (
+  instanceId: string,
+  state: string,
+  startingInstances: string[]
+): boolean => {
+  const validStates = ["initialization", "pending", "initializing"];
+  const isInList = startingInstances.includes(instanceId);
+  const isValidState = validStates.includes(state);
+
+  return isInList && isValidState;
 };

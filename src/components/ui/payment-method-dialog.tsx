@@ -1,210 +1,191 @@
-import * as React from "react";
-import { CreditCard, Plus, Trash2 } from "lucide-react";
+"use client";
+
+import React, { useState } from 'react';
+import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { Button } from '@/components/ui/button'; 
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-
-interface PaymentMethod {
-  id: string;
-  type: "card";
-  last4: string;
-  expMonth: number;
-  expYear: number;
-  brand: string;
-  isDefault: boolean;
-}
-
-interface NewCard {
-  number: string;
-  expiry: string;
-  cvc: string;
-  name: string;
-}
+import { Input } from '@/components/ui/input'; 
+import { useToast } from "@/hooks/use-toast";
+import { RootState } from "@/redux/store";
+import { useSelector } from "react-redux";
+import { addPaymentMethod, setDefaultPaymentMethod } from '@/api/billing';
+import { ExtendedPaymentMethod } from '@/app/dashboard/billing/page';
 
 interface PaymentMethodDialogProps {
-  savedMethods: PaymentMethod[];
-  onAddMethod: (data: NewCard) => void;
-  onRemoveMethod: (id: string) => void;
+  onAddMethod: (method: any) => void;
   onSetDefault: (id: string) => void;
+  savedMethods: ExtendedPaymentMethod[];  
 }
 
-export function PaymentMethodDialog({
-  savedMethods,
-  onAddMethod,
-  onRemoveMethod,
-  onSetDefault,
-}: PaymentMethodDialogProps) {
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [isAddingNew, setIsAddingNew] = React.useState(false);
-  const [newCard, setNewCard] = React.useState({
-    number: "",
-    expiry: "",
-    cvc: "",
-    name: "",
-  });
+export function PaymentMethodDialog({ onAddMethod, savedMethods, onSetDefault }: PaymentMethodDialogProps) {
+  const { toast } = useToast();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const stripe = useStripe();
+  const elements = useElements();
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(true);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Here you would typically send this to your payment processor
-    onAddMethod(newCard);
-    setNewCard({ number: "", expiry: "", cvc: "", name: "" });
-    setIsAddingNew(false);
+  const handleAdd = async () => {
+    if (!stripe || !elements || !CardElement) {
+      toast({
+        title: "Payment error",
+        description: "Stripe has not finished loading. Please try again.",
+      });
+      return;
+    }
+
+    setLoading(true);
+    const cardElement = elements.getElement(CardElement);
+    if (!cardElement) {
+      throw new Error("Card element not found.");
+    }
+    console.log("user:: ", user);
+    setName(user!.firstName);
+    const { error, paymentMethod } = await stripe.createPaymentMethod({
+        type: "card",
+        card: cardElement,
+        billing_details: { name: user!.firstName, email: user!.email },
+    });
+
+    if (error) {
+      console.error(error);
+      toast({
+        title: "Failed add Payment Method",
+        description: "Failed add Payment Method. Please try again.",
+      });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      console.log("paymentMethod", JSON.stringify({...paymentMethod, isDefault: (!savedMethods || savedMethods.length == 0)}));
+      const result = await addPaymentMethod({ paymentMethodId: paymentMethod!.id });
+      onAddMethod({...result.paymentMethod, isDefault: (!savedMethods || savedMethods.length == 0)});
+      setOpen(false);
+      setShowAddForm(false);
+    } catch (error: unknown) {
+      const message = error instanceof Error
+          ? error.message : "Failed to add payment method";
+
+      toast({
+        title: "Error",
+        description: message,
+        variant: "destructive",
+      });
+    }
+    setName('');
+    setLoading(false);
   };
 
-  const getBrandIcon = (brand: string) => {
-    console.log(brand);
-    // You can add more card brand icons here
-    return <CreditCard className="h-4 w-4" />;
+  const handleSetDefaultPaymentMethod = async (paymentMethodId: string) => {
+    setLoading(true);
+    try {
+      console.log("set default paymentMethod", paymentMethodId);
+      const result = await setDefaultPaymentMethod({ paymentMethodId: paymentMethodId });
+      onSetDefault(paymentMethodId);
+      setOpen(false);
+    } catch (error: unknown) {
+      const message = error instanceof Error
+          ? error.message : "Failed to set default payment method";
+
+      toast({
+        title: "Error",
+        description: message,
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <CreditCard className="mr-2 h-4 w-4" />
-          Add Payment Method
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+  <>
+    <Button onClick={() => setOpen(true)}>Add Payment Method</Button>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>Payment Methods</DialogTitle>
-          <DialogDescription>
-            Manage your saved payment methods or add a new one.
-          </DialogDescription>
+          <DialogTitle>Manage Payment Methods</DialogTitle>
+          <DialogDescription>Add or manage your saved cards.</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {/* Saved Payment Methods */}
-          {savedMethods.map((method) => (
-            <Card
-              key={method.id}
-              className={cn(
-                "relative group cursor-pointer transition-colors",
-                method.isDefault && "border-primary"
-              )}
-              onClick={() => !method.isDefault && onSetDefault(method.id)}
-            >
-              <CardContent className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {getBrandIcon(method.brand)}
-                  <div>
-                    <p className="font-medium">
-                      {method.brand} •••• {method.last4}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Expires {method.expMonth}/{method.expYear}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {method.isDefault && (
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
-                      Default
-                    </span>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRemoveMethod(method.id);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        {/* Add Card Form */}
+        {!showAddForm && (
+          <Button
+            variant="outline"
+            onClick={() => setShowAddForm(true)}
+            className="w-full"
+          >
+            + Add Payment Method
+          </Button>
+        )}
+        {showAddForm && (
+        <div className="space-y-4">
+          <Input
+            placeholder="Cardholder name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <CardElement options={{ style: { base: { fontSize: '16px' } } }} />
+          <Button disabled={!stripe || loading} onClick={handleAdd} className="w-full">
+            {loading ? 'Adding...' : 'Add Card'}
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full text-red-500"
+            onClick={() => setShowAddForm(false)}
+          >
+            Cancel
+          </Button>
+        </div>
+      )}
 
-          {/* Add New Payment Method Form */}
-          {isAddingNew ? (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Cardholder Name</Label>
-                <Input
-                  id="name"
-                  placeholder="John Doe"
-                  value={newCard.name}
-                  onChange={(e) =>
-                    setNewCard({ ...newCard, name: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="number">Card Number</Label>
-                <Input
-                  id="number"
-                  placeholder="1234 5678 9012 3456"
-                  value={newCard.number}
-                  onChange={(e) =>
-                    setNewCard({ ...newCard, number: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="expiry">Expiry Date</Label>
-                  <Input
-                    id="expiry"
-                    placeholder="MM/YY"
-                    value={newCard.expiry}
-                    onChange={(e) =>
-                      setNewCard({ ...newCard, expiry: e.target.value })
-                    }
-                    required
-                  />
+        {/* Existing Payment Methods */}
+        <div className="mt-6 space-y-4">
+          {(savedMethods && savedMethods.length > 0) ? (
+            savedMethods.map((method) => (
+              <div
+                key={method.id}
+                className="flex items-center justify-between border p-3 rounded-md"
+              >
+                <div className="flex flex-col">
+                  <span className="font-medium">
+                    {method.card?.brand.toUpperCase()} •••• {method.card?.last4}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    Expires {method.card?.exp_month}/{method.card?.exp_year}
+                  </span>
+                  {method.isDefault && (
+                    <span className="text-xs text-green-600">Default</span>
+                  )}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="cvc">CVC</Label>
-                  <Input
-                    id="cvc"
-                    placeholder="123"
-                    value={newCard.cvc}
-                    onChange={(e) =>
-                      setNewCard({ ...newCard, cvc: e.target.value })
-                    }
-                    required
-                  />
+                <div className="flex gap-2">
+                  {!method.isDefault && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleSetDefaultPaymentMethod(method.id)}
+                    >
+                      Make Default
+                    </Button>
+                  )}
                 </div>
               </div>
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsAddingNew(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit">Save Card</Button>
-              </DialogFooter>
-            </form>
+            ))
           ) : (
-            <Button
-              className="w-full"
-              variant="outline"
-              onClick={() => setIsAddingNew(true)}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add New Card
-            </Button>
+            <p className="text-sm text-muted-foreground">
+              No payment methods saved.
+            </p>
           )}
         </div>
       </DialogContent>
     </Dialog>
-  );
+  </>
+);
 }

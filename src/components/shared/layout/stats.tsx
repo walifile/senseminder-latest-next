@@ -6,7 +6,7 @@ const stats = [
     icon: <Users className="h-10 w-10 text-primary" />,
     value: "10,000+",
     label: "Active Users",
-    description: "Professionals using SmartPC daily",
+    description: "Professionals using Sense PC daily",
   },
   {
     icon: <Globe className="h-10 w-10 text-primary" />,

@@ -82,7 +82,7 @@ const Hero = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background"></div>
       </div>
 
-      {/* Floating Icons */}
+      {/* Floating Icons
       <FloatingIcon
         icon={Cloud}
         className="top-1/4 left-1/4 -translate-x-1/2"
@@ -100,7 +100,7 @@ const Hero = () => {
         className="bottom-1/4 right-1/4"
         delay={1.0}
       />
-      <FloatingIcon icon={Lock} className="bottom-1/3 left-1/4" delay={1.2} />
+      <FloatingIcon icon={Lock} className="bottom-1/3 left-1/4" delay={1.2} /> */}
 
       <div className="w-full relative z-10">
         <div className="w-full">
@@ -128,7 +128,7 @@ const Hero = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="relative"
             >
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              <h1 className="text-3xl md:text-5xl lg:text-5xl font-bold leading-tight">
                 The <span className="gradient-text">Future</span> of Computing
                 is Here
               </h1>
@@ -143,17 +143,6 @@ const Hero = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-3xl md:text-4xl font-semibold relative"
             >
-              <span
-                className="bg-gradient-to-r from-primary to-primary/50"
-                style={{
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  color: "transparent",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                Welcome to SmartPC
-              </span>
               <div className="absolute inset-0 blur-2xl bg-primary/10 dark:bg-primary/20 -z-10"></div>
             </motion.h2>
 
@@ -164,7 +153,7 @@ const Hero = () => {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="text-xl text-muted-foreground max-w-2xl mx-auto"
             >
-              Create, manage, and optimize your computer in minutes
+              Build, manage, and optimize your computer in minutes
             </motion.p>
 
             {/* Slideshow */}
@@ -177,7 +166,7 @@ const Hero = () => {
               <HeroSlideshow />
             </motion.div>
 
-            {/* Stats with enhanced styling */}
+            {/* Stats with enhanced styling
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -221,13 +210,12 @@ const Hero = () => {
                   </div>
                 </motion.div>
               ))}
-            </motion.div>
+            </motion.div> */}
           </div>
         </div>
       </div>
-
-      {/* Enhanced decorative bottom line */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 dark:via-primary/50 to-transparent"></div>
+      {/* Enhanced decorative bottom line
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 dark:via-primary/50 to-transparent"></div> */}
     </section>
   );
 };

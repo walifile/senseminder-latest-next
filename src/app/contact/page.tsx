@@ -18,6 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { ArrowLeft, Mail, Phone, MapPin, Send, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useSendContactMessageMutation } from "@/api/contactAPI";
 
 const contactFormSchema = z.object({
   name: z.string().min(2, {
@@ -39,6 +40,8 @@ type ContactFormValues = z.infer<typeof contactFormSchema>;
 const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [sendContactMessage] = useSendContactMessageMutation();
+
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
@@ -49,20 +52,26 @@ const Contact = () => {
     },
   });
 
-  function onSubmit(data: ContactFormValues) {
+  async function onSubmit(data: ContactFormValues) {
     setIsSubmitting(true);
+    try {
+      await sendContactMessage(data).unwrap();
 
-    // Simulate form submission
-    setTimeout(() => {
-      console.log(data);
-      setIsSubmitting(false);
-      form.reset();
       toast({
         title: "Message Sent",
         description:
           "Thank you for your message. We'll respond as soon as possible.",
       });
-    }, 1500);
+
+      form.reset();
+    } catch (err: any) {
+      toast({
+        title: "Submission failed",
+        description: err?.data?.error || "Please try again later.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -79,12 +88,14 @@ const Contact = () => {
           </Link>
         </div>
 
-        <h1 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
+        <h1 className="text-4xl md:text-4xl font-bold mb-6 gradient-text">
           Contact Us
         </h1>
-        <p className="text-xl text-gray-300 max-w-2xl mb-12">
-          Have questions or need assistance? We're here to help. Reach out to
-          our team through any of the channels below.
+        <p className="text-base md:text-lg text-foreground max-w-2xl leading-relaxed mb-10">
+          Let’s connect. Whether you have a question, need support, or want to
+          explore a partnership — we’re here for you. Our team is always ready
+          to assist, collaborate, or simply hear your ideas. Reach out using any
+          of the options below — we’d love to hear from you.
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
@@ -206,9 +217,11 @@ const Contact = () => {
                   <div>
                     <h3 className="font-medium mb-1">Our Office</h3>
                     <p className="text-gray-300">
-                      123 Innovation Drive
+                      Elan Satellite Place
                       <br />
-                      Tech Valley, CA 94103
+                      3100 Commerce Avenue NW
+                      <br />
+                      Duluth, GA 30096,
                       <br />
                       United States
                     </p>
@@ -221,10 +234,10 @@ const Contact = () => {
                     <h3 className="font-medium mb-1">Phone</h3>
                     <p className="text-gray-300">
                       <a
-                        href="tel:+15555551234"
+                        href="tel:+16462265995"
                         className="hover:text-primary transition-colors"
                       >
-                        +1 (555) 555-1234
+                        +1 (646) 226-5995
                       </a>
                     </p>
                   </div>
@@ -239,7 +252,7 @@ const Contact = () => {
                         href="mailto:info@smartpc.com"
                         className="hover:text-primary transition-colors"
                       >
-                        info@smartpc.com
+                        contact@senseminder.com
                       </a>
                     </p>
                   </div>
@@ -253,18 +266,18 @@ const Contact = () => {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-gray-300">Monday - Friday:</span>
-                  <span>9:00 AM - 6:00 PM</span>
+                  <span>10:00 AM - 4:00 PM</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-300">Saturday:</span>
-                  <span>10:00 AM - 4:00 PM</span>
+                  <span>Closed</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-300">Sunday:</span>
                   <span>Closed</span>
                 </div>
                 <p className="text-sm text-gray-400 pt-4">
-                  * All times are in Pacific Time (PT)
+                  * All times are in Eastern Standard Time (EST)
                 </p>
               </div>
             </div>

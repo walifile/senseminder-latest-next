@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Monitor,
   HardDrive,
@@ -22,15 +22,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/shared/layout/Logo";
+import { routes } from "@/constants/routes";
+import { handleSignOut } from "@/lib/services/auth";
+import { useToast } from "@/hooks/use-toast";
 
 const navItems = [
   {
-    name: "SmartPC",
+    name: "Sense PC",
     path: "/dashboard/smart-pc",
     icon: Monitor,
   },
   {
-    name: "Smart Storage",
+    name: "Sense Storage",
     path: "/dashboard/storage",
     icon: HardDrive,
   },
@@ -49,16 +52,16 @@ const navItems = [
     path: "/dashboard/support",
     icon: LifeBuoy,
   },
-  {
-    name: "Profile",
-    path: "/dashboard/profile",
-    icon: User,
-  },
-  {
-    name: "Notifications",
-    path: "/dashboard/notifications",
-    icon: Bell,
-  },
+  // {
+  //   name: "Profile",
+  //   path: "/dashboard/profile",
+  //   icon: User,
+  // },
+  // {
+  //   name: "Notifications",
+  //   path: "/dashboard/notifications",
+  //   icon: Bell,
+  // },
   {
     name: "Tutorials",
     path: "/dashboard/tutorials",
@@ -72,8 +75,10 @@ const navItems = [
 ];
 
 const DashboardSidebar = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const toggleSidebar = () => {
@@ -89,6 +94,36 @@ const DashboardSidebar = () => {
 
   const toggleMobileSidebar = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleLogout = async () => {
+    try {
+      const response = await handleSignOut();
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "Logged out successfully!",
+        });
+        router.push(routes?.home);
+      } else {
+        toast({
+          title: "Logout Failed",
+          description: response.error || "Logout failed. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Something went wrong during logout.";
+
+      toast({
+        title: "Error",
+        description: message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -189,12 +224,11 @@ const DashboardSidebar = () => {
                 "w-full justify-start",
                 collapsed && "justify-center"
               )}
-              asChild
+              // asChild
+              onClick={handleLogout}
             >
-              <Link href="/auth">
-                <LogOut className={cn("h-5 w-5", !collapsed && "mr-3")} />
-                {!collapsed && <span>Logout</span>}
-              </Link>
+              <LogOut className={cn("h-5 w-5", !collapsed && "mr-3")} />
+              {!collapsed && <span>Logout</span>}
             </Button>
           </div>
         </div>

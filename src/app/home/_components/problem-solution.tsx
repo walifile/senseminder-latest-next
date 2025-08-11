@@ -6,25 +6,23 @@ import Link from "next/link";
 
 const ProblemSolution = () => {
   return (
-    <section className="py-24 relative overflow-hidden">
+    <section className="py-12 relative overflow-hidden">
       {/* Background Effects */}
       <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
       <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/5 rounded-full blur-3xl"></div>
 
       <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center mb-16 max-w-3xl mx-auto">
+        <div className="text-center mb-8 max-w-4xl mx-auto">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-3xl md:text-4xl font-bold mb-4"
-          >
-            Why Buy Expensive <span className="gradient-text">Hardware</span>
-            <br />
-            When You Can Rent Smarter?
-          </motion.h2>
-        </div>
+            className="text-2xl md:text-3xl font-bold mb-4"
+            >
+              Why Buy Expensive <span className="gradient-text">Hardware</span> When You Can Rent Smarter?
+            </motion.h2>
+            </div>
 
         <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
           {/* Problem Card */}
@@ -59,7 +57,7 @@ const ProblemSolution = () => {
               <h3 className="text-2xl font-bold">Solution</h3>
             </div>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              SmartPC offers flexible, cost-effective cloud computing that
+              Sense PC offers flexible, cost-effective cloud computing that
               scales with your needs.
             </p>
           </motion.div>
@@ -73,9 +71,9 @@ const ProblemSolution = () => {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="text-center mt-12"
         >
-          <h3 className="text-2xl md:text-3xl font-bold mb-8">
+          <h3 className="text-2xl md:text-2xl font-bold mb-8">
             Make the <span className="gradient-text">Smart Move</span> — Switch
-            to SmartPC!
+            to Sense PC!
           </h3>
           <Button
             asChild

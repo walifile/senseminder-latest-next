@@ -70,7 +70,7 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Assign Users to {selectedPC?.name}</DialogTitle>
           <DialogDescription>
-            Select users to assign to this SmartPC.
+            Select users to assign to this PC.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">

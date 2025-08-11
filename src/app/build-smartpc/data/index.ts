@@ -2,23 +2,106 @@ import { AssignedUser, Option } from "../types";
 
 export const osOptions: Option[] = [
   { value: "Windows 11", label: "Windows 11" },
-  // { value: "windows11pro", label: "Windows 11 Pro" },
-  // { value: "windows10", label: "Windows 10" },
-  // { value: "windows10pro", label: "Windows 10 Pro" },
+  { value: "Windows 10", label: "Windows 10" },
+  { value: "Linux", label: "Linux" },
 ];
 
-export const cpuOptions: Option[] = [
-  { value: "Basic_win11_2core_4gbRam", label: "Basic_win11_2core_4gbRam" },
-  {
-    value: "Standerd_win11_4core_8gbRam",
-    label: "Standerd_win11_4core_8gbRam",
-  },
-  { value: "Pro_win11_8core_16gbRam", label: "Pro_win11_8core_16gbRam" },
-  { value: "Ultra_win11_16core_32gbRam", label: "Ultra_win11_16core_32gbRam" },
-  // { value: "4", label: "4 Core", pricePerHour: 0.5 },
-  // { value: "8", label: "8 Core", pricePerHour: 1.0 },
-  // { value: "12", label: "12 Core", pricePerHour: 1.5 },
-];
+export const cpuOptions: Record<string, Option[]> = {
+  "Windows 11": [
+    { value: "Basic_win11_2core_4gbRam", label: "Basic_win11_2core_4gbRam" },
+    {
+      value: "Standerd_win11_4core_8gbRam",
+      label: "Standerd_win11_4core_8gbRam",
+    },
+    { value: "Pro_win11_8core_16gbRam", label: "Pro_win11_8core_16gbRam" },
+    {
+      value: "Ultra_win11_16core_32gbRam",
+      label: "Ultra_win11_16core_32gbRam",
+    },
+  ],
+  "Windows 10": [
+    { value: "Basic_win10_2core_4gbRam", label: "Basic_win10_2core_4gbRam" },
+    {
+      value: "Standerd_win10_4core_8gbRam",
+      label: "Standerd_win10_4core_8gbRam",
+    },
+    { value: "Pro_win10_8core_16gbRam", label: "Pro_win10_8core_16gbRam" },
+    {
+      value: "Ultra_win10_16core_32gbRam",
+      label: "Ultra_win10_16core_32gbRam",
+    },
+  ],
+  Linux: [
+    {
+      value: "Ubuntu_24.04_LTS_X64_Token_Test",
+      label: "Ubuntu_24.04_LTS_X64_Token_Test",
+    },
+    {
+      value: "Ubuntu_24.04_LTS_X64_2core_4gbRam",
+      label: "Ubuntu_24.04_LTS_X64-2core_4gbRam",
+    },
+    {
+      value: "Ubuntu_24.04_LTS_X64_4core_8gbRam",
+      label: "Ubuntu_24.04_LTS_X64-4core_8gbRam",
+    },
+    {
+      value: "Ubuntu_24.04_LTS_X64_8core_16gbRam",
+      label: "Ubuntu_24.04_LTS_X64-8core_16gbRam",
+    },
+    {
+      value: "Ubuntu_24.04_LTS_X64_16core_32gbRam",
+      label: "Ubuntu_24.04_LTS_X64-16core_32gbRam",
+    },
+    {
+      value: "Ubuntu_24.04_LTS_ARM_2core_4gbRam",
+      label: "Ubuntu_24.04_LTS_ARM-2core_4gbRam",
+    },
+    {
+      value: "Ubuntu_24.04_LTS_ARM_4core_8gbRam",
+      label: "Ubuntu_24.04_LTS_ARM-4core_8gbRam",
+    },
+    {
+      value: "Ubuntu_24.04_LTS_ARM_8core_16gbRam",
+      label: "Ubuntu_24.04_LTS_ARM-8core_16gbRam",
+    },
+    {
+      value: "Ubuntu_24.04_LTS_ARM_16core_32gbRam",
+      label: "Ubuntu_24.04_LTS_ARM-16core_32gbRam",
+    },
+    {
+      value: "Ubuntu_22.04_LTS_X64_2core_4gbRam",
+      label: "Ubuntu_22.04_LTS_X64-2core_4gbRam",
+    },
+    {
+      value: "Ubuntu_22.04_LTS_X64_4core_8gbRam",
+      label: "Ubuntu_22.04_LTS_X64-4core_8gbRam",
+    },
+    {
+      value: "Ubuntu_22.04_LTS_X64_8core_16gbRam",
+      label: "Ubuntu_22.04_LTS_X64-8core_16gbRam",
+    },
+    {
+      value: "Ubuntu_22.04_LTS_X64_16core_32gbRam",
+      label: "Ubuntu_22.04_LTS_X64-16core_32gbRam",
+    },
+    {
+      value: "Ubuntu_22.04_LTS_ARM_2core_4gbRam",
+      label: "Ubuntu_22.04_LTS_ARM-2core_4gbRam",
+    },
+    {
+      value: "Ubuntu_22.04_LTS_ARM_4core_8gbRam",
+      label: "Ubuntu_22.04_LTS_ARM-4core_8gbRam",
+    },
+    {
+      value: "Ubuntu_22.04_LTS_ARM_8core_16gbRam",
+      label: "Ubuntu_22.04_LTS_ARM-8core_16gbRam",
+    },
+    {
+      value: "Ubuntu_22.04_LTS_ARM_16core_32gbRam",
+      label: "Ubuntu_22.04_LTS_ARM-16core_32gbRam",
+    },
+  ],
+};
 
 // const memoryOptions: Option[] = [
 //   { value: "4", label: "4 GB RAM", pricePerHour: 0.1 },

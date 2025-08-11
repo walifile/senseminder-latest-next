@@ -9,9 +9,14 @@ import { useRouter } from "next/navigation";
 import { handleSignUp } from "@/lib/services/auth";
 import { useToast } from "@/hooks/use-toast";
 import SocailLogin from "../_components/socail-login";
+import { useSubscribeToNewsletterMutation } from "@/api/newsletterAPI";
+import useLocation from "@/hooks/use-location";
+import { Eye, EyeOff } from "lucide-react";
+
 export default function SignUp() {
   const router = useRouter();
   const { toast } = useToast();
+  const { userLocation } = useLocation();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -20,6 +25,10 @@ export default function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [subscribeToNewsletter] = useSubscribeToNewsletterMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +40,7 @@ export default function SignUp() {
         password,
         firstName,
         lastName,
+        acceptedLegal: acceptTerms,
         // Uncomment and add additional fields as needed
         // lastName: data.lastName,
         // country: data.country,
@@ -38,9 +48,20 @@ export default function SignUp() {
         // organization: data.organizationName,
       };
 
+      const location = userLocation || {
+        country: "unknown",
+        city: "unknown",
+        ip: "unknown",
+      };
+
       const response = await handleSignUp(data);
 
       if (response.success) {
+        await subscribeToNewsletter({
+          email,
+          location,
+          signup: true,
+        });
         // Show success toast
         toast({
           title: "Success",
@@ -78,7 +99,7 @@ export default function SignUp() {
           Create an Account
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Enter your details to create your smart PC account
+          Enter your details to create your Sense PC account
         </p>
       </div>
 
@@ -144,15 +165,29 @@ export default function SignUp() {
           >
             Password
           </label>
-          <Input
-            id="password"
-            type="password"
-            placeholder="Create a password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="bg-white/50 border-gray-200 text-gray-900 placeholder:text-gray-500 dark:bg-[#ffffff0f] dark:border-[#ffffff1a] dark:text-white dark:placeholder:text-gray-400"
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Create a password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="pr-10 bg-white/50 border-gray-200 text-gray-900 placeholder:text-gray-500 dark:bg-[#ffffff0f] dark:border-[#ffffff1a] dark:text-white dark:placeholder:text-gray-400"
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              onClick={() => setShowPassword((prev) => !prev)}
+              tabIndex={-1}
+            >
+              {showPassword ? (
+                <EyeOff className="h-5 w-5" />
+              ) : (
+                <Eye className="h-5 w-5" />
+              )}
+            </button>
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -162,15 +197,29 @@ export default function SignUp() {
           >
             Confirm Password
           </label>
-          <Input
-            id="confirm-password"
-            type="password"
-            placeholder="Confirm your password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            className="bg-white/50 border-gray-200 text-gray-900 placeholder:text-gray-500 dark:bg-[#ffffff0f] dark:border-[#ffffff1a] dark:text-white dark:placeholder:text-gray-400"
-          />
+          <div className="relative">
+            <Input
+              id="confirm-password"
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirm your password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="pr-10 bg-white/50 border-gray-200 text-gray-900 placeholder:text-gray-500 dark:bg-[#ffffff0f] dark:border-[#ffffff1a] dark:text-white dark:placeholder:text-gray-400"
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              tabIndex={-1}
+            >
+              {showConfirmPassword ? (
+                <EyeOff className="h-5 w-5" />
+              ) : (
+                <Eye className="h-5 w-5" />
+              )}
+            </button>
+          </div>
         </div>
 
         <div className="flex items-center space-x-2">
@@ -190,7 +239,14 @@ export default function SignUp() {
               href="/terms"
               className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
             >
-              terms and conditions
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/privacy"
+              className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Privacy Policy
             </Link>
           </label>
         </div>

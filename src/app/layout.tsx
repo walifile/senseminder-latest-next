@@ -5,6 +5,7 @@ import { ThemeWrapper } from "@/components/shared/layout/theme-wrapper";
 import Footer from "@/components/shared/layout/footer";
 import { ReduxProvider } from "@/redux/provider";
 import { AmplifyProvider } from "@/providers/AmplifyProvider";
+import { WebSocketProvider } from "@/providers/WebSocketProvider";
 
 export { metadata };
 
@@ -18,6 +19,7 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         <ReduxProvider>
           <AmplifyProvider>
+            <WebSocketProvider> 
             <ThemeWrapper>
               <div className="flex min-h-screen flex-col overflow-x-hidden">
                 <Navbar />
@@ -25,6 +27,8 @@ export default function RootLayout({
                 <Footer />
               </div>
             </ThemeWrapper>
+           </WebSocketProvider>
+           
           </AmplifyProvider>
         </ReduxProvider>
       </body>

@@ -1,7 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
-import { DateRange } from "react-day-picker";
+import React, { useEffect, useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Card,
   CardContent,
@@ -9,8 +14,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 import {
   Select,
   SelectContent,
@@ -20,94 +33,63 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Calendar,
-  Search,
   Clock,
+  Calendar,
   CalendarDays,
-  CalendarRange,
   Calendar as CalendarIcon,
-  History,
   TrendingUp,
   Wallet,
   ArrowUpRight,
   CheckCircle,
-  Monitor,
   HardDrive,
+  Cpu,
+  Server,
+  Zap,
+  Info,
 } from "lucide-react";
-import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { PaymentMethodDialog } from "@/components/ui/payment-method-dialog";
 import { toast } from "@/components/ui/use-toast";
-
-// interface Invoice {
-//   id: string;
-//   date: string;
-//   amount: number;
-//   status: "paid" | "pending" | "failed";
-//   period: string;
-// }
-
-// interface RechargeHistory {
-//   id: string;
-//   date: string;
-//   amount: number;
-//   method: string;
-//   status: "completed" | "pending" | "failed";
-// }
-
-// interface UsageHistory {
-//   id: string;
-//   startTime: string;
-//   endTime: string;
-//   duration: string;
-//   cost: number;
-//   type: "hourly" | "daily" | "weekly" | "monthly";
-//   resourceType: "SmartPC" | "Storage";
-//   status: "completed" | "active";
-// }
-interface PaymentMethodData {
-  number: string;
-  expiry: string;
-  cvc: string;
-  name: string;
-}
+import { getCurrentBalance, getMonthlySpending, getPaymentMethods, recharge } from "@/api/billing";
+import { PaymentMethod } from "@stripe/stripe-js";
+import { StripeProvider } from "@/components/ui/StripeProvider";
+import { RechargeHistoryTab } from "./recharge-tab";
+import { SmartPCUsageHistoryTab } from "./smartpc-usage-history-tab";
+import { SmartStorageUsageHistoryTab } from "./smartstorage-usage-history-tab";
 
 const quickRechargeAmounts = [
   {
-    amount: 10,
-    label: "Basic",
-    description: "Quick top-up for short sessions",
+    amount: 20,
+    label: ""
   },
-  { amount: 25, label: "Standard", description: "Perfect for regular users" },
-  { amount: 50, label: "Plus", description: "Extra buffer for longer use" },
+  { amount: 50, 
+    label: "", 
+    description: "", 
+    isRecommended: true, 
+  },
   {
     amount: 100,
-    label: "Pro",
-    description: "Most popular choice",
-    isRecommended: true,
+    label: "",
+    description: "",
   },
-  { amount: 200, label: "Business", description: "For professional workloads" },
-  {
-    amount: 500,
-    label: "Enterprise",
-    description: "Maximum credit with bonus",
-  },
+  { amount: 200, 
+    label: "", 
+    description: "" },
+  
 ];
+
 
 const billingPlans = [
   {
     id: "hourly",
     name: "Hourly",
     description: "Perfect for quick tasks and testing",
-    price: "0.50",
-    unit: "hour",
     icon: Clock,
     features: [
       "Pay only for actual usage",
       "No minimum commitment",
-      "Instant start/stop",
       "Basic support included",
     ],
   },
@@ -121,22 +103,7 @@ const billingPlans = [
     features: [
       "24-hour continuous access",
       "15% savings vs hourly",
-      "Automated daily backups",
-      "Priority email support",
-    ],
-  },
-  {
-    id: "weekly",
-    name: "Weekly",
-    description: "Great for ongoing projects",
-    price: "49.99",
-    unit: "week",
-    icon: CalendarRange,
-    features: [
-      "7-day uninterrupted access",
-      "25% savings vs daily",
-      "Enhanced backup frequency",
-      "Priority chat support",
+      "Basic support included",
     ],
   },
   {
@@ -149,103 +116,227 @@ const billingPlans = [
     features: [
       "30-day continuous access",
       "35% savings vs weekly",
-      "Advanced monitoring tools",
-      "24/7 priority support",
+      "Basic support included",
     ],
-  },
-  {
-    id: "yearly",
-    name: "Yearly",
-    description: "Maximum savings for businesses",
-    price: "1799.99",
-    unit: "year",
-    icon: CalendarIcon,
-    features: [
-      "365-day premium access",
-      "45% savings vs monthly",
-      "Dedicated resources",
-      "Personal account manager",
-    ],
-  },
+  }
 ];
 
-const BillingPage = () => {
-  const [selectedPlan, setSelectedPlan] = useState("hourly");
-  // const [searchMonth, setSearchMonth] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [date, setDate] = useState<DateRange>();
-  const [balance, setBalance] = useState(45.5);
-  const [savedPaymentMethods, setSavedPaymentMethods] = useState<
-    Array<{
-      id: string;
-      type: "card";
-      last4: string;
-      expMonth: number;
-      expYear: number;
-      brand: string;
-      isDefault: boolean;
-    }>
-  >([
-    {
-      id: "1",
-      type: "card",
-      last4: "4242",
-      expMonth: 12,
-      expYear: 2024,
-      brand: "Visa",
-      isDefault: true,
-    },
-  ]);
+// const smartStoragePlans = [
+//   {
+//       id: "hourly",
+//       name: "Hourly",
+//       icon: Clock,
+//       price: "0.15",
+//       unit: "GB/hour",
+//       description: "Flexible storage for temporary needs",
+//       features: [
+//         "High-speed SSD storage",
+//         "Pay per GB used",
+//         "Instant provisioning",
+//         "Data redundancy",
+//         "No minimum commitment"
+//       ]
+//     },
+//     {
+//       id: "daily",
+//       name: "Daily",
+//       icon: Calendar,
+//       price: "2.50",
+//       unit: "GB/day",
+//       description: "Optimized for daily workflows",
+//       features: [
+//         "All hourly features",
+//         "30% cost savings vs hourly",
+//         "Batch processing optimization",
+//         "Enhanced performance",
+//         "Daily usage analytics"
+//       ]
+//     },{
+//       id: "monthly",
+//       name: "Monthly",
+//       icon: CalendarDays,
+//       price: "50.00",
+//       unit: "GB/month",
+//       description: "Cost-effective for persistent storage",
+//       features: [
+//         "All daily features",
+//         "40% cost savings vs daily",
+//         "Enterprise-grade reliability",
+//         "Advanced backup options",
+//         "Volume discounts available"
+//       ]
+//     }
+//   ];
 
-  // Mock data for invoices
-  // const invoices: Invoice[] = [
-  //   {
-  //     id: "INV-001",
-  //     date: "2024-03-01",
-  //     amount: 150.0,
-  //     status: "paid",
-  //     period: "March 2024",
-  //   },
-  //   {
-  //     id: "INV-002",
-  //     date: "2024-02-01",
-  //     amount: 125.5,
-  //     status: "paid",
-  //     period: "February 2024",
-  //   },
-  // ];
+export type ExtendedPaymentMethod = PaymentMethod & {
+    isDefault?: boolean;
+};
+
+const BillingPage = () => {
+  const [selectedPlan, setSelectedPlan] = useState("monthly");
+  const [setSelectedStoragePlan] = useState("monthly");
+  const [selectedService, setSelectedService] = useState("smartpc");
+
+  const [balance, setBalance] = useState<number | null>(null);
+  const [currentMonthSpending, setCurrentMonthSpending] = useState<number | null>(null);
+  const [lastMonthSpending, setLastMonthSpending] = useState(0.0);
+  const [monthSpendingPercentChange, setMonthSpendingPercentChange] = useState(0.0);
+  const [loading, setLoading] = useState(true);
+  const [savedPaymentMethods, setSavedPaymentMethods] = useState<ExtendedPaymentMethod[]>([]);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
+  const [customAmount, setCustomAmount] = useState<number | null>(null);
+  const [isRecharging, setIsRecharging] = useState(false);
+  const [lastRechargeTimestamp, setLastRechargeTimestamp] = useState<string | null>(null);
+  const [autoRechargeEnabled, setAutoRechargeEnabled] = useState(false);
+
+  const [balanceLoading, setBalanceLoading] = useState(true);
+  const [spendingLoading, setSpendingLoading] = useState(true); 
+
+  const [storageTier, setStorageTier] = useState(1);
+  const [selectedServer, setSelectedServer] = useState("us-east");
+
+  const serverLocations = [
+    { id: "us-east", name: "US East (N. Virginia)" },
+  ];
+
+  const PRICE_PER_TIER = 0.5;
+  const getStorageSizeFromTier = (tier: number) => `${tier * 20} GB`;
+  const price = storageTier === 1 ? 0 : (storageTier - 1) * PRICE_PER_TIER;
+  
+  const fetchPaymentMethods = async () => {
+    try {
+      setLoading(true);
+      const data = await getPaymentMethods();
+      const mapped = mapPaymentMethodsFromAPI(data);
+      setSavedPaymentMethods(mapped);
+    } catch (error: unknown) {
+      console.error("Failed to load payment methods:", error);
+      const message =
+          error instanceof Error
+            ? error.message
+            : "Could not fetch payment methods.";
+      toast({
+        title: "Error loading payment methods",
+        description: message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const mapPaymentMethodsFromAPI = (apiResponse: any): ExtendedPaymentMethod[] => {
+    const defaultId = apiResponse.defaultPaymentMethod?.id;
+    return apiResponse.paymentMethods.map((pm: any) => ({
+      id: pm.id,
+      type: "card",
+      card: {
+        last4: pm.card.last4,
+        exp_month: pm.card.exp_month,
+        exp_year: pm.card.exp_year,
+        brand: pm.card.brand,
+      },
+      isDefault: pm.id === defaultId,
+    }));
+  };
+
+  const fetchCurrentBalance = async () => {
+    try {
+      setBalanceLoading(true); // 👈 Start loading
+      const data = await getCurrentBalance();
+      setBalance(data.balance);
+      if (data?.lastRecharge?.timestamp) {
+        setLastRechargeTimestamp(data.lastRecharge.timestamp);
+      }
+    } catch (error) {
+      console.error("Failed to get wallet balance:", error);
+      toast({
+        title: "Error loading wallet balance",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Could not fetch wallet balance",
+      });
+    } finally {
+      setBalanceLoading(false); // 👈 Stop loading
+    }
+  };  
+
+  type MonthlyChangeSummary = {
+    currentMonth: number;
+    lastMonth: number;   
+    percentChange: number;
+    trend: 'increase' | 'decrease' | 'no change';
+  };
+
+  const fetchMonthlySpending = async () => {
+    try {
+      setSpendingLoading(true);
+      const data: MonthlyChangeSummary = await getMonthlySpending();
+      setCurrentMonthSpending(data.currentMonth);
+      setLastMonthSpending(data.lastMonth);
+      setMonthSpendingPercentChange(data.percentChange);
+    } catch (error: unknown) {
+      console.error("Failed to get monthly spending:", error);
+      toast({
+        title: "Error loading monthly spending",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Could not fetch monthly spending",
+      });
+    } finally {
+      setSpendingLoading(false);
+    }
+  };  
+
+  
+  useEffect(() => {
+    fetchPaymentMethods();
+    fetchCurrentBalance();
+    fetchMonthlySpending();
+  }, []);
+  
+  
+  const doRecharge = async(amount: number)=> {
+    try {
+      setLoading(true);
+      setIsRecharging(true);
+      const data = await recharge(amount);
+      setBalance(data.newBalance);
+      toast({
+        title: "Recharge successful",
+        description: `Your wallet balance has been updated successfully. New balance amount is ${data.newBalance}`,
+      });
+      setCustomAmount(null)
+    } catch (error: unknown) {
+      console.error("Failed to recharge wallet:", error);
+      const message =
+          error instanceof Error
+            ? error.message
+            : "Could not recharge wallet";
+      toast({
+        title: "Error recharging wallet",
+        description: message,
+      });
+    } finally {
+      setLoading(false);
+      setIsRecharging(false);
+    }
+  };
 
   // Get balance color based on amount
   const getBalanceColor = () => {
-    if (balance >= 50) return "text-green-500";
-    if (balance > 10) return "text-yellow-500";
+    if (balance !== null && balance >= 20) return "text-green-500";
+    if (balance !== null && balance >= 10) return "text-yellow-500";    
     return "text-red-500";
   };
 
-  const handleAddPaymentMethod = (data: PaymentMethodData) => {
-    // Here you would typically integrate with your payment processor
-    const newMethod = {
-      id: Math.random().toString(),
-      type: "card" as const,
-      last4: data.number.slice(-4),
-      expMonth: parseInt(data.expiry.split("/")[0]),
-      expYear: parseInt("20" + data.expiry.split("/")[1]),
-      brand: "Visa", // You would get this from your payment processor
-      isDefault: savedPaymentMethods.length === 0,
-    };
-
-    setSavedPaymentMethods((prev) => [...prev, newMethod]);
+  const handleAddPaymentMethod = (data: ExtendedPaymentMethod) => {
+    setSavedPaymentMethods((prev) => [...prev, data]);
     toast({
       title: "Payment method added",
       description: "Your new payment method has been saved successfully.",
-    });
-  };
-
-  const handleRemovePaymentMethod = (id: string) => {
-    setSavedPaymentMethods((prev) => prev.filter((method) => method.id !== id));
-    toast({
-      title: "Payment method removed",
-      description: "Your payment method has been removed successfully.",
     });
   };
 
@@ -262,27 +353,61 @@ const BillingPage = () => {
     });
   };
 
+  const getCurrentPlans = () => {
+    // Only Sense PC plans are returned; SmartStorage uses dynamic slider instead
+    return billingPlans;
+  };
+  
+  const getCurrentSelectedPlan = () => {
+    return selectedPlan; // Sense Storage plan selection is disabled
+  };
+
+  // const setCurrentSelectedPlan = (plan:any) => {
+  //   if (selectedService === "smartpc") {
+  //     setSelectedPlan(plan);
+  //   } else {
+  //     setSelectedStoragePlan(plan);
+  //   }
+  // };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Billing & Payments</h1>
-        <PaymentMethodDialog
-          savedMethods={savedPaymentMethods}
-          onAddMethod={handleAddPaymentMethod}
-          onRemoveMethod={handleRemovePaymentMethod}
-          onSetDefault={handleSetDefaultPaymentMethod}
-        />
+        <StripeProvider>
+          <PaymentMethodDialog
+            onAddMethod={handleAddPaymentMethod}
+            onSetDefault={handleSetDefaultPaymentMethod}
+            savedMethods={savedPaymentMethods}
+          />
+        </StripeProvider>
       </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Balance Card */}
         <Card className="relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-emerald-500" />
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">
-                Current Balance
-              </span>
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Wallet Balance
+                </span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-4 w-4 text-yellow-600 cursor-pointer" />
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="top"
+                    className="max-w-xs text-xs text-yellow-700 dark:text-yellow-300"
+                  >
+                    This is your available wallet balance. It is used for all active services,
+                    including Sense PC and Sense Storage charges. Keep it funded to avoid service
+                    interruptions.
+                  </TooltipContent>
+                </Tooltip>
+              </div>
               <Wallet className="h-4 w-4 text-muted-foreground" />
             </CardTitle>
           </CardHeader>
@@ -290,56 +415,134 @@ const BillingPage = () => {
             <div className="space-y-1">
               <div
                 className={cn(
-                  "text-3xl font-bold tracking-tight",
+                  "text-2xl font-bold tracking-tight",
                   getBalanceColor()
                 )}
               >
-                ${balance.toFixed(2)}
+                {balanceLoading ? (
+                  <div className="h-6 w-24 bg-muted animate-pulse rounded" />
+                ) : (
+                  `$${Number(balance).toFixed(2)}`
+                )}
               </div>
               <p className="text-xs text-muted-foreground">
-                Last recharged on March 15, 2024
+                {lastRechargeTimestamp
+                  ? `Last recharged on ${new Date(lastRechargeTimestamp).toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}`
+                  : 'No recharge history yet'}
               </p>
             </div>
           </CardContent>
         </Card>
 
+        {/* Monthly Spending */}
         <Card className="relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500 to-purple-500" />
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">
-                Monthly Spending
-              </span>
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Monthly Spending
+                </span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-4 w-4 text-yellow-600 cursor-pointer" />
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="top"
+                    className="max-w-xs text-xs text-yellow-700 dark:text-yellow-300"
+                  >
+                    This shows your total charges for Sense PC and Sense Storage
+                    services this month. Spending includes compute time, storage usage,
+                    and any other billable activity.
+                  </TooltipContent>
+                </Tooltip>
+              </div>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-1">
-              <div className="text-3xl font-bold tracking-tight">$324.50</div>
+              <div className="text-2xl font-bold tracking-tight">
+                {spendingLoading ? (
+                  <div className="h-6 w-24 bg-muted animate-pulse rounded" />
+                ) : (
+                  `$${Number(currentMonthSpending).toFixed(2)}`
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">
-                +12.5% from last month
+                {spendingLoading ? "" : `${monthSpendingPercentChange}% from last month`}
               </p>
             </div>
           </CardContent>
         </Card>
 
+        {/* Promo & Cashback */}
         <Card className="relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500" />
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-sky-500" />
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="text-sm font-medium text-muted-foreground">
-                Usage History
+                Promotion & Cashback
               </span>
-              <History className="h-4 w-4 text-muted-foreground" />
+              <Wallet className="h-4 w-4 text-muted-foreground" />
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-1">
-              <div className="text-3xl font-bold tracking-tight">156 hrs</div>
-              <p className="text-xs text-muted-foreground">
-                Total usage this month
-              </p>
-            </div>
+            <TooltipProvider>
+              <div className="flex justify-between px-2 py-1 text-sm text-muted-foreground font-medium">
+                {/* Promotion */}
+                <div className="flex flex-col items-start gap-0.5 leading-tight">
+                  <div className="flex items-center gap-1">
+                    <span className="text-[11px] tracking-wide text-muted-foreground uppercase">
+                      Promotion
+                    </span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-3.5 w-3.5 text-muted-foreground cursor-pointer" />
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="top"
+                        className="max-w-xs text-xs text-yellow-700 dark:text-yellow-300"
+                      >
+                        Promotional balance is a limited-time credit added to your account
+                        (e.g., from offers or referrals). It can only be used for service
+                        usage and holds no real-world cash value.
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <span className="text-base text-sky-600 font-semibold">$0.00</span>
+                </div>
+
+                <div className="w-px bg-border mx-3" />
+
+                {/* Cashback */}
+                <div className="flex flex-col items-end gap-0.5 leading-tight">
+                  <div className="flex items-center gap-1">
+                    <span className="text-[11px] tracking-wide text-muted-foreground uppercase">
+                      Cashback
+                    </span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-3.5 w-3.5 text-muted-foreground cursor-pointer" />
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="top"
+                        className="max-w-xs text-xs text-yellow-700 dark:text-yellow-300"
+                      >
+                        Cashback balance is earned from qualifying activity and is only
+                        valid toward service usage. It is not withdrawable or redeemable
+                        as real money.
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <span className="text-base text-indigo-600 font-semibold">$0.00</span>
+                </div>
+              </div>
+            </TooltipProvider>
           </CardContent>
         </Card>
       </div>
@@ -366,7 +569,10 @@ const BillingPage = () => {
                       key={amount}
                       variant={isRecommended ? "default" : "outline"}
                       className="h-auto relative group p-4 flex flex-col items-start gap-1"
-                      onClick={() => setBalance((prev) => prev + amount)}
+                      onClick={() => {
+                        setSelectedAmount(amount);
+                        setShowConfirm(true);
+                      }}
                     >
                       <div className="flex items-center justify-between w-full">
                         <span className="text-sm font-medium">{label}</span>
@@ -394,321 +600,250 @@ const BillingPage = () => {
                 </div>
               </div>
 
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    $
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      $
+                    </div>
+                    <Input
+                      type="number"
+                      placeholder="Enter amount"
+                      className="pl-7"
+                      value={customAmount ?? ''}
+                      onChange={(e) => setCustomAmount(parseFloat(e.target.value))}
+                    />
                   </div>
-                  <Input
-                    type="number"
-                    placeholder="Enter amount"
-                    className="pl-7"
-                  />
+                  <Button
+                    className="flex-shrink-0"
+                    disabled={isRecharging}
+                    onClick={() => {
+                      if (customAmount && customAmount >= 20) {
+                        setSelectedAmount(customAmount);
+                        setShowConfirm(true);
+                      } else {
+                        toast({
+                          title: "Invalid amount",
+                          description: "Please enter a valid amount (minimum $20).",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                  >
+                    {isRecharging ? "Processing..." : "Add Funds"}
+                  </Button>
                 </div>
-                <Button className="flex-shrink-0">Add Funds</Button>
+
+                {/* ✅ Auto Recharge Checkbox */}
+                <label className="flex items-center text-sm font-medium cursor-pointer text-primary dark:text-primary">
+                  <input
+                    type="checkbox"
+                    className="mr-2 h-4 w-4 accent-primary"
+                    checked={autoRechargeEnabled}
+                    onChange={() => setAutoRechargeEnabled(!autoRechargeEnabled)}
+                  />
+                  Enable auto-recharge when balance drops below $10
+                </label>
               </div>
             </div>
           </CardContent>
         </Card>
+
+        <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Recharge</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to add <strong>${selectedAmount}</strong> to your wallet?
+              </DialogDescription>
+            </DialogHeader>
+
+            {/* ✅ New checkbox */}
+            <div className="flex items-center text-sm font-medium cursor-pointer text-primary dark:text-primary">
+              <input
+                type="checkbox"
+                id="autoRecharge"
+                className="mr-2 h-4 w-4 accent-primary"
+                checked={autoRechargeEnabled}
+                onChange={() => setAutoRechargeEnabled(!autoRechargeEnabled)}
+              />
+              <label htmlFor="autoRecharge">Enable automatic reoccurring</label>
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setShowConfirm(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (selectedAmount) {
+                    doRecharge(selectedAmount);
+                    // future: save autoRechargeEnabled to backend
+                  }
+                  setShowConfirm(false);
+                }}
+              >
+                Yes, Recharge
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Plans Section */}
         <Card className="relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/40 to-primary" />
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" />
-              Only Pay For What You Need
+              <Zap className="h-5 w-5 text-primary" />
+              Only Pay For What You Use
             </CardTitle>
             <CardDescription>
-              Choose your preferred billing cycle
+              Choose your service and preferred billing cycle
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs
-              defaultValue="hourly"
-              value={selectedPlan}
-              onValueChange={setSelectedPlan}
+              defaultValue="smartpc"
+              value={selectedService}
+              onValueChange={setSelectedService}
               className="w-full"
             >
-              <TabsList className="grid grid-cols-5 h-auto p-1">
-                {billingPlans.map((plan) => (
-                  <TabsTrigger
-                    key={plan.id}
-                    value={plan.id}
-                    className="flex flex-col items-center gap-1.5 py-2 px-1"
-                  >
-                    <plan.icon className="h-4 w-4" />
-                    <span className="text-xs font-medium">{plan.name}</span>
-                  </TabsTrigger>
-                ))}
+              {/* Service Selection Tabs */}
+              <TabsList className="grid grid-cols-2 h-auto p-1 mb-6">
+                <TabsTrigger
+                  value="smartpc"
+                  className="flex items-center gap-2 py-3 px-4"
+                >
+                  <Cpu className="h-4 w-4" />
+                  <span className="font-medium">Sense PC</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="smartstorage"
+                  className="flex items-center gap-2 py-3 px-4"
+                >
+                  <HardDrive className="h-4 w-4" />
+                  <span className="font-medium">Sense Storage</span>
+                </TabsTrigger>
               </TabsList>
 
-              {billingPlans.map((plan) => (
-                <TabsContent
-                  key={plan.id}
-                  value={plan.id}
-                  className="mt-6 space-y-6"
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold tracking-tight">
-                        ${plan.price}
-                      </span>
-                      <span className="text-muted-foreground">
-                        per {plan.unit}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {plan.description}
-                    </p>
-                  </div>
+              {/* Sense PC Content – Display all plans together */}
+              <TabsContent value="smartpc" className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {billingPlans.map((plan) => (
+                    <Card key={plan.id} className="flex flex-col">
+                      <CardHeader>
+                        <div className="flex items-center gap-2">
+                          <plan.icon className="h-5 w-5 text-primary" />
+                          <CardTitle className="text-base">{plan.name}</CardTitle>
+                        </div>
+                        <CardDescription>{plan.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="flex-grow flex flex-col justify-between space-y-4">
+                        <div className="space-y-4">
+                          <h4 className="text-sm font-medium">What's included:</h4>
+                          <ul className="space-y-3">
+                            {plan.features.map((feature, index) => (
+                              <li
+                                key={index}
+                                className="flex items-center gap-2 text-sm"
+                              >
+                                <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center">
+                                  <CheckCircle className="h-3.5 w-3.5 text-primary" />
+                                </div>
+                                {feature}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
 
-                  <Separator />
+                {/* 📌 SSD Note */}
+                <p className="text-xs mt-6 text-yellow-700 dark:text-yellow-300">
+                  💡 <span className="font-medium">Note:</span> If your PC is on an <strong>Hourly Plan</strong>, 
+                  SSD storage charges will continue even after stopping your Sense PC, 
+                  since the disk remains allocated to preserve your data.
+                </p>
+              </TabsContent>
 
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-medium">What's included:</h4>
-                    <ul className="space-y-3">
-                      {plan.features.map((feature, index) => (
-                        <li
-                          key={index}
-                          className="flex items-center gap-2 text-sm"
-                        >
-                          <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center">
-                            <CheckCircle className="h-3.5 w-3.5 text-primary" />
+            {/* Smart Storage Content */}
+            <TabsContent value="smartstorage" className="space-y-6">
+            <div className="space-y-6 py-2">
+              <div>
+                <h3 className="text-sm font-medium">Storage Tier</h3>
+                <div className="flex justify-between mt-1 mb-2">
+                  <span className="text-muted-foreground text-xs">T-1 (20GB)</span>
+                  <span className="text-muted-foreground text-xs">T-50 (1000GB)</span>
+                </div>
+                <Slider
+                  value={[storageTier]}
+                  onValueChange={(value) => setStorageTier(value[0])}
+                  min={1}
+                  max={50}
+                  step={1}
+                />
+                <div className="mt-3 flex justify-between items-center">
+                  <span className="text-sm">
+                    Selected: <strong>T-{storageTier}</strong> ({getStorageSizeFromTier(storageTier)})
+                  </span>
+                  <span className="text-large font-semibold">
+                    {price === 0 ? "FREE" : `$${price.toFixed(2)}`} / month
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium mb-2">Data Center Location</h3>
+                <Select value={selectedServer} onValueChange={setSelectedServer}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a region" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {serverLocations.map((loc) => (
+                      <SelectItem key={loc.id} value={loc.id}>
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-2">
+                            <Server className="h-4 w-4" />
+                            <span>{loc.name}</span>
                           </div>
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <Button className="w-full">Select {plan.name} Plan</Button>
-                </TabsContent>
-              ))}
-            </Tabs>
-          </CardContent>
-        </Card>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
       </div>
 
       {/* Billing History Tabs */}
       <Card>
         <CardHeader>
-          <CardTitle>Account History</CardTitle>
+          <CardTitle>Wallet Recharge and Billing History:</CardTitle>
           <CardDescription>
             View your recharge and usage history
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="recharge" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="recharge">Recharge History</TabsTrigger>
-              <TabsTrigger value="usage">Usage History</TabsTrigger>
-            </TabsList>
+            {/* Wrap TabsList in a scrollable container */}
+            <div className="overflow-x-auto scrollbar-hide -mx-2 px-2">
+              <TabsList className="flex w-fit min-w-full gap-2">
+                <TabsTrigger value="recharge">Wallet Recharge</TabsTrigger>
+                <TabsTrigger value="usage">Sense PC Billing</TabsTrigger>
+                <TabsTrigger value="storage-usage">Sense Storage Billing</TabsTrigger>
+              </TabsList>
+            </div>
 
-            <TabsContent value="recharge" className="space-y-4">
-              {/* Search and Filter for Recharge */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <DatePickerWithRange date={date} setDate={setDate} />
-                <div className="relative flex-1">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search transactions..."
-                    className="pl-8"
-                  />
-                </div>
-              </div>
-
-              {/* Recharge History List */}
-              <div className="rounded-lg border divide-y">
-                {[
-                  {
-                    id: "TXN-001",
-                    date: "2024-03-15 14:30",
-                    amount: 100.0,
-                    method: "Visa •••• 4242",
-                    status: "completed",
-                  },
-                  {
-                    id: "TXN-002",
-                    date: "2024-03-01 09:15",
-                    amount: 50.0,
-                    method: "PayPal",
-                    status: "completed",
-                  },
-                  {
-                    id: "TXN-003",
-                    date: "2024-02-15 16:45",
-                    amount: 25.0,
-                    method: "Mastercard •••• 5555",
-                    status: "completed",
-                  },
-                ].map((recharge) => (
-                  <div
-                    key={recharge.id}
-                    className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="p-2 rounded-full bg-primary/10">
-                        <ArrowUpRight className="h-4 w-4 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{recharge.id}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {recharge.date}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm text-muted-foreground">
-                        {recharge.method}
-                      </span>
-                      <Badge variant="outline" className="font-medium">
-                        +${recharge.amount.toFixed(2)}
-                      </Badge>
-                      <Badge variant="default">{recharge.status}</Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="usage" className="space-y-4">
-              {/* Search and Filter for Usage */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <DatePickerWithRange date={date} setDate={setDate} />
-                <Select defaultValue="all">
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Resource type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Resources</SelectItem>
-                    <SelectItem value="smartpc">SmartPC</SelectItem>
-                    <SelectItem value="storage">Storage</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select defaultValue="all">
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Billing type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="hourly">Hourly</SelectItem>
-                    <SelectItem value="daily">Daily</SelectItem>
-                    <SelectItem value="weekly">Weekly</SelectItem>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Usage History List */}
-              <div className="rounded-lg border divide-y">
-                {[
-                  {
-                    id: "USE-001",
-                    startTime: "2024-03-15 10:00",
-                    endTime: "2024-03-15 14:30",
-                    duration: "4h 30m",
-                    cost: 2.25,
-                    type: "hourly",
-                    resourceType: "SmartPC",
-                    status: "completed",
-                  },
-                  {
-                    id: "USE-002",
-                    startTime: "2024-03-14 00:00",
-                    endTime: "2024-03-14 23:59",
-                    duration: "24h",
-                    cost: 9.99,
-                    type: "daily",
-                    resourceType: "SmartPC",
-                    status: "completed",
-                  },
-                  {
-                    id: "USE-003",
-                    startTime: "2024-03-01 00:00",
-                    endTime: "2024-03-31 23:59",
-                    duration: "1 month",
-                    cost: 5.99,
-                    type: "monthly",
-                    resourceType: "Storage",
-                    status: "active",
-                  },
-                ].map((usage) => (
-                  <div
-                    key={usage.id}
-                    className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="p-2 rounded-full bg-primary/10">
-                        {usage.resourceType === "SmartPC" ? (
-                          <Monitor className="h-4 w-4 text-primary" />
-                        ) : (
-                          <HardDrive className="h-4 w-4 text-primary" />
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">{usage.resourceType}</p>
-                          <Badge variant="outline" className="text-xs">
-                            {usage.type}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {usage.startTime} -{" "}
-                          {usage.status === "active"
-                            ? "Present"
-                            : usage.endTime}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm text-muted-foreground">
-                        {usage.duration}
-                      </span>
-                      <Badge variant="secondary" className="font-medium">
-                        ${usage.cost.toFixed(2)}
-                      </Badge>
-                      <Badge
-                        variant={
-                          usage.status === "active" ? "default" : "outline"
-                        }
-                        className={
-                          usage.status === "active"
-                            ? "bg-green-500/10 text-green-500 hover:bg-green-500/20"
-                            : ""
-                        }
-                      >
-                        {usage.status}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </TabsContent>
+            <RechargeHistoryTab />
+            <SmartPCUsageHistoryTab />
+            <SmartStorageUsageHistoryTab />
           </Tabs>
-
-          {/* Pagination */}
-          <div className="flex items-center justify-center gap-2 mt-6">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              Page {currentPage}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => p + 1)}
-              disabled={currentPage >= 3}
-            >
-              Next
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>

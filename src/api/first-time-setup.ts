@@ -1,6 +1,10 @@
 import { fetchAuthSession } from "aws-amplify/auth";
 
-const API_URL = "https://qlabwdtr71.execute-api.us-east-1.amazonaws.com/prod/";
+const API_URL = process.env.NEXT_PUBLIC_FIRST_TIME_TOKEN_URL!;
+
+if (!API_URL) {
+  throw new Error("Missing NEXT_PUBLIC_FIRST_TIME_TOKEN_URL in .env file");
+}
 
 async function getIdToken(): Promise<string> {
   const session = await fetchAuthSession();

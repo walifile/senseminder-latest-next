@@ -25,10 +25,10 @@ import {
 const tutorials = [
   {
     id: 1,
-    title: "Getting Started with SmartPC",
+    title: "Getting Started with Sense PC",
     duration: "5:30",
     description:
-      "Learn the basics of setting up and using your SmartPC cloud computer.",
+      "Learn the basics of setting up and using your Sense PC cloud computer.",
     videoUrl: "/videos/getting-started.mp4",
     youtubeUrl: "https://youtube.com/watch?v=getting-started",
     category: "Basics",
@@ -41,7 +41,7 @@ const tutorials = [
     title: "Advanced Performance Optimization",
     duration: "8:45",
     description:
-      "Discover techniques to optimize your SmartPC for maximum performance.",
+      "Discover techniques to optimize your Sense PC for maximum performance.",
     videoUrl: "/videos/performance.mp4",
     youtubeUrl: "https://youtube.com/watch?v=performance",
     category: "Performance",
@@ -53,7 +53,7 @@ const tutorials = [
     id: 3,
     title: "Storage Management Guide",
     duration: "6:15",
-    description: "Master the art of managing your smart storage efficiently.",
+    description: "Master the art of managing your Sense storage efficiently.",
     videoUrl: "/videos/storage.mp4",
     youtubeUrl: "https://youtube.com/watch?v=storage",
     category: "Storage",
@@ -65,7 +65,7 @@ const tutorials = [
     id: 4,
     title: "Security Best Practices",
     duration: "7:20",
-    description: "Learn essential security measures to protect your SmartPC.",
+    description: "Learn essential security measures to protect your Sense PC.",
     videoUrl: "/videos/security.mp4",
     youtubeUrl: "https://youtube.com/watch?v=security",
     category: "Security",
@@ -77,7 +77,7 @@ const tutorials = [
     id: 5,
     title: "Customization and Personalization",
     duration: "4:55",
-    description: "Customize your SmartPC environment to suit your needs.",
+    description: "Customize your Sense PC environment to suit your needs.",
     videoUrl: "/videos/customization.mp4",
     youtubeUrl: "https://youtube.com/watch?v=customization",
     category: "Customization",
@@ -121,7 +121,7 @@ const TutorialsPage = () => {
         <div>
           <h1 className="text-2xl font-bold">Video Tutorials</h1>
           <p className="text-muted-foreground">
-            Learn how to make the most of your SmartPC
+            Learn how to make the most of your Sense PC
           </p>
         </div>
 

@@ -6,7 +6,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { confirmSignIn } from "aws-amplify/auth";
 import { useDispatch, useSelector } from "react-redux";
-import {setLoading, setTempUser } from "@/redux/slices/auth-slice";
+import { setLoading, setTempUser } from "@/redux/slices/auth/auth-slice";
 import { RootState } from "@/redux/store";
 import { handleSignOut } from "@/lib/services/auth";
 import { useToast } from "@/hooks/use-toast";
@@ -49,7 +49,9 @@ export default function ChangePasswordPage() {
         });
         dispatch(setTempUser(null));
         router.push("/auth");
-      } else if (result.nextStep?.signInStep === "CONTINUE_SIGN_IN_WITH_TOTP_SETUP") {
+      } else if (
+        result.nextStep?.signInStep === "CONTINUE_SIGN_IN_WITH_TOTP_SETUP"
+      ) {
         router.push("/auth");
       } else {
         setError("Unexpected response. Please try logging in again.");

@@ -4,7 +4,7 @@ import { Star, User, Building, Quote } from "lucide-react";
 const testimonials = [
   {
     content:
-      "SmartPC has revolutionized our remote work setup. The performance is incredible, and we've seen a 40% increase in productivity across our design team.",
+      "Sense PC has revolutionized our remote work setup. The performance is incredible, and we've seen a 40% increase in productivity across our design team.",
     author: "Sarah Johnson",
     position: "Creative Director",
     company: "DesignWorks Studio",
@@ -12,7 +12,7 @@ const testimonials = [
   },
   {
     content:
-      "I've tried several smart PC solutions, but SmartPC stands out with its reliability and performance. It's like having my workstation with me wherever I go.",
+      "I've tried several Sense PC solutions, but Sense PC stands out with its reliability and performance. It's like having my workstation with me wherever I go.",
     author: "Michael Chen",
     position: "Software Engineer",
     company: "TechSolutions Inc.",
@@ -28,7 +28,7 @@ const testimonials = [
   },
   {
     content:
-      "SmartPC has allowed our small studio to access computing power we could never afford as hardware. We're now competing with much larger studios on equal footing.",
+      "Sense PC has allowed our small studio to access computing power we could never afford as hardware. We're now competing with much larger studios on equal footing.",
     author: "David Kim",
     position: "Founder",
     company: "Apex Animations",
@@ -53,7 +53,7 @@ const Testimonials = () => {
             Worldwide
           </h2>
           <p className="text-lg text-muted-foreground">
-            See why thousands of professionals and companies rely on SmartPC for
+            See why thousands of professionals and companies rely on Sense tPC for
             their cloud computing needs
           </p>
         </div>
@@ -125,7 +125,7 @@ const Testimonials = () => {
                   Join 10,000+ professionals
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Who trust SmartPC for their cloud computing
+                  Who trust Sense PC for their cloud computing
                 </p>
               </div>
             </div>

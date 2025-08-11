@@ -60,10 +60,14 @@ const Navbar = () => {
               </Button>
             )}
             <Button variant="ghost" className="text-sm" asChild>
-              <Link href={routes.smartStorage}>Smart Storage</Link>
+              <Link
+                href={isAuthenticated ? routes.storage : routes.smartStorage}
+              >
+                Sense Storage
+              </Link>
             </Button>
             <Button variant="ghost" className="text-sm" asChild>
-              <Link href={routes.buildPc}>Build SmartPC</Link>
+              <Link href={routes.buildPc}>Build Sense PC</Link>
             </Button>
             <ThemeToggle />
             {isAuthenticated ? (
@@ -99,14 +103,14 @@ const Navbar = () => {
               className="text-sm w-full justify-start"
               asChild
             >
-              <Link href={routes.smartStorage}>Smart Storage</Link>
+              <Link href={routes.smartStorage}>Sense Storage</Link>
             </Button>
             <Button
               variant="ghost"
               className="text-sm w-full justify-start"
               asChild
             >
-              <Link href={routes.buildPc}>Build SmartPC</Link>
+              <Link href={routes.buildPc}>Build Sense PC</Link>
             </Button>
             <div className="px-3 py-1">
               <ThemeToggle />

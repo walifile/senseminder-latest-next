@@ -72,7 +72,7 @@ const HeroSlideshow = () => {
   };
 
   return (
-    <div className="relative w-full aspect-[3/1] overflow-hidden bg-black/10">
+    <div className="relative w-full aspect-[3/0.6] overflow-hidden bg-black/10 mb-0 pb-0">
       {/* Slides */}
       <AnimatePresence mode="wait">
         <motion.div

@@ -1,3 +1,13 @@
+export interface ScheduleInfo {
+  enabled: boolean;
+  autoStartTime?: string;
+  autoStopTime?: string;
+  frequency?: "everyday" | "weekdays" | "weekends" | "custom";
+  startDate?: string | null;
+  endDate?: string | null;
+  timeZone?: string;
+}
+
 export interface InstanceSpecs {
   cpu: string;
   ram: string;
@@ -9,18 +19,28 @@ export interface InstanceSpecs {
 export interface InstanceDetail {
   systemName: string;
   instanceId?: string;
+  configId?: string;
+  schedule?: ScheduleInfo;
   region?: string;
   uptime?: string;
-  idleTimeout?: number;//mewly added by me
+  idleTimeout?: number;
   cpuUsage?: string;
   memoryUsage?: string;
   specs?: InstanceSpecs;
   error?: string;
 }
+const INSTANCE_DETAILS_URL = process.env.NEXT_PUBLIC_INSTANCE_DETAILS_URL!;
 
-export async function fetchInstanceDetails(userId: string, instanceNames: string[]): Promise<InstanceDetail[]> {
+if (!INSTANCE_DETAILS_URL) {
+  throw new Error("Missing NEXT_PUBLIC_INSTANCE_DETAILS_URL in .env file");
+}
+
+export async function fetchInstanceDetails(
+  userId: string,
+  instanceNames: string[]
+): Promise<InstanceDetail[]> {
   try {
-    const res = await fetch("https://4oacxj1xyk.execute-api.us-east-1.amazonaws.com/instance-details-v2", {
+    const res = await fetch(INSTANCE_DETAILS_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

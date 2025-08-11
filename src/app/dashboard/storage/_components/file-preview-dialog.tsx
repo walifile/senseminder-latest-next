@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FileItem } from "../types";
+import { X, Download } from "lucide-react";
 
 interface FilePreviewProps {
   file: FileItem | null;
@@ -31,7 +32,15 @@ const FilePreviewDialog: React.FC<FilePreviewProps> = ({
       <img
         src={src}
         alt={file.fileName}
-        className="max-h-[75vh] object-contain rounded shadow-md"
+        className="max-h-[60vh] max-w-[60vw] m-0 p-0 block"
+        style={{
+          display: "block",
+          margin: "0 auto",
+          padding: 0,
+          border: "none",
+          boxShadow: "none",
+          background: "none",
+        }}
       />
     );
   } else if (ext === "pdf") {
@@ -73,24 +82,35 @@ const FilePreviewDialog: React.FC<FilePreviewProps> = ({
 
   return (
     <Dialog open={!!file} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl w-full">
+      <DialogContent
+        className="max-w-fit px-4 py-0 m-0"
+        style={{ '--hide-close-button': 'none' } as React.CSSProperties}
+      >
+        <style jsx>{`
+          [data-state="open"] > button[data-dialog-close] {
+            display: var(--hide-close-button);
+          }
+        `}</style>
+  
         <DialogHeader>
           <DialogTitle>Preview: {file.fileName}</DialogTitle>
         </DialogHeader>
-
-        <div className="flex items-center justify-center py-4 min-h-60">
+  
+        <div className="flex items-center justify-center p-0 m-0">
           {content}
         </div>
-
+  
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            Close
+            <X className="h-4 w-4 text-red-500" />
           </Button>
-          <Button onClick={() => handleDownload(file)}>Download</Button>
+          <Button onClick={() => handleDownload(file)}>
+            <Download className="h-4 w-4" />
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  );  
 };
 
 export default FilePreviewDialog;

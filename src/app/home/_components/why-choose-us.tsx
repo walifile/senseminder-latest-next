@@ -70,7 +70,7 @@ const WhyChooseUs = () => {
             transition={{ duration: 0.5 }}
             className="text-3xl md:text-4xl font-bold mb-4"
           >
-            Why Choose SmartPC Over{" "}
+            Why Choose Sense PC Over{" "}
             <span className="gradient-text">Traditional Computers</span>?
           </motion.h2>
           <motion.p
@@ -82,7 +82,7 @@ const WhyChooseUs = () => {
           >
             Traditional computers come with their share of challenges: high
             upfront costs, limited scalability, and ongoing maintenance.
-            SenseMinder SmartPC offers a refreshing alternative. With a
+            SenseMinder Sense PC offers a refreshing alternative. With a
             pay-as-you-go model, instant scaling, and robust cloud security,
             it's designed for the modern user.
           </motion.p>
@@ -102,7 +102,7 @@ const WhyChooseUs = () => {
               <div className="w-12"></div>
               <div className="font-semibold text-center">Traditional PCs</div>
               <div className="font-semibold text-center text-primary">
-                SenseMinder SmartPC
+                SenseMinder Sense PC
               </div>
             </div>
 

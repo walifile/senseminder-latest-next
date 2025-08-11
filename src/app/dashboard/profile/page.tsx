@@ -1,5 +1,8 @@
 "use client";
 
+import SecurityQuestionDialog from "../_components/security-question-dialog";
+import MfaMethodDialog from "../_components/MfaMethodDialog";
+
 import React, { useState, useEffect, useRef } from "react";
 import {
   Card,
@@ -7,6 +10,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter  
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,20 +28,20 @@ import {
   Edit2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 
-import { getUserProfile, updateUserProfile } from "@/api/profileManagement"; // adjust path as needed
+import { getUserProfile, updateUserProfile } from "@/api/profileManagement"; 
+
+
+import {updatePassword } from "aws-amplify/auth";
+import { fetchAuthSession, signOut } from "aws-amplify/auth";
+import MfaTotpDialog from "@/app/dashboard/_components/MfaTotpDialog";
+import { fetchActiveSessions, SmartPCSession } from "@/api/session";
+import { fetchUserAttributes, updateMFAPreference } from "aws-amplify/auth";
+
+import { fetchMFAPreference } from "aws-amplify/auth"; // ✅ Make sure this is imported
 
 const ProfilePage = () => {
   const { toast } = useToast();
-
   // ===== API-driven Profile State =====
   const [profile, setProfile] = useState<{
     email: string;
@@ -49,6 +53,7 @@ const ProfilePage = () => {
   } | null>(null);
 
   // ===== Form States =====
+  const [showTotpDialog, setShowTotpDialog] = useState(false);
   const [orgEditing, setOrgEditing] = useState(false);
   const [orgInput, setOrgInput] = useState("");
   const [fullName, setFullName] = useState("");
@@ -56,43 +61,39 @@ const ProfilePage = () => {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  
 
   const orgInputRef = useRef<HTMLInputElement>(null);
 
   // Security & 2FA/session states
   const [show2FADialog, setShow2FADialog] = useState(false);
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
-  const [sessions] = useState([
-    {
-      id: 1,
-      device: "Chrome on Windows",
-      location: "New York, USA",
-      ip: "192.158.1.38",
-      lastActive: "Active Now",
-      isCurrentSession: true,
-    },
-    {
-      id: 2,
-      device: "Safari on iPhone",
-      location: "New York, USA",
-      ip: "192.158.1.38",
-      lastActive: "2 days ago",
-      isCurrentSession: false,
-    },
-  ]);
+
+  const [sessions, setSessions] = useState<SmartPCSession[]>([]);
+
   const [mfaMethod, setMfaMethod] = useState<"app" | "sms" | "email" | null>(
     null
   );
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [verificationCode, setVerificationCode] = useState("");
-  const [isCodeSent, setIsCodeSent] = useState(false);
-  const [cooldown, setCooldown] = useState(0);
-  const [isPhoneValid, setIsPhoneValid] = useState(false);
-  const [preferredEmail, setPreferredEmail] = useState("");
-  const [isEmailValid, setIsEmailValid] = useState(false);
 
+  const [cooldown, setCooldown] = useState(0);
+
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  const [showSecurityDialog, setShowSecurityDialog] = useState(false);
+  const [isEmailMFAEnabled, setIsEmailMFAEnabled] = useState(false);
+
+
+
+  
   // ===== Profile & Org Data Fetch/Sync =====
   useEffect(() => {
+
+
     const fetchProfile = async () => {
       setLoading(true);
       try {
@@ -120,8 +121,104 @@ const ProfilePage = () => {
       }
     };
     fetchProfile();
+    
     // eslint-disable-next-line
   }, []);
+  const [isFederatedUser, setIsFederatedUser] = useState(false);
+  useEffect(() => {
+  const fetchSessions = async () => {
+    const data = await fetchActiveSessions();
+    setSessions(data);
+  };
+
+  fetchSessions();
+}, []);
+
+  useEffect(() => {
+  const checkFederatedStatus = async () => {
+    try {
+      const session = await fetchAuthSession();
+      const idToken = session.tokens?.idToken?.toString();
+      if (!idToken) return;
+
+      const decoded = JSON.parse(atob(idToken.split(".")[1]));
+      const isFederated =
+        Array.isArray(decoded?.identities) &&
+        decoded.identities.some((id: any) =>
+          ["google", "apple"].includes(id.providerType?.toLowerCase())
+        );
+      setIsFederatedUser(isFederated);
+    } catch (err) {
+      console.error("Failed to decode token for federated check:", err);
+    }
+  };
+
+  checkFederatedStatus();
+}, []);
+
+
+// useEffect(() => {
+//   const checkMFAPreference = async () => {
+//     try {
+//       const result = await fetchMFAPreference();
+//       console.log("MFA preference result:", result);
+
+//       const isTOTPEnabled = result.enabled?.includes("TOTP") || result.preferred === "TOTP";
+
+//       setIs2FAEnabled(isTOTPEnabled);
+//     } catch (err) {
+//       setIs2FAEnabled(false);
+//     }
+//   };
+
+//   checkMFAPreference();
+// }, []);
+
+useEffect(() => {
+  const checkMFAPreference = async () => {
+    try {
+      const result = await fetchMFAPreference();
+      console.log("MFA preference result:", result);
+
+      const isTOTPEnabled = result.enabled?.includes("TOTP") || result.preferred === "TOTP";
+      const isEmailEnabled = result.enabled?.includes("EMAIL") || result.preferred === "EMAIL";
+
+      setIs2FAEnabled(isTOTPEnabled);
+      setIsEmailMFAEnabled(isEmailEnabled);
+    } catch (err) {
+      setIs2FAEnabled(false);
+      setIsEmailMFAEnabled(false);
+    }
+  };
+
+  checkMFAPreference();
+}, []);
+
+const handleToggleEmailMFA = async () => {
+  try {
+    const newStatus = !isEmailMFAEnabled;
+    // await updateMFAPreference({
+    //   email: newStatus ? "PREFERRED" : "DISABLED",
+    // });
+    await updateMFAPreference({
+        email: newStatus ? "NOT_PREFERRED" : "DISABLED",
+        totp: is2FAEnabled ? "NOT_PREFERRED" : "DISABLED",
+      });
+
+    setIsEmailMFAEnabled(newStatus);
+    toast({
+      title: `Email MFA ${newStatus ? "Enabled" : "Disabled"}`,
+      description: `Email-based multi-factor authentication has been ${newStatus ? "enabled" : "disabled"}.`,
+    });
+  } catch (err) {
+    toast({
+      title: "Error updating Email MFA",
+      description: err instanceof Error ? err.message : "Something went wrong",
+      variant: "destructive",
+    });
+  }
+};
+
 
   useEffect(() => {
     if (orgEditing && orgInputRef.current) {
@@ -272,48 +369,6 @@ const ProfilePage = () => {
     };
   }, [cooldown]);
 
-  const validatePhoneNumber = (phone: string) => {
-    const phoneRegex = /^\+?[1-9]\d{1,14}$/;
-    return phoneRegex.test(phone.replace(/[\s()-]/g, ""));
-  };
-
-  const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const phone = e.target.value;
-    setPhoneNumber(phone);
-    setIsPhoneValid(validatePhoneNumber(phone));
-  };
-
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const email = e.target.value;
-    setPreferredEmail(email);
-    setIsEmailValid(validateEmail(email));
-  };
-
-  const sendVerificationCode = async () => {
-    try {
-      if (cooldown > 0) return;
-      setIsCodeSent(false);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setIsCodeSent(true);
-      setCooldown(60);
-      setVerificationCode("");
-    } catch (error) {
-      console.error("Failed to send verification code:", error);
-    }
-  };
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleRevokeSession = (sessionId: number) => {
-    toast({
-      title: "Session Revoked",
-      description: "The selected session has been terminated.",
-    });
-  };
-
   const complete2FASetup = () => {
     setIs2FAEnabled(true);
     setShow2FADialog(false);
@@ -322,6 +377,29 @@ const ProfilePage = () => {
       description: "Two-factor authentication has been successfully enabled.",
     });
   };
+ const handleDisableTotp = async () => {
+  try {
+    await updateMFAPreference({
+      totp: "DISABLED",
+    });
+
+    setIs2FAEnabled(false);
+
+    toast({
+      title: "TOTP Disabled",
+      description: "Authenticator App MFA has been turned off.",
+    });
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Failed to disable TOTP.";
+    toast({
+      title: "Error",
+      description: message,
+      variant: "destructive",
+    });
+  }
+};
+
 
   const handleMFAMethodChange = (method: "app" | "sms" | "email") => {
     setMfaMethod(method);
@@ -497,40 +575,144 @@ const ProfilePage = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Key className="h-5 w-5" />
-                Update Password
+                Password
               </CardTitle>
-              <CardDescription>Change your password</CardDescription>
+              <CardDescription>
+                {isFederatedUser
+                  ? "This account was created with Google or Apple Sign-In."
+                  : "You’ve set a password for your Sense PC account."}
+              </CardDescription>
             </CardHeader>
+
             <CardContent>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  toast({
-                    title: "Password Updated",
-                    description: "Your password has been changed successfully.",
-                  });
-                }}
-                className="space-y-4"
-              >
-                <div className="grid gap-2">
-                  <Label htmlFor="current">Current Password</Label>
-                  <Input id="current" type="password" />
+              {isFederatedUser ? (
+                <div className="text-sm text-muted-foreground">
+                  This account was created using Google or Apple. You don’t need a password to sign in.
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="new">New Password</Label>
-                  <Input id="new" type="password" />
+              ) : !showPasswordForm ? (
+                <div className="text-sm text-muted-foreground">
+                  <Button
+                    variant="link"
+                    className="px-0 mt-2 text-sm"
+                    onClick={() => setShowPasswordForm(true)}
+                  >
+                    Change password
+                  </Button>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="confirm">Confirm Password</Label>
-                  <Input id="confirm" type="password" />
-                </div>
-                <Button type="submit" className="w-full">
-                  <Key className="h-4 w-4 mr-2" />
-                  Update Password
-                </Button>
-              </form>
+              ) : (
+                <form
+                  className="space-y-4"
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+
+                    if (newPassword !== confirmPassword) {
+                      toast({
+                        title: "Passwords do not match",
+                        description: "Please re-enter the same new password.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+
+                    setChangingPassword(true);
+                    try {
+                      await updatePassword({
+                        oldPassword: currentPassword,
+                        newPassword: newPassword,
+                      });
+
+                      toast({
+                        title: "Password Changed",
+                        description: "You can now log out and log back in with your new password.",
+                      });
+                    } catch (err) {
+                      const message =
+                        err instanceof Error
+                          ? err.message
+                          : "Failed to change password.";
+                      toast({
+                        title: "Error",
+                        description: message,
+                        variant: "destructive",
+                      });
+                    } finally {
+                      setChangingPassword(false);
+                    }
+                  }}
+                >
+                  <div className="grid gap-2">
+                    <Label htmlFor="current">Current Password</Label>
+                    <Input
+                      id="current"
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="new">New Password</Label>
+                    <Input
+                      id="new"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Must be at least 8 characters long and include a number or symbol.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="confirm">Re-enter New Password</Label>
+                    <Input
+                      id="confirm"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => {
+                        setShowPasswordForm(false);
+                        setCurrentPassword("");
+                        setNewPassword("");
+                        setConfirmPassword("");
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={changingPassword}>
+                      {changingPassword ? "Updating..." : "Confirm"}
+                    </Button>
+                  </div>
+                </form>
+              )}
             </CardContent>
           </Card>
+
+          {/* ----- Security Question Card ----- */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Security Question</CardTitle>
+              <CardDescription>
+                Set or update your account recovery security question.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-between items-center">
+              <p className="text-sm text-muted-foreground">
+                Setting up a security question adds an extra layer of protection for actions like changing your password or configuring multi-factor authentication.
+              </p>
+              <Button size="sm" onClick={() => setShowSecurityDialog(true)}>
+                Edit
+              </Button>
+            </CardContent>
+          </Card>
+          <SecurityQuestionDialog open={showSecurityDialog} onClose={() => setShowSecurityDialog(false)} />
 
           {/* ----- Multi-Factor Auth Card ----- */}
           <Card>
@@ -550,13 +732,45 @@ const ProfilePage = () => {
                       : "Use an authenticator app to generate one-time codes"}
                   </p>
                 </div>
-                <Button
+               <Button
                   variant={is2FAEnabled ? "destructive" : "outline"}
-                  onClick={() => handleMFAMethodChange("app")}
+                  onClick={() => {
+                    if (is2FAEnabled) {
+                      handleDisableTotp();
+                    } else {
+                      setShowTotpDialog(true);
+                    }
+                  }}
                 >
                   <Shield className="h-4 w-4 mr-2" />
                   {is2FAEnabled ? "Disable" : "Setup"}
                 </Button>
+
+
+                  <MfaTotpDialog
+                    open={showTotpDialog}
+                    onClose={() => setShowTotpDialog(false)}
+                  onComplete={async () => {
+                      setShowTotpDialog(false);
+                      try {
+                           // Tell Cognito: TOTP is ENABLED, and set as PREFERRED
+                          await updateMFAPreference({
+                            totp: "NOT_PREFERRED",
+                            email: isEmailMFAEnabled ? "NOT_PREFERRED" : "DISABLED"
+                          });
+                        const result = await fetchMFAPreference();
+                        console.log("MFA preference result (onComplete):", result);
+
+                        const isTOTPEnabled = result.enabled?.includes("TOTP") || result.preferred === "TOTP";
+                        setIs2FAEnabled(isTOTPEnabled);
+                      } catch (err) {
+                        console.error("Error fetching MFA (onComplete):", err);
+                      }
+                    }}
+
+
+
+                  />
               </div>
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
@@ -567,6 +781,7 @@ const ProfilePage = () => {
                 </div>
                 <Button
                   variant="outline"
+                  disabled
                   onClick={() => handleMFAMethodChange("sms")}
                 >
                   <Smartphone className="h-4 w-4 mr-2" />
@@ -580,212 +795,74 @@ const ProfilePage = () => {
                     Receive codes via email
                   </p>
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={() => handleMFAMethodChange("email")}
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  Setup
-                </Button>
+               <Button
+                variant={isEmailMFAEnabled ? "destructive" : "outline"}
+                onClick={handleToggleEmailMFA}
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                {isEmailMFAEnabled ? "Disable" : "Setup"}
+              </Button>
+
               </div>
             </CardContent>
           </Card>
 
-          {/* ----- Active Sessions Card ----- */}
           <Card>
             <CardHeader>
-              <CardTitle>Active Sessions</CardTitle>
-              <CardDescription>
-                Manage your active sessions across devices
-              </CardDescription>
+              <CardTitle>Connected Devices</CardTitle>
             </CardHeader>
+
             <CardContent className="space-y-4">
               {sessions.map((session) => (
                 <div
-                  key={session.id}
+                  key={session.sessionId}
                   className="flex items-start justify-between border-b last:border-0 pb-4 last:pb-0"
                 >
                   <div className="space-y-1">
-                    <p className="font-medium">{session.device}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {session.location} • IP: {session.ip}
+                    <p className="font-medium flex items-center gap-2">
+                      {session.deviceName || "Unknown Device"}
+                      {session.isCurrentSession && (
+                        <span className="text-green-600 dark:text-green-400 text-xs font-semibold">
+                          THIS DEVICE
+                        </span>
+                      )}
                     </p>
-                    <p
-                      className={`text-xs ${
-                        session.isCurrentSession ? "text-primary" : ""
-                      }`}
-                    >
-                      {session.lastActive}
+
+                    <p className="text-xs text-muted-foreground">
+                      Last Activity{" "}
+                      {session.lastSeen
+                        ? new Date(session.lastSeen).toLocaleString()
+                        : "Unknown"}
+                      {session.location?.city || session.location?.country
+                        ? ` • ${session.location?.city || "Unknown"}, ${session.location?.country || session.location?.region || ""}`
+                        : ""}
                     </p>
                   </div>
-                  {!session.isCurrentSession && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => handleRevokeSession(session.id)}
-                    >
-                      <AlertTriangle className="h-4 w-4 mr-2" />
-                      Revoke
-                    </Button>
-                  )}
                 </div>
               ))}
             </CardContent>
+
+            <CardFooter className="justify-end">
+              <form action="/api/auth/global-signout" method="POST">
+                <Button type="submit" variant="destructive" size="sm">
+                  Sign Out from All Devices
+                </Button>
+              </form>
+            </CardFooter>
           </Card>
+
+
         </TabsContent>
       </Tabs>
 
       {/* 2FA Dialog */}
-      <Dialog open={show2FADialog} onOpenChange={setShow2FADialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {mfaMethod === "app" && "Setup Authenticator App"}
-              {mfaMethod === "sms" && "Setup SMS Authentication"}
-              {mfaMethod === "email" && "Setup Email Authentication"}
-            </DialogTitle>
-            <DialogDescription>
-              {mfaMethod === "app" &&
-                "Scan the QR code below with your authenticator app"}
-              {mfaMethod === "sms" &&
-                "Enter your phone number to receive verification codes"}
-              {mfaMethod === "email" &&
-                "We'll send verification codes to your email"}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col items-center space-y-4 py-4">
-            {mfaMethod === "app" && (
-              <>
-                <div className="border border-border p-4 rounded-lg">
-                  <QrCode className="h-32 w-32 text-muted-foreground" />
-                </div>
-                <p className="text-sm text-muted-foreground text-center">
-                  Can't scan the QR code? Enter this code manually:
-                  <br />
-                  <code className="font-mono bg-muted px-2 py-1 rounded mt-2 inline-block">
-                    ABCD EFGH IJKL MNOP
-                  </code>
-                </p>
-              </>
-            )}
-            {mfaMethod === "sms" && (
-              <div className="space-y-4 w-full">
-                <div className="space-y-2">
-                  <Label>Phone Number</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="tel"
-                      placeholder="+1 (555) 000-0000"
-                      value={phoneNumber}
-                      onChange={handlePhoneNumberChange}
-                      className={
-                        !isPhoneValid && phoneNumber ? "border-destructive" : ""
-                      }
-                    />
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={sendVerificationCode}
-                      disabled={!isPhoneValid || cooldown > 0}
-                    >
-                      {cooldown > 0
-                        ? `Resend (${cooldown}s)`
-                        : isCodeSent
-                        ? "Resend"
-                        : "Send Code"}
-                    </Button>
-                  </div>
-                  {!isPhoneValid && phoneNumber && (
-                    <p className="text-sm text-destructive">
-                      Please enter a valid phone number
-                    </p>
-                  )}
-                  {isCodeSent && (
-                    <p className="text-sm text-muted-foreground">
-                      A verification code has been sent to your phone
-                    </p>
-                  )}
-                </div>
-                {isCodeSent && (
-                  <div className="space-y-2">
-                    <Label>Verification Code</Label>
-                    <Input
-                      placeholder="Enter 6-digit code"
-                      maxLength={6}
-                      value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value)}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-            {mfaMethod === "email" && (
-              <div className="space-y-4 w-full">
-                <div className="space-y-2">
-                  <Label>Email Address</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="email"
-                      placeholder="Enter your preferred email"
-                      value={preferredEmail}
-                      onChange={handleEmailChange}
-                      className={
-                        !isEmailValid && preferredEmail ? "border-destructive" : ""
-                      }
-                    />
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={sendVerificationCode}
-                      disabled={!isEmailValid || cooldown > 0}
-                    >
-                      {cooldown > 0
-                        ? `Resend (${cooldown}s)`
-                        : isCodeSent
-                        ? "Resend"
-                        : "Send Code"}
-                    </Button>
-                  </div>
-                  {!isEmailValid && preferredEmail && (
-                    <p className="text-sm text-destructive">
-                      Please enter a valid email address
-                    </p>
-                  )}
-                  {isCodeSent && (
-                    <p className="text-sm text-muted-foreground">
-                      A verification code has been sent to {preferredEmail}
-                    </p>
-                  )}
-                </div>
-                {isCodeSent && (
-                  <div className="space-y-2">
-                    <Label>Verification Code</Label>
-                    <Input
-                      placeholder="Enter 6-digit code"
-                      maxLength={6}
-                      value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value)}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShow2FADialog(false);
-                setMfaMethod(null);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button onClick={complete2FASetup}>Enable</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <MfaMethodDialog
+        open={show2FADialog}
+        onClose={() => setShow2FADialog(false)}
+        method={mfaMethod}
+        onComplete={complete2FASetup}
+      />
+
     </div>
   );
 };

@@ -23,21 +23,21 @@ const SmartPCEmptyState: React.FC<SmartPCEmptyStateProps> = ({
       <div className="rounded-full bg-primary/10 p-4 mb-4">
         <Monitor className="h-8 w-8 text-primary" />
       </div>
-      <h3 className="text-lg font-semibold mb-2">No SmartPCs Found</h3>
+      <h3 className="text-lg font-semibold mb-2">No Sense PCs Found</h3>
       <p className="text-muted-foreground mb-6 max-w-md">
         {searchQuery
-          ? "No SmartPCs match your search criteria. Try adjusting your search terms."
-          : "Get started by building your first SmartPC. Check out our tutorials to learn more about SmartPC features."}
+          ? "No Sense PCs match your search criteria. Try adjusting your search terms."
+          : "Get started by building your first Sense PC. Check out our tutorials to learn more about Sense PC features."}
       </p>
       <div className="flex gap-4">
         {/* <Button onClick={() => setShowNewPCDialog(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          Build SmartPC
+          Build Sense PC
         </Button> */}
         {!isMember && (
           <Button onClick={() => setShowNewPCDialog(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Build SmartPC
+            Build Sense PC
           </Button>
         )}
 

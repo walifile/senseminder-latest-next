@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, useRef, useCallback } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -34,12 +34,6 @@ import DCVViewer from "@/app/pc-viewer/_components/dcv-viewer";
 import { useSelector } from "react-redux";
 import { selectLaunchVMResponse } from "@/redux/slices/dcv/dcv-slice";
 import dcv from "../../../public/dcvjs/dcv";
-import { ClipboardManager } from "./_components/clipboard";
-import { DisplayManager } from "./_components/configure-maager";
-import { PerformanceMonitor } from "./_components/performance-monitor";
-import { AudioVideoManager } from "./_components/audio-video-manager";
-import { AccessibilityManager } from "./_components/accessibility-manager";
-import { EnhancedFileTransferManager } from "./_components/file-trasfer";
 
 // Add ConnectionState type
 type ConnectionState = "CONNECTED" | "DISCONNECTED" | "RECONNECTING";
@@ -50,50 +44,20 @@ interface KeyboardShortcutKey {
   location: number;
 }
 
-// Import FileTransferSession type if not already imported
-// import type { FileTransferSession } from "./_components/file-trasfer";
-
-interface FileTransferSession {
-  // Add the properties that match your actual FileTransferSession type
-  sessionId: string;
-  fileName: string;
-  status: string;
-  // ...other properties as needed
-}
-
 interface DcvConnection {
   requestResolution: (width: number, height: number) => Promise<void>;
   disconnect: () => Promise<void>;
   getStats: () => Promise<{ latency: number; fps: number }>;
   sendKeyboardShortcut: (keys: KeyboardShortcutKey[]) => void;
   setDisplayQuality: (min: number, max: number) => void;
-  // File transfer methods required by FileTransferManagerProps
-  startFileTransfer: (...args: any[]) => Promise<FileTransferSession>;
-  getFileTransferSessions: () => Promise<any>;
-  cancelFileTransfer: (sessionId: string) => Promise<void>;
-  pauseFileTransfer: (sessionId: string) => Promise<void>;
-  resumeFileTransfer: (sessionId: string) => Promise<void>;
-
-  // Audio/Video methods expected by AudioVideoManagerProps
-  setAudioEnabled: (enabled: boolean) => void;
-  setAudioInputDevice: (deviceId: string) => void;
-  setAudioOutputDevice: (deviceId: string) => void;
-  setAudioInputVolume: (volume: number) => void;
-  setAudioOutputVolume: (volume: number) => void;
-  getAudioInputDevices: () => Promise<Array<{ deviceId: string; label: string }>>;
-  getAudioOutputDevices: () => Promise<Array<{ deviceId: string; label: string }>>;
-  getCurrentAudioInputDevice: () => Promise<{ deviceId: string; label: string }>;
-  getCurrentAudioOutputDevice: () => Promise<{ deviceId: string; label: string }>;
-  isAudioEnabled: () => boolean;
-  isVideoEnabled?: () => boolean;
-  setVideoEnabled?: (enabled: boolean) => void;
-  getVideoDevices?: () => Promise<Array<{ deviceId: string; label: string }>>;
-  setVideoDevice?: (deviceId: string) => void;
 }
 
 // Create a separate client component that uses useSearchParams
 const PCViewerContent = () => {
   const searchParams = useSearchParams();
+  const sessionParam = searchParams.get("session");
+  const instanceId = sessionParam ? atob(sessionParam) : null;
+
   const [isConnected, setIsConnected] = useState(false);
   const [connectionState, setConnectionState] =
     useState<ConnectionState>("DISCONNECTED");
@@ -136,13 +100,17 @@ const PCViewerContent = () => {
     uptime: "0m",
   });
 
-  const launchVMResponse = useSelector(selectLaunchVMResponse);
+  const launchVMResponse = useSelector((state: any) =>
+    instanceId ? selectLaunchVMResponse(state, instanceId) : null
+  );
+
+  console.log({ launchVMResponse });
+
   const sessionId = launchVMResponse?.sessionId;
   const authToken = launchVMResponse?.sessionToken;
   const url = launchVMResponse?.dnsName;
-  const [isLoading, setIsLoading] = useState(false);
-  const [isResizing, setIsResizing] = useState(false);
 
+  const [isLoading, setIsLoading] = useState(false);
 
   // Check if mobile
   useEffect(() => {
@@ -186,27 +154,18 @@ const PCViewerContent = () => {
   };
 
   // Adjust resolution
-  const lastResolutionKeyRef = useRef<string | null>(null);
-
-  const updateResolution = useCallback(() => {
+  const updateResolution = () => {
     const container = document.getElementById("remote-desktop");
-    if (!connRef.current || !container) return;
+    if (connRef.current && container) {
+      const width = container.clientWidth;
+      const height = window.innerHeight;
+      console.log("Updating resolution:", width, height);
+      connRef.current
+        .requestResolution(width, height)
+        .catch((e) => console.warn("Failed to request resolution:", e));
+    }
+  };
 
-    // Get actual computed dimensions
-    const rect = container.getBoundingClientRect();
-    const width = Math.floor(rect.width);
-    const height = Math.floor(window.innerHeight);
-
-    // Only update if dimensions actually changed
-    const currentKey = `${width}x${height}`;
-    if (lastResolutionKeyRef.current === currentKey) return;
-    lastResolutionKeyRef.current = currentKey;
-
-    console.log("Updating resolution:", width, height);
-    connRef.current
-      .requestResolution(width, height)
-      .catch((e) => console.warn("Failed to request resolution:", e));
-  }, []);
   // Function to connect to DCV
   const connectToDcv = async () => {
     if (sessionId && authToken) {
@@ -222,13 +181,21 @@ const PCViewerContent = () => {
           authToken,
           useGateway: true,
           divId: "remote-desktop",
+          // clipboardAutoSync: true,
           callbacks: {
+            // clipboardEvent: (event) => {
+            //   console.log("Clipboard event:", event);
+            //   if (event.name === "pasteAvailableData") {
+            //     // Paste text or image into the session UI
+            //   }
+            // },
             firstFrame: () => {
               updateResolution();
               setIsLoading(false);
               setIsConnected(true);
               handleQualityChange("auto");
               setConnectionState("CONNECTED");
+
               conn.enableDisplayQualityUpdates(true);
               console.log("checking Connection:", conn);
             },
@@ -238,18 +205,7 @@ const PCViewerContent = () => {
         // Save connection reference
         connRef.current = conn;
 
-        const handleResize = () => {
-          if (isResizing) return;
-
-          setIsResizing(true);
-          updateResolution();
-
-          setTimeout(() => {
-            setIsResizing(false);
-          }, 100);
-        };
-
-        window.addEventListener("resize", handleResize);
+        window.addEventListener("resize", updateResolution);
       } catch (error) {
         console.error("Connection failed:", error);
         setDcvError(error as Error);
@@ -264,25 +220,6 @@ const PCViewerContent = () => {
   useEffect(() => {
     connectToDcv();
   }, []);
-
-
-  useEffect(() => {
-    let rafId: number;
-
-    const handleResize = () => {
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
-        updateResolution();
-      });
-    };
-
-    window.addEventListener("resize", handleResize, { passive: true });
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      cancelAnimationFrame(rafId);
-    };
-  }, [updateResolution]);
 
   const handleConnect = () => {
     if (!connRef.current && sessionId && authToken) {
@@ -355,44 +292,19 @@ const PCViewerContent = () => {
     };
   }, []);
 
-  const openSidebar = useCallback(() => {
+  const openSidebar = () => {
     setIsSidebarOpen(true);
-    // Immediate resize after sidebar opens
     setTimeout(() => {
       updateResolution();
-    }, 0);
-  }, [updateResolution]);
+    });
+  };
 
-  const closeSidebar = useCallback(() => {
+  const closeSidebar = () => {
     setIsSidebarOpen(false);
-    // Immediate resize after sidebar closes
     setTimeout(() => {
       updateResolution();
-    }, 0);
-  }, [updateResolution]);
-
-  // Also, replace the existing useEffect that handles sidebar state changes with this:
-
-  useEffect(() => {
-    // Trigger immediate resize on sidebar state change
-    updateResolution();
-  }, [isSidebarOpen, updateResolution]);
-
-  useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout>;
-
-    const handleUpdate = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        updateResolution();
-      }, 250); // Wait for CSS transition to complete
-    };
-
-    // Trigger on sidebar state change
-    handleUpdate();
-
-    return () => clearTimeout(timeoutId);
-  }, [isSidebarOpen, updateResolution]);
+    });
+  };
 
   const toggleQuickActions = () => {
     setShowQuickActions(!showQuickActions);
@@ -403,10 +315,10 @@ const PCViewerContent = () => {
       {/* Main Remote Desktop Area */}
       <div
         id="remote-desktop"
-        className="flex-1 relative overflow-hidden bg-black transition-all duration-200 ease-out"
-        style={{
-          marginRight: isSidebarOpen && !isMobile ? '320px' : '0px'
-        }}
+        className={cn(
+          "flex-1 relative overflow-hidden bg-black",
+          isSidebarOpen && !isMobile ? "mr-80" : "mr-0"
+        )}
       >
         {/* TV On/Off Animation */}
         <AnimatePresence>
@@ -605,11 +517,7 @@ const PCViewerContent = () => {
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
-            transition={{
-              type: "tween", // Change from spring to tween for predictable timing
-              duration: 0.2, // Match CSS transition duration
-              ease: "easeOut"
-            }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className={cn(
               "bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden z-50",
               isMobile
@@ -628,7 +536,9 @@ const PCViewerContent = () => {
                 >
                   <Settings className="h-4 w-4" />
                 </Button>
-                <h2 className="text-lg font-semibold">PC Controls</h2>
+                <h2 className="text-lg font-semibold">
+                  {launchVMResponse?.pcName}
+                </h2>
               </div>
               <Button
                 variant="ghost"
@@ -664,11 +574,11 @@ const PCViewerContent = () => {
                       className={cn(
                         "font-medium",
                         connectionState === "CONNECTED" &&
-                        "bg-green-500/10 text-green-500 border-green-500/20",
+                          "bg-green-500/10 text-green-500 border-green-500/20",
                         connectionState === "DISCONNECTED" &&
-                        "bg-red-500/10 text-red-500 border-red-500/20",
+                          "bg-red-500/10 text-red-500 border-red-500/20",
                         connectionState === "RECONNECTING" &&
-                        "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
+                          "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
                       )}
                     >
                       {connectionState}
@@ -721,8 +631,9 @@ const PCViewerContent = () => {
                   )}
                 </div>
               </div>
+
               {/* Quality Settings */}
-               <div>
+              <div>
                 <h3 className="text-lg font-semibold mb-4">Quality Settings</h3>
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -749,22 +660,6 @@ const PCViewerContent = () => {
                   </div>
                 </div>
               </div>
-              <EnhancedFileTransferManager
-                connection={connRef.current}
-                isConnected={isConnected}
-              />
-              <AccessibilityManager
-              connection={connRef.current}
-              isConnected={isConnected}
-              />
-              <DisplayManager /> 
-
-              {/* <PerformanceMonitor />   */}
-              <AudioVideoManager
-                connection={connRef.current}
-                isConnected={isConnected}
-              />
-              <ClipboardManager />
 
               {/* Input Settings */}
               <div>
@@ -899,4 +794,5 @@ const PCViewerPage = () => {
     </Suspense>
   );
 };
+
 export default PCViewerPage;

@@ -24,7 +24,7 @@ const SecurityPage = () => {
         <div>
           <h1 className="text-2xl font-bold">Security & Privacy</h1>
           <p className="text-muted-foreground">
-            Learn how we protect your SmartPC and data
+            Learn how we protect your Sense PC and data
           </p>
         </div>
       </div>
@@ -44,7 +44,7 @@ const SecurityPage = () => {
                 Infrastructure Security
               </CardTitle>
               <CardDescription>
-                Enterprise-grade security measures protecting your SmartPC
+                Enterprise-grade security measures protecting your Sense PC
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -66,7 +66,7 @@ const SecurityPage = () => {
                     <h3 className="font-medium">Network Security</h3>
                     <p className="text-sm text-muted-foreground">
                       Multi-layered firewall protection, DDoS mitigation, and
-                      intrusion detection systems ensure your SmartPC remains
+                      intrusion detection systems ensure your Sense PC remains
                       secure.
                     </p>
                   </div>

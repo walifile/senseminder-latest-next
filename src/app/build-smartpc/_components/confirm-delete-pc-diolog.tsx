@@ -1,5 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 import {
   AlertDialog,
   AlertDialogPortal,
@@ -28,6 +35,12 @@ export const ConfirmDeleteModal = ({
   desktopName,
   isDeleting,
 }: ConfirmDeleteModalProps) => {
+  const [isChecked, setIsChecked] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) setIsChecked(false); // reset checkbox when modal closes
+  }, [isOpen]);
+
   return (
     <AlertDialog open={isOpen}>
       <AlertDialogPortal>
@@ -39,17 +52,45 @@ export const ConfirmDeleteModal = ({
                 <Trash2 className="h-6 w-6" />
               </div>
               <AlertDialogTitle className="text-xl font-semibold text-center text-gray-900 dark:text-white">
-                Delete SmartPC?
+                Delete This Computer?
               </AlertDialogTitle>
               <p className="text-center text-base text-muted-foreground mt-1">
                 You’re about to permanently delete{" "}
-                <span className="font-medium text-foreground">
-                  {desktopName}
-                </span>
-                .
-                <br />
-                This action cannot be undone.
+                <span className="font-medium text-foreground">{desktopName}</span> computer. This action can not be undone.
               </p>
+
+              <TooltipProvider>
+                <div className="mt-4 w-full rounded-md bg-yellow-100 text-yellow-800 dark:bg-yellow-500/10 dark:text-yellow-300 p-3 text-sm">
+                  I understand this will also <strong>permanently delete</strong> all data on this Computer{" "}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="underline cursor-help text-yellow-900 dark:text-yellow-200">SSD</span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs text-xs leading-snug">
+                      A Solid State Drive (SSD) is a data storage device that uses integrated circuit assemblies
+                      to store data, unlike traditional Hard Disk Drives (HDDs) which use spinning disks. SSDs
+                      are known for their speed, reliability, and durability due to the absence of moving parts.
+                    </TooltipContent>
+                  </Tooltip>
+                  . If you wish to keep your data, please cancel and back it up first.
+                </div>
+              </TooltipProvider>
+
+              <div className="mt-4 flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  id="delete-confirm"
+                  checked={isChecked}
+                  onChange={(e) => setIsChecked(e.target.checked)}
+                  className="mt-1 h-4 w-4 border rounded"
+                />
+                <label
+                  htmlFor="delete-confirm"
+                  className="text-sm text-muted-foreground leading-snug"
+                >
+                  I acknowledge and accept the above statement.
+                </label>
+              </div>
             </div>
           </AlertDialogHeader>
 
@@ -63,7 +104,7 @@ export const ConfirmDeleteModal = ({
 
             <AlertDialogAction
               onClick={onConfirm}
-              disabled={isDeleting}
+              disabled={!isChecked || isDeleting}
               className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white rounded-md px-5 py-2 text-sm font-medium flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isDeleting ? (

@@ -35,7 +35,6 @@ export async function middleware(request: NextRequest) {
   const isAuthenticated = hasCognitoToken && hasAuthState;
 
   const isPublicRoute = publicRoutes.includes(pathname);
-
   if (!isPublicRoute && !isAuthenticated) {
     const loginUrl = new URL(routes?.signIn, request.url);
     loginUrl.searchParams.set("from", pathname);

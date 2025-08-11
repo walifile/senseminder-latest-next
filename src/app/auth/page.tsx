@@ -11,6 +11,9 @@ import SocailLogin from "./_components/socail-login";
 // import SocialSignIn from "./_components/social-signin";
 import { useToast } from "@/hooks/use-toast";
 import { routes } from "@/constants/routes";
+import {claimSessionIfAvailable } from "@/api/session";
+
+
 
 export default function SignIn() {
   const router = useRouter();
@@ -29,13 +32,21 @@ export default function SignIn() {
       setIsLoading(true);
       const response = await handleSignIn(email, password);
       console.log("Login Response:", response);
+      // Optional: Log nextStep for deeper MFA/debug insight
+      if ("nextStep" in response) {
+        console.log("🟡 Cognito Next Step:", response.nextStep);
+      }
 
       if (response.success) {
         toast({
           title: "Success",
           description: "Logged in successfully!",
         });
-
+        try {
+          await claimSessionIfAvailable();
+        } catch (error) { 
+          console.error("Error claiming session:", error);
+        }
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         const from = searchParams.get("from");
@@ -62,7 +73,38 @@ export default function SignIn() {
           router.push(routes.verifyOTP);
         }, 1500);
 
-      } else {
+      }else if ("mfaRequired" in response && response.mfaRequired) {
+        toast({
+          title: "MFA Required",
+          description: "We sent a code to your email. Please enter it to continue.",
+        });
+
+        router.push("/auth/mfa-email");
+      } else if ("mfaTotp" in response && response.mfaTotp) {
+        toast({
+          title: "Authenticator Code Required",
+          description: "Please enter the 6-digit code from your Authenticator App.",
+        });
+
+        router.push("/auth/mfa-totp");}
+
+      else if ("chooseMFA" in response && response.chooseMFA) {
+      toast({
+        title: "Choose MFA Method",
+        description: "Select how you want to verify your login.",
+      });
+
+      // Store session info
+      sessionStorage.setItem("tempUserMFA", JSON.stringify(response.signInResult));
+      sessionStorage.setItem("mfaEmail", email);
+      sessionStorage.setItem("mfaOptions", JSON.stringify(response.mfaOptions));
+
+      //  Go to selection page
+      router.push("/auth/mfa-select");
+    }
+
+      
+      else {
         toast({
           title: "Login Failed",
           description: response.error || "Invalid credentials. Please try again.",
@@ -88,7 +130,7 @@ export default function SignIn() {
           Welcome Back
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Sign in to access your smart PC
+          Sign in to access your Sense PC
         </p>
       </div>
 

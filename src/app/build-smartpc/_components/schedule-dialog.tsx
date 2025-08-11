@@ -1,202 +1,306 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Clock, Calendar } from "lucide-react";
+import { Clock, Calendar, Search, Trash, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Schedule, saveSchedule, getSchedule, deleteSchedule } from "@/api/schedule";
 
-type ScheduleDialogProps = {
+interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedTimeZone: string;
-  setSelectedTimeZone: (tz: string) => void;
-  scheduleFrequency: string;
-  setScheduleFrequency: (freq: string) => void;
-  customStartDate: string;
-  setCustomStartDate: (date: string) => void;
-  customEndDate: string;
-  setCustomEndDate: (date: string) => void;
-  autoStartTime: string;
-  setAutoStartTime: (time: string) => void;
-  autoStopTime: string;
-  setAutoStopTime: (time: string) => void;
-  onSave: () => void;
+  instanceId: string;
+  refreshSchedule: () => void;
+}
+
+const detectTimeZone = (): string =>
+  Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+
+const getOffset = (iana: string): string => {
+  try {
+    const dt = new Date();
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: iana,
+      timeZoneName: "shortOffset",
+    }).formatToParts(dt);
+    const value = parts.find((p) => p.type === "timeZoneName")?.value || "";
+    return value.replace("GMT", "UTC");
+  } catch {
+    return "UTC+00:00";
+  }
 };
 
-const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
+const allTimeZones: string[] =
+  typeof Intl.supportedValuesOf === "function"
+    ? Intl.supportedValuesOf("timeZone")
+    : [
+        "UTC", "Asia/Dhaka", "Asia/Kolkata", "America/New_York",
+        "Europe/Berlin", "Europe/London",
+      ];
+
+export default function ScheduleDialog({
   open,
   onOpenChange,
-  selectedTimeZone,
-  setSelectedTimeZone,
-  scheduleFrequency,
-  setScheduleFrequency,
-  customStartDate,
-  setCustomStartDate,
-  customEndDate,
-  setCustomEndDate,
-  autoStartTime,
-  setAutoStartTime,
-  autoStopTime,
-  setAutoStopTime,
-  onSave,
-}) => {
+  instanceId,
+  refreshSchedule,
+}: Props) {
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
+  const [existingSchedule, setExistingSchedule] = useState<Schedule | null>(null);
+
+  const [selectedTimeZone, setSelectedTimeZone] = useState(detectTimeZone());
+  const [scheduleFrequency, setScheduleFrequency] =
+    useState<"everyday" | "weekdays" | "weekends" | "custom">("everyday");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
+  const [autoStartTime, setAutoStartTime] = useState<string | null>(null);
+  const [autoStopTime, setAutoStopTime] = useState<string | null>(null);
+  const [enabled, setEnabled] = useState(true);
+
+  const [tzSearch, setTzSearch] = useState("");
+  const [loadedZones, setLoadedZones] = useState<{ value: string; label: string }[]>([]);
+
+  useEffect(() => {
+    if (!open || !instanceId) return;
+    setFetching(true);
+    getSchedule(instanceId)
+      .then((schedule) => {
+        setExistingSchedule(schedule);
+        setSelectedTimeZone(schedule?.timeZone || detectTimeZone());
+        setScheduleFrequency(schedule?.frequency || "everyday");
+        setCustomStartDate(schedule?.startDate || "");
+        setCustomEndDate(schedule?.endDate || "");
+        setAutoStartTime(schedule?.autoStartTime ?? null);
+        setAutoStopTime(schedule?.autoStopTime ?? null);
+        setEnabled(schedule?.enabled !== false);
+      })
+      .catch(() => {
+        setExistingSchedule(null);
+        setSelectedTimeZone(detectTimeZone());
+        setScheduleFrequency("everyday");
+        setCustomStartDate("");
+        setCustomEndDate("");
+        setAutoStartTime(null);
+        setAutoStopTime(null);
+        setEnabled(true);
+      })
+      .finally(() => setFetching(false));
+  }, [open, instanceId]);
+
+  useEffect(() => {
+    if (tzSearch.length > 0 && loadedZones.length === 0) {
+      const exclude = selectedTimeZone;
+      const all = allTimeZones
+        .filter((z) => z !== exclude)
+        .map((z) => ({ value: z, label: `${z} (${getOffset(z)})` }));
+      setLoadedZones(all);
+    }
+  }, [tzSearch, loadedZones.length, selectedTimeZone]);
+
+  const filteredZones = useMemo(() => {
+    const term = tzSearch.toLowerCase();
+    return loadedZones
+      .filter((z) =>
+        z.value.toLowerCase().includes(term) ||
+        z.label.toLowerCase().includes(term)
+      )
+      .filter((z) => z.value !== selectedTimeZone);
+  }, [tzSearch, loadedZones, selectedTimeZone]);
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      await saveSchedule({
+        instanceId,
+        timeZone: selectedTimeZone,
+        frequency: scheduleFrequency,
+        startDate: scheduleFrequency === "custom" ? customStartDate : undefined,
+        endDate: scheduleFrequency === "custom" ? customEndDate : undefined,
+        autoStartTime: autoStartTime || undefined,
+        autoStopTime: autoStopTime || undefined,
+        enabled,
+      });
+      refreshSchedule();
+      onOpenChange(false);
+    } catch (err) {
+      console.error("Save error", err);
+      alert("Failed to save schedule");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this schedule?")) return;
+    setLoading(true);
+    try {
+      await deleteSchedule(instanceId);
+      refreshSchedule();
+      onOpenChange(false);
+    } catch (err) {
+      console.error("Delete error", err);
+      alert("Failed to delete schedule");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const timeInput = (label: string, value: string | null, setter: (v: string | null) => void) => (
+    <div className="space-y-2" key={label}>
+      <Label>
+        Auto {label} time <span className="text-xs text-muted-foreground">(optional)</span>
+      </Label>
+      <div className="relative flex items-center">
+        <Input
+          type="time"
+          value={value ?? ""}
+          onChange={(e) => setter(e.target.value || null)}
+          className="pl-3 pr-10 w-full"
+        />
+        {value && (
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="absolute right-1"
+            onClick={() => setter(null)}
+          >
+            <X className="h-4 w-4 text-muted-foreground" />
+          </Button>
+        )}
+        <Clock className="absolute right-8 h-4 w-4 text-muted-foreground pointer-events-none" />
+      </div>
+    </div>
+  );
+
+  const suggestedOption = {
+    value: selectedTimeZone,
+    label: `${selectedTimeZone} (${getOffset(selectedTimeZone)})`,
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[400px]">
+      <DialogContent className="sm:max-w-[420px]">
         <DialogHeader>
-          <DialogTitle>Schedule Your SmartPC</DialogTitle>
+          <DialogTitle>Schedule Your PC</DialogTitle>
           <DialogDescription>
-            Schedule your PC to auto start/stop to increase efficiency and save
-            costs.
+            Auto start/stop your PC on a calendar to save costs.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>Select Time Zone</Label>
-            <Select
-              value={selectedTimeZone}
-              onValueChange={setSelectedTimeZone}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select timezone" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="UTC">UTC</SelectItem>
-                <SelectItem value="EST">Eastern Time (EST)</SelectItem>
-                <SelectItem value="CST">Central Time (CST)</SelectItem>
-                <SelectItem value="PST">Pacific Time (PST)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        {fetching ? (
+          <div className="py-12 text-center text-muted-foreground">Loading schedule…</div>
+        ) : (
+          <div className="space-y-4">
+            {existingSchedule && (
+              <div className="flex items-center gap-2">
+                <Switch checked={enabled} onCheckedChange={setEnabled} />
+                <span className="text-sm">{enabled ? "Enabled" : "Disabled"}</span>
+              </div>
+            )}
 
-          <div className="space-y-2">
-            <Label>Schedule Frequency</Label>
-            <Select
-              value={scheduleFrequency}
-              onValueChange={setScheduleFrequency}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Everyday" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="everyday">Everyday</SelectItem>
-                <SelectItem value="weekdays">Weekdays</SelectItem>
-                <SelectItem value="weekends">Weekends</SelectItem>
-                <SelectItem value="custom">Custom Date Range</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            <div className="space-y-2">
+              <Label>Time Zone</Label>
+              <Select value={selectedTimeZone} onValueChange={setSelectedTimeZone}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pick time zone" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px] overflow-y-auto">
+                  <div className="sticky top-0 bg-popover p-2 z-10">
+                    <Input
+                      placeholder="Search by region or UTC offset…"
+                      value={tzSearch}
+                      onChange={(e) => setTzSearch(e.target.value)}
+                      className="pl-8 text-sm"
+                    />
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <SelectGroup>
+                    <SelectLabel>Suggested</SelectLabel>
+                    <SelectItem value={suggestedOption.value}>{suggestedOption.label}</SelectItem>
+                  </SelectGroup>
+                  {tzSearch && (
+                    <SelectGroup>
+                      <SelectLabel>Matching Results</SelectLabel>
+                      {filteredZones.map((z) => (
+                        <SelectItem key={z.value} value={z.value}>
+                          {z.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
 
-          {scheduleFrequency === "custom" && (
-            <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Frequency</Label>
+              <Select value={scheduleFrequency} onValueChange={(val: "everyday" | "weekdays" | "weekends" | "custom") => setScheduleFrequency(val)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Everyday" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="everyday">Everyday</SelectItem>
+                  <SelectItem value="weekdays">Weekdays</SelectItem>
+                  <SelectItem value="weekends">Weekends</SelectItem>
+                  <SelectItem value="custom">Custom date range</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {scheduleFrequency === "custom" && (
               <div className="space-y-2">
-                <Label>Select Custom Date Range</Label>
-                <div className="grid gap-4">
-                  <div className="relative">
-                    <Input
-                      type="text"
-                      placeholder="mm/dd/yyyy"
-                      className="w-full pl-3 pr-10"
-                      value={customStartDate}
-                      onChange={(e) => setCustomStartDate(e.target.value)}
-                      onClick={(e) => {
-                        const input = e.target as HTMLInputElement;
-                        input.type = "date";
-                        input.showPicker();
-                      }}
-                    />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <Input
-                      type="text"
-                      placeholder="mm/dd/yyyy"
-                      className="w-full pl-3 pr-10"
-                      value={customEndDate}
-                      onChange={(e) => setCustomEndDate(e.target.value)}
-                      onClick={(e) => {
-                        const input = e.target as HTMLInputElement;
-                        input.type = "date";
-                        input.showPicker();
-                      }}
-                    />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </div>
+                <Label>Custom Date Range</Label>
+                <div className="grid gap-3">
+                  {["Start", "End"].map((label, idx) => {
+                    const val = idx === 0 ? customStartDate : customEndDate;
+                    const setter = idx === 0 ? setCustomStartDate : setCustomEndDate;
+                    return (
+                      <div className="relative" key={label}>
+                        <Input
+                          type="date"
+                          placeholder={label}
+                          value={val}
+                          onChange={(e) => setter(e.target.value)}
+                          className="pl-3 pr-10"
+                        />
+                        <Calendar className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="space-y-2">
-            <Label>Auto Start Time (Optional)</Label>
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="--:--"
-                className="w-full pl-3 pr-10"
-                value={autoStartTime}
-                onChange={(e) => setAutoStartTime(e.target.value)}
-                onClick={(e) => {
-                  const input = e.target as HTMLInputElement;
-                  input.type = "time";
-                  input.showPicker();
-                }}
-              />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-              </div>
-            </div>
+            {timeInput("Start", autoStartTime, setAutoStartTime)}
+            {timeInput("Stop", autoStopTime, setAutoStopTime)}
           </div>
+        )}
 
-          <div className="space-y-2">
-            <Label>Auto Stop Time (Optional)</Label>
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="--:--"
-                className="w-full pl-3 pr-10"
-                value={autoStopTime}
-                onChange={(e) => setAutoStopTime(e.target.value)}
-                onClick={(e) => {
-                  const input = e.target as HTMLInputElement;
-                  input.type = "time";
-                  input.showPicker();
-                }}
-              />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button className="w-full" onClick={onSave}>
-            Save Schedule
+        <DialogFooter className="flex flex-row gap-2 mt-4">
+          <Button onClick={handleSave} disabled={loading || fetching} className="w-full">
+            {existingSchedule ? "Update Schedule" : "Create Schedule"}
           </Button>
+          {existingSchedule && (
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={loading || fetching}
+              className="w-full"
+            >
+              <Trash className="mr-2 h-4 w-4" /> Delete Schedule
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-};
-
-export default ScheduleDialog;
+}

@@ -2,7 +2,11 @@
 
 import { fetchAuthSession } from "aws-amplify/auth";
 
-const ASSIGN_API_URL = "https://5csw17pibi.execute-api.us-east-1.amazonaws.com/prod/";
+if (!process.env.NEXT_PUBLIC_ASSIGN_API_URL) {
+  throw new Error("Missing NEXT_PUBLIC_ASSIGN_API_URL in environment");
+}
+
+const ASSIGN_API_URL = process.env.NEXT_PUBLIC_ASSIGN_API_URL;
 
 async function getIdToken() {
   const session = await fetchAuthSession();

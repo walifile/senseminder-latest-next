@@ -61,7 +61,7 @@ const RemainingBalance = ({ balance }: RemainingBalanceProps) => {
             <AlertDialogDescription>
               Your balance is running low (${balance.toFixed(2)}). To ensure
               uninterrupted service, please recharge your account soon. Your
-              SmartPCs may be suspended if the balance reaches $0.
+              Sense PCs may be suspended if the balance reaches $0.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

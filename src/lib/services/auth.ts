@@ -13,13 +13,19 @@ import {
   getCurrentUser,
 } from "aws-amplify/auth";
 import { store } from "@/redux/store";
-import { setUser, clearAuth, setLoading,setTempUser } from "@/redux/slices/auth-slice";
+import {
+  setUser,
+  clearAuth,
+  setLoading,
+  setTempUser,
+} from "@/redux/slices/auth/auth-slice";
 import { deleteCookie } from "cookies-next";
 
 interface SignUpFormData {
   email: string;
   password: string;
   firstName?: string;
+  acceptedLegal?: boolean;
   // lastName: string;
   // country: string;
   // cellphone?: string;
@@ -42,6 +48,7 @@ export const handleSignUp = async (formData: SignUpFormData) => {
           // phone_number: formData.cellphone,
           // 'custom:organization': formData.organization || 'N/A',
           "custom:role": "user",
+          "custom:acceptedLegal": formData.acceptedLegal ? "true" : "false",
         },
       },
     });
@@ -140,6 +147,10 @@ export const handleSignIn = async (email: string, password: string) => {
       username: email,
       password: password,
     });
+    console.log(
+      "signInResponse from Cognito:",
+      JSON.stringify(signInResponse, null, 2)
+    );
 
     // console.log("sign in response", signInResponse);
 
@@ -164,12 +175,70 @@ export const handleSignIn = async (email: string, password: string) => {
     //   store.dispatch(setLoading(false));
     //   return { success: false, requiresNewPassword: true };
     // }
-    if (signInResponse.nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED") {
-    store.dispatch(setTempUser(signInResponse)); // save temporary user to Redux
-    store.dispatch(setLoading(false));
-    return { success: false, requiresNewPassword: true };
-  }
+    if (
+      signInResponse.nextStep?.signInStep ===
+      "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED"
+    ) {
+      store.dispatch(setTempUser(signInResponse)); // save temporary user to Redux
+      store.dispatch(setLoading(false));
+      return { success: false, requiresNewPassword: true };
+    }
 
+    if (
+      signInResponse.nextStep?.signInStep ===
+      "CONTINUE_SIGN_IN_WITH_MFA_SELECTION"
+    ) {
+      const step = signInResponse.nextStep as any;
+      const preferredMfa = step.preferredMfaSetting;
+      const availableMfas: string[] = step.allowedMFATypes || [];
+
+      store.dispatch(setTempUser(signInResponse));
+      sessionStorage.setItem("tempUserMFA", JSON.stringify(signInResponse));
+      sessionStorage.setItem("mfaOptions", JSON.stringify(availableMfas));
+      sessionStorage.setItem("mfaEmail", email); // ✅ helpful for UI
+
+      if (preferredMfa && availableMfas.includes(preferredMfa)) {
+        if (preferredMfa === "TOTP") {
+          return { success: false, mfaTotp: true };
+        } else if (preferredMfa === "EMAIL") {
+          return { success: false, mfaRequired: true };
+        }
+      }
+
+      return {
+        success: false,
+        chooseMFA: true,
+        mfaOptions: availableMfas,
+        signInResult: signInResponse, // ✅ this is the fix
+      };
+    }
+
+    // Case: MFA via Email Code
+    if (
+      signInResponse.nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_EMAIL_CODE"
+    ) {
+      sessionStorage.setItem("tempUserMFA", JSON.stringify(signInResponse)); // ✅ persist the session
+      store.dispatch(setLoading(false));
+      return {
+        success: false,
+        mfaRequired: true,
+        delivery: signInResponse.nextStep.codeDeliveryDetails,
+      };
+    }
+
+    // Case: MFA via TOTP App
+    if (
+      signInResponse.nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_TOTP_CODE"
+    ) {
+      store.dispatch(setTempUser(signInResponse)); // Save session
+      sessionStorage.setItem("tempUserMFA", JSON.stringify(signInResponse)); // ⬅️ Save to session
+
+      store.dispatch(setLoading(false));
+      return {
+        success: false,
+        mfaTotp: true,
+      };
+    }
 
     return await handlePostAuthentication();
   } catch (error: any) {
@@ -278,18 +347,59 @@ export const handleSignOut = async () => {
   }
 };
 
+// export const handleResetPassword = async (email: string) => {
+//   try {
+//     store.dispatch(setLoading(true));
+//     await resetPassword({
+//       username: email,
+//     });
+//     store.dispatch(setLoading(false));
+//     return { success: true };
+//   } catch (error: any) {
+//     store.dispatch(setLoading(false));
+//     console.log(error);
+//     return { success: false, error: error.message };
+//   }
+// };
+
 export const handleResetPassword = async (email: string) => {
   try {
     store.dispatch(setLoading(true));
-    await resetPassword({
-      username: email,
-    });
+    await resetPassword({ username: email });
     store.dispatch(setLoading(false));
     return { success: true };
   } catch (error: any) {
     store.dispatch(setLoading(false));
-    console.log(error);
-    return { success: false, error: error.message };
+
+    console.error("Cognito resetPassword error:", error);
+
+    // Special case: MFA (TOTP) is enabled and user has no verified email/phone
+    if (
+      error.name === "InvalidParameterException" &&
+      error.message.includes("no registered/verified")
+    ) {
+      return {
+        success: false,
+        error:
+          "Password reset is blocked because your account has MFA enabled and no verified email. Please contact support.",
+        code: "MFA_BLOCKED_RESET",
+      };
+    }
+
+    // Other known cases
+    if (error.name === "UserNotFoundException") {
+      return {
+        success: false,
+        error: "No user found with this email.",
+        code: "USER_NOT_FOUND",
+      };
+    }
+
+    // default fallback
+    return {
+      success: false,
+      error: error.message || "Unknown error occurred during password reset.",
+    };
   }
 };
 
@@ -324,3 +434,5 @@ export const getCurrentSession = async () => {
     return null;
   }
 };
+
+export { handlePostAuthentication };

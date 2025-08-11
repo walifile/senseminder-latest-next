@@ -1,3 +1,5 @@
+
+
 "use client";
 
 import { z } from "zod";
@@ -11,7 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { routes } from "@/constants/routes";
 
-// ✅ Zod Schema
+import { handleResetPassword } from "@/lib/services/auth";
+import { checkMfaStatus, sendRecoveryEmail } from "@/api/mfa-recovery"; 
+
 const forgotPasswordSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
 });
@@ -31,17 +35,63 @@ export default function ForgotPassword() {
   });
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
+    const email = data.email.trim().toLowerCase();
+    console.log("Submitted email:", email);
+
     try {
-      router.push(
-        `${routes?.resetPassword}?email=${encodeURIComponent(data.email)}`
-      );
+      console.log("Calling checkMfaStatus...");
+      const mfaResult = await checkMfaStatus(email);
+      console.log("MFA Status Response:", mfaResult);
+
+      const action = mfaResult?.action;
+
+      if (action === "custom_recovery") {
+        console.log("Email MFA enabled. Triggering secure recovery email...");
+        await sendRecoveryEmail(email);
+        toast({
+          title: "Recovery Email Sent",
+          description:
+            "We've sent a secure recovery link to your email. Please check your inbox.",
+        });
+      } else if (action === "cognito_reset") {
+        console.log("Email MFA not enabled. Proceeding with Cognito reset...");
+        const response = await handleResetPassword(email);
+        console.log("📨 Cognito Reset Response:", response);
+
+        if (response.success) {
+          router.push(
+            `${routes?.resetPassword}?email=${encodeURIComponent(email)}`
+          );
+        } else {
+          console.error("Cognito Reset Failed:", response.error);
+          toast({
+            title: "Reset Failed",
+            description: response.error || "Unable to initiate reset.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        console.warn("Unexpected response from MFA API. Fallback to Cognito reset...");
+        const response = await handleResetPassword(email);
+        if (response.success) {
+          router.push(
+            `${routes?.resetPassword}?email=${encodeURIComponent(email)}`
+          );
+        } else {
+          toast({
+            title: "Reset Failed",
+            description: response.error || "Unable to initiate reset.",
+            variant: "destructive",
+          });
+        }
+      }
     } catch (error) {
+      const msg =
+        error instanceof Error ? error.message : "Something went wrong. Try again.";
+      console.error("Error in forgot password flow:", msg);
       toast({
         title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Something went wrong. Try again.",
+        description: msg,
         variant: "destructive",
       });
     }
@@ -86,7 +136,7 @@ export default function ForgotPassword() {
           disabled={isSubmitting}
           className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white dark:from-[#0EA5E9] dark:to-[#6366F1] dark:hover:from-[#0284C7] dark:hover:to-[#4F46E5] disabled:opacity-60"
         >
-          {isSubmitting ? "Sending..." : "Send Reset Link"}
+          {isSubmitting ? "Sending..." : "Confirm reset request"}
         </Button>
       </form>
 

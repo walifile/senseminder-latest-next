@@ -71,7 +71,7 @@ const WhySettle = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-lg text-muted-foreground"
           >
-            Experience Limitless Computing with SenseMinder SmartPC
+            Experience Limitless Computing with SenseMinder Sense PC
           </motion.p>
         </div>
 

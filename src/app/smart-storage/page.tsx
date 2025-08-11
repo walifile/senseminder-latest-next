@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
@@ -21,123 +21,81 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const serverLocations = [
-  { id: "us-east", name: "US East (N. Virginia)", latency: "~20ms" },
-  { id: "us-west", name: "US West (Oregon)", latency: "~60ms" },
-  { id: "eu-central", name: "Europe (Frankfurt)", latency: "~100ms" },
-  { id: "ap-south", name: "Asia Pacific (Mumbai)", latency: "~140ms" },
-  { id: "ap-southeast", name: "Asia Pacific (Singapore)", latency: "~120ms" },
-];
-
-// const storagePlans = [
-//   {
-//     name: "Basic",
-//     price: 4.99,
-//     storage: "100",
-//     features: [
-//       "100 GB Storage",
-//       "End-to-end encryption",
-//       "File sharing",
-//       "Access on all devices",
-//       "24/7 support",
-//     ],
-//   },
-//   {
-//     name: "Professional",
-//     price: 9.99,
-//     storage: "500",
-//     features: [
-//       "500 GB Storage",
-//       "End-to-end encryption",
-//       "Advanced file sharing",
-//       "Access on all devices",
-//       "Priority support",
-//       "File version history",
-//     ],
-//   },
-//   {
-//     name: "Enterprise",
-//     price: 19.99,
-//     storage: "2000",
-//     features: [
-//       "2 TB Storage",
-//       "End-to-end encryption",
-//       "Team file sharing",
-//       "Access on all devices",
-//       "Priority support",
-//       "Extended file version history",
-//       "Admin controls",
-//     ],
-//   },
-// ];
-
-const features = [
-  {
-    icon: Shield,
-    title: "Secure Storage",
-    description: "Your data is protected with enterprise-grade encryption",
-  },
-  {
-    icon: Share2,
-    title: "Easy Sharing",
-    description: "Share files and folders with anyone, anywhere",
-  },
-  {
-    icon: Clock,
-    title: "Version History",
-    description: "Access and restore previous versions of your files",
-  },
-  {
-    icon: Cloud,
-    title: "Cloud Sync",
-    description: "Automatically sync your files across all devices",
-  },
-];
-
-const calculatePrice = (sizeGB: number) => {
-  if (sizeGB <= 20) return 2.99;
-  if (sizeGB <= 100) return 4.99;
-  if (sizeGB <= 500) return 9.99;
-  if (sizeGB <= 2000) return 19.99;
-  return Math.round((19.99 + (sizeGB - 2000) * 0.008) * 100) / 100;
-};
+import axios from "axios";
+import { routes } from "@/constants/routes";
 
 export default function SmartStoragePage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [storageSize, setStorageSize] = useState(20);
+
+  const [storageTier, setStorageTier] = useState(1);
   const [selectedServer, setSelectedServer] = useState("us-east");
+  const [latencyMap, setLatencyMap] = useState<Record<string, number>>({});
+  const [latencyLoading, setLatencyLoading] = useState(true);
 
-  const price = calculatePrice(storageSize);
+  const API_KEY = process.env.NEXT_PUBLIC_PING_API_KEY || "";
 
-  const handlePurchase = () => {
-    toast({
-      title: "Authentication Required",
-      description: "Please sign in to purchase storage plan.",
-    });
-    router.push("/auth");
+  const serverLocations = [{ id: "us-east", name: "US East (N. Virginia)" }];
+
+  const STORAGE_PING_URL = process.env.NEXT_PUBLIC_STORAGE_PING_URL;
+
+  if (!STORAGE_PING_URL) {
+    throw new Error("Missing NEXT_PUBLIC_STORAGE_PING_URL in .env file");
+  }
+
+  const PING_ENDPOINTS: Record<string, string> = {
+    "us-east": STORAGE_PING_URL,
   };
 
-  const formatStorageSize = (size: number) => {
-    if (size >= 1000) {
-      return `${size / 1000} TB`;
-    }
-    return `${size} GB`;
+  const getStorageSizeFromTier = (tier: number) => `${tier * 20} GB`;
+  const PRICE_PER_TIER = 0.5;
+  const price = storageTier === 1 ? 0 : (storageTier - 1) * PRICE_PER_TIER;
+
+  useEffect(() => {
+    const fetchLatencies = async () => {
+      const results: Record<string, number> = {};
+      for (const [region, url] of Object.entries(PING_ENDPOINTS)) {
+        const start = performance.now();
+        try {
+          const res = await fetch(url, {
+            cache: "no-store",
+            headers: {
+              "x-api-key": API_KEY,
+            },
+          });
+          await res.json();
+          const end = performance.now();
+          results[region] = Math.round(end - start);
+        } catch (err) {
+          results[region] = -1;
+        }
+      }
+      setLatencyMap(results);
+      setLatencyLoading(false);
+    };
+
+    fetchLatencies();
+  }, []);
+
+  const handlePurchase = () => {
+    // toast({
+    //   title: "Authentication Required",
+    //   description: "Please sign in to purchase a storage plan.",
+    // });
+    router.push(routes?.storage);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0A0A1B]">
       <div className="min-h-screen pt-20 pb-16">
         <div className="container mx-auto px-4 py-8">
-          {/* Header */}
           <div className="text-center mb-16">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="text-4xl font-bold mb-4"
             >
-              Smart <span className="gradient-text">Storage</span>
+              Sense <span className="gradient-text">Storage</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -145,19 +103,40 @@ export default function SmartStoragePage() {
               transition={{ delay: 0.1 }}
               className="text-lg text-muted-foreground max-w-2xl mx-auto"
             >
-              Secure, reliable, and fast cloud storage for all your needs.
-              Access your files anywhere, anytime.
+              Store smarter. Access anywhere. Pay only for what you use!
             </motion.p>
           </div>
 
-          {/* Features Grid */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16"
           >
-            {features.map((feature, index) => (
+            {[
+              {
+                icon: Shield,
+                title: "Secure Storage",
+                description:
+                  "Your data is protected with enterprise-grade encryption.",
+              },
+              {
+                icon: Share2,
+                title: "Easy Sharing",
+                description: "Share files and folders with anyone, anywhere.",
+              },
+              {
+                icon: Clock,
+                title: "Image Preview",
+                description: "Quickly preview images without downloading.",
+              },
+              {
+                icon: Cloud,
+                title: "Cloud Backup",
+                description:
+                  "Securely back up your computer files and sync them across all your devices.",
+              },
+            ].map((feature, index) => (
               <Card key={index} className="bg-card/50 backdrop-blur-sm">
                 <CardContent className="pt-6">
                   <div className="rounded-full w-12 h-12 flex items-center justify-center bg-primary/10 mb-4">
@@ -172,7 +151,6 @@ export default function SmartStoragePage() {
             ))}
           </motion.div>
 
-          {/* Configuration Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -182,37 +160,36 @@ export default function SmartStoragePage() {
             <Card className="relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary-foreground" />
               <CardHeader>
-                <CardTitle>Configure Your Storage</CardTitle>
+                <CardTitle>Welcome to Sense Storage Intelligent Tier</CardTitle>
                 <CardDescription>
-                  Choose your storage size and preferred server location
+                  Start free with 20GB — just pay for your highest tier usage
+                  each month, no fixed plans.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Storage Size Selector */}
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <h3 className="font-semibold">Storage Size</h3>
-                    <span className="text-2xl font-bold">
-                      {formatStorageSize(storageSize)}
+                    <h3 className="font-semibold">Storage Tier</h3>
+                    <span className="text-xl font-bold">
+                      T-{storageTier} ({getStorageSizeFromTier(storageTier)})
                     </span>
                   </div>
                   <Slider
-                    value={[storageSize]}
-                    onValueChange={(value) => setStorageSize(value[0])}
-                    min={20}
-                    max={5000}
-                    step={20}
+                    value={[storageTier]}
+                    onValueChange={(value) => setStorageTier(value[0])}
+                    min={1}
+                    max={50}
+                    step={1}
                     className="w-full"
                   />
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>20 GB</span>
-                    <span>5 TB</span>
+                    <span>T-1 (20GB)</span>
+                    <span>T-50 (1000GB)</span>
                   </div>
                 </div>
 
-                {/* Server Location Selector */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold">Server Location</h3>
+                  <h3 className="font-semibold">Data Center Location</h3>
                   <Select
                     value={selectedServer}
                     onValueChange={setSelectedServer}
@@ -223,14 +200,18 @@ export default function SmartStoragePage() {
                     <SelectContent>
                       {serverLocations.map((location) => (
                         <SelectItem key={location.id} value={location.id}>
-                          <div className="flex items-center gap-2">
-                            <Server className="h-4 w-4" />
-                            <div>
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-2">
+                              <Server className="h-4 w-4" />
                               <span>{location.name}</span>
-                              <span className="ml-2 text-sm text-muted-foreground">
-                                {location.latency}
-                              </span>
                             </div>
+                            <span className="text-sm text-muted-foreground">
+                              {latencyLoading
+                                ? "..."
+                                : latencyMap[location.id] > 0
+                                ? `~${latencyMap[location.id]}ms`
+                                : "N/A"}
+                            </span>
                           </div>
                         </SelectItem>
                       ))}
@@ -238,18 +219,21 @@ export default function SmartStoragePage() {
                   </Select>
                 </div>
 
-                {/* Price and Purchase */}
                 <div className="pt-6 border-t">
                   <div className="flex justify-between items-center mb-6">
                     <div>
-                      <h3 className="font-semibold">Total Price</h3>
+                      <h3 className="font-semibold">Estimated Monthly Price</h3>
                       <p className="text-sm text-muted-foreground">
-                        Billed monthly
+                        Based on highest tier used. Billed monthly.
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className="text-4xl font-bold">${price}</span>
-                      <span className="text-muted-foreground">/month</span>
+                      <span className="text-xl font-bold">
+                        {storageTier === 1 ? "FREE" : `$${price.toFixed(2)}`}
+                      </span>
+                      {storageTier !== 1 && (
+                        <span className="text-muted-foreground">/month</span>
+                      )}
                     </div>
                   </div>
                   <Button className="w-full" size="lg" onClick={handlePurchase}>

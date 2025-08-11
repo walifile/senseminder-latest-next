@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect } from "react";
+
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Cpu,
@@ -18,8 +19,18 @@ import {
 import { SelectedPcProps } from "../types";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import type { PC } from "../types"; // adjust the path based on your folder structure
+import type { PC } from "../types";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { BillingPlanDialog } from "./billing-dialog";
+import { toast } from "@/components/ui/use-toast";
+import { addBillingPlan } from "@/api/billing";
 
+const INSTANCE_DETAILS_API = process.env.NEXT_PUBLIC_INSTANCE_DETAILS_URL;
+
+if (!INSTANCE_DETAILS_API) {
+  throw new Error("Missing NEXT_PUBLIC_INSTANCE_DETAILS_API in .env file");
+}
 
 const SelectedPc: React.FC<SelectedPcProps> = ({
   selectedPCs,
@@ -29,8 +40,6 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
   setCloudPCs,
   handleAssignUser,
 }) => {
-  //const { toast } = useToast();
-
   useEffect(() => {
     const fetchMetrics = async () => {
       if (!selectedPCs.length) return;
@@ -38,77 +47,61 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
       const currentPC = cloudPCs[selectedPCs[0]];
       if (!currentPC?.userId || !currentPC?.systemName) return;
 
-      // try {
-      //   const res = await fetch(
-      //     `https://4oacxj1xyk.execute-api.us-east-1.amazonaws.com/instance-details?userId=${currentPC.userId}&instanceName=${currentPC.systemName}`
-      //   );
-      //   const data = await res.json();
-      //   if (data && data.instanceId) {
-      //     const updatedPC = {
-      //       ...currentPC,
-      //       cpuUsage: parseFloat(data.cpuUsage.replace("%", "")),
-      //       memoryUsage: 0,
-      //       region: data.region,
-      //       uptime: data.uptime,
-      //       specs: data.specs, // ✅ Use the correct nested object from backend
-      //     };
-
-      //     const updatedCloudPCs = [...cloudPCs];
-      //     updatedCloudPCs[selectedPCs[0]] = updatedPC;
-      //     setCloudPCs(updatedCloudPCs);
-      //   }
-      // } catch (err) {
-      //   console.error("Failed to load real-time metrics:", err);
-      // }
       try {
-          console.log("Selected PC:", pc[0]);
-          const res = await fetch("https://4oacxj1xyk.execute-api.us-east-1.amazonaws.com/instance-details-v2", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              userId: currentPC.userId,
-              instanceNames: [currentPC.systemName], // Send as array, even for one PC
-            }),
-          });
+        const res = await fetch(INSTANCE_DETAILS_API, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: currentPC.userId,
+            instanceNames: [currentPC.systemName],
+          }),
+        });
 
-          const data = await res.json();
+        const data = await res.json();
+        const matched = data.find(
+          (item: PC) =>
+            item.systemName === currentPC.systemName && item.instanceId
+        );
 
-          // //@ts-expect error
-          // const matched = data.find((item) => item.systemName === currentPC.systemName && item.instanceId);
-          const matched = data.find((item: PC) => item.systemName === currentPC.systemName && item.instanceId);
+        if (matched) {
+          const updatedPC = {
+            ...currentPC,
+            cpuUsage: parseFloat(matched.cpuUsage.replace("%", "")),
+            memoryUsage: isNaN(
+              parseFloat(matched.memoryUsage?.replace("%", "") || "")
+            )
+              ? 0
+              : parseFloat(matched.memoryUsage!.replace("%", "")),
+            region: matched.region,
+            uptime: matched.uptime,
+            specs: matched.specs,
+            billingPlan: matched.billingPlan,
+            billingPlanDescription: matched.billingPlanDescription,
+            assignedUser: matched.assignedUser,
+          };
 
-
-          if (matched) {
-            const updatedPC = {
-              ...currentPC,
-              cpuUsage: parseFloat(matched.cpuUsage.replace("%", "")),
-              memoryUsage: 0,
-              region: matched.region,
-              uptime: matched.uptime,
-              specs: matched.specs,
-            };
-
-            const updatedCloudPCs = [...cloudPCs];
-            updatedCloudPCs[selectedPCs[0]] = updatedPC;
-            setCloudPCs(updatedCloudPCs);
-          }
-        } catch (err) {
-          console.error("Failed to load real-time metrics:", err);
+          const updatedCloudPCs = [...cloudPCs];
+          updatedCloudPCs[selectedPCs[0]] = updatedPC;
+          setCloudPCs(updatedCloudPCs);
         }
-
+      } catch (err) {
+        console.error("Failed to load real-time metrics:", err);
+      }
     };
 
     fetchMetrics();
   }, [selectedPCs]);
 
   const pc = [cloudPCs[selectedPCs[0]]];
+  const { user } = useSelector((state: RootState) => state.auth);
+  const isMember = user?.role === "member";
+  const [showBillingDialog, setShowBillingDialog] = useState(false);
 
   return (
     <>
       {selectedPCs.length > 0 && pc[0] && (
-        
         <motion.div
           initial={{ height: 0 }}
           animate={{ height: "auto" }}
@@ -132,11 +125,12 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
             </div>
 
             {showDetails && selectedPCs.length === 1 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="space-y-2">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                {/* CPU Usage */}
+                <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Cpu className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">CPU Usage</span>
+                    <span className="text-sm font-medium">CPU</span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div
@@ -149,10 +143,11 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                   </span>
                 </div>
 
-                <div className="space-y-2">
+                {/* Memory Usage */}
+                <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <MemoryStick className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Memory Usage</span>
+                    <span className="text-sm font-medium">Memory</span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div
@@ -165,7 +160,8 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                   </span>
                 </div>
 
-                <div className="space-y-2">
+                {/* Region */}
+                <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium">Region</span>
@@ -175,7 +171,8 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                   </span>
                 </div>
 
-                <div className="space-y-2">
+                {/* Uptime */}
+                <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <MonitorPlay className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium">Uptime</span>
@@ -185,7 +182,8 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                   </span>
                 </div>
 
-                <div className="space-y-2">
+                {/* Cost */}
+                <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <AlertCircle className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium">Cost</span>
@@ -230,62 +228,118 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                   </div>
                 </div>
 
-                {/* Assigned Users */}
-                {/* <div className="col-span-full mt-4 border-t pt-4">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <h4 className="text-sm font-medium">
-                      Assigned Users ({pc[0]?.assignedUsers?.length ?? 0})
-                    </h4>
-                    <div className="flex-1 border-b border-border/50" />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAssignUser(pc[0]);
-                      }}
-                      className="h-7 px-2 text-xs hover:bg-primary/5 hover:text-primary"
-                    >
-                      <Plus className="h-3 w-3 mr-1" />
-                      Assign
-                    </Button>
-                  </div>
-
-                </div> */}
-                {/* Assigned Users */}
-                <div className="col-span-full mt-4 border-t pt-4">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <h4 className="text-sm font-medium">
-                      Assigned Users ({pc[0]?.assignedUsers?.length ?? 0})
-                    </h4>
-                    <div className="flex-1 border-b border-border/50" />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAssignUser(pc[0]);
-                      }}
-                      className="h-7 px-2 text-xs hover:bg-primary/5 hover:text-primary"
-                    >
-                      <Plus className="h-3 w-3 mr-1" />
-                      Assign
-                    </Button>
-                  </div>
-                  <div>
-                    {(pc[0]?.assignedUsers ?? []).map(user => (
-                      <div key={user.id} className="flex items-center gap-2 mb-2">
+                {!isMember && (
+                  <div className="col-span-full mt-4 border-t pt-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <h4 className="text-sm font-medium">Assigned User</h4>
+                      <div className="flex-1 border-b border-border/50" />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAssignUser(pc[0]);
+                        }}
+                        className="h-7 px-2 text-xs hover:bg-primary/5 hover:text-primary"
+                      >
+                        <Plus className="h-3 w-3 mr-1" /> Assign
+                      </Button>
+                    </div>
+                    {pc[0]?.assignedUser ? (
+                      <div className="flex items-center gap-2">
                         <Avatar className="h-7 w-7">
-                          <AvatarFallback>{user?.name?.[0] || "?"}</AvatarFallback>
+                          <AvatarFallback>
+                            {pc[0].assignedUser.name?.[0] ?? "?"}
+                          </AvatarFallback>
                         </Avatar>
-                        <span className="font-medium">{user.name}</span>
-                        <span className="text-sm text-muted-foreground">{user.email}</span>
+                        <span className="font-medium">
+                          {pc[0].assignedUser.name}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          {pc[0].assignedUser.email}
+                        </span>
                       </div>
-                    ))}
+                    ) : (
+                      <div className="text-sm text-muted-foreground italic">
+                        No user assigned to this PC.
+                      </div>
+                    )}
                   </div>
-                </div>
+                )}
+
+                {!isMember && pc[0]?.billingPlan && (
+                  <div className="col-span-full mt-4 border-t pt-4">
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">
+                          Current Billing Plan:
+                        </span>
+                        <span className="text-sm font-semibold text-sky-700 bg-sky-100 border border-sky-200 rounded-md px-2 py-0.5 capitalize">
+                          {pc[0].billingPlan}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          {pc[0].billingPlanDescription}
+                        </span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 px-3 text-xs"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowBillingDialog(true);
+                        }}
+                      >
+                        Change Plan
+                      </Button>
+                      <BillingPlanDialog
+                        currentPlan={pc[0].billingPlan}
+                        open={showBillingDialog}
+                        onOpenChange={setShowBillingDialog}
+                        onConfirm={async (newPlan) => {
+                          try {
+                            await addBillingPlan({
+                              instanceId: pc[0].instanceId,
+                              billingPlan: newPlan,
+                            });
+
+                            toast({
+                              title: "Billing Plan Changed",
+                              description: `You’ve switched to the ${newPlan} plan.`,
+                            });
+
+                            setCloudPCs((prev) => {
+                              const updated = [...prev];
+                              updated[selectedPCs[0]] = {
+                                ...updated[selectedPCs[0]],
+                                billingPlan: newPlan,
+                                billingPlanDescription:
+                                  newPlan === "hourly"
+                                    ? "Perfect for quick tasks and testing"
+                                    : newPlan === "daily"
+                                    ? "Ideal for day-long projects. 15% savings vs hourly pricing."
+                                    : "Best value for regular users. 35% savings vs weekly pricing.",
+                              };
+                              return updated;
+                            });
+
+                            setShowBillingDialog(false);
+                          } catch (error: any) {
+                            toast({
+                              title: "Error",
+                              description:
+                                error.message ||
+                                "Failed to update billing plan.",
+                              variant: "destructive",
+                            });
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

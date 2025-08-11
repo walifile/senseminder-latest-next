@@ -74,6 +74,7 @@ import useErrorToast from "@/hooks/useErrorToast";
 import useToast from "@/hooks/useToast";
 import { Loader2 } from "lucide-react";
 import { routes } from "@/constants/routes";
+import {claimSessionIfAvailable } from "@/api/session";
 
 export default function AuthCallback() {
   const router = useRouter();
@@ -102,6 +103,11 @@ export default function AuthCallback() {
       try {
         const result = await handleAuthRedirect();
         if (result.success) {
+          try {
+            await claimSessionIfAvailable();
+          } catch (err) {
+            console.warn("Session claim failed (non-blocking):", err);
+          }
           router.replace(routes?.home);
         } else {
           if (retryCount < maxRetries) {

@@ -9,42 +9,42 @@ const faqItems = [
   {
     question: "What is a Cloud PC?",
     answer:
-      "A smart PC is a virtual computer that runs in a secure data center and can be accessed from anywhere, on any device. It offers the power and functionality of a high-end desktop without requiring expensive hardware on your end.",
+      "A Sense PC is a virtual computer that runs in a secure data center and can be accessed from anywhere, on any device. It offers the power and functionality of a high-end desktop without requiring expensive hardware on your end.",
   },
   {
-    question: "How is SmartPC different from other cloud computing services?",
+    question: "How is Sense PC different from other cloud computing services?",
     answer:
-      "SmartPC offers industry-leading performance with ultra-low latency, enterprise-grade security, and a seamless user experience designed for professionals. Our proprietary technology delivers better responsiveness and visual quality than competitors.",
+      "Sense PC offers industry-leading performance with ultra-low latency, enterprise-grade security, and a seamless user experience designed for professionals. Our proprietary technology delivers better responsiveness and visual quality than competitors.",
   },
   {
     question: "What kind of internet connection do I need?",
     answer:
-      "For optimal performance, we recommend a broadband connection with at least 15 Mbps download and 5 Mbps upload speeds. SmartPC works with most home and office connections, and our adaptive streaming technology adjusts to your connection quality.",
+      "For optimal performance, we recommend a broadband connection with at least 15 Mbps download and 5 Mbps upload speeds. Sense PC works with most home and office connections, and our adaptive streaming technology adjusts to your connection quality.",
   },
   {
-    question: "Can I install my own software on SmartPC?",
+    question: "Can I install my own software on Sense PC?",
     answer:
-      "Yes! Your SmartPC works just like a regular Windows PC. You have full administrator rights to install, configure, and run any Windows-compatible software you need.",
+      "Yes! Your Sense PC works just like a regular Windows PC. You have full administrator rights to install, configure, and run any Windows-compatible software you need.",
   },
   {
     question: "Is my data secure in the cloud?",
     answer:
-      "Absolutely. SmartPC employs bank-level encryption for all data in transit and at rest. Our infrastructure is compliant with major security standards including SOC 2, GDPR, and HIPAA requirements. Your data remains private and protected at all times.",
+      "Absolutely. Sense PC employs bank-level encryption for all data in transit and at rest. Our infrastructure is compliant with major security standards including SOC 2, GDPR, and HIPAA requirements. Your data remains private and protected at all times.",
   },
   {
     question: "What happens if I lose internet connection?",
     answer:
-      "Your SmartPC session remains active for a short period if you disconnect, allowing you to resume exactly where you left off once your connection is restored. Your data is always safely stored in the cloud.",
+      "Your Sense PC session remains active for a short period if you disconnect, allowing you to resume exactly where you left off once your connection is restored. Your data is always safely stored in the cloud.",
   },
   {
-    question: "Can I use SmartPC for gaming?",
+    question: "Can I use Sense PC for gaming?",
     answer:
       "Yes! Our Professional and Enterprise plans include GPU capabilities suitable for gaming. While we optimize for professional workloads, many games run exceptionally well on our platform.",
   },
   {
-    question: "How do I get started with SmartPC?",
+    question: "How do I get started with Sense PC?",
     answer:
-      "Simply choose a subscription plan, create your account, and you can be up and running with your new smart PC in minutes. No complex setup or technical knowledge required.",
+      "Simply choose a subscription plan, create your account, and you can be up and running with your new Sense PC in minutes. No complex setup or technical knowledge required.",
   },
 ];
 
@@ -59,52 +59,50 @@ const FAQ = () => {
   );
 
   return (
-    <section id="faq" className="py-24 relative">
+    <section id="faq" className="py-6 relative"> {/* Much smaller top/bottom padding */}
       {/* Background Effects */}
       <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl"></div>
       <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/5 dark:bg-secondary/10 rounded-full blur-3xl"></div>
-      
+
       <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center bg-primary/10 dark:bg-primary/20 rounded-full mb-4 px-4 py-1.5">
-            <span className="text-sm font-medium text-primary">
-              FAQ
-            </span>
+        <div className="text-center mb-4"> {/* Reduced spacing */}
+          <div className="inline-flex items-center bg-primary/10 dark:bg-primary/20 rounded-full mb-1 px-3 py-0.5">
+            <span className="text-xs font-medium text-primary">FAQ</span>
           </div>
           <motion.h2
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 6 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-3xl md:text-4xl font-bold mb-4 dark:text-white text-gray-900"
+            transition={{ duration: 0.3 }}
+            className="text-xl font-semibold mb-1 dark:text-white text-gray-900"
           >
             Frequently Asked <span className="gradient-text">Questions</span>
           </motion.h2>
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 6 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-lg dark:text-gray-300 text-gray-600 max-w-2xl mx-auto"
+            transition={{ duration: 0.3, delay: 0.05 }}
+            className="text-sm text-gray-600 dark:text-gray-400 max-w-xl mx-auto"
           >
-            Everything you need to know about SmartPC
+            Everything you need to know about Sense PC
           </motion.p>
         </div>
 
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-2xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 6 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="relative mb-8"
+            transition={{ duration: 0.3 }}
+            className="relative mb-3"
           >
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 dark:text-primary/60" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 dark:text-primary/60" />
             <Input
               type="text"
-              placeholder="Search for answers..."
+              placeholder="Search..."
               className={cn(
-                "pl-10 transition-colors",
+                "pl-9 py-1.5 text-xs rounded-md",
                 "dark:bg-card/50 dark:border-border dark:focus:border-primary dark:bg-gray-800/30 dark:backdrop-blur-md",
                 "bg-white/90 border-gray-200 focus:border-primary shadow-sm"
               )}
@@ -113,45 +111,42 @@ const FAQ = () => {
             />
           </motion.div>
 
-          <div className="space-y-4">
+          <div className="space-y-2">
             <AnimatePresence mode="wait">
               {filteredItems.length > 0 ? (
                 filteredItems.map((item, index) => (
                   <motion.div
                     key={index}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 6 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    transition={{ duration: 0.2, delay: index * 0.03 }}
                     className={cn(
-                      "overflow-hidden group rounded-lg transition-all duration-200",
-                      "dark:glass-card dark:border-white/10 dark:bg-gray-900/30 dark:backdrop-blur-sm dark:hover:border-primary/30 dark:hover:shadow-primary/5 dark:shadow-md dark:shadow-black/5",
-                      "bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-primary/20"
+                      "overflow-hidden group rounded-md transition-all duration-200",
+                      "dark:glass-card dark:border-white/10 dark:bg-gray-900/30 dark:hover:border-primary/30 dark:shadow-sm",
+                      "bg-white border border-gray-200 shadow hover:border-primary/20"
                     )}
                   >
                     <button
-                      onClick={() =>
-                        setOpenIndex(openIndex === index ? null : index)
-                      }
+                      onClick={() => setOpenIndex(openIndex === index ? null : index)}
                       className={cn(
-                        "w-full px-6 py-4 flex items-center justify-between text-left transition-colors relative",
-                        "hover:bg-gray-50 dark:hover:bg-white/5 dark:hover:bg-gray-800/50"
+                        "w-full px-3 py-2 flex items-center justify-between text-left text-sm",
+                        "hover:bg-gray-50 dark:hover:bg-white/5"
                       )}
                     >
-                      <div className="flex items-center gap-3">
-                        <HelpCircle className="h-5 w-5 text-primary dark:text-primary/90" />
-                        <span className="text-lg font-medium dark:text-white text-gray-900 group-hover:text-primary dark:group-hover:text-primary transition-colors">
+                      <div className="flex items-center gap-2">
+                        <HelpCircle className="h-4 w-4 text-primary" />
+                        <span className="font-medium dark:text-white text-gray-900 group-hover:text-primary">
                           {item.question}
                         </span>
                       </div>
                       <ChevronDown
                         className={cn(
-                          "h-5 w-5 transition-transform duration-200",
-                          "dark:text-gray-400 text-gray-500 group-hover:text-primary/70 dark:group-hover:text-primary/70",
-                          openIndex === index ? "rotate-180" : ""
+                          "h-4 w-4 transition-transform",
+                          openIndex === index ? "rotate-180" : "",
+                          "text-gray-500 dark:text-gray-400"
                         )}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent dark:from-primary/10 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                     </button>
                     <AnimatePresence>
                       {openIndex === index && (
@@ -162,7 +157,7 @@ const FAQ = () => {
                           transition={{ duration: 0.2 }}
                           className="overflow-hidden"
                         >
-                          <div className="px-6 pb-4 dark:text-gray-300 text-gray-600 dark:bg-gray-800/20 rounded-b-lg">
+                          <div className="px-3 pb-2 text-xs text-gray-600 dark:text-gray-300">
                             {item.answer}
                           </div>
                         </motion.div>
@@ -172,31 +167,17 @@ const FAQ = () => {
                 ))
               ) : (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-center p-8 rounded-lg bg-white dark:bg-gray-900/30 border border-gray-200 dark:border-white/10"
+                  className="text-center p-4 text-sm rounded-md bg-white dark:bg-gray-900/30 border border-gray-200 dark:border-white/10"
                 >
-                  <p className="text-gray-600 dark:text-gray-300">No matching questions found. Try a different search term or check our support page.</p>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    No matching questions found.
+                  </p>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="mt-12 text-center"
-          >
-            <p className="dark:text-gray-300 text-gray-600 mb-4">
-              Still have questions?
-            </p>
-            <Button className="bg-primary hover:bg-primary/90 text-white dark:text-primary-foreground dark:shadow-primary/20 dark:shadow-lg">
-              <MessageCircle className="mr-2 h-4 w-4" />
-              Contact Support
-            </Button>
-          </motion.div>
         </div>
       </div>
     </section>

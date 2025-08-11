@@ -1,15 +1,124 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, Mail, MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+
+import { useToast } from "@/hooks/use-toast";
+import {
+  useSubscribeToNewsletterMutation,
+  useUnsubscribeFromNewsletterMutation,
+} from "@/api/newsletterAPI";
+import useLocation from "@/hooks/use-location";
 
 const Footer = () => {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
+  const { userLocation, error } = useLocation();
   const currentYear = new Date().getFullYear();
+
+  const [email, setEmail] = useState("");
+
+  const [subscribe, { isLoading: isSubscribing }] =
+    useSubscribeToNewsletterMutation();
+  const [unsubscribe] = useUnsubscribeFromNewsletterMutation();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    const location = userLocation || {
+      country: "unknown",
+      city: "unknown",
+      ip: "unknown",
+    };
+
+    const response = await subscribe({
+      email,
+      location,
+      signup: false,
+    });
+
+    if (!("error" in response)) {
+      toast({
+        title: "Subscribed!",
+        description: "You've successfully subscribed to the newsletter.",
+      });
+      setEmail("");
+    } else {
+      console.log({ else: "Ddffdfdfff" });
+
+      let errorMessage = "Subscription failed. Please try again.";
+
+      if ("error" in response) {
+        const err = response.error as any;
+
+        if (err.data && typeof err.data === "object" && "message" in err.data) {
+          errorMessage = err.data.message;
+        } else if ("message" in err) {
+          errorMessage = err.message;
+        }
+      }
+
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
+  };
+
+  useEffect(() => {
+    const email = searchParams.get("email");
+    const token = searchParams.get("token");
+
+    if (email && token) {
+      unsubscribe({ email, token }).then((res) => {
+        if (!("error" in res)) {
+          toast({
+            title: "Unsubscribed",
+            description:
+              "You have been successfully unsubscribed from the newsletter.",
+          });
+
+          // Remove query params from URL
+          const url = new URL(window.location.href);
+          url.searchParams.delete("email");
+          url.searchParams.delete("token");
+          window.history.replaceState(
+            {},
+            document.title,
+            url.pathname + url.search
+          );
+        } else {
+          let errorMessage = "Unsubscription failed. Please try again.";
+          if ("error" in res) {
+            const err = res.error as any;
+
+            if (
+              err.data &&
+              typeof err.data === "object" &&
+              "message" in err.data
+            ) {
+              errorMessage = err.data.message;
+            } else if ("message" in err) {
+              errorMessage = err.message;
+            }
+          }
+
+          toast({
+            title: "Error",
+            description: errorMessage,
+            variant: "destructive",
+          });
+        }
+      });
+    }
+  }, [searchParams, unsubscribe, toast]);
 
   if (
     pathname?.startsWith("/auth") ||
@@ -18,7 +127,6 @@ const Footer = () => {
   ) {
     return null;
   }
-
   return (
     <footer
       className={cn(
@@ -35,11 +143,11 @@ const Footer = () => {
                 href="/"
                 className="font-bold text-2xl tracking-tight gradient-text"
               >
-                SmartPC
+                Sense PC
               </Link>
             </div>
             <p className="dark:text-gray-400 text-gray-600 max-w-xs">
-              Access your powerful smart PC from anywhere, with low latency and
+              Access your powerful PC from anywhere, with low latency and
               enterprise-grade security.
             </p>
             <div className="flex space-x-4">
@@ -123,7 +231,6 @@ const Footer = () => {
                 { href: "/contact", text: "Contact" },
                 { href: "/privacy", text: "Privacy Policy" },
                 { href: "/terms", text: "Terms of Service" },
-                { href: "/cookies", text: "Cookie Policy" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
@@ -150,7 +257,7 @@ const Footer = () => {
               <li className="flex items-start">
                 <MapPin className="h-5 w-5 text-primary mr-3 mt-0.5" />
                 <span className="dark:text-gray-400 text-gray-600">
-                  123 Innovation Drive, Tech Valley, CA 94103, USA
+                  Elan Satellite Place, 3100 Commerce Avenue NW, Duluth, GA 30096, USA
                 </span>
               </li>
               <li className="flex items-center">
@@ -159,16 +266,16 @@ const Footer = () => {
                   href="tel:+15555551234"
                   className="dark:text-gray-400 text-gray-600 hover:text-primary dark:hover:text-primary"
                 >
-                  +1 (555) 555-1234
+                  +1 (646) 226-5995
                 </a>
               </li>
               <li className="flex items-center">
                 <Mail className="h-5 w-5 text-primary mr-3" />
                 <a
-                  href="mailto:info@smartpc.com"
+                  href="mailto:info@sensepc.com"
                   className="dark:text-gray-400 text-gray-600 hover:text-primary dark:hover:text-primary"
                 >
-                  info@smartpc.com
+                  info@sensepc.com
                 </a>
               </li>
             </ul>
@@ -181,9 +288,11 @@ const Footer = () => {
             <p className="dark:text-gray-400 text-gray-600 mb-4">
               Subscribe to our newsletter to get the latest updates.
             </p>
-            <div className="space-y-2">
+            <form onSubmit={handleSubmit} className="space-y-2">
               <Input
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Your email address"
                 className={cn(
                   "bg-white dark:bg-card",
@@ -191,21 +300,22 @@ const Footer = () => {
                   "focus:border-primary dark:focus:border-primary"
                 )}
               />
-              <Button className="w-full">Subscribe</Button>
-            </div>
+              <Button type="submit" className="w-full" disabled={isSubscribing}>
+                {isSubscribing ? "Subscribing..." : "Subscribe"}
+              </Button>
+            </form>
           </div>
         </div>
 
         <div className="mt-16 pt-6 border-t dark:border-white/10 border-gray-200">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="dark:text-gray-400 text-gray-600 text-sm">
-              © {currentYear} SmartPC. All rights reserved.
+              © {currentYear} Sense PC. All rights reserved.
             </p>
             <div className="flex space-x-4 mt-4 md:mt-0">
               {[
                 { href: "/privacy", text: "Privacy Policy" },
                 { href: "/terms", text: "Terms of Service" },
-                { href: "/cookies", text: "Cookie Policy" },
               ].map((link) => (
                 <Link
                   key={link.href}

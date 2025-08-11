@@ -225,3 +225,7 @@
     opacity: 0.7;
   }
 }
+
+.dark [style*="#1f2937"] {
+  color: #d1d5db !important;
+}

@@ -12,9 +12,9 @@ import { Button } from "@/components/ui/button";
 const tutorials = [
   {
     id: 1,
-    title: "Getting Started with SmartPC",
+    title: "Getting Started with Sense PC",
     duration: "3:45",
-    description: "Learn the basics of setting up your smart PC environment",
+    description: "Learn the basics of setting up your Sense PC environment",
     videoUrl: "/videos/getting-started.mp4",
     youtubeUrl: "https://youtube.com/watch?v=example1",
   },
@@ -50,7 +50,7 @@ const TutorialSection = () => {
   >(null);
 
   return (
-    <section id="tutorials" className="py-20 bg-background/50 dark:bg-background/80 backdrop-blur-sm">
+    <section id="tutorials" className="py-05 bg-background/50 dark:bg-background/80 backdrop-blur-sm">
       <div className="container relative space-y-6 py-8 md:py-12 lg:py-24 lg:space-y-10">
         <div className="text-center mb-12">
           <div className="inline-flex items-center bg-primary/10 dark:bg-primary/20 rounded-full mb-4 px-4 py-1.5">
@@ -63,7 +63,7 @@ const TutorialSection = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-3xl md:text-4xl font-bold mb-4"
+            className="text-3xl md:text-3xl font-bold mb-4"
           >
             Learn How to <span className="gradient-text">Get Started</span>
           </motion.h2>
@@ -74,7 +74,7 @@ const TutorialSection = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-lg text-muted-foreground"
           >
-            Watch our tutorial series to master your smart PC experience
+            Watch our tutorial series to master your Sense PC experience
           </motion.p>
         </div>
 

@@ -1,9 +1,11 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -12,10 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -23,66 +21,45 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, X } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchWithUserId } from "@/lib/fetchWithUserId";
+import TicketTable from "./_components/TicketTable";
+import AttachmentUploader from "./_components/AttachmentUploader";
+import { ALLOWED_TYPES, MAX_FILE_SIZE_MB, MAX_FILES } from "./constants";
+import { Ticket } from "./types";
+import { selectAuthUser, selectUserId } from "@/redux/slices/auth/auth-slice";
+import api from "@/api/apiConfig";
+import { sanitizeFilename } from "./utils";
 
-interface Ticket {
-  ticketId: string;
-  subject: string;
-  description: string;
-  status: string;
-  category: string;
-  priority: string;
-  createdAt: string;
-  attachments: Attachment[];
-}
+const API_BASE = api?.SUPPORT_API_BASE;
 
-interface Attachment {
-  name: string;
-  size: string;
-  type: string;
-  fileKey: string;
-}
-
-const API_BASE = "https://lvir6hp7hb.execute-api.us-east-1.amazonaws.com/dev";
-const MAX_FILES = 2;
-const MAX_FILE_SIZE_MB = 3;
-const ALLOWED_TYPES = ["image/png", "image/jpeg"];
-
-const sanitizeFilename = (filename: string) => {
-  let name = filename.split("/").pop() || "file";
-  name = name.replace(/[^A-Za-z0-9._-]/g, "_").replace(/_+/g, "_");
-  return name.slice(0, 50);
-};
-
-const SupportPage = () => {
+export default function SupportPage() {
   const { toast } = useToast();
   const router = useRouter();
-  const user = useSelector((state: RootState) => state.auth.user);
-  const userId = user?.id;
+  const user = useSelector(selectAuthUser);
+  const userId = useSelector(selectUserId);
 
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [query, setQuery] = useState("");
   const [formState, setFormState] = useState({
     subject: "",
     category: "technical",
     priority: "medium",
     description: "",
   });
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [uploading, setUploading] = useState<number[]>([]);
   const [subjectError, setSubjectError] = useState("");
   const [descriptionError, setDescriptionError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [attachments, setAttachments] = useState<File[]>([]);
-  const [uploading, setUploading] = useState<number[]>([]);
   const [activeTab, setActiveTab] = useState("tickets");
-  console.log({ uploading });
+
   useEffect(() => {
     if (userId) loadTickets();
   }, [userId]);
 
   const loadTickets = async () => {
     if (!userId) return;
+
     try {
       const res = await fetchWithUserId(`${API_BASE}/tickets`, {
         method: "GET",
@@ -95,32 +72,26 @@ const SupportPage = () => {
     }
   };
 
-  const plainTextPattern = /^[a-zA-Z0-9\s.,-]*$/;
-  const doubleSpecialsPattern = /[.,-]{2,}/;
-
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { id, value } = e.target;
     setFormState((prev) => ({ ...prev, [id]: value }));
 
-    const setError = id === "subject" ? setSubjectError : setDescriptionError;
+    const errorSetter =
+      id === "subject" ? setSubjectError : setDescriptionError;
     const maxLength = id === "subject" ? 50 : 500;
 
     if (value.length > maxLength) {
-      setError(
-        `${
-          id[0].toUpperCase() + id.slice(1)
-        } cannot exceed ${maxLength} characters.`
-      );
-    } else if (!plainTextPattern.test(value)) {
-      setError(
+      errorSetter(`${id} cannot exceed ${maxLength} characters.`);
+    } else if (!/^[a-zA-Z0-9\s.,-]*$/.test(value)) {
+      errorSetter(
         "Only letters, numbers, dash, space, comma, and dot are allowed."
       );
-    } else if (doubleSpecialsPattern.test(value)) {
-      setError("Avoid multiple special characters in a row.");
+    } else if (/[.,-]{2,}/.test(value)) {
+      errorSetter("Avoid multiple special characters in a row.");
     } else {
-      setError("");
+      errorSetter("");
     }
   };
 
@@ -174,13 +145,11 @@ const SupportPage = () => {
         body: meta,
       });
       const { uploadUrl, fileKey } = await res.json();
-
       await fetch(uploadUrl, {
         method: "PUT",
         headers: { "Content-Type": file.type },
         body: file,
       });
-
       return {
         name: sanitized,
         size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
@@ -188,7 +157,6 @@ const SupportPage = () => {
         fileKey,
       };
     } catch (err) {
-      console.log(err);
       toast({ title: `Upload failed for ${file.name}` });
       return null;
     } finally {
@@ -233,16 +201,7 @@ const SupportPage = () => {
       setSubjectError("");
       setDescriptionError("");
       await loadTickets();
-
-      // Fallback DOM-based tab switch
       setActiveTab("tickets");
-      // const ticketsTab = document.querySelector(
-      //   'button[data-value="tickets"]'
-      // ) as HTMLElement | null;
-
-      // if (tabTrigger && ticketsTab && tabTrigger !== ticketsTab) {
-      //   ticketsTab.click();
-      // }
     } catch {
       toast({ title: "Ticket creation failed" });
     } finally {
@@ -252,11 +211,6 @@ const SupportPage = () => {
 
   const handleTicketClick = (ticketId: string) => {
     router.push(`/dashboard/support/ticket/${ticketId}`);
-  };
-
-  const filterTickets = (ticket: Ticket) => {
-    if (!query) return true;
-    return ticket.subject.toLowerCase().includes(query.toLowerCase());
   };
 
   return (
@@ -269,57 +223,10 @@ const SupportPage = () => {
           <TabsTrigger value="faq">FAQ</TabsTrigger>
         </TabsList>
 
-        {/* My Tickets Tab */}
         <TabsContent value="tickets" className="space-y-6 mt-6">
-          <div className="relative max-w-sm">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search tickets..."
-              className="pl-8"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Support Tickets</CardTitle>
-              <CardDescription>Track and manage your requests</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border">
-                <div className="grid grid-cols-4 md:grid-cols-6 p-4 font-medium border-b bg-muted/50">
-                  <div className="col-span-2">Subject</div>
-                  <div className="hidden md:block">Status</div>
-                  <div className="hidden md:block">Priority</div>
-                  <div className="hidden md:block">Created</div>
-                </div>
-                {tickets.length > 0 ? (
-                  tickets.filter(filterTickets).map((ticket) => (
-                    <div
-                      key={ticket.ticketId}
-                      onClick={() => handleTicketClick(ticket.ticketId)}
-                      className="grid grid-cols-4 md:grid-cols-6 p-4 cursor-pointer hover:bg-muted/50"
-                    >
-                      <div className="col-span-2">{ticket.subject}</div>
-                      <div className="hidden md:block">{ticket.status}</div>
-                      <div className="hidden md:block">{ticket.priority}</div>
-                      <div className="hidden md:block">
-                        {new Date(ticket.createdAt).toLocaleDateString()}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-6 text-center text-muted-foreground">
-                    No tickets found.
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <TicketTable tickets={tickets} onClick={handleTicketClick} />
         </TabsContent>
 
-        {/* New Ticket Tab */}
         <TabsContent value="new-ticket" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
@@ -390,43 +297,11 @@ const SupportPage = () => {
                   <p className="text-sm text-red-500">{descriptionError}</p>
                 )}
 
-                <div>
-                  <label className="text-sm font-medium mb-1 block">
-                    Attachments (Max 2 - PNG/JPEG)
-                  </label>
-                  <label
-                    htmlFor="ticket-file-upload"
-                    className="inline-flex items-center px-3 py-1.5 bg-muted text-sm border rounded cursor-pointer hover:bg-muted/70 transition"
-                  >
-                    Upload Files
-                  </label>
-                  <input
-                    id="ticket-file-upload"
-                    type="file"
-                    accept="image/png,image/jpeg"
-                    multiple
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                  <div className="mt-2 flex gap-2 flex-wrap">
-                    {attachments.map((file, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-1 text-sm border p-1 rounded"
-                      >
-                        <span className="truncate max-w-[120px]">
-                          {sanitizeFilename(file.name)}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => removeAttachment(idx)}
-                        >
-                          <X className="h-4 w-4 text-red-500" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <AttachmentUploader
+                  files={attachments}
+                  onUpload={handleFileChange}
+                  onRemove={removeAttachment}
+                />
               </CardContent>
               <CardFooter className="flex justify-end">
                 <Button
@@ -446,7 +321,6 @@ const SupportPage = () => {
           </Card>
         </TabsContent>
 
-        {/* FAQ Tab */}
         <TabsContent value="faq" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
@@ -455,7 +329,7 @@ const SupportPage = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <strong>How do I reset my SmartPC?</strong>
+                <strong>How do I reset my Sense PC?</strong>
                 <p className="text-sm text-muted-foreground">
                   Go to your dashboard, select your PC, then choose "Reset".
                 </p>
@@ -473,6 +347,4 @@ const SupportPage = () => {
       </Tabs>
     </div>
   );
-};
-
-export default SupportPage;
+}

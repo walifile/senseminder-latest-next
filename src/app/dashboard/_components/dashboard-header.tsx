@@ -1,10 +1,12 @@
+
+"use client";
+
 import React, { useState, useEffect } from "react";
 import { Bell, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -14,61 +16,80 @@ import { ThemeToggle } from "@/components/shared/layout/theme-toggle";
 import { cn } from "@/lib/utils";
 import ProfileDropdown from "@/components/shared/layout/profile-dropdown";
 import { Logo } from "@/components/shared/layout/Logo";
+import { useRouter } from "next/navigation";
+import { markNotificationsAsRead } from "@/api/notification";
+import type { Notification } from "@/types/notification";
+import { useNotifications } from "@/hooks/useNotifications";
+import { getCurrentBalance } from "@/api/billing";
+
 
 const DashboardHeader = () => {
-  const [notifications] = useState([
-    {
-      id: 1,
-      title: "Storage space running low",
-      message:
-        "Your smart storage is nearly full. Consider upgrading your plan.",
-      time: "10m ago",
-      unread: true,
-    },
-    {
-      id: 2,
-      title: "Weekly report available",
-      message: "Your weekly usage report is now available.",
-      time: "2h ago",
-      unread: true,
-    },
-    {
-      id: 3,
-      title: "System maintenance",
-      message:
-        "Scheduled maintenance in 48 hours. Your PC may be unavailable for 30 minutes.",
-      time: "1d ago",
-      unread: false,
-    },
-  ]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  // const [balance, setBalance] = useState(100.0); // Example balance
-  const balance = 100.0;
-  const unreadCount = notifications.filter((n) => n.unread).length;
+  const [balance, setBalance] = useState<number | null>(null);
+  const [balanceLoading, setBalanceLoading] = useState(true);
+  const { notifications, hasUnread, fetchNotifications } = useNotifications();
+  const router = useRouter();
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  const colourBySeverity = (sev: Notification["severity"]) => {
+    if (sev === "critical") return "bg-destructive/20 text-destructive";
+    if (sev === "warning") return "bg-orange-500/20 text-orange-500";
+    return "bg-primary/20 text-primary"; // info
+  };
+
+  const timeAgo = (iso: string) => {
+    const diff = Date.now() - new Date(iso).getTime();
+    const min = 60_000, hr = 60 * min, day = 24 * hr;
+    if (diff < hr) return `${Math.round(diff / min)}m ago`;
+    if (diff < day) return `${Math.round(diff / hr)}h ago`;
+    return `${Math.round(diff / day)}d ago`;
+  };
+
+  const handleClick = async (n: Notification) => {
+    if (!n.isRead) {
+      await markNotificationsAsRead(n.timestamp);
+      await fetchNotifications();
+    }
+    if (n.route) router.push(n.route);
+  };
 
   useEffect(() => {
     const handleSidebarCollapse = (event: CustomEvent) => {
       setSidebarCollapsed(event.detail.collapsed);
     };
 
-    window.addEventListener(
-      "sidebarCollapse",
-      handleSidebarCollapse as EventListener
-    );
+    window.addEventListener("sidebarCollapse", handleSidebarCollapse as EventListener);
     return () => {
-      window.removeEventListener(
-        "sidebarCollapse",
-        handleSidebarCollapse as EventListener
-      );
+      window.removeEventListener("sidebarCollapse", handleSidebarCollapse as EventListener);
     };
   }, []);
 
-  // Get balance color based on amount
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        setBalanceLoading(true);
+        const data = await getCurrentBalance();
+        setBalance(data.balance);
+      } catch (e) {
+        console.error("Failed to fetch wallet balance", e);
+      } finally {
+        setBalanceLoading(false);
+      }
+    };
+
+    fetchBalance();
+    fetchNotifications();
+  }, []);
+
   const getBalanceColor = () => {
-    if (balance >= 50)
-      return "bg-green-500/10 text-green-500 hover:bg-green-500/20";
-    if (balance > 10)
-      return "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20";
+    if (balance === null) return "bg-muted text-muted-foreground";
+    if (balance >= 50) return "bg-green-500/10 text-green-500 hover:bg-green-500/20";
+    if (balance > 10) return "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20";
     return "bg-red-500/10 text-red-500 hover:bg-red-500/20";
   };
 
@@ -86,7 +107,7 @@ const DashboardHeader = () => {
 
       <div className="flex items-center gap-4">
         <Link href="/dashboard/billing">
-          <Button
+           <Button
             variant="ghost"
             size="sm"
             className={cn(
@@ -94,43 +115,75 @@ const DashboardHeader = () => {
               getBalanceColor()
             )}
           >
-            <Wallet className="h-4 w-4" />${balance.toFixed(2)}
+            <Wallet className="h-4 w-4" />
+            {balanceLoading || balance === null ? (
+              <div className="h-4 w-10 bg-muted animate-pulse rounded" />
+            ) : (
+              `$${balance.toFixed(2)}`
+            )}
           </Button>
         </Link>
+
         <ThemeToggle />
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
-              {unreadCount > 0 && (
+              {hasUnread && (
                 <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] font-medium flex items-center justify-center text-primary-foreground">
                   {unreadCount}
                 </span>
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
+
+          <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-auto">
             <DropdownMenuLabel>Notifications</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {notifications.map((notification) => (
-              <DropdownMenuItem
-                key={notification.id}
-                className="flex flex-col items-start gap-1 p-4"
+            {notifications.length === 0 && (
+              <p className="text-xs px-4 py-2 text-muted-foreground">No notifications</p>
+            )}
+            {notifications.map((n) => (
+              <button
+                key={n.timestamp}
+                onClick={() => handleClick(n)}
+                className={cn(
+                  "w-full text-left px-4 py-3 rounded-sm hover:bg-muted",
+                  !n.isRead && "bg-muted/40"
+                )}
               >
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{notification.title}</span>
-                  {notification.unread && (
-                    <span className="h-2 w-2 rounded-full bg-primary" />
-                  )}
+                <div className="flex items-start gap-3">
+                  <div
+                    className={cn(
+                      "h-8 w-8 flex items-center justify-center rounded-full",
+                      colourBySeverity(n.severity)
+                    )}
+                  >
+                    <Bell className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1 space-y-0.5">
+                    <div className="flex items-center justify-between">
+                      <span className={cn("font-medium text-sm", !n.isRead && "text-primary")}>
+                        {n.title}
+                      </span>
+                      {!n.isRead && (
+                        <span className="h-2 w-2 rounded-full bg-primary mt-1" />
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{n.content}</p>
+                    <p className="text-xs text-muted-foreground">{timeAgo(n.timestamp)}</p>
+                  </div>
                 </div>
-                <span className="text-sm text-muted-foreground">
-                  {notification.message}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {notification.time}
-                </span>
-              </DropdownMenuItem>
+              </button>
             ))}
+            <DropdownMenuSeparator />
+            <Link
+              href="/dashboard/notifications"
+              className="block text-sm text-center text-primary hover:underline py-2"
+            >
+              See all notifications
+            </Link>
           </DropdownMenuContent>
         </DropdownMenu>
 
