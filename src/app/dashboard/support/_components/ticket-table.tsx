@@ -1,5 +1,4 @@
 "use client";
-import { format } from "date-fns";
 
 import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
@@ -18,12 +17,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, ArrowDown, ArrowUp } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
 import { selectUserId } from "@/redux/slices/auth/auth-slice";
 import { useSelector } from "react-redux";
 import { useGetTicketsQuery } from "@/api/supportAPI";
 import TicketTableSkeleton from "./ticket-table-skeleton";
 import { useRouter } from "next/navigation";
+import { getStatusBadgeClass } from "./get-status-badge-class";
+import { formatDate, formatRelativeTime } from "@/lib/utils/format-time";
 
 export default function TicketTable() {
   const router = useRouter();
@@ -60,22 +60,6 @@ export default function TicketTable() {
       return matchQuery && matchStatus;
     });
   }, [tickets, query, statusFilter, sortDirection]);
-
-  const getStatusBadgeClass = (status: string) => {
-    const base = "px-2 py-0.5 text-xs rounded-full font-medium";
-    switch (status.toLowerCase()) {
-      case "resolved":
-        return `${base} bg-yellow-100 text-yellow-800`;
-      case "closed":
-        return `${base} bg-gray-200 text-gray-700`;
-      case "open":
-        return `${base} bg-green-100 text-green-700`;
-      case "in-progress":
-        return `${base} bg-blue-100 text-blue-700`;
-      default:
-        return `${base} bg-muted text-muted-foreground`;
-    }
-  };
 
   const SortIcon = () =>
     sortDirection === "asc" ? (
@@ -149,16 +133,11 @@ export default function TicketTable() {
                 onClick={() => handleTicketClick(ticket.ticketId)}
                 className="grid grid-cols-4 md:grid-cols-6 p-4 cursor-pointer hover:bg-muted/50 text-sm"
               >
-                <div>{format(new Date(ticket.createdAt), "dd/MM/yyyy")}</div>
+                <div>{formatDate(ticket.createdAt)}</div>
                 <div className="text-muted-foreground">#{ticket.ticketId}</div>
                 <div className="col-span-2 truncate">{ticket.subject}</div>
                 <div className="hidden md:block">
-                  {formatDistanceToNow(
-                    new Date(ticket.lastUpdated || ticket.createdAt),
-                    {
-                      addSuffix: true,
-                    }
-                  )}
+                  {formatRelativeTime(ticket.lastUpdated || ticket.createdAt)}
                 </div>
                 <div className="hidden md:block">
                   <span className={getStatusBadgeClass(ticket.status)}>

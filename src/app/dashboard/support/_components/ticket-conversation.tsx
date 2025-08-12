@@ -7,16 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Send, Trash } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { format, isToday, isYesterday, parseISO } from "date-fns";
 import { Message } from "../types";
-import { sanitizeFilename } from "@/lib/utils/index";
-import api from "@/api/apiConfig";
 import {
   useGetTicketMessagesQuery,
-  usePresignTicketUploadMutation,
   useSendTicketMessageMutation,
   useUpdateTicketStatusMutation,
 } from "@/api/supportAPI";
+import { useFileValidation } from "../hooks/use-file-validation";
+import { useUploadAttachment } from "../hooks/use-upload-attachment";
+import { formatDateLabel, formatTimeLabel } from "@/lib/utils/format-time";
 
 interface Props {
   ticketId: string;
@@ -27,11 +26,6 @@ interface Props {
   onReplySent?: () => void;
 }
 
-const MAX_FILES = 2;
-const MAX_SIZE_MB = 3;
-const MAX_SIZE = MAX_SIZE_MB * 1024 * 1024;
-const ALLOWED_TYPES = ["image/png", "image/jpeg"];
-
 const TicketConversation: React.FC<Props> = ({
   ticketId,
   userId,
@@ -41,7 +35,6 @@ const TicketConversation: React.FC<Props> = ({
 }) => {
   const { toast } = useToast();
 
-  const [presignUpload] = usePresignTicketUploadMutation();
   const [sendMessage, { isLoading: isSending }] =
     useSendTicketMessageMutation();
 
@@ -54,7 +47,9 @@ const TicketConversation: React.FC<Props> = ({
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [reply, setReply] = useState("");
-  const [attachments, setAttachments] = useState<File[]>([]);
+  const { attachments, setAttachments, onFileChange, removeAttachment } =
+    useFileValidation();
+  const { uploadAttachment } = useUploadAttachment(userId, ticketId);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -67,49 +62,6 @@ const TicketConversation: React.FC<Props> = ({
       behavior: "smooth",
     });
   }, [messages]);
-  const uploadAttachment = async (file: File) => {
-    if (!userId) return null;
-    try {
-      const sanitized = sanitizeFilename(file.name);
-      const meta = {
-        fileName: sanitized,
-        fileType: file.type,
-        fileSize: file.size,
-      };
-
-      // const res = await fetchWithUserId(
-      //   `${API_BASE}/ticket/${ticketId}/presign-upload`,
-      //   {
-      //     method: "POST",
-      //     userId,
-      //     body: meta,
-      //   }
-      // );
-
-      // const { uploadUrl, fileKey } = await res.json();
-
-      const { uploadUrl, fileKey } = await presignUpload({
-        userId,
-        id: ticketId,
-        body: meta,
-      }).unwrap();
-
-      await fetch(uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      return {
-        name: sanitized,
-        size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
-        type: file.type,
-        fileKey,
-      };
-    } catch (err) {
-      toast({ title: `Upload failed for ${file.name}` });
-      return null;
-    }
-  };
 
   const handleReplySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,35 +116,6 @@ const TicketConversation: React.FC<Props> = ({
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newFiles = Array.from(e.target.files || []);
-    const merged: File[] = [];
-
-    for (const file of newFiles) {
-      if (!ALLOWED_TYPES.includes(file.type)) {
-        toast({ title: `Invalid file type: ${file.name}` });
-        continue;
-      }
-      if (file.size > MAX_SIZE) {
-        toast({ title: `File too large: ${file.name}` });
-        continue;
-      }
-      if (attachments.length + merged.length >= MAX_FILES) break;
-      merged.push(file);
-    }
-    setAttachments((prev) => [...prev, ...merged]);
-  };
-
-  const removeAttachment = (index: number) =>
-    setAttachments((prev) => prev.filter((_, i) => i !== index));
-
-  const formatDateLabel = (dateStr: string) => {
-    const date = parseISO(dateStr);
-    if (isToday(date)) return "Today";
-    if (isYesterday(date)) return "Yesterday";
-    return format(date, "MMMM d");
-  };
-
   let lastDate = "";
 
   return (
@@ -204,8 +127,6 @@ const TicketConversation: React.FC<Props> = ({
       >
         {messages.map((msg) => {
           const msgDate = msg.timestamp.split("T")[0];
-          const localDate = new Date(msg.timestamp);
-          const formattedTime = format(localDate, "p");
           const showDateDivider = msgDate !== lastDate;
           lastDate = msgDate;
 
@@ -239,7 +160,7 @@ const TicketConversation: React.FC<Props> = ({
                       {msg.senderName || "Me"}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      {formattedTime}
+                      {formatTimeLabel(msg.timestamp)}
                     </div>
                   </div>
                   <div className="mt-1 text-base whitespace-pre-wrap">
@@ -298,7 +219,7 @@ const TicketConversation: React.FC<Props> = ({
                 type="file"
                 accept=".png,.jpeg"
                 multiple
-                onChange={handleFileChange}
+                onChange={onFileChange}
                 className="hidden"
               />
               <Button

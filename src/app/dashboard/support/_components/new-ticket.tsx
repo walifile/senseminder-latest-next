@@ -20,17 +20,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import AttachmentUploader from "./attachment-uploader";
-import { ALLOWED_TYPES, MAX_FILE_SIZE_MB, MAX_FILES } from "../constants";
 import { selectAuthUser, selectUserId } from "@/redux/slices/auth/auth-slice";
-import { sanitizeFilename } from "@/lib/utils/index";
-
-import api from "@/api/apiConfig";
-import {
-  useCreateTicketMutation,
-  usePresignTicketUploadMutation,
-} from "@/api/supportAPI";
-
-const API_BASE = api?.SUPPORT_API_BASE;
+import { useCreateTicketMutation } from "@/api/supportAPI";
+import PrioritySelectField from "./priority-select-field";
+import { useFileValidation } from "../hooks/use-file-validation";
+import { useUploadAttachment } from "../hooks/use-upload-attachment";
 
 interface Props {
   setActiveTab: (tab: "tickets" | "new-ticket" | "faq") => void;
@@ -43,8 +37,6 @@ const NewTicket = ({ setActiveTab }: Props) => {
   const userId = useSelector(selectUserId);
 
   const [createTicket, { isLoading: isCreating }] = useCreateTicketMutation();
-  const [presignUpload, { isLoading: isPresigning }] =
-    usePresignTicketUploadMutation();
 
   const [formState, setFormState] = useState({
     subject: "",
@@ -52,7 +44,9 @@ const NewTicket = ({ setActiveTab }: Props) => {
     priority: "medium",
     description: "",
   });
-  const [attachments, setAttachments] = useState<File[]>([]);
+  const { attachments, setAttachments, onFileChange, removeAttachment } =
+    useFileValidation();
+  const { uploadAttachment } = useUploadAttachment(userId);
   const [subjectError, setSubjectError] = useState("");
   const [descriptionError, setDescriptionError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -82,35 +76,6 @@ const NewTicket = ({ setActiveTab }: Props) => {
 
   const handleSelectChange = (field: string, value: string) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    const validFiles: File[] = [];
-
-    for (const file of files) {
-      if (!ALLOWED_TYPES.includes(file.type)) {
-        toast({ title: `Invalid file type: ${file.name}` });
-        continue;
-      }
-      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-        toast({ title: `File too large: ${file.name}` });
-        continue;
-      }
-      if (attachments.length + validFiles.length >= MAX_FILES) {
-        toast({ title: "Only 2 attachments allowed." });
-        break;
-      }
-      validFiles.push(file);
-    }
-
-    setAttachments((prev) => [...prev, ...validFiles]);
-  };
-
-  const removeAttachment = (index: number) => {
-    const updated = [...attachments];
-    updated.splice(index, 1);
-    setAttachments(updated);
   };
 
   const handleNewTicket = async (e: React.FormEvent) => {
@@ -149,50 +114,6 @@ const NewTicket = ({ setActiveTab }: Props) => {
       toast({ title: "Ticket creation failed" });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const uploadAttachment = async (file: File) => {
-    if (!userId) return null;
-    try {
-      const sanitized = sanitizeFilename(file.name);
-      const meta = {
-        fileName: sanitized,
-        fileType: file.type,
-        fileSize: file.size,
-      };
-
-      // const res = await fetchWithUserId(`${API_BASE}/ticket/presign-upload`, {
-      //   method: "POST",
-      //   userId,
-      //   body: meta,
-      // });
-      // const { uploadUrl, fileKey } = await res.json();
-      // await fetch(uploadUrl, {
-      //   method: "PUT",
-      //   headers: { "Content-Type": file.type },
-      //   body: file,
-      // });
-
-      const { uploadUrl, fileKey } = await presignUpload({
-        userId,
-        body: meta,
-      }).unwrap();
-
-      await fetch(uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      return {
-        name: sanitized,
-        size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
-        type: file.type,
-        fileKey,
-      };
-    } catch (err) {
-      toast({ title: `Upload failed for ${file.name}` });
-      return null;
     }
   };
 
@@ -235,19 +156,10 @@ const NewTicket = ({ setActiveTab }: Props) => {
             </div>
             <div>
               <label className="text-sm font-medium">Priority</label>
-              <Select
+              <PrioritySelectField
                 value={formState.priority}
-                onValueChange={(val) => handleSelectChange("priority", val)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                </SelectContent>
-              </Select>
+                setValue={(val) => handleSelectChange("priority", val)}
+              />
             </div>
           </div>
 
@@ -264,7 +176,7 @@ const NewTicket = ({ setActiveTab }: Props) => {
 
           <AttachmentUploader
             files={attachments}
-            onUpload={handleFileChange}
+            onUpload={onFileChange}
             onRemove={removeAttachment}
           />
         </CardContent>

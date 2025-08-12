@@ -7,13 +7,6 @@ import { RootState } from "@/redux/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, CheckCircle2 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import TicketConversation from "../../_components/ticket-conversation";
 import { format } from "date-fns";
@@ -22,22 +15,8 @@ import {
   useGetTicketByIdQuery,
   useUpdateTicketStatusMutation,
 } from "@/api/supportAPI";
-
-const getStatusBadgeClass = (status: string) => {
-  const base = "px-2 py-0.5 text-xs rounded-full font-medium";
-  switch (status.toLowerCase()) {
-    case "resolved":
-      return `${base} bg-yellow-100 text-yellow-800`;
-    case "closed":
-      return `${base} bg-gray-200 text-gray-700`;
-    case "open":
-      return `${base} bg-green-100 text-green-700`;
-    case "in-progress":
-      return `${base} bg-blue-100 text-blue-700`;
-    default:
-      return `${base} bg-muted text-muted-foreground`;
-  }
-};
+import PrioritySelectField from "../../_components/priority-select-field";
+import { getStatusBadgeClass } from "../../_components/get-status-badge-class";
 
 const formatLabel = (text: string) =>
   text.charAt(0).toUpperCase() + text.slice(1).replace("-", " ");
@@ -161,20 +140,11 @@ const TicketDetailPage = () => {
 
                 <div className="text-muted-foreground">Priority</div>
                 <div>
-                  <Select
+                  <PrioritySelectField
                     value={priority}
-                    onValueChange={handlePriorityChange}
+                    setValue={handlePriorityChange}
                     disabled={isClosed}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select priority" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  />
                 </div>
               </div>
 
