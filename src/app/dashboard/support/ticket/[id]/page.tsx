@@ -15,10 +15,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { fetchWithUserId } from "@/lib/fetchWithUserId";
 import TicketConversation from "../../_components/ticket-conversation";
 import { format } from "date-fns";
-import { Ticket } from "../../types";
+import {
+  useAssignTicketMutation,
+  useGetTicketByIdQuery,
+  useUpdateTicketStatusMutation,
+} from "@/api/supportAPI";
 
 const getStatusBadgeClass = (status: string) => {
   const base = "px-2 py-0.5 text-xs rounded-full font-medium";
@@ -46,38 +49,31 @@ const TicketDetailPage = () => {
   const userId = useSelector((state: RootState) => state.auth.user?.id) || "";
   const ticketId = params.id as string;
 
-  const [ticket, setTicket] = useState<Ticket | null>(null);
-  const [ticketStatus, setTicketStatus] = useState("");
-  const [ticketPriority, setTicketPriority] = useState("");
+  const [priority, setPriority] = useState<string>("");
 
-  const isClosed = ticketStatus === "closed";
-  // const API_BASE = "https://lvir6hp7hb.execute-api.us-east-1.amazonaws.com/dev";
-  const API_BASE = process.env.NEXT_PUBLIC_SUPPORT_API_BASE;
+  const [updateStatus, { isLoading: isUpdatingStatus }] =
+    useUpdateTicketStatusMutation();
+  const [assignTicket] = useAssignTicketMutation();
 
-  const fetchTicket = async () => {
-    try {
-      const res = await fetchWithUserId(`${API_BASE}/ticket/${ticketId}`, {
-        method: "GET",
-        userId,
-      });
-      const data = await res.json();
-      setTicket(data);
-      setTicketStatus(data.status);
-      setTicketPriority(data.priority);
-    } catch {
-      toast({ title: "Failed to load ticket" });
-    }
-  };
+  const {
+    data: ticket,
+    isLoading,
+    isFetching,
+    refetch,
+    error,
+  } = useGetTicketByIdQuery(
+    { userId, id: ticketId },
+    { skip: !userId || !ticketId }
+  );
+
+  useEffect(() => {
+    if (ticket) setPriority(ticket.priority ?? "");
+  }, [ticket?.id, ticket?.priority]);
 
   const handleStatusChange = async (value: string) => {
     try {
-      await fetchWithUserId(`${API_BASE}/ticket/${ticketId}/status`, {
-        method: "PATCH",
-        userId,
-        body: { status: value },
-      });
-      setTicketStatus(value);
-      setTicket((prev) => (prev ? { ...prev, status: value } : prev));
+      await updateStatus({ userId, id: ticketId, status: value }).unwrap();
+
       toast({ title: `Status updated to ${value}` });
     } catch {
       toast({ title: "Failed to update status", variant: "destructive" });
@@ -85,22 +81,16 @@ const TicketDetailPage = () => {
   };
 
   const handlePriorityChange = async (value: string) => {
-    setTicketPriority(value);
-    await fetchWithUserId(`${API_BASE}/ticket/${ticketId}/assign`, {
-      method: "PATCH",
-      userId,
-      body: { assignedTo: userId },
-    });
+    setPriority(value);
+
+    await assignTicket({ userId, id: ticketId, assignedTo: userId }).unwrap();
+
     toast({ title: `Priority updated to ${value}` });
   };
 
-  useEffect(() => {
-    if (ticketId && userId) {
-      fetchTicket();
-    }
-  }, [ticketId, userId]);
+  if (isLoading || isFetching) return <div>Loading...</div>;
 
-  if (!ticket) return <div>Loading...</div>;
+  const isClosed = ticket.status === "closed";
 
   return (
     <div className="space-y-6">
@@ -134,9 +124,8 @@ const TicketDetailPage = () => {
             ticketId={ticketId}
             userId={userId}
             isClosed={isClosed}
-            ticketStatus={ticketStatus}
+            ticketStatus={ticket.status}
             senderType="customer"
-            onReplySent={fetchTicket}
           />
         </div>
 
@@ -165,15 +154,15 @@ const TicketDetailPage = () => {
 
                 <div className="text-muted-foreground">Status</div>
                 <div>
-                  <span className={getStatusBadgeClass(ticketStatus)}>
-                    {formatLabel(ticketStatus)}
+                  <span className={getStatusBadgeClass(ticket.status)}>
+                    {formatLabel(ticket.status)}
                   </span>
                 </div>
 
                 <div className="text-muted-foreground">Priority</div>
                 <div>
                   <Select
-                    value={ticketPriority}
+                    value={priority}
                     onValueChange={handlePriorityChange}
                     disabled={isClosed}
                   >

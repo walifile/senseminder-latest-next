@@ -19,26 +19,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { fetchWithUserId } from "@/lib/fetchWithUserId";
 import AttachmentUploader from "./attachment-uploader";
 import { ALLOWED_TYPES, MAX_FILE_SIZE_MB, MAX_FILES } from "../constants";
 import { selectAuthUser, selectUserId } from "@/redux/slices/auth/auth-slice";
 import { sanitizeFilename } from "@/lib/utils/index";
 
 import api from "@/api/apiConfig";
+import {
+  useCreateTicketMutation,
+  usePresignTicketUploadMutation,
+} from "@/api/supportAPI";
 
 const API_BASE = api?.SUPPORT_API_BASE;
 
 interface Props {
-  loadTickets: () => Promise<void>;
   setActiveTab: (tab: "tickets" | "new-ticket" | "faq") => void;
 }
 
-const NewTicket = ({ loadTickets, setActiveTab }: Props) => {
+const NewTicket = ({ setActiveTab }: Props) => {
   const { toast } = useToast();
 
   const user = useSelector(selectAuthUser);
   const userId = useSelector(selectUserId);
+
+  const [createTicket, { isLoading: isCreating }] = useCreateTicketMutation();
+  const [presignUpload, { isLoading: isPresigning }] =
+    usePresignTicketUploadMutation();
 
   const [formState, setFormState] = useState({
     subject: "",
@@ -114,7 +120,8 @@ const NewTicket = ({ loadTickets, setActiveTab }: Props) => {
     try {
       const uploaded = await Promise.all(attachments.map(uploadAttachment));
       const filtered = uploaded.filter(Boolean);
-      const payload = {
+
+      const body = {
         userId,
         subject: formState.subject,
         description: formState.description,
@@ -125,11 +132,7 @@ const NewTicket = ({ loadTickets, setActiveTab }: Props) => {
         role: user?.role,
       };
 
-      await fetchWithUserId(`${API_BASE}/ticket`, {
-        method: "POST",
-        userId,
-        body: payload,
-      });
+      await createTicket({ userId, body }).unwrap();
 
       toast({ title: "Support ticket created" });
       setFormState({
@@ -141,7 +144,6 @@ const NewTicket = ({ loadTickets, setActiveTab }: Props) => {
       setAttachments([]);
       setSubjectError("");
       setDescriptionError("");
-      await loadTickets();
       setActiveTab("tickets");
     } catch {
       toast({ title: "Ticket creation failed" });
@@ -159,12 +161,24 @@ const NewTicket = ({ loadTickets, setActiveTab }: Props) => {
         fileType: file.type,
         fileSize: file.size,
       };
-      const res = await fetchWithUserId(`${API_BASE}/ticket/presign-upload`, {
-        method: "POST",
+
+      // const res = await fetchWithUserId(`${API_BASE}/ticket/presign-upload`, {
+      //   method: "POST",
+      //   userId,
+      //   body: meta,
+      // });
+      // const { uploadUrl, fileKey } = await res.json();
+      // await fetch(uploadUrl, {
+      //   method: "PUT",
+      //   headers: { "Content-Type": file.type },
+      //   body: file,
+      // });
+
+      const { uploadUrl, fileKey } = await presignUpload({
         userId,
         body: meta,
-      });
-      const { uploadUrl, fileKey } = await res.json();
+      }).unwrap();
+
       await fetch(uploadUrl, {
         method: "PUT",
         headers: { "Content-Type": file.type },

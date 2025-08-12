@@ -192,7 +192,6 @@ const CloudPCPage = () => {
     name: string;
   } | null>(null);
 
-
   // --- NEW: Track which PC Idle dialog is for
   const [selectedPCForIdle, setSelectedPCForIdle] = useState<PC | null>(null);
 
@@ -595,10 +594,15 @@ const CloudPCPage = () => {
                             {/* ── Left ── */}
                             <div className="flex-shrink-0 w-full md:w-72 flex items-center gap-3 overflow-hidden">
                               {/* ✅ Checkbox aligned with text */}
-                              <div onClick={(e) => e.stopPropagation()} className="flex items-center">
+                              <div
+                                onClick={(e) => e.stopPropagation()}
+                                className="flex items-center"
+                              >
                                 <Checkbox
                                   checked={selectedPCs.includes(index)}
-                                  onCheckedChange={() => handlePCSelection(index)}
+                                  onCheckedChange={() =>
+                                    handlePCSelection(index)
+                                  }
                                   className="mt-[2px]" // optional tweak, adjust as needed
                                 />
                               </div>
@@ -626,7 +630,9 @@ const CloudPCPage = () => {
                                       ? "bg-green-500/10 text-green-500"
                                       : pc.state === "stopped"
                                       ? "bg-red-500/10 text-red-500"
-                                      : pc.state === "initializing" || pc.state === "initialization" || pc.state === "pending"
+                                      : pc.state === "initializing" ||
+                                        pc.state === "initialization" ||
+                                        pc.state === "pending"
                                       ? "bg-yellow-500/10 text-yellow-500"
                                       : pc.state === "stopping"
                                       ? "bg-orange-500/10 text-orange-500"
@@ -640,7 +646,10 @@ const CloudPCPage = () => {
                               </div>
 
                               {/* Uptime */}
-                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                              <TooltipProvider
+                                delayDuration={0}
+                                skipDelayDuration={0}
+                              >
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="flex items-center gap-2">
@@ -653,7 +662,10 @@ const CloudPCPage = () => {
                               </TooltipProvider>
 
                               {/* Region */}
-                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                              <TooltipProvider
+                                delayDuration={0}
+                                skipDelayDuration={0}
+                              >
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="hidden lg:flex items-center gap-2">
@@ -666,23 +678,32 @@ const CloudPCPage = () => {
                               </TooltipProvider>
 
                               {/* Schedule */}
-                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                              <TooltipProvider
+                                delayDuration={0}
+                                skipDelayDuration={0}
+                              >
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="flex items-center gap-2">
                                       <CalendarClock className="h-4 w-4" />
                                       {pcInfo?.schedule?.enabled === false ? (
-                                        <span className="truncate">disabled</span>
-                                      ) : pcInfo?.schedule?.autoStartTime || pcInfo?.schedule?.autoStopTime ? (
                                         <span className="truncate">
-                                          {pcInfo.schedule.autoStartTime && pcInfo.schedule.autoStopTime
+                                          disabled
+                                        </span>
+                                      ) : pcInfo?.schedule?.autoStartTime ||
+                                        pcInfo?.schedule?.autoStopTime ? (
+                                        <span className="truncate">
+                                          {pcInfo.schedule.autoStartTime &&
+                                          pcInfo.schedule.autoStopTime
                                             ? `${pcInfo.schedule.autoStartTime} – ${pcInfo.schedule.autoStopTime}`
                                             : pcInfo.schedule.autoStartTime
                                             ? `Starts at ${pcInfo.schedule.autoStartTime}`
                                             : `Stops at ${pcInfo.schedule.autoStopTime}`}
                                         </span>
                                       ) : (
-                                        <span className="italic truncate">No schedule</span>
+                                        <span className="italic truncate">
+                                          No schedule
+                                        </span>
                                       )}
                                     </div>
                                   </TooltipTrigger>
@@ -691,7 +712,10 @@ const CloudPCPage = () => {
                               </TooltipProvider>
 
                               {/* Idle Timeout */}
-                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                              <TooltipProvider
+                                delayDuration={0}
+                                skipDelayDuration={0}
+                              >
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="hidden lg:flex items-center gap-2">
@@ -734,9 +758,12 @@ const CloudPCPage = () => {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => {
-                                    setSelectedPCForStop({ id: pc.instanceId, name: pc.systemName });
+                                    setSelectedPCForStop({
+                                      id: pc.instanceId,
+                                      name: pc.systemName,
+                                    });
                                     setShowStopDialog(true);
-                                  }}                                  
+                                  }}
                                   disabled={
                                     isBusy(pc.state) ||
                                     stoppingInstances.includes(pc.instanceId)
@@ -854,7 +881,10 @@ const CloudPCPage = () => {
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-3">
                             {/* ✅ Prevent checkbox click from triggering card click */}
-                            <div onClick={(e) => e.stopPropagation()} className="flex items-center">
+                            <div
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex items-center"
+                            >
                               <Checkbox
                                 checked={selectedPCs.includes(index)}
                                 onCheckedChange={() => handlePCSelection(index)}
@@ -1076,9 +1106,12 @@ const CloudPCPage = () => {
                                           size="sm"
                                           variant="outline"
                                           onClick={() => {
-                                            setSelectedPCForStop({ id: pc.instanceId, name: pc.systemName });
+                                            setSelectedPCForStop({
+                                              id: pc.instanceId,
+                                              name: pc.systemName,
+                                            });
                                             setShowStopDialog(true);
-                                          }}                                          
+                                          }}
                                           className="h-8"
                                           disabled={
                                             isBusy(pc.state) ||

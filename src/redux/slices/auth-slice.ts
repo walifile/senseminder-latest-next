@@ -39,13 +39,10 @@ export const authSlice = createSlice({
   reducers: {
     setUser: (
       state,
-      action: PayloadAction<
-        | {
-            user: User;
-            token: string;
-          }
-        | null
-      >
+      action: PayloadAction<{
+        user: User;
+        token: string;
+      } | null>
     ) => {
       if (action.payload) {
         state.user = action.payload.user;
@@ -64,7 +61,7 @@ export const authSlice = createSlice({
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
-    clearAuth: state => {
+    clearAuth: (state) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
@@ -99,7 +96,7 @@ export const {
   setLoading,
   clearAuth,
   setTempUser,
-  clearTempUser,  // <--- Export clearTempUser here
+  clearTempUser, // <--- Export clearTempUser here
 } = authSlice.actions;
 
 export default authSlice.reducer;

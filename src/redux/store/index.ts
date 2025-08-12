@@ -17,12 +17,13 @@ import { newsletterAPI } from "@/api/newsletterAPI";
 import startVMReducer from "../slices/dcv/starting-instances-slice";
 import smartPcConfigReducer from "../slices/build-pc/smart-pc-config-slice";
 import { legalDocumentsAPI } from "@/api/legalDocumentsAPI";
-
+import { ticketsAPI } from "@/api/supportAPI";
 interface RootStateType {
   auth: ReturnType<typeof authReducer>;
   dcv: ReturnType<typeof dcvReducer>;
   startVM: ReturnType<typeof startVMReducer>;
   smartPcConfig: ReturnType<typeof smartPcConfigReducer>;
+  [ticketsAPI.reducerPath]: ReturnType<typeof ticketsAPI.reducer>;
   [fileManagerAPI.reducerPath]: ReturnType<typeof fileManagerAPI.reducer>;
   [vmManagementAPI.reducerPath]: ReturnType<typeof vmManagementAPI.reducer>;
   [newsletterAPI.reducerPath]: ReturnType<typeof newsletterAPI.reducer>;
@@ -42,6 +43,7 @@ const rootReducer = combineReducers({
   smartPcConfig: smartPcConfigReducer,
   [fileManagerAPI.reducerPath]: fileManagerAPI.reducer,
   [vmManagementAPI.reducerPath]: vmManagementAPI.reducer,
+  [ticketsAPI.reducerPath]: ticketsAPI.reducer,
   [newsletterAPI.reducerPath]: newsletterAPI.reducer,
   [legalDocumentsAPI.reducerPath]: legalDocumentsAPI.reducer,
 });
@@ -60,7 +62,8 @@ export const store = configureStore({
       fileManagerAPI.middleware,
       vmManagementAPI.middleware,
       newsletterAPI.middleware,
-      legalDocumentsAPI.middleware
+      legalDocumentsAPI.middleware,
+      ticketsAPI.middleware
     ),
 });
 
