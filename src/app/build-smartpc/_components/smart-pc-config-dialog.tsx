@@ -637,6 +637,7 @@ import {
 } from "@/api/fileManagerAPI";
 import { useCreateVMMutation } from "@/api/vmManagement";
 import { clearSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
+import { Field, Form } from "@/components/shared/hook-form";
 
 const SmartPCConfigDialog = ({
   showNewPCDialog,
@@ -656,15 +657,7 @@ const SmartPCConfigDialog = ({
   });
   const [createVM, { isLoading: isCreating }] = useCreateVMMutation();
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    trigger,
-    getValues,
-    setValue,
-    formState: { errors },
-  } = useForm<FormValues>({
+  const methods = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
     defaultValues: {
@@ -677,6 +670,16 @@ const SmartPCConfigDialog = ({
       linuxCategory: "Ubuntu_24.04_LTS_X64",
     },
   });
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    trigger,
+    getValues,
+    setValue,
+    formState: { errors },
+  } = methods;
 
   const selectedOS = useWatch({ control, name: "operatingSystem" });
   const isLinuxOS = selectedOS === "Linux";
@@ -875,38 +878,13 @@ const SmartPCConfigDialog = ({
           <DialogDescription>Customize your Computer</DialogDescription>
         </DialogHeader>
 
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") e.preventDefault();
-          }}
-        >
-          <div className="space-y-2">
-            <Label>Select Operating System (OS)</Label>
-            <Controller
-              control={control}
-              name="operatingSystem"
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Operating System" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {osOptions.map((os) => (
-                      <SelectItem key={os.value} value={os.value}>
-                        {os.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            {errors.operatingSystem && (
-              <p className="text-red-500 text-sm">
-                {errors.operatingSystem.message}
-              </p>
-            )}
-          </div>
+        <Form methods={methods} onSubmit={handleSubmit(onSubmit)}>
+          <Field.Select
+            name="operatingSystem"
+            label="Select Operating System (OS)"
+            placeholder="Select Operating System"
+            options={osOptions}
+          />
 
           <div className="space-y-2">
             <Label>Name of the computer</Label>
@@ -943,126 +921,47 @@ const SmartPCConfigDialog = ({
             <h3 className="text-sm font-medium">Select Configuration</h3>
 
             {isLinuxOS && (
-              <div className="space-y-2">
-                <Label>Category</Label>
-                <Controller
-                  control={control}
-                  name="linuxCategory"
-                  render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Linux category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.keys(cpuCategories.Linux).map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                {errors.cpu && (
-                  <p className="text-red-500 text-sm">{errors.cpu.message}</p>
-                )}
-              </div>
+              <Field.Select
+                name="linuxCategory"
+                label="Category"
+                placeholder="Select Linux category"
+                options={Object.keys(cpuCategories.Linux)}
+              />
             )}
 
-            <div className="space-y-2">
-              <Label>CPU (Core)</Label>
-              <Controller
-                control={control}
-                name="cpu"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select CPU size" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {cpuOptionsForOS.map((cpu) => (
-                        <SelectItem key={cpu.value} value={cpu.value}>
-                          {cpu.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.cpu && (
-                <p className="text-red-500 text-sm">{errors.cpu.message}</p>
-              )}
-            </div>
+            <Field.Select
+              name="cpu"
+              label="CPU (Core)"
+              placeholder="Select CPU size"
+              options={cpuOptionsForOS}
+            />
 
-            <div className="space-y-2">
-              <Label>Storage</Label>
-              <Controller
-                control={control}
-                name="storage"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select storage size" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {storageOptions.map((storage) => (
-                        <SelectItem key={storage.value} value={storage.value}>
-                          {storage.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.storage && (
-                <p className="text-red-500 text-sm">{errors.storage.message}</p>
-              )}
-            </div>
+            <Field.Select
+              name="storage"
+              label="Storage"
+              placeholder="Select storage size"
+              options={storageOptions}
+            />
 
-            <div className="space-y-2">
-              <Label>Location</Label>
-              <Controller
-                control={control}
-                name="region"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select nearest datacenter" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {locationOptions.map((location) => (
-                        <SelectItem key={location.value} value={location.value}>
-                          {location.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.region && (
-                <p className="text-red-500 text-sm">{errors.region.message}</p>
-              )}
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>Billing Plan</Label>
-            <Controller
-              control={control}
-              name="billingPlan"
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose billing plan" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="hourly">Hourly</SelectItem>
-                    <SelectItem value="daily">Daily</SelectItem>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
+            <Field.Select
+              name="region"
+              label="Location"
+              placeholder="Select nearest datacenter"
+              options={locationOptions}
             />
           </div>
+
+          <Field.Select
+            name="billingPlan"
+            label="Billing Plan"
+            placeholder="Choose billing plan"
+            options={[
+              { value: "hourly", label: "Hourly" },
+              { value: "daily", label: "Daily" },
+              { value: "monthly", label: "Monthly" },
+            ]}
+          />
+
           <div className="rounded-md px-4 py-3 mt-2 bg-blue-50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-400">
             <p className="text-sm font-semibold mb-2">
               Estimated Cost Breakdown:
@@ -1131,7 +1030,7 @@ const SmartPCConfigDialog = ({
               Build PC
             </Button>
           </DialogFooter>
-        </form>
+        </Form>
       </DialogContent>
       <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
         <DialogContent className="sm:max-w-md">

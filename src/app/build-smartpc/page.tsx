@@ -48,6 +48,7 @@ import {
   osOptions,
   storageOptions,
 } from "./data";
+import { Field } from "@/components/shared/hook-form";
 
 export default function BuildSmartPCPage() {
   const router = useRouter();
@@ -74,6 +75,8 @@ export default function BuildSmartPCPage() {
       linuxCategory: "Ubuntu_24.04_LTS_X64",
     },
   });
+
+  const { control } = form;
 
   const selectedCpu = useWatch({ control: form.control, name: "cpu" });
   const selectedStorage = useWatch({ control: form.control, name: "storage" });
@@ -212,7 +215,7 @@ export default function BuildSmartPCPage() {
               transition={{ delay: 0.2 }}
               className="grid gap-8"
             >
-              <Form {...form}>
+              <Form {...form} control={control}>
                 <form
                   className="grid gap-8"
                   onSubmit={form.handleSubmit(onSubmit)}
@@ -238,35 +241,12 @@ export default function BuildSmartPCPage() {
                           </FormItem>
                         )}
                       />
-                      <FormField
-                        control={form.control}
+
+                      <Field.Select
                         name="operatingSystem"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Operating System</FormLabel>
-                            <Select
-                              value={field.value}
-                              onValueChange={field.onChange}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {osOptions.map((os) => (
-                                  <SelectItem key={os.value} value={os.value}>
-                                    <div className="flex items-center gap-2">
-                                      <MonitorPlay className="h-4 w-4 mr-2" />
-                                      {os.label}
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        label="Operating System"
+                        options={osOptions}
+                        icon={MonitorPlay}
                       />
                     </CardContent>
                   </Card>
@@ -280,103 +260,30 @@ export default function BuildSmartPCPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       {isLinuxOS && (
-                        <FormField
-                          control={form.control}
+                        <Field.Select
                           name="linuxCategory"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Category</FormLabel>
-                              <Select
-                                value={field.value}
-                                onValueChange={field.onChange}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {Object.keys(cpuCategories.Linux).map(
-                                    (category) => (
-                                      <SelectItem
-                                        key={category}
-                                        value={category}
-                                      >
-                                        {category}
-                                      </SelectItem>
-                                    )
-                                  )}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
+                          label="Category"
+                          options={Object.keys(cpuCategories.Linux)}
                         />
                       )}
 
-                      <FormField
-                        control={form.control}
+                      <Field.Select
                         name="cpu"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>CPU</FormLabel>
-                            <Select
-                              value={field.value}
-                              onValueChange={field.onChange}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {cpuOptionsForOS.map((opt) => (
-                                  <SelectItem key={opt.value} value={opt.value}>
-                                    <div className="flex items-center gap-2">
-                                      <Cpu className="h-4 w-4 mr-2" />
-                                      {opt.label}
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        label="CPU"
+                        options={cpuOptionsForOS}
+                        icon={Cpu}
                       />
 
-                      <FormField
-                        control={form.control}
+                      <Field.Select
                         name="storage"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Storage</FormLabel>
-                            <Select
-                              value={field.value}
-                              onValueChange={field.onChange}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {storageOptions.map((opt) => (
-                                  <SelectItem key={opt.value} value={opt.value}>
-                                    <div className="flex items-center gap-2">
-                                      <HardDrive className="h-4 w-4 mr-2" />
-                                      {opt.label}{" "}
-                                      {opt.pricePerHour
-                                        ? `($${opt.pricePerHour}/hr)`
-                                        : ""}
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        label="Storage"
+                        options={storageOptions.map((opt) => ({
+                          value: opt.value,
+                          label: `${opt.label} ${
+                            opt.pricePerHour ? `($${opt.pricePerHour}/hr)` : ""
+                          }`,
+                        }))}
+                        icon={HardDrive}
                       />
                     </CardContent>
                   </Card>
@@ -386,41 +293,15 @@ export default function BuildSmartPCPage() {
                       <CardTitle>Location</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <FormField
-                        control={form.control}
+                      <Field.Select
                         name="region"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Region</FormLabel>
-                            <Select
-                              value={field.value}
-                              onValueChange={field.onChange}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {locationOptions.map((region) => (
-                                  <SelectItem
-                                    key={region.value}
-                                    value={region.value}
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      <Globe className="h-4 w-4 mr-2" />
-                                      {region.label}
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        label="Region"
+                        options={locationOptions}
+                        icon={Globe}
                       />
                     </CardContent>
                   </Card>
+
                   <Card>
                     <CardHeader>
                       <CardTitle>Billing Plan</CardTitle>
@@ -429,57 +310,46 @@ export default function BuildSmartPCPage() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <FormField
-                        control={form.control}
+                      <Field.Select
                         name="billingPlan"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Billing Plan</FormLabel>
-                            <Select
-                              value={field.value}
-                              onValueChange={field.onChange}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Choose billing plan" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="hourly">
-                                  Hourly{" "}
-                                  {isLoading
-                                    ? "(...)"
-                                    : data?.total?.pricePerHour !== undefined
-                                    ? `(est. $${data.total.pricePerHour.toFixed(
-                                        3
-                                      )})`
-                                    : ""}
-                                </SelectItem>
-                                <SelectItem value="daily">
-                                  Daily{" "}
-                                  {isLoading
-                                    ? "(...)"
-                                    : data?.total?.pricePerDay !== undefined
-                                    ? `(est. $${data.total.pricePerDay.toFixed(
-                                        2
-                                      )})`
-                                    : ""}
-                                </SelectItem>
-                                <SelectItem value="monthly">
-                                  Monthly{" "}
-                                  {isLoading
-                                    ? "(...)"
-                                    : data?.total?.pricePerMonth !== undefined
-                                    ? `(est. $${data.total.pricePerMonth.toFixed(
-                                        2
-                                      )})`
-                                    : ""}
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        label="Billing Plan"
+                        placeholder="Choose billing plan"
+                        options={[
+                          {
+                            value: "hourly",
+                            label: `Hourly ${
+                              isLoading
+                                ? "(...)"
+                                : data?.total?.pricePerHour !== undefined
+                                ? `(est. $${data.total.pricePerHour.toFixed(
+                                    3
+                                  )})`
+                                : ""
+                            }`,
+                          },
+                          {
+                            value: "daily",
+                            label: `Daily ${
+                              isLoading
+                                ? "(...)"
+                                : data?.total?.pricePerDay !== undefined
+                                ? `(est. $${data.total.pricePerDay.toFixed(2)})`
+                                : ""
+                            }`,
+                          },
+                          {
+                            value: "monthly",
+                            label: `Monthly ${
+                              isLoading
+                                ? "(...)"
+                                : data?.total?.pricePerMonth !== undefined
+                                ? `(est. $${data.total.pricePerMonth.toFixed(
+                                    2
+                                  )})`
+                                : ""
+                            }`,
+                          },
+                        ]}
                       />
                     </CardContent>
                   </Card>

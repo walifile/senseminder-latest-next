@@ -41,6 +41,7 @@ import {
   FormValues,
 } from "@/app/build-smartpc/schema";
 import { setSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
+import { Field, Form } from "@/components/shared/hook-form";
 
 const CostCalculator = () => {
   const router = useRouter();
@@ -53,13 +54,7 @@ const CostCalculator = () => {
   const [getEstimate, { data: estimateData, isLoading }] =
     useGetEstimateMutation();
 
-  const {
-    setValue,
-    control,
-    handleSubmit,
-    formState: { errors },
-    watch,
-  } = useForm<FormValues>({
+  const methods = useForm<FormValues>({
     resolver: zodResolver(baseFormSchema),
     defaultValues: {
       operatingSystem: "",
@@ -69,6 +64,16 @@ const CostCalculator = () => {
       linuxCategory: "Ubuntu_24.04_LTS_X64",
     },
   });
+
+  const {
+    setValue,
+    control,
+    handleSubmit,
+    formState: { errors },
+    watch,
+  } = methods;
+
+  const values = watch();
 
   const onSubmit = async (data: BaseFormValues) => {
     console.log("Submitted Config:", data);
@@ -124,8 +129,20 @@ const CostCalculator = () => {
     setValue("cpu", "");
   }, [selectedOS, selectedLinuxCategory, setValue]);
 
+  const selectedOSOption = osOptions.find(
+    (opt) => opt.value === values.operatingSystem
+  );
+
+  const selectedLocation = locationOptions.find(
+    (opt) => opt.value === values.region
+  );
+
+  const selectedStorage = storageOptions.find(
+    (opt) => opt.value === values.storage
+  );
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <Form methods={methods} onSubmit={handleSubmit(onSubmit)}>
       <section className="py-20 relative overflow-hidden">
         {/* Background Effects */}
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
@@ -235,6 +252,7 @@ const CostCalculator = () => {
               </div>
             </div>
           </div>
+
           <div className="max-w-5xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Configuration Options */}
@@ -251,314 +269,73 @@ const CostCalculator = () => {
                   </h3>
 
                   {/* Operating System */}
-                  <Controller
-                    control={control}
+                  <Field.Select
                     name="operatingSystem"
-                    render={({ field }) => {
-                      const selectedOS = osOptions.find(
-                        (opt) => opt.value === field.value
-                      );
-
-                      return (
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <label className="text-sm font-medium block">
-                                Operating System
-                              </label>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                Choose your preferred operating system
-                              </p>
-                            </div>
-
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger>
-                                  <Info className="h-4 w-4 text-muted-foreground" />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p className="font-medium">
-                                    {selectedOS
-                                      ? `Selected: ${selectedOS.label}`
-                                      : "No operating system selected"}
-                                  </p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          </div>
-
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            <SelectTrigger className="h-11">
-                              <SelectValue placeholder="Select Operating System" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {osOptions.map((os) => (
-                                <SelectItem key={os.value} value={os.value}>
-                                  {os.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-
-                          {errors.operatingSystem && (
-                            <p className="text-sm text-red-500">
-                              {errors.operatingSystem.message}
-                            </p>
-                          )}
-                        </div>
-                      );
-                    }}
+                    label="Operating System"
+                    description="Choose your preferred operating system"
+                    tooltipText={
+                      selectedOSOption
+                        ? `Selected: ${selectedOSOption.label}`
+                        : "No operating system selected"
+                    }
+                    options={osOptions}
+                    placeholder="Select Operating System"
+                    className="gap-4"
                   />
 
                   {/* Linux Category */}
                   {isLinuxOS && (
-                    <Controller
-                      control={control}
+                    <Field.Select
                       name="linuxCategory"
-                      render={({ field }) => {
-                        return (
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <label className="text-sm font-medium block">
-                                  Category
-                                </label>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                  Select Linux category
-                                </p>
-                              </div>
-
-                              {field.value && (
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger>
-                                      <Info className="h-4 w-4 text-muted-foreground" />
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="font-medium">
-                                        {field.value}
-                                      </p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              )}
-                            </div>
-
-                            <Select
-                              value={field.value}
-                              onValueChange={field.onChange}
-                              disabled={!selectedOS}
-                            >
-                              <SelectTrigger className="h-11">
-                                <SelectValue placeholder="Select Linux Category" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {Object.keys(cpuCategories.Linux).map(
-                                  (category) => (
-                                    <SelectItem key={category} value={category}>
-                                      {category}
-                                    </SelectItem>
-                                  )
-                                )}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        );
-                      }}
+                      label="Category"
+                      description="Select Linux category"
+                      {...(values.linuxCategory
+                        ? { tooltipText: values.linuxCategory }
+                        : {})}
+                      options={Object.keys(cpuCategories.Linux)}
+                      className="gap-4"
                     />
                   )}
 
                   {/* CPU */}
-                  <Controller
-                    control={control}
+                  <Field.Select
                     name="cpu"
-                    render={({ field }) => {
-                      return (
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <label className="text-sm font-medium block">
-                                CPU & Memory
-                              </label>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                Select processing power and memory
-                              </p>
-                            </div>
-
-                            {field.value && (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <Info className="h-4 w-4 text-muted-foreground" />
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p className="font-medium">{field.value}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            )}
-                          </div>
-
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            disabled={!selectedOS}
-                          >
-                            <SelectTrigger className="h-11">
-                              <SelectValue
-                                placeholder={
-                                  selectedOS
-                                    ? "Select CPU & Memory"
-                                    : "Select OS first"
-                                }
-                              />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {cpuOptionsForOS.map((cpu) => (
-                                <SelectItem key={cpu.value} value={cpu.value}>
-                                  {cpu.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-
-                          {errors.cpu && (
-                            <p className="text-sm text-red-500">
-                              {errors.cpu.message}
-                            </p>
-                          )}
-                        </div>
-                      );
-                    }}
+                    label="CPU & Memory"
+                    description="Select processing power and memory"
+                    {...(values.cpu ? { tooltipText: values.cpu } : {})}
+                    options={cpuOptionsForOS}
+                    placeholder={
+                      selectedOS ? "Select CPU & Memory" : "Select OS first"
+                    }
+                    className="gap-4"
                   />
 
                   {/* Location */}
-                  <Controller
-                    control={control}
+                  <Field.Select
                     name="region"
-                    render={({ field }) => {
-                      const selectedLocation = locationOptions.find(
-                        (opt) => opt.value === field.value
-                      );
-
-                      return (
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <label className="text-sm font-medium block">
-                                Region
-                              </label>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                Pick your server Region
-                              </p>
-                            </div>
-
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger>
-                                  <Info className="h-4 w-4 text-muted-foreground" />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p className="font-medium">
-                                    {selectedLocation
-                                      ? selectedLocation.label
-                                      : "No location selected"}
-                                  </p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          </div>
-
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            <SelectTrigger className="h-11">
-                              <SelectValue placeholder="Select Region" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {locationOptions.map((loc) => (
-                                <SelectItem key={loc.value} value={loc.value}>
-                                  {loc.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-
-                          {errors.region && (
-                            <p className="text-sm text-red-500">
-                              {errors.region.message}
-                            </p>
-                          )}
-                        </div>
-                      );
-                    }}
+                    label="Region"
+                    description="Pick your server Region"
+                    tooltipText={
+                      selectedLocation
+                        ? selectedLocation.label
+                        : "No location selected"
+                    }
+                    options={locationOptions}
+                    className="gap-4"
                   />
 
                   {/* Storage */}
-                  <Controller
-                    control={control}
+                  <Field.Select
                     name="storage"
-                    render={({ field }) => {
-                      const selectedStorage = storageOptions.find(
-                        (opt) => opt.value === field.value
-                      );
-
-                      return (
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <label className="text-sm font-medium block">
-                                Storage
-                              </label>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                Choose storage capacity
-                              </p>
-                            </div>
-
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger>
-                                  <Info className="h-4 w-4 text-muted-foreground" />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p className="font-medium">
-                                    {selectedStorage
-                                      ? `${selectedStorage.label} selected`
-                                      : "No storage selected"}
-                                  </p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          </div>
-
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            <SelectTrigger className="h-11">
-                              <SelectValue placeholder="Select Storage" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {storageOptions.map((hd) => (
-                                <SelectItem key={hd.value} value={hd.value}>
-                                  {hd.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-
-                          {errors.storage && (
-                            <p className="text-sm text-red-500">
-                              {errors.storage.message}
-                            </p>
-                          )}
-                        </div>
-                      );
-                    }}
+                    label="Storage"
+                    description="Choose storage capacity"
+                    tooltipText={
+                      selectedStorage
+                        ? `${selectedStorage.label} selected`
+                        : "No storage selected"
+                    }
+                    options={storageOptions}
+                    className="gap-4"
                   />
 
                   {/* Note about pricing */}
@@ -779,7 +556,7 @@ const CostCalculator = () => {
           </div>
         </div>
       </section>
-    </form>
+    </Form>
   );
 };
 
