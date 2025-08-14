@@ -596,8 +596,8 @@
 
 // export default SmartPCConfigDialog;
 
-import React, { useEffect, useState } from "react";
-import { useForm, Controller, useWatch } from "react-hook-form";
+import React, { useEffect, useMemo, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
@@ -614,13 +614,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { formSchema, FormValues } from "../schema";
 import {
   cpuCategories,
@@ -638,6 +631,8 @@ import {
 import { useCreateVMMutation } from "@/api/vmManagement";
 import { clearSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
 import { Field, Form } from "@/components/shared/hook-form";
+import { fetchEstimate } from "../api/fetch-estimate";
+import { fCurrency } from "@/lib/utils/format-number";
 
 const SmartPCConfigDialog = ({
   showNewPCDialog,
@@ -657,161 +652,99 @@ const SmartPCConfigDialog = ({
   });
   const [createVM, { isLoading: isCreating }] = useCreateVMMutation();
 
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [acceptConfirmed, setAcceptConfirmed] = useState(false);
+
+  const defaultValues: Partial<FormValues> = useMemo(
+    () => ({
+      pcName: "",
+      operatingSystem: config.operatingSystem || osOptions[0].value || "",
+      cpu: config.cpu || cpuOptions[osOptions[0].value][0].value || "",
+      storage: config.storage || storageOptions[0].value || "",
+      region: config.region || locationOptions[0].value || "",
+      billingPlan: "hourly",
+      linuxCategory: "",
+    }),
+    [config]
+  );
+
   const methods = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
-    defaultValues: {
-      pcName: "",
-      operatingSystem: config.operatingSystem || osOptions[0].value,
-      cpu: config.cpu || cpuOptions[config.operatingSystem]?.[0]?.value || "",
-      storage: config.storage || storageOptions[0].value,
-      region: config.region || locationOptions[0].value,
-      billingPlan: "hourly",
-      linuxCategory: "Ubuntu_24.04_LTS_X64",
-    },
+    defaultValues,
   });
 
   const {
     control,
-    handleSubmit,
     reset,
+    watch,
     trigger,
-    getValues,
     setValue,
+    handleSubmit,
     formState: { errors },
   } = methods;
 
-  const selectedOS = useWatch({ control, name: "operatingSystem" });
+  const values = watch();
+
+  const {
+    operatingSystem: selectedOS,
+    linuxCategory: selectedLinuxCategory,
+    billingPlan,
+    cpu,
+    region,
+    storage,
+  } = values;
+
   const isLinuxOS = selectedOS === "Linux";
-  const selectedLinuxCategory = useWatch({ control, name: "linuxCategory" });
-  const linuxCategoryCpuOptions =
-    cpuCategories.Linux[`${selectedLinuxCategory}`] || [];
+
+  const linuxCategoryCpuOptions = useMemo(() => {
+    return cpuCategories.Linux[`${selectedLinuxCategory}`] || [];
+  }, [selectedLinuxCategory]);
 
   const cpuOptionsForOS = isLinuxOS
     ? linuxCategoryCpuOptions
     : cpuOptions[selectedOS] || [];
 
   useEffect(() => {
-    const currentCpu = getValues("cpu");
-    const defaultCpu = cpuOptions[selectedOS]?.[0]?.value;
-
-    if (!currentCpu && defaultCpu) {
-      setValue("cpu", defaultCpu);
-    }
-  }, [selectedOS, cpuOptions, getValues, setValue]);
-
-  const billingPlan = useWatch({ control, name: "billingPlan" });
-  const cpu = useWatch({ control, name: "cpu" });
-  const region = useWatch({ control, name: "region" });
-  const storage = useWatch({ control, name: "storage" });
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [deleteConfirmed, setDeleteConfirmed] = useState(false);
-  const [confirmationAccepted, setConfirmationAccepted] = useState(false);
-
-  const getFormattedTotalPrice = () => {
-    if (isLoading || !data?.total) return "...";
-
-    const price =
-      billingPlan === "hourly"
-        ? data.total.pricePerHour?.toFixed(3)
-        : billingPlan === "daily"
-        ? data.total.pricePerDay?.toFixed(2)
-        : data.total.pricePerMonth?.toFixed(2);
-
-    const suffix =
-      billingPlan === "hourly"
-        ? "/hour"
-        : billingPlan === "daily"
-        ? "/day"
-        : "/month";
-
-    return `$${price} ${suffix}`;
-  };
-
-  useEffect(() => {
-    if (!cpu || !storage || !region) return;
-
-    const timeout = setTimeout(() => {
-      getEstimate({
-        configId: cpu,
-        storageSize: storage,
-        region,
-      })
-        .unwrap()
-        .catch((err) => {
-          console.error("Auto estimate error:", err);
-        });
-    }, 300); // Debounce slightly to avoid rapid re-renders
-
-    return () => clearTimeout(timeout);
-  }, [cpu, storage, region, billingPlan]);
-
-  // useEffect(() => {
-  //   if (data) {
-  //     console.log("🧪 Estimate API response:", data);
-  //   }
-  // }, [data]);
-
-  // useEffect(() => {
-  //   if (cpuOptionsForOS.length > 0) {
-  //     setValue("cpu", cpuOptionsForOS[0].value);
-  //   }
-  // }, [selectedOS]);
-
-  useEffect(() => {
-    if (config.cpu && cpuOptionsForOS.some((cpu) => cpu.value === config.cpu)) {
-      setValue("cpu", config.cpu);
-    } else if (cpuOptionsForOS.length > 0) {
-      setValue("cpu", cpuOptionsForOS[0].value);
-    }
-  }, [config.cpu, cpuOptionsForOS, setValue]);
-
-  useEffect(() => {
-    const fetchInitialEstimate = async () => {
-      const values = getValues();
-
-      if (!values.cpu || !values.storage || !values.region) return;
-
-      console.log({ values });
-      try {
-        await getEstimate({
-          configId: values.cpu,
-          storageSize: values.storage,
-          region: values.region,
-        }).unwrap();
-      } catch (error) {
-        console.error("Initial estimate error:", error);
-      }
-    };
-
-    fetchInitialEstimate();
-  }, [config.cpu, cpuOptionsForOS, setValue]);
-
-  const handleEstimate = async () => {
-    const isValid = await trigger();
-    if (!isValid) return;
-
-    const values = getValues();
-
-    try {
-      await getEstimate({
-        configId: values.cpu,
-        storageSize: values.storage,
-        region: values.region,
-      }).unwrap();
-    } catch (err) {
-      console.error("Estimate error:", err);
-      toast({
-        title: "Error",
-        description: "Failed to fetch estimate",
-        variant: "destructive",
+    if (selectedOS) {
+      setValue("linuxCategory", "Ubuntu_24.04_LTS_X64", {
+        shouldValidate: true,
+      });
+      setValue("cpu", cpuOptions[selectedOS][0].value, {
+        shouldValidate: true,
       });
     }
-  };
+  }, [selectedOS, setValue]);
 
-  const onSubmit = async (data: FormValues) => {
-    if (!deleteConfirmed) return;
+  useEffect(() => {
+    if (isLinuxOS) {
+      setValue("cpu", linuxCategoryCpuOptions[0].value, {
+        shouldValidate: true,
+      });
+    }
+  }, [isLinuxOS, linuxCategoryCpuOptions, setValue]);
 
+  // estimate
+  useEffect(() => {
+    fetchEstimate({
+      methods,
+      getEstimate,
+      toast,
+      showError: false,
+    });
+  }, [cpu, storage, region]);
+
+  const handleEstimate = async () =>
+    await fetchEstimate({
+      methods,
+      getEstimate,
+      toast,
+      showError: true,
+    });
+
+  // onSubmit
+  const onSubmit = handleSubmit(async (data: FormValues) => {
+    console.log("Submitted Config:", data);
     try {
       await createVM({
         action: "create",
@@ -836,9 +769,6 @@ const SmartPCConfigDialog = ({
 
       reset();
       setShowNewPCDialog(false);
-      setShowConfirmation(false); // ✅ Always hide modal
-      setDeleteConfirmed(false); // ✅ Reset checkbox
-      return true;
     } catch (err) {
       const errorData = (err as { data?: any })?.data;
       const errorMsg =
@@ -847,7 +777,7 @@ const SmartPCConfigDialog = ({
 
       const requiredMin = errorData?.requiredMinimum;
       const description = requiredMin
-        ? `${errorMsg} Minimum required: $${parseFloat(requiredMin).toFixed(2)}`
+        ? `${errorMsg} Minimum required: ${fCurrency(requiredMin)}`
         : errorMsg;
 
       toast({
@@ -855,11 +785,47 @@ const SmartPCConfigDialog = ({
         description,
         variant: "destructive",
       });
-
-      setShowConfirmation(false); // ✅ Hide on error
-      setDeleteConfirmed(false); // ✅ Reset checkbox
-      return false;
+    } finally {
+      setShowConfirmation(false);
+      setAcceptConfirmed(false);
     }
+  });
+
+  // get formatted price
+  const getFormattedTotalPrice = () => {
+    if (isLoading || !data?.total) return "...";
+
+    const price =
+      billingPlan === "hourly"
+        ? data.total.pricePerHour?.toFixed(3)
+        : billingPlan === "daily"
+        ? data.total.pricePerDay?.toFixed(2)
+        : data.total.pricePerMonth?.toFixed(2);
+
+    const suffix =
+      billingPlan === "hourly"
+        ? "/hour"
+        : billingPlan === "daily"
+        ? "/day"
+        : "/month";
+
+    return `$${price} ${suffix}`;
+  };
+
+  const getPrice = (resource: "instance" | "storage" | "total") => {
+    if (isLoading) return "...";
+
+    const planKey =
+      billingPlan === "hourly"
+        ? "pricePerHour"
+        : billingPlan === "daily"
+        ? "pricePerDay"
+        : "pricePerMonth";
+
+    const decimals = billingPlan === "hourly" ? 3 : 2;
+    const price = data?.[resource]?.[planKey];
+
+    return price != null ? `$${price.toFixed(decimals)}` : "-";
   };
 
   return (
@@ -878,7 +844,7 @@ const SmartPCConfigDialog = ({
           <DialogDescription>Customize your Computer</DialogDescription>
         </DialogHeader>
 
-        <Form methods={methods} onSubmit={handleSubmit(onSubmit)}>
+        <Form methods={methods} onSubmit={onSubmit}>
           <Field.Select
             name="operatingSystem"
             label="Select Operating System (OS)"
@@ -968,37 +934,10 @@ const SmartPCConfigDialog = ({
             </p>
 
             <div className="space-y-1 text-sm">
-              <div>
-                CPU:{" "}
-                {isLoading
-                  ? "..."
-                  : billingPlan === "hourly"
-                  ? `$${data?.instance?.pricePerHour?.toFixed(3) ?? "-"}`
-                  : billingPlan === "daily"
-                  ? `$${data?.instance?.pricePerDay?.toFixed(2) ?? "-"}`
-                  : `$${data?.instance?.pricePerMonth?.toFixed(2) ?? "-"}`}
-              </div>
-
-              <div>
-                Storage (SSD):{" "}
-                {isLoading
-                  ? "..."
-                  : billingPlan === "hourly"
-                  ? `$${data?.storage?.pricePerHour?.toFixed(3) ?? "-"}`
-                  : billingPlan === "daily"
-                  ? `$${data?.storage?.pricePerDay?.toFixed(2) ?? "-"}`
-                  : `$${data?.storage?.pricePerMonth?.toFixed(2) ?? "-"}`}
-              </div>
-
+              <div>CPU: {getPrice("instance")}</div>
+              <div>Storage (SSD): {getPrice("storage")}</div>
               <div className="font-semibold mt-1">
-                Total:{" "}
-                {isLoading
-                  ? "..."
-                  : billingPlan === "hourly"
-                  ? `$${data?.total?.pricePerHour?.toFixed(3) ?? "-"}`
-                  : billingPlan === "daily"
-                  ? `$${data?.total?.pricePerDay?.toFixed(2) ?? "-"}`
-                  : `$${data?.total?.pricePerMonth?.toFixed(2) ?? "-"}`}
+                Total: {getPrice("total")}
               </div>
             </div>
           </div>
@@ -1024,7 +963,6 @@ const SmartPCConfigDialog = ({
                 const isValid = await trigger();
                 if (!isValid) return;
                 setShowConfirmation(true);
-                setConfirmationAccepted(false); // reset on every open
               }}
             >
               Build PC
@@ -1032,6 +970,7 @@ const SmartPCConfigDialog = ({
           </DialogFooter>
         </Form>
       </DialogContent>
+
       <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -1050,8 +989,8 @@ const SmartPCConfigDialog = ({
             <input
               type="checkbox"
               id="purchase-confirm-check"
-              checked={deleteConfirmed}
-              onChange={(e) => setDeleteConfirmed(e.target.checked)}
+              checked={acceptConfirmed}
+              onChange={(e) => setAcceptConfirmed(e.target.checked)}
               className="mt-1 h-4 w-4 border rounded"
             />
             <label
@@ -1070,17 +1009,9 @@ const SmartPCConfigDialog = ({
               Cancel
             </Button>
             <Button
-              type="button"
-              disabled={isCreating || !deleteConfirmed}
-              onClick={handleSubmit(async (formData) => {
-                if (!deleteConfirmed) return;
-
-                const success = await onSubmit(formData);
-
-                setShowConfirmation(false);
-                setDeleteConfirmed(false);
-                setConfirmationAccepted(false);
-              })}
+              type="submit"
+              onClick={onSubmit}
+              disabled={isCreating || !acceptConfirmed}
             >
               {isCreating ? "Processing..." : "Confirm & Pay"}
             </Button>

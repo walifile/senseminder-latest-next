@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
@@ -49,12 +49,14 @@ import {
   storageOptions,
 } from "./data";
 import { Field } from "@/components/shared/hook-form";
+import { fetchEstimate } from "./api/fetch-estimate";
 
 export default function BuildSmartPCPage() {
   const router = useRouter();
   const { toast } = useToast();
   const userId = useSelector((state: RootState) => state.auth.user?.id);
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const config = useSelector((state: RootState) => state.smartPcConfig);
 
   const [getEstimate, { data, isLoading, error }] = useGetEstimateMutation();
   const { refetch: refetchRemoteDesktops } = useListRemoteDesktopQuery({
@@ -62,33 +64,45 @@ export default function BuildSmartPCPage() {
   });
   const [createVM, { isLoading: isCreating }] = useCreateVMMutation();
 
-  const form = useForm<FormValues>({
+  const defaultValues: Partial<FormValues> = useMemo(
+    () => ({
+      pcName: "",
+      operatingSystem: config.operatingSystem || osOptions[0].value || "",
+      cpu: config.cpu || cpuOptions[osOptions[0].value][0].value || "",
+      storage: config.storage || storageOptions[0].value || "",
+      region: config.region || locationOptions[0].value || "",
+      billingPlan: "hourly",
+      linuxCategory: "",
+    }),
+    [config]
+  );
+
+  const methods = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
-    defaultValues: {
-      pcName: "",
-      operatingSystem: osOptions[0].value,
-      cpu: cpuOptions[osOptions[0].value][0].value,
-      storage: storageOptions[0].value,
-      region: locationOptions[0].value,
-      billingPlan: "hourly",
-      linuxCategory: "Ubuntu_24.04_LTS_X64",
-    },
+    defaultValues,
   });
 
-  const { control } = form;
+  const {
+    control,
+    reset,
+    watch,
+    trigger,
+    setValue,
+    handleSubmit,
+    formState: { errors },
+  } = methods;
 
-  const selectedCpu = useWatch({ control: form.control, name: "cpu" });
-  const selectedStorage = useWatch({ control: form.control, name: "storage" });
-  const selectedRegion = useWatch({ control: form.control, name: "region" });
-  const selectedOS = useWatch({
-    control: form.control,
-    name: "operatingSystem",
-  });
-  const selectedLinuxCategory = useWatch({
-    control: form.control,
-    name: "linuxCategory",
-  });
+  const values = watch();
+
+  const {
+    operatingSystem: selectedOS,
+    linuxCategory: selectedLinuxCategory,
+    billingPlan,
+    cpu,
+    region,
+    storage,
+  } = values;
 
   const isLinuxOS = selectedOS === "Linux";
   const linuxCategoryCpuOptions =
@@ -99,57 +113,38 @@ export default function BuildSmartPCPage() {
     : cpuOptions[selectedOS] || [];
 
   useEffect(() => {
-    if (isLinuxOS && selectedLinuxCategory) {
-      form.setValue("cpu", linuxCategoryCpuOptions[0].value);
-    }
-  }, [isLinuxOS, selectedLinuxCategory, linuxCategoryCpuOptions, form]);
-
-  useEffect(() => {
-    if (cpuOptions[selectedOS] && cpuOptions[selectedOS].length > 0) {
-      form.setValue("cpu", cpuOptions[selectedOS][0].value);
-      form.setValue("linuxCategory", "Ubuntu_24.04_LTS_X64");
-    }
-  }, [selectedOS, form]);
-
-  useEffect(() => {
-    const fetchAutoEstimate = async () => {
-      if (!selectedCpu || !selectedStorage || !selectedRegion) return;
-
-      try {
-        await getEstimate({
-          configId: selectedCpu,
-          storageSize: selectedStorage,
-          region: selectedRegion,
-        }).unwrap();
-      } catch (error) {
-        console.error("Auto estimate error:", error);
+    if (selectedOS) {
+      if (isLinuxOS) {
+        setValue("linuxCategory", "Ubuntu_24.04_LTS_X64", {
+          shouldValidate: true,
+        });
       }
-    };
-
-    fetchAutoEstimate();
-  }, [selectedCpu, selectedStorage, selectedRegion]);
-
-  const handleEstimate = async () => {
-    const isValid = await form.trigger();
-
-    if (!isValid) return;
-    const values = form.getValues();
-    try {
-      await getEstimate({
-        configId: values.cpu,
-        storageSize: values.storage,
-        region: values.region,
-      }).unwrap();
-    } catch (err) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch estimate",
-        variant: "destructive",
+      setValue("cpu", cpuOptions[selectedOS][0].value, {
+        shouldValidate: true,
       });
     }
-  };
+  }, [selectedOS, isLinuxOS, setValue]);
 
-  const onSubmit = async (data: FormValues) => {
+  // estimate
+  useEffect(() => {
+    fetchEstimate({
+      methods,
+      getEstimate,
+      toast,
+      showError: false,
+    });
+  }, [cpu, storage, region]);
+
+  // onSubmit
+  const handleEstimate = async () =>
+    await fetchEstimate({
+      methods,
+      getEstimate,
+      toast,
+      showError: true,
+    });
+
+  const onSubmit = handleSubmit(async (data: FormValues) => {
     if (!isAuthenticated) {
       toast({
         title: "Authentication Required",
@@ -173,7 +168,7 @@ export default function BuildSmartPCPage() {
         if (fetchResult.status === "fulfilled") break;
         await new Promise((res) => setTimeout(res, 2000));
       }
-      form.reset();
+      reset();
       router.push(routes.dashboard);
     } catch (err) {
       toast({
@@ -184,6 +179,22 @@ export default function BuildSmartPCPage() {
         variant: "destructive",
       });
     }
+  });
+
+  const getPlanLabel = (plan: "hourly" | "daily" | "monthly") => {
+    if (isLoading) return "(...)";
+
+    const planKey =
+      plan === "hourly"
+        ? "pricePerHour"
+        : plan === "daily"
+        ? "pricePerDay"
+        : "pricePerMonth";
+
+    const decimals = plan === "hourly" ? 3 : 2;
+    const price = data?.total?.[planKey];
+
+    return price != null ? `(est. $${price.toFixed(decimals)})` : "";
   };
 
   return (
@@ -215,11 +226,8 @@ export default function BuildSmartPCPage() {
               transition={{ delay: 0.2 }}
               className="grid gap-8"
             >
-              <Form {...form} control={control}>
-                <form
-                  className="grid gap-8"
-                  onSubmit={form.handleSubmit(onSubmit)}
-                >
+              <Form {...methods} control={control}>
+                <form className="grid gap-8" onSubmit={onSubmit}>
                   <Card>
                     <CardHeader>
                       <CardTitle>Basic Information</CardTitle>
@@ -229,7 +237,7 @@ export default function BuildSmartPCPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <FormField
-                        control={form.control}
+                        control={control}
                         name="pcName"
                         render={({ field }) => (
                           <FormItem>
@@ -317,37 +325,15 @@ export default function BuildSmartPCPage() {
                         options={[
                           {
                             value: "hourly",
-                            label: `Hourly ${
-                              isLoading
-                                ? "(...)"
-                                : data?.total?.pricePerHour !== undefined
-                                ? `(est. $${data.total.pricePerHour.toFixed(
-                                    3
-                                  )})`
-                                : ""
-                            }`,
+                            label: `Hourly ${getPlanLabel("hourly")}`,
                           },
                           {
                             value: "daily",
-                            label: `Daily ${
-                              isLoading
-                                ? "(...)"
-                                : data?.total?.pricePerDay !== undefined
-                                ? `(est. $${data.total.pricePerDay.toFixed(2)})`
-                                : ""
-                            }`,
+                            label: `Daily ${getPlanLabel("daily")}`,
                           },
                           {
                             value: "monthly",
-                            label: `Monthly ${
-                              isLoading
-                                ? "(...)"
-                                : data?.total?.pricePerMonth !== undefined
-                                ? `(est. $${data.total.pricePerMonth.toFixed(
-                                    2
-                                  )})`
-                                : ""
-                            }`,
+                            label: `Monthly ${getPlanLabel("monthly")}`,
                           },
                         ]}
                       />
