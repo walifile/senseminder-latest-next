@@ -16,7 +16,7 @@ import {
   useUpdateTicketStatusMutation,
 } from "@/api/supportAPI";
 import PrioritySelectField from "../../_components/priority-select-field";
-import { getStatusBadgeClass } from "../../_components/get-status-badge-class";
+import { getStatusBadgeClass } from "../../utils/get-status-badge-class";
 
 const formatLabel = (text: string) =>
   text.charAt(0).toUpperCase() + text.slice(1).replace("-", " ");

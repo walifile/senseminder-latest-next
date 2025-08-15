@@ -22,7 +22,7 @@ import { useSelector } from "react-redux";
 import { useGetTicketsQuery } from "@/api/supportAPI";
 import TicketTableSkeleton from "./ticket-table-skeleton";
 import { useRouter } from "next/navigation";
-import { getStatusBadgeClass } from "./get-status-badge-class";
+import { getStatusBadgeClass } from "../utils/get-status-badge-class";
 import { formatDate, formatRelativeTime } from "@/lib/utils/format-time";
 
 export default function TicketTable() {
