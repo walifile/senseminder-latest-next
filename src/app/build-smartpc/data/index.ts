@@ -9,10 +9,10 @@ export const osOptions: Option[] = [
 export const cpuCategories: Record<string, Record<string, Option[]>> = {
   Linux: {
     "Ubuntu_24.04_LTS_X64": [
-      {
-        value: "Ubuntu_24.04_LTS_X64_Token_Test",
-        label: "Token_Test",
-      },
+      // {
+      //   value: "Ubuntu_24.04_LTS_X64_Token_Test",
+      //   label: "Token_Test",
+      // },
       {
         value: "Ubuntu_24.04_LTS_X64_2core_4gbRam",
         label: "2core_4gbRam",
@@ -113,10 +113,10 @@ export const cpuOptions: Record<string, Option[]> = {
     },
   ],
   Linux: [
-    {
-      value: "Ubuntu_24.04_LTS_X64_Token_Test",
-      label: "Ubuntu_24.04_LTS_X64_Token_Test",
-    },
+    // {
+    //   value: "Ubuntu_24.04_LTS_X64_Token_Test",
+    //   label: "Ubuntu_24.04_LTS_X64_Token_Test",
+    // },
     {
       value: "Ubuntu_24.04_LTS_X64_2core_4gbRam",
       label: "Ubuntu_24.04_LTS_X64-2core_4gbRam",

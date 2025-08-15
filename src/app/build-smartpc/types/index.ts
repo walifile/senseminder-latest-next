@@ -34,13 +34,13 @@ export type PC = {
   billingPlan?: string;
   billingPlanDescription?: string;
   schedule?: {
-  enabled: boolean;
-  autoStartTime?: string;
-  autoStopTime?: string;
-  frequency?: "everyday" | "weekdays" | "weekends" | "custom";
-  startDate?: string | null;
-  endDate?: string | null;
-  timeZone?: string;
+    enabled: boolean;
+    autoStartTime?: string;
+    autoStopTime?: string;
+    frequency?: "everyday" | "weekdays" | "weekends" | "custom";
+    startDate?: string | null;
+    endDate?: string | null;
+    timeZone?: string;
   };
   idleTime?: string;
   specs?: {
@@ -117,3 +117,32 @@ export type SelectedPcProps = {
   setCloudPCs: React.Dispatch<React.SetStateAction<PC[]>>;
   handleAssignUser: (pc: PC) => void;
 };
+
+export type SmartPCConfigDialogMode = "create" | "resize";
+export type ResizeInitial = {
+  pcName: string;
+  operatingSystem: string;
+  cpu: string;
+  region: string;
+  billingPlan: "hourly" | "daily" | "monthly";
+  storage?: string;
+};
+
+export type ExtraResizeProps = {
+  mode?: SmartPCConfigDialogMode;
+  initial?: ResizeInitial;
+  lockedFields?: ReadonlyArray<
+    "pcName" | "operatingSystem" | "region" | "billingPlan" | "storage"
+  >;
+  onConfirm?: (vals: { cpu: string }) => Promise<boolean> | boolean;
+  instanceIdForResize?: string;
+
+  loadExisting?: () => Promise<ResizeInitial | undefined>;
+};
+
+export type BaseProps = {
+  showNewPCDialog: boolean;
+  setShowNewPCDialog: (value: boolean) => void;
+};
+
+export type SmartPCConfigDialogProps = BaseProps & ExtraResizeProps;
