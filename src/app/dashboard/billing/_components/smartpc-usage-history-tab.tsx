@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowUpRight, Monitor, Search } from "lucide-react";
+import { Monitor, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
@@ -8,6 +8,7 @@ import { toast } from "@/components/ui/use-toast";
 import { searchUsageHistory } from "@/api/billing";
 import { DateRange } from "react-day-picker";
 import { format, parseISO } from "date-fns";
+import { formatDateTime } from "@/lib/utils/format-time";
 
 interface UsageHistory {
   instanceId: string;
@@ -28,7 +29,7 @@ interface UsageHistory {
 
 export function SmartPCUsageHistoryTab() {
   const [allHistory, setAllHistory] = useState<UsageHistory[]>([]);
-  const [date, setDate] = useState<DateRange| undefined>({from: undefined});
+  const [date, setDate] = useState<DateRange | undefined>({ from: undefined });
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(false);
@@ -37,15 +38,23 @@ export function SmartPCUsageHistoryTab() {
   const fetchHistory = async (isLoadMore = false) => {
     setLoading(true);
     try {
+      const data = await searchUsageHistory({
+        from: date?.from,
+        to: date?.to,
+        limit: 5,
+        startingAfter: lastEvaluatedKey,
+      });
 
-      const data = await searchUsageHistory({from: date?.from, to: date?.to, limit: 5, startingAfter: lastEvaluatedKey})
-      
       const newHistory = data.items || [];
 
-      setAllHistory((prev) => isLoadMore ? [...prev, ...newHistory] : newHistory);
+      setAllHistory((prev) =>
+        isLoadMore ? [...prev, ...newHistory] : newHistory
+      );
       setHasMore(data.hasMore);
       if (data.lastEvaluatedKey) {
-        const encodedKey = encodeURIComponent(JSON.stringify(data.lastEvaluatedKey));
+        const encodedKey = encodeURIComponent(
+          JSON.stringify(data.lastEvaluatedKey)
+        );
         setLastEvaluatedKey(encodedKey);
       } else {
         setLastEvaluatedKey(null);
@@ -54,12 +63,12 @@ export function SmartPCUsageHistoryTab() {
       console.error("Failed to fetch usage history", error);
       const message =
         error instanceof Error
-            ? error.message
-            : "Could not fetch usage history";
-        toast({
-            title: "Error loading usage history",
-            description: message,
-        });
+          ? error.message
+          : "Could not fetch usage history";
+      toast({
+        title: "Error loading usage history",
+        description: message,
+      });
     } finally {
       setLoading(false);
     }
@@ -73,8 +82,10 @@ export function SmartPCUsageHistoryTab() {
       const hours = Math.floor(minutesNum / 60);
       const minutes = Math.round(minutesNum % 60);
 
-      const hoursPart = hours > 0 ? `${hours} ${hours === 1 ? "hr" : "hrs"}` : "";
-      const minutesPart = minutes > 0 ? `${minutes} ${minutes === 1 ? "min" : "mins"}` : "";
+      const hoursPart =
+        hours > 0 ? `${hours} ${hours === 1 ? "hr" : "hrs"}` : "";
+      const minutesPart =
+        minutes > 0 ? `${minutes} ${minutes === 1 ? "min" : "mins"}` : "";
 
       return `${hoursPart} ${minutesPart}`.trim() || "0 minutes";
     } else if (plan === "daily") {
@@ -84,13 +95,6 @@ export function SmartPCUsageHistoryTab() {
     } else {
       return `${minutesNum} min`;
     }
-  };
-
-
-  const formatDateTime = (isoString: string) => {
-    if (!isoString) return "";
-    const date = parseISO(isoString);
-    return format(date, "yyyy-MM-dd HH:mm");
   };
 
   useEffect(() => {
@@ -123,66 +127,73 @@ export function SmartPCUsageHistoryTab() {
       {/* History List */}
       <div className="rounded-lg border max-h-[400px] overflow-y-auto divide-y">
         {filteredHistory.length > 0 ? (
-            filteredHistory.map((usage) => (
+          filteredHistory.map((usage) => (
             <div
-                key={usage.timestamp}
-                className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                    <div className="p-2 rounded-full bg-primary/10">
-                        <Monitor className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{usage.systemName}</p>
-                        <Badge variant="outline" className="text-xs">
-                          {usage.billingPlan}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                      {parseFloat(usage.instanceMinutes) > parseFloat(usage.storageMinutes)
-                        ? `${formatDateTime(usage.startTime)} - ${formatDateTime(usage.endTime)}`
-                        : `${formatDateTime(usage.storageBillingStartTime)} - ${formatDateTime(usage.storageBillingEndTime)}`
-                      }
-                    </p>
-
-                    </div>
+              key={usage.timestamp}
+              className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-2 rounded-full bg-primary/10">
+                  <Monitor className="h-4 w-4 text-primary" />
                 </div>
-                <div className="flex items-center gap-4">
-                  {/* ➕ Billing Cost Breakdown */}
-                  <div className="text-xs text-muted-foreground text-right">
-                    🖥 Instance: ${parseFloat(usage.instanceCost).toFixed(2)} (
-                    {formatInstanceDuration(usage.instanceMinutes, usage.billingPlan)}) <br />
-                    💾 Storage: ${parseFloat(usage.storageCost).toFixed(2)} (
-                    {formatInstanceDuration(usage.storageMinutes, usage.billingPlan)})
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium">{usage.systemName}</p>
+                    <Badge variant="outline" className="text-xs">
+                      {usage.billingPlan}
+                    </Badge>
                   </div>
-                  <Badge variant="secondary" className="font-medium">
-                    ${parseFloat(usage.billingAmount).toFixed(2)}
-                  </Badge>
-                  
-                  <Badge
-                    variant={
-                      usage.status === "running" ? "default" : "outline"
-                    }
-                    className={
-                      usage.status === "running"
-                        ? "bg-green-500/10 text-green-500 hover:bg-green-500/20"
-                        : ""
-                    }
-                  >
-                    {usage.status}
-                  </Badge>
+                  <p className="text-sm text-muted-foreground">
+                    {parseFloat(usage.instanceMinutes) >
+                    parseFloat(usage.storageMinutes)
+                      ? `${formatDateTime(usage.startTime)} - ${formatDateTime(
+                          usage.endTime
+                        )}`
+                      : `${formatDateTime(
+                          usage.storageBillingStartTime
+                        )} - ${formatDateTime(usage.storageBillingEndTime)}`}
+                  </p>
                 </div>
-                
               </div>
-            ))
-        ) : (
-            <p className="text-center text-muted-foreground py-8">
-            No usage  history found.
-            </p>
-        )}
-        </div>
+              <div className="flex items-center gap-4">
+                {/* ➕ Billing Cost Breakdown */}
+                <div className="text-xs text-muted-foreground text-right">
+                  🖥 Instance: ${parseFloat(usage.instanceCost).toFixed(2)} (
+                  {formatInstanceDuration(
+                    usage.instanceMinutes,
+                    usage.billingPlan
+                  )}
+                  ) <br />
+                  💾 Storage: ${parseFloat(usage.storageCost).toFixed(2)} (
+                  {formatInstanceDuration(
+                    usage.storageMinutes,
+                    usage.billingPlan
+                  )}
+                  )
+                </div>
+                <Badge variant="secondary" className="font-medium">
+                  ${parseFloat(usage.billingAmount).toFixed(2)}
+                </Badge>
 
+                <Badge
+                  variant={usage.status === "running" ? "default" : "outline"}
+                  className={
+                    usage.status === "running"
+                      ? "bg-green-500/10 text-green-500 hover:bg-green-500/20"
+                      : ""
+                  }
+                >
+                  {usage.status}
+                </Badge>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-center text-muted-foreground py-8">
+            No usage history found.
+          </p>
+        )}
+      </div>
 
       {/* Load More */}
       {hasMore && (

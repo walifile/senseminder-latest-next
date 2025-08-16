@@ -31,3 +31,12 @@ export const formatDate = (date: Date | string | number): string => {
   const parsedDate = date instanceof Date ? date : new Date(date);
   return format(parsedDate, "dd/MM/yyyy");
 };
+
+export const formatDateTime = (
+  date: Date | string | number,
+  pattern: string = "yyyy-MM-dd HH:mm"
+): string => {
+  if (!date) return "";
+  const parsedDate = date instanceof Date ? date : new Date(date);
+  return format(parsedDate, pattern);
+};
