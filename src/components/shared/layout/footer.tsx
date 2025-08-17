@@ -13,6 +13,7 @@ import {
   useUnsubscribeFromNewsletterMutation,
 } from "@/api/newsletterAPI";
 import useLocation from "@/hooks/use-location";
+import { Logo } from "./Logo";
 
 const Footer = () => {
   const pathname = usePathname();
@@ -138,14 +139,7 @@ const Footer = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div className="space-y-6">
-            <div>
-              <Link
-                href="/"
-                className="font-bold text-2xl tracking-tight gradient-text"
-              >
-                Sense PC
-              </Link>
-            </div>
+            <Logo />
             <p className="dark:text-gray-400 text-gray-600 max-w-xs">
               Access your powerful PC from anywhere, with low latency and
               enterprise-grade security.
@@ -257,7 +251,8 @@ const Footer = () => {
               <li className="flex items-start">
                 <MapPin className="h-5 w-5 text-primary mr-3 mt-0.5" />
                 <span className="dark:text-gray-400 text-gray-600">
-                  Elan Satellite Place, 3100 Commerce Avenue NW, Duluth, GA 30096, USA
+                  Elan Satellite Place, 3100 Commerce Avenue NW, Duluth, GA
+                  30096, USA
                 </span>
               </li>
               <li className="flex items-center">
