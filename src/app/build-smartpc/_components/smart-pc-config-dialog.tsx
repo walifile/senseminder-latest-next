@@ -88,6 +88,10 @@ const SmartPCConfigDialog = (props: SmartPCConfigDialogProps) => {
     return isResize && (locked.has(field) || field === "storage");
   }
 
+  const [existingData, setExistingData] = useState<ResizeInitial | undefined>(
+    undefined
+  );
+
   const OS_VALUES = osOptions.map((o) => o.value);
 
   function normalizeOSFromApi(
@@ -243,6 +247,8 @@ const SmartPCConfigDialog = (props: SmartPCConfigDialogProps) => {
         if (!src) src = initial;
         if (cancelled || !src) return;
 
+        setExistingData(src);
+
         // Normalize OS & CPU (handle Linux category)
         const normalizedOS = normalizeOSFromApi(src.operatingSystem, src.cpu);
         const currentLinuxCategory = inferLinuxCategoryFromConfigId(src.cpu);
@@ -332,8 +338,13 @@ const SmartPCConfigDialog = (props: SmartPCConfigDialogProps) => {
 
   // Disable resize unless configuration changes"
   const isNoResizeChange = React.useMemo(
-    () => isResize && !!initialCpuRef.current && cpu === initialCpuRef.current,
-    [isResize, cpu]
+    () =>
+      isResize &&
+      !!initialCpuRef.current &&
+      cpu === initialCpuRef.current &&
+      existingData?.storage &&
+      storage === existingData?.storage,
+    [isResize, cpu, storage, initialCpuRef, existingData]
   );
 
   // Disable resize unless plan is "hourly"
@@ -476,16 +487,17 @@ const SmartPCConfigDialog = (props: SmartPCConfigDialogProps) => {
     }
 
     if (loadingExisting) return;
-    const valid = await trigger(["cpu"]);
+    const valid = await trigger(["cpu", "storage"]);
     if (!valid) return;
 
     const cpuVal = getValues("cpu");
 
     // ⛔ stop if user picked the same config
-    if (isResize && initialCpuRef.current && cpuVal === initialCpuRef.current) {
+    if (isNoResizeChange) {
       toast({
         title: "No change detected",
-        description: "Choose a different CPU size to apply the resize.",
+        description:
+          "Choose a different CPU size or storage to apply the resize.",
         variant: "destructive",
       });
       return;
@@ -496,7 +508,7 @@ const SmartPCConfigDialog = (props: SmartPCConfigDialogProps) => {
       return;
     }
 
-    const ok = await onConfirm({ cpu: cpuVal });
+    const ok = await onConfirm({ cpu, storage });
     if (ok) {
       reset();
       setShowNewPCDialog(false);
@@ -775,6 +787,30 @@ const SmartPCConfigDialog = (props: SmartPCConfigDialogProps) => {
                   {/* Storage */}
                   <div className="space-y-2">
                     <Label>Storage (SSD)</Label>
+                    {isResize && existingData?.storage && (
+                      <div className="flex items-center gap-1 text-[11px]">
+                        <span className="rounded-full bg-muted px-2 py-0.5">
+                          {existingData?.storage}
+                        </span>
+                        <span className="text-muted-foreground">→</span>
+                        <span
+                          className={cn(
+                            "rounded-full px-2 py-0.5",
+                            storage !== existingData?.storage
+                              ? "bg-blue-50 text-blue-700 ring-1 ring-blue-200"
+                              : "bg-muted text-muted-foreground"
+                          )}
+                        >
+                          {storage}
+                        </span>
+                        {storage === existingData?.storage && (
+                          <span className="ml-2 text-[10px] text-muted-foreground">
+                            No change
+                          </span>
+                        )}
+                      </div>
+                    )}
+
                     <Controller
                       control={control}
                       name="storage"
@@ -782,22 +818,28 @@ const SmartPCConfigDialog = (props: SmartPCConfigDialogProps) => {
                         <Select
                           value={field.value}
                           onValueChange={field.onChange}
-                          disabled={isLocked("storage") || loadingExisting}
+                          disabled={loadingExisting}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select storage size" />
                           </SelectTrigger>
                           <SelectContent>
-                            {storageOptions.map((s) => (
-                              <SelectItem key={s.value} value={s.value}>
-                                {s.label}
-                              </SelectItem>
-                            ))}
+                            {storageOptions
+                              .filter(
+                                (s) =>
+                                  Number(s.value) >=
+                                  Number(existingData?.storage)
+                              )
+                              .map((s) => (
+                                <SelectItem key={s.value} value={s.value}>
+                                  {s.label}
+                                </SelectItem>
+                              ))}
                           </SelectContent>
                         </Select>
                       )}
                     />
-                    {!isResize && errors.storage && (
+                    {errors.storage && (
                       <p className="text-red-500 text-xs">
                         {errors.storage.message}
                       </p>

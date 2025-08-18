@@ -93,7 +93,7 @@ const CloudPCPage = () => {
   const { user } = useSelector((state: RootState) => state.auth);
 
   // Derive API userId
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   function getApiUserId(u: any) {
     if (!u) return "";
     if (u.role === "member" || u.role === "admin") return u.ownerid;
@@ -659,7 +659,7 @@ const CloudPCPage = () => {
 
   /** Submit resize via POST /dev/resize (Option A) */
   const handleConfirmPCResize = React.useCallback(
-    async (draft: { cpu: string }) => {
+    async (draft: { cpu: string; storage: string }) => {
       const err = validateCPUResizeDraft(draft);
       if (err || !selectedPCForCPUResize) {
         toast({
@@ -672,40 +672,100 @@ const CloudPCPage = () => {
 
       try {
         // Helpful debug log
-        console.log("[Resize] POST → /dev/resize", {
-          userId: apiUserId,
-          computerName: selectedPCForCPUResize.systemName,
-          targetConfigId: draft.cpu,
-        });
+        let isUpdated = false;
 
-        const res = await fetch(
-          "https://y2yvok8mk6.execute-api.us-east-1.amazonaws.com/dev/resize",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              userId: apiUserId,
-              computerName: selectedPCForCPUResize.systemName,
-              targetConfigId: draft.cpu, // required by your working API
-            }),
-          }
-        );
+        // 1. Handle CPU resize
+        if (
+          draft.cpu &&
+          draft.cpu !== selectedPCForCPUResize?.operatingSystem
+        ) {
+          console.log("[Resize] POST → /dev/resize", {
+            userId: apiUserId,
+            computerName: selectedPCForCPUResize?.systemName,
+            targetConfigId: draft.cpu,
+          });
 
-        if (!res.ok) {
-          let msg = `HTTP ${res.status}`;
-          try {
-            const body = await res.json();
-            msg = body?.message || msg;
-          } catch {
-            /* ignore parse errors */
+          const res = await fetch(
+            "https://y2yvok8mk6.execute-api.us-east-1.amazonaws.com/dev/resize",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                userId: apiUserId,
+                computerName: selectedPCForCPUResize?.systemName,
+                targetConfigId: draft.cpu, // required by your working API
+              }),
+            }
+          );
+
+          if (!res.ok) {
+            let msg = `HTTP ${res.status}`;
+            try {
+              const body = await res.json();
+              msg = body?.message || msg;
+            } catch {
+              /* ignore parse errors */
+            }
+            throw new Error(msg);
           }
-          throw new Error(msg);
+
+          isUpdated = true;
+
+          toast({
+            title: "Resize submitted",
+            description: `${selectedPCForCPUResize?.systemName} is updating its CPU & Memory. It does not take more than 60 seconds.`,
+          });
         }
 
-        toast({
-          title: "Resize submitted",
-          description: `${selectedPCForCPUResize.systemName} is updating its CPU & Memory. It does not take more than 60 seconds.`,
-        });
+        // 2. Handle Storage increase
+        if (
+          draft.storage &&
+          Number(draft.storage) > Number(selectedPCForCPUResize?.storageGiB)
+        ) {
+          console.log("[Resize] POST → /increase-volume", {
+            userId: apiUserId,
+            computerName: selectedPCForCPUResize?.systemName,
+            newVolumeSizeGiB: draft.storage,
+          });
+
+          const res = await fetch(
+            "https://y2yvok8mk6.execute-api.us-east-1.amazonaws.com/increase-volume",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                userId: apiUserId,
+                computerName: selectedPCForCPUResize?.systemName,
+                newVolumeSizeGiB: Number(draft.storage),
+              }),
+            }
+          );
+
+          if (!res.ok) {
+            let msg = `HTTP ${res.status}`;
+            try {
+              const body = await res.json();
+              msg = body?.message || msg;
+            } catch {}
+            throw new Error(msg);
+          }
+
+          isUpdated = true;
+          toast({
+            title: "Storage resize submitted",
+            description: `${selectedPCForCPUResize?.systemName} is increasing its storage. It may take a few minutes.`,
+          });
+        }
+
+        if (!isUpdated) {
+          toast({
+            title: "No change detected",
+            description:
+              "Choose a different CPU or Storage to apply the resize.",
+            variant: "destructive",
+          });
+          return false;
+        }
 
         await refetchRemoteDesktops();
         closePCResizeDialog();
@@ -1509,7 +1569,7 @@ const CloudPCPage = () => {
         setShowNewPCDialog={setShowPCResizeDialog}
         loadExisting={loadPcForResize}
         lockedFields={[...resizeLockedFields]}
-        onConfirm={({ cpu }) => handleConfirmPCResize({ cpu })}
+        onConfirm={handleConfirmPCResize}
       />
     </div>
   );
