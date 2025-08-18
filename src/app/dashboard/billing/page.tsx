@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { PaymentMethodDialog } from "./_components/payment-method-dialog";
-import { StripeProvider } from "@/components/ui/StripeProvider";
+import { StripeProvider } from "@/providers/StripeProvider";
 import QuickRecharge from "./_components/quick-recharge";
 import PricingPlan from "./_components/pricing-plan";
 import QuickStats from "./_components/quick-stats";
