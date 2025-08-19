@@ -18,6 +18,8 @@ import startVMReducer from "../slices/dcv/starting-instances-slice";
 import smartPcConfigReducer from "../slices/build-pc/smart-pc-config-slice";
 import { legalDocumentsAPI } from "@/api/legalDocumentsAPI";
 import { ticketsAPI } from "@/api/supportAPI";
+import { billingAPI } from "@/api/billing";
+
 interface RootStateType {
   auth: ReturnType<typeof authReducer>;
   dcv: ReturnType<typeof dcvReducer>;
@@ -28,6 +30,7 @@ interface RootStateType {
   [vmManagementAPI.reducerPath]: ReturnType<typeof vmManagementAPI.reducer>;
   [newsletterAPI.reducerPath]: ReturnType<typeof newsletterAPI.reducer>;
   [legalDocumentsAPI.reducerPath]: ReturnType<typeof legalDocumentsAPI.reducer>;
+  [billingAPI.reducerPath]: ReturnType<typeof billingAPI.reducer>;
 }
 
 const persistConfig: PersistConfig<RootStateType> = {
@@ -46,6 +49,7 @@ const rootReducer = combineReducers({
   [ticketsAPI.reducerPath]: ticketsAPI.reducer,
   [newsletterAPI.reducerPath]: newsletterAPI.reducer,
   [legalDocumentsAPI.reducerPath]: legalDocumentsAPI.reducer,
+  [billingAPI.reducerPath]: billingAPI.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -63,7 +67,8 @@ export const store = configureStore({
       vmManagementAPI.middleware,
       newsletterAPI.middleware,
       legalDocumentsAPI.middleware,
-      ticketsAPI.middleware
+      ticketsAPI.middleware,
+      billingAPI.middleware
     ),
 });
 

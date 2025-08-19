@@ -21,29 +21,27 @@ import { ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/use-toast";
-import { recharge } from "@/api/billing";
+import { useRechargeMutation } from "@/api/billing";
 import { quickRechargeAmounts } from "../data";
 import { useBoolean } from "@/hooks/use-boolean";
 
-interface Props {
-  setBalance: (balance: number) => void;
-}
-
-const QuickRecharge = ({ setBalance }: Props) => {
+const QuickRecharge = () => {
   const showConfirm = useBoolean();
 
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState<number | null>(null);
-  const [isRecharging, setIsRecharging] = useState(false);
 
   const [autoRechargeEnabled, setAutoRechargeEnabled] = useState(false);
+
+  const [recharge, { isLoading: isRecharging }] = useRechargeMutation();
 
   const doRecharge = async (amount: number | null) => {
     if (!amount) return;
     try {
-      setIsRecharging(true);
-      const data = await recharge(amount);
-      setBalance(data.newBalance);
+      const data = await recharge({
+        amount,
+      }).unwrap();
+
       toast({
         title: "Recharge successful",
         description: `Your wallet balance has been updated successfully. New balance amount is ${data.newBalance}`,
@@ -58,8 +56,6 @@ const QuickRecharge = ({ setBalance }: Props) => {
         title: "Error recharging wallet",
         description: message,
       });
-    } finally {
-      setIsRecharging(false);
     }
   };
 

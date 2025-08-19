@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Monitor } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { TabsContent } from "@/components/ui/tabs";
-import { searchUsageHistory } from "@/api/billing";
+import { useLazySearchUsageHistoryQuery } from "@/api/billing";
 import { formatInstanceDuration, getUsagePeriod } from "../utils";
 import { UsageHistory } from "../types";
 import { fCurrency } from "@/lib/utils/format-number";
@@ -18,7 +18,7 @@ export function SmartPCUsageHistoryTab() {
 
   const { filteredHistory, date, setDate, loading, hasMore, fetchHistory } =
     useHistoryData<UsageHistory>({
-      fetchFunction: searchUsageHistory,
+      lazyQueryHook: useLazySearchUsageHistoryQuery,
       filterFunction,
       query,
     });

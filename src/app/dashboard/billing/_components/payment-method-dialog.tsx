@@ -14,8 +14,11 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
-import { addPaymentMethod, setDefaultPaymentMethod } from "@/api/billing";
-import { getPaymentMethods } from "@/api/billing";
+import {
+  useGetPaymentMethodsQuery,
+  useAddPaymentMethodMutation,
+  useSetDefaultPaymentMethodMutation,
+} from "@/api/billing";
 import { ExtendedPaymentMethod } from "../types";
 
 export function PaymentMethodDialog() {
@@ -31,23 +34,16 @@ export function PaymentMethodDialog() {
     ExtendedPaymentMethod[]
   >([]);
 
-  const fetchPaymentMethods = async () => {
-    try {
-      const data = await getPaymentMethods();
+  const { data } = useGetPaymentMethodsQuery();
+  const [addPaymentMethod] = useAddPaymentMethodMutation();
+  const [setDefaultPaymentMethod] = useSetDefaultPaymentMethodMutation();
+
+  useEffect(() => {
+    if (data) {
       const mapped = mapPaymentMethodsFromAPI(data);
       setSavedPaymentMethods(mapped);
-    } catch (error: unknown) {
-      console.error("Failed to load payment methods:", error);
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Could not fetch payment methods.";
-      toast({
-        title: "Error loading payment methods",
-        description: message,
-      });
     }
-  };
+  }, [data]);
 
   const mapPaymentMethodsFromAPI = (
     apiResponse: any
@@ -65,10 +61,6 @@ export function PaymentMethodDialog() {
       isDefault: pm.id === defaultId,
     }));
   };
-
-  useEffect(() => {
-    fetchPaymentMethods();
-  }, []);
 
   const handleAdd = async () => {
     if (!stripe || !elements || !CardElement) {
@@ -103,16 +95,10 @@ export function PaymentMethodDialog() {
     }
 
     try {
-      const result = await addPaymentMethod({
+      await addPaymentMethod({
         paymentMethodId: paymentMethod!.id,
-      });
-      setSavedPaymentMethods((prev) => [
-        ...prev,
-        {
-          ...result.paymentMethod,
-          isDefault: !savedPaymentMethods || savedPaymentMethods.length == 0,
-        },
-      ]);
+      }).unwrap();
+
       toast({
         title: "Payment method added",
         description: "Your new payment method has been saved successfully.",
@@ -136,16 +122,8 @@ export function PaymentMethodDialog() {
   const handleSetDefaultPaymentMethod = async (paymentMethodId: string) => {
     setLoading(true);
     try {
-      console.log("set default paymentMethod", paymentMethodId);
-      const result = await setDefaultPaymentMethod({
-        paymentMethodId,
-      });
-      setSavedPaymentMethods((prev) =>
-        prev.map((method) => ({
-          ...method,
-          isDefault: method.id === paymentMethodId,
-        }))
-      );
+      await setDefaultPaymentMethod({ paymentMethodId }).unwrap();
+
       toast({
         title: "Default payment method updated",
         description:

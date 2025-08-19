@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -20,15 +19,16 @@ import { useRouter } from "next/navigation";
 import { markNotificationsAsRead } from "@/api/notification";
 import type { Notification } from "@/types/notification";
 import { useNotifications } from "@/hooks/useNotifications";
-import { getCurrentBalance } from "@/api/billing";
-
+import { useGetCurrentBalanceQuery } from "@/api/billing";
 
 const DashboardHeader = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [balance, setBalance] = useState<number | null>(null);
-  const [balanceLoading, setBalanceLoading] = useState(true);
   const { notifications, hasUnread, fetchNotifications } = useNotifications();
   const router = useRouter();
+
+  const { data, isLoading: balanceLoading } = useGetCurrentBalanceQuery();
+
+  const balance = data?.balance ?? null;
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -40,7 +40,9 @@ const DashboardHeader = () => {
 
   const timeAgo = (iso: string) => {
     const diff = Date.now() - new Date(iso).getTime();
-    const min = 60_000, hr = 60 * min, day = 24 * hr;
+    const min = 60_000,
+      hr = 60 * min,
+      day = 24 * hr;
     if (diff < hr) return `${Math.round(diff / min)}m ago`;
     if (diff < day) return `${Math.round(diff / hr)}h ago`;
     return `${Math.round(diff / day)}d ago`;
@@ -59,9 +61,15 @@ const DashboardHeader = () => {
       setSidebarCollapsed(event.detail.collapsed);
     };
 
-    window.addEventListener("sidebarCollapse", handleSidebarCollapse as EventListener);
+    window.addEventListener(
+      "sidebarCollapse",
+      handleSidebarCollapse as EventListener
+    );
     return () => {
-      window.removeEventListener("sidebarCollapse", handleSidebarCollapse as EventListener);
+      window.removeEventListener(
+        "sidebarCollapse",
+        handleSidebarCollapse as EventListener
+      );
     };
   }, []);
 
@@ -69,27 +77,12 @@ const DashboardHeader = () => {
     fetchNotifications();
   }, []);
 
-useEffect(() => {
-    const fetchBalance = async () => {
-      try {
-        setBalanceLoading(true);
-        const data = await getCurrentBalance();
-        setBalance(data.balance);
-      } catch (e) {
-        console.error("Failed to fetch wallet balance", e);
-      } finally {
-        setBalanceLoading(false);
-      }
-    };
-
-    fetchBalance();
-    fetchNotifications();
-  }, []);
-
   const getBalanceColor = () => {
     if (balance === null) return "bg-muted text-muted-foreground";
-    if (balance >= 50) return "bg-green-500/10 text-green-500 hover:bg-green-500/20";
-    if (balance > 10) return "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20";
+    if (balance >= 50)
+      return "bg-green-500/10 text-green-500 hover:bg-green-500/20";
+    if (balance > 10)
+      return "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20";
     return "bg-red-500/10 text-red-500 hover:bg-red-500/20";
   };
 
@@ -107,7 +100,7 @@ useEffect(() => {
 
       <div className="flex items-center gap-4">
         <Link href="/dashboard/billing">
-           <Button
+          <Button
             variant="ghost"
             size="sm"
             className={cn(
@@ -138,11 +131,16 @@ useEffect(() => {
             </Button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-auto">
+          <DropdownMenuContent
+            align="end"
+            className="w-80 max-h-96 overflow-auto"
+          >
             <DropdownMenuLabel>Notifications</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {notifications.length === 0 && (
-              <p className="text-xs px-4 py-2 text-muted-foreground">No notifications</p>
+              <p className="text-xs px-4 py-2 text-muted-foreground">
+                No notifications
+              </p>
             )}
             {notifications.map((n) => (
               <button
@@ -164,15 +162,24 @@ useEffect(() => {
                   </div>
                   <div className="flex-1 space-y-0.5">
                     <div className="flex items-center justify-between">
-                      <span className={cn("font-medium text-sm", !n.isRead && "text-primary")}>
+                      <span
+                        className={cn(
+                          "font-medium text-sm",
+                          !n.isRead && "text-primary"
+                        )}
+                      >
                         {n.title}
                       </span>
                       {!n.isRead && (
                         <span className="h-2 w-2 rounded-full bg-primary mt-1" />
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{n.content}</p>
-                    <p className="text-xs text-muted-foreground">{timeAgo(n.timestamp)}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {n.content}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {timeAgo(n.timestamp)}
+                    </p>
                   </div>
                 </div>
               </button>

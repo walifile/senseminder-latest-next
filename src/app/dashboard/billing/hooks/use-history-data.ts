@@ -3,26 +3,26 @@ import { DateRange } from "react-day-picker";
 import { toast } from "@/components/ui/use-toast";
 
 interface UseHistoryDataProps<T> {
-  fetchFunction: (params: any) => Promise<any>;
+  lazyQueryHook: any;
   additionalParams?: Record<string, any>;
   filterFunction?: (item: T, query: string) => boolean;
   query?: string;
 }
 
 export function useHistoryData<T>({
-  fetchFunction,
+  lazyQueryHook,
   additionalParams = {},
   filterFunction,
   query = "",
 }: UseHistoryDataProps<T>) {
   const [allHistory, setAllHistory] = useState<T[]>([]);
   const [date, setDate] = useState<DateRange | undefined>({ from: undefined });
-  const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [lastEvaluatedKey, setLastEvaluatedKey] = useState<string | null>(null);
 
+  const [fetchHistoryTrigger, { isLoading: loading }] = lazyQueryHook();
+
   const fetchHistory = async (isLoadMore = false) => {
-    setLoading(true);
     try {
       const params = {
         from: date?.from,
@@ -32,20 +32,20 @@ export function useHistoryData<T>({
         ...additionalParams,
       };
 
-      const data = await fetchFunction(params);
-      const newHistory = data.items || data.history || [];
+      const result = await fetchHistoryTrigger(params).unwrap();
+      const newHistory = result.items || result.history || [];
 
       setAllHistory((prev) =>
         isLoadMore ? [...prev, ...newHistory] : newHistory
       );
 
-      setHasMore(data.hasMore || data.hasNextPage);
+      setHasMore(result.hasMore || result.hasNextPage);
 
-      if (data.lastEvaluatedKey) {
+      if (result.lastEvaluatedKey) {
         const encodedKey =
-          typeof data.lastEvaluatedKey === "string"
-            ? data.lastEvaluatedKey
-            : encodeURIComponent(JSON.stringify(data.lastEvaluatedKey));
+          typeof result.lastEvaluatedKey === "string"
+            ? result.lastEvaluatedKey
+            : encodeURIComponent(JSON.stringify(result.lastEvaluatedKey));
         setLastEvaluatedKey(encodedKey);
       } else {
         setLastEvaluatedKey(null);
@@ -53,13 +53,13 @@ export function useHistoryData<T>({
     } catch (error: unknown) {
       console.error("Failed to fetch history", error);
       const message =
-        error instanceof Error ? error.message : "Could not fetch history";
+        error && typeof error === "object" && "message" in error
+          ? (error as any).message
+          : "Could not fetch history";
       toast({
         title: "Error loading history",
         description: message,
       });
-    } finally {
-      setLoading(false);
     }
   };
 

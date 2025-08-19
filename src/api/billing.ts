@@ -1,6 +1,15 @@
-"use client";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import {
+  MonthlyChangeSummary,
+  SearchHistoryParams,
+} from "@/app/dashboard/billing/types";
+import { formatAsYYYYMMDD } from "@/lib/utils/format-time";
+import { getIdToken } from "../lib/utils";
 
-import { fetchAuthSession } from "aws-amplify/auth";
+type InstanceBilling = {
+  instanceId: string;
+  billingPlan: string;
+};
 
 if (!process.env.NEXT_PUBLIC_BILLING_API_URL) {
   throw new Error("Missing NEXT_PUBLIC_BILLING_API_URL in .env.local");
@@ -8,238 +17,131 @@ if (!process.env.NEXT_PUBLIC_BILLING_API_URL) {
 
 const BILLING_API_URL = process.env.NEXT_PUBLIC_BILLING_API_URL;
 
-async function getIdToken() {
-  const session = await fetchAuthSession();
-  const idToken = session.tokens?.idToken?.toString();
-  if (!idToken) throw new Error("User is not authenticated.");
-  return idToken;
-}
+const baseQuery = fetchBaseQuery({
+  baseUrl: BILLING_API_URL,
+  prepareHeaders: async (headers) => {
+    try {
+      const idToken = await getIdToken();
+      headers.set("Authorization", idToken);
+      headers.set("Content-Type", "application/json");
+    } catch (err) {
+      console.error("Failed to attach auth headers:", err);
+    }
+    return headers;
+  },
+});
 
-export const getPaymentMethods = async () => {
-  const idToken = await getIdToken();
-  console.log("idToken :", idToken);
-  const response = await fetch(`${BILLING_API_URL}payment-methods`, {
-    method: "GET",
-    headers: {
-      Authorization: idToken,
-      "Content-Type": "application/json",
-    },
-  });
+export const billingAPI = createApi({
+  reducerPath: "billingAPI",
+  baseQuery,
+  tagTypes: ["PaymentMethods", "Balance", "BillingPlan", "UsageHistory"],
+  endpoints: (builder) => ({
+    // payment methods
+    getPaymentMethods: builder.query<any, void>({
+      query: () => "payment-methods",
+      providesTags: ["PaymentMethods"],
+    }),
+    addPaymentMethod: builder.mutation({
+      query: (body) => ({
+        url: "payment-methods",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["PaymentMethods"],
+    }),
+    setDefaultPaymentMethod: builder.mutation({
+      query: (body) => ({
+        url: "set-default-card",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["PaymentMethods"],
+    }),
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to fetch payment methods");
-  }
+    // balance
+    getCurrentBalance: builder.query<any, void>({
+      query: () => "balance",
+      providesTags: ["Balance"],
+    }),
+    getMonthlySpending: builder.query<MonthlyChangeSummary, void>({
+      query: () => "monthly-spending",
+      providesTags: ["Balance"],
+    }),
+    recharge: builder.mutation({
+      query: (body) => ({
+        url: "recharge",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Balance", "UsageHistory"],
+    }),
 
-  return response.json();
-};
+    // billing
+    addBillingPlan: builder.mutation({
+      query: (body: InstanceBilling) => ({
+        url: "billing-plan",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["BillingPlan"],
+    }),
 
-export const addPaymentMethod = async (body: any) => {
-  const idToken = await getIdToken();
-  console.log("idToken :", idToken);
-  const response = await fetch(`${BILLING_API_URL}payment-methods`, {
-    method: "POST",
-    headers: {
-      Authorization: idToken,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
+    // usage history
+    searchUsageHistory: builder.query<any, SearchHistoryParams>({
+      query: ({
+        from,
+        to,
+        limit = 5,
+        startingAfter,
+        isStorageHistory = false,
+      }) => {
+        const queryParams = new URLSearchParams();
+        if (from) queryParams.append("startDate", formatAsYYYYMMDD(from));
+        if (to) queryParams.append("endDate", formatAsYYYYMMDD(to));
+        if (limit) queryParams.append("pageSize", limit.toString());
+        if (startingAfter)
+          queryParams.append("lastEvaluatedKey", startingAfter);
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to add payment methods");
-  }
+        const storageUrl = isStorageHistory ? "/storage" : "";
+        return `usage-history${storageUrl}?${queryParams.toString()}`;
+      },
+      providesTags: ["UsageHistory"],
+    }),
 
-  return response.json();
-};
+    // recharge history
+    searchRechargeHistory: builder.query<
+      any,
+      Omit<SearchHistoryParams, "isStorageHistory">
+    >({
+      query: ({ from, to, limit = 5, startingAfter }) => {
+        const queryParams = new URLSearchParams();
+        if (from) queryParams.append("startDate", formatAsYYYYMMDD(from));
+        if (to) queryParams.append("endDate", formatAsYYYYMMDD(to));
+        if (limit) queryParams.append("pageSize", limit.toString());
+        if (startingAfter) queryParams.append("startingAfter", startingAfter);
 
-export const setDefaultPaymentMethod = async (body: any) => {
-  const idToken = await getIdToken();
-  console.log("idToken :", idToken);
-  const response = await fetch(`${BILLING_API_URL}set-default-card`, {
-    method: "POST",
-    headers: {
-      Authorization: idToken,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
+        return `recharge?${queryParams.toString()}`;
+      },
+      providesTags: ["UsageHistory"],
+    }),
+  }),
+});
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(
-      errorData.message || "Failed to set default payment methods"
-    );
-  }
+export const {
+  // payment methods
+  useGetPaymentMethodsQuery,
+  useAddPaymentMethodMutation,
+  useSetDefaultPaymentMethodMutation,
 
-  return response.json();
-};
+  // balance
+  useGetCurrentBalanceQuery,
+  useGetMonthlySpendingQuery,
+  useRechargeMutation,
 
-export const getCurrentBalance = async () => {
-  const idToken = await getIdToken();
-  const response = await fetch(`${BILLING_API_URL}balance`, {
-    method: "GET",
-    headers: {
-      Authorization: idToken,
-      "Content-Type": "application/json",
-    },
-  });
+  // billing
+  useAddBillingPlanMutation,
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to fetch payment methods");
-  }
-
-  return response.json();
-};
-
-export const getMonthlySpending = async () => {
-  const idToken = await getIdToken();
-  const response = await fetch(`${BILLING_API_URL}monthly-spending`, {
-    method: "GET",
-    headers: {
-      Authorization: idToken,
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to fetch monthly spending");
-  }
-
-  return response.json();
-};
-
-type InstanceBilling = {
-  instanceId: string;
-  billingPlan: string;
-};
-
-export const addBillingPlan = async (newPlan: InstanceBilling) => {
-  const idToken = await getIdToken();
-  console.log("idToken :", idToken);
-  const response = await fetch(`${BILLING_API_URL}billing-plan`, {
-    method: "POST",
-    headers: {
-      Authorization: idToken,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(newPlan),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to add billing plan");
-  }
-
-  return response.json();
-};
-
-export const recharge = async (amount: any) => {
-  const idToken = await getIdToken();
-  console.log("idToken :", idToken);
-  const response = await fetch(`${BILLING_API_URL}recharge`, {
-    method: "POST",
-    headers: {
-      Authorization: idToken,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ amount }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to recharge");
-  }
-
-  return response.json();
-};
-
-type SearchHistoryParams = {
-  from?: Date | null; // ISO date string
-  to?: Date | null; // ISO date string
-  limit?: number;
-  startingAfter?: string | null;
-  isStorageHistory?: boolean | null;
-};
-
-export const searchUsageHistory = async ({
-  from,
-  to,
-  limit = 5,
-  startingAfter,
-  isStorageHistory = false,
-}: SearchHistoryParams) => {
-  const idToken = await getIdToken();
-
-  const queryParams = new URLSearchParams();
-  console.log(`from: ${from}`);
-  console.log(`from date: ${from?.toISOString().split("T")[0]}`);
-  if (from) queryParams.append("startDate", formatAsYYYYMMDD(from));
-  if (to) queryParams.append("endDate", formatAsYYYYMMDD(to));
-  if (limit) queryParams.append("pageSize", limit.toString());
-  if (startingAfter) queryParams.append("lastEvaluatedKey", startingAfter);
-  console.log(`queryParams : ${queryParams.toString()}`);
-  const storageUrl = isStorageHistory ? "/storage" : "";
-  const url = `${BILLING_API_URL}usage-history${storageUrl}?${queryParams.toString()}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      Authorization: idToken,
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(
-      errorData.message || "Failed to fetch smart pc usage history"
-    );
-  }
-
-  return response.json();
-};
-
-export const searchRechargeHistory = async ({
-  from,
-  to,
-  limit = 5,
-  startingAfter,
-}: SearchHistoryParams) => {
-  const idToken = await getIdToken();
-
-  const queryParams = new URLSearchParams();
-  console.log(`from: ${from}`);
-  console.log(`from date: ${from?.toISOString().split("T")[0]}`);
-  if (from) queryParams.append("startDate", formatAsYYYYMMDD(from));
-  if (to) queryParams.append("endDate", formatAsYYYYMMDD(to));
-  if (limit) queryParams.append("pageSize", limit.toString());
-  if (startingAfter) queryParams.append("startingAfter", startingAfter);
-  console.log(`queryParams : ${queryParams.toString()}`);
-  const url = `${BILLING_API_URL}recharge?${queryParams.toString()}`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      Authorization: idToken,
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to fetch recharge history");
-  }
-
-  return response.json();
-};
-
-function formatAsYYYYMMDD(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // Month is 0-based
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
+  // history
+  useLazySearchUsageHistoryQuery,
+  useLazySearchRechargeHistoryQuery,
+} = billingAPI;

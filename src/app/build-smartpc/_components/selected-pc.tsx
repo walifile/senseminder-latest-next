@@ -24,7 +24,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { BillingPlanDialog } from "./billing-dialog";
 import { toast } from "@/components/ui/use-toast";
-import { addBillingPlan } from "@/api/billing";
+import { useAddBillingPlanMutation } from "@/api/billing";
 
 const INSTANCE_DETAILS_API = process.env.NEXT_PUBLIC_INSTANCE_DETAILS_URL;
 
@@ -40,6 +40,8 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
   setCloudPCs,
   handleAssignUser,
 }) => {
+  const [addBillingPlan] = useAddBillingPlanMutation();
+
   useEffect(() => {
     const fetchMetrics = async () => {
       if (!selectedPCs.length) return;
@@ -303,7 +305,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                             await addBillingPlan({
                               instanceId: pc[0].instanceId,
                               billingPlan: newPlan,
-                            });
+                            }).unwrap();
 
                             toast({
                               title: "Billing Plan Changed",
