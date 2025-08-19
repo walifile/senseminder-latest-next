@@ -134,10 +134,7 @@ export type ExtraResizeProps = {
   lockedFields?: ReadonlyArray<
     "pcName" | "operatingSystem" | "region" | "billingPlan" | "storage"
   >;
-  onConfirm?: (vals: {
-    cpu: string;
-    storage: string;
-  }) => Promise<boolean> | boolean;
+  onConfirm?: (vals: { cpu: string }) => Promise<boolean> | boolean;
   instanceIdForResize?: string;
 
   loadExisting?: () => Promise<ResizeInitial | undefined>;

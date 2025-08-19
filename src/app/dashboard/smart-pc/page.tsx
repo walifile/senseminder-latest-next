@@ -2,38 +2,16 @@
 import AssignUserDialog from "../_components/assign-user-dialog";
 import React, { useState, useEffect } from "react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+  Card, CardContent, CardDescription, CardHeader, CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  Play,
-  Plus,
-  ExternalLink,
-  Trash2,
-  Shield,
-  Clock,
-  CalendarClock,
-  Moon,
-  LayoutGrid,
-  List,
-  MoreVertical,
-  StopCircle,
-  AlertCircle,
-  Search,
-  Loader2,
-  Cpu,
+  Play, Plus, ExternalLink, Trash2, Shield, Clock, CalendarClock, Moon,
+  LayoutGrid, List, MoreVertical, StopCircle, AlertCircle, Search, Loader2, Cpu,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import SmartPCConfigDialog from "@/app/build-smartpc/_components/smart-pc-config-dialog";
@@ -41,20 +19,13 @@ import { ConfirmStopModal } from "@/app/build-smartpc/_components/confirm-stop-p
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import {
-  useLaunchVMMutation,
-  useListRemoteDesktopQuery,
-  useStartVMMutation,
-  useStopVMMutation,
+  useLaunchVMMutation, useListRemoteDesktopQuery, useStartVMMutation, useStopVMMutation,
 } from "@/api/fileManagerAPI";
-// import { useDeleteVMMutation, useCreateVMMutation } from "@/api/vmManagement";
 import { useDeleteVMMutation } from "@/api/vmManagement";
 import { DesktopInstance, PC } from "@/app/build-smartpc/types";
 import { mockUsers, stableStates } from "@/app/build-smartpc/data";
 import {
-  getStatusIcon,
-  getStatusText,
-  isBusy,
-  isStartingInstance,
+  getStatusIcon, getStatusText, isBusy, isStartingInstance,
 } from "@/app/build-smartpc/utils";
 import SmartPCEmptyState from "@/app/build-smartpc/_components/smart-pc-empty-state";
 import ScheduleDialog from "@/app/build-smartpc/_components/schedule-dialog";
@@ -67,22 +38,21 @@ import SelectedPc from "@/app/build-smartpc/_components/selected-pc";
 import { fetchInstanceDetails, InstanceDetail } from "@/api/realtime";
 import { getAssignments } from "@/api/assignpc";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
+  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { updateSessionHeartbeat } from "@/api/session";
 // --- IDLE TIMEOUT API ---
 import {
-  setIdleTimeout,
-  getIdleTimeout,
-  deleteIdleTimeout,
+  setIdleTimeout, getIdleTimeout, deleteIdleTimeout,
 } from "@/api/smartPC-Idle-settings";
 import {
-  addStartingInstance,
-  removeStartingInstance,
+  addStartingInstance, removeStartingInstance,
 } from "@/redux/slices/dcv/starting-instances-slice";
+
+// ---- Configurable API endpoints ----
+const INCREASE_VOLUME_URL =
+  process.env.NEXT_PUBLIC_INCREASE_VOLUME_API ??
+  "https://y2yvok8mk6.execute-api.us-east-1.amazonaws.com/dev/increase-volume"; // fallback guess
 
 const CloudPCPage = () => {
   // --- Redux / UI hooks
@@ -93,7 +63,7 @@ const CloudPCPage = () => {
   const { user } = useSelector((state: RootState) => state.auth);
 
   // Derive API userId
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getApiUserId(u: any) {
     if (!u) return "";
     if (u.role === "member" || u.role === "admin") return u.ownerid;
@@ -102,9 +72,7 @@ const CloudPCPage = () => {
   const apiUserId = getApiUserId(user);
 
   // Assignments map to control actions for member-assigned PCs
-  const [assignments, setAssignments] = useState<
-    Record<string, { instanceId: string }[]>
-  >({});
+  const [assignments, setAssignments] = useState<Record<string, { instanceId: string }[]>>({});
   useEffect(() => {
     getAssignments()
       .then((res) => setAssignments(res))
@@ -114,9 +82,7 @@ const CloudPCPage = () => {
       });
   }, []);
   const isPCAssigned = (instanceId: string): boolean =>
-    Object.values(assignments).some((pcs) =>
-      pcs.some((pc) => pc.instanceId === instanceId)
-    );
+    Object.values(assignments).some((pcs) => pcs.some((pc) => pc.instanceId === instanceId));
 
   const isMember = user?.role === "member";
 
@@ -130,21 +96,14 @@ const CloudPCPage = () => {
   }
 
   const userId = useSelector((state: RootState) => state.auth.user?.id);
-  const startingInstances = useSelector(
-    (state: RootState) => state.startVM.startingInstances
-  );
+  const startingInstances = useSelector((state: RootState) => state.startVM.startingInstances);
 
   // Query remote desktops
   const [shouldPoll, setShouldPoll] = useState(true);
-  const [currentModal, setCurrentModal] = useState<
-    "schedule" | "delete" | "idle" | null
-  >(null);
+  const [currentModal, setCurrentModal] = useState<"schedule" | "delete" | "idle" | null>(null);
   const [stoppingInstances, setStoppingInstances] = useState<string[]>([]);
   const [launchingInstances, setLaunchingInstances] = useState<string[]>([]);
-  const [selectedInstance, setSelectedInstance] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
+  const [selectedInstance, setSelectedInstance] = useState<{ id: string; name: string } | null>(null);
 
   const [selectedPCs, setSelectedPCs] = useState<number[]>([]);
   const [showDetails, setShowDetails] = useState(true);
@@ -166,7 +125,7 @@ const CloudPCPage = () => {
     }
   );
 
-  // VM actions (keep delete mutation; no resize mutation here)
+  // VM actions
   const [stopVM, { isLoading: isStopping }] = useStopVMMutation();
   const [startVM] = useStartVMMutation();
   const [launchVM] = useLaunchVMMutation();
@@ -179,33 +138,27 @@ const CloudPCPage = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const [showPCResizeDialog, setShowPCResizeDialog] = useState(false);
-  const [selectedPCForCPUResize, setSelectedPCForCPUResize] =
-    useState<PCForCPUResize | null>(null);
+  const [selectedPCForCPUResize, setSelectedPCForCPUResize] = useState<PCForCPUResize | null>(null);
+
+  // NEW: Increase Storage
+  const [showStorageIncreaseDialog, setShowStorageIncreaseDialog] = useState(false);
+  const [selectedPCForStorage, setSelectedPCForStorage] = useState<PCForCPUResize | null>(null);
 
   // Dialogs
   const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const [showIdleDialog, setShowIdleDialog] = useState(false);
   const [showAssignUserDialog, setShowAssignUserDialog] = useState(false);
-  const [selectedPCForAssign, setSelectedPCForAssign] = useState<PC | null>(
-    null
-  );
+  const [selectedPCForAssign, setSelectedPCForAssign] = useState<PC | null>(null);
   const [showStopDialog, setShowStopDialog] = useState(false);
-  const [selectedPCForStop, setSelectedPCForStop] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
-  const [selectedPCForSchedule, setSelectedPCForSchedule] = useState<PC | null>(
-    null
-  );
+  const [selectedPCForStop, setSelectedPCForStop] = useState<{ id: string; name: string } | null>(null);
+  const [selectedPCForSchedule, setSelectedPCForSchedule] = useState<PC | null>(null);
 
   // Idle settings
   const [selectedPCForIdle, setSelectedPCForIdle] = useState<PC | null>(null);
   const [selectedIdleTimeout, setSelectedIdleTimeout] = useState<string>("30");
 
   // Realtime info
-  const [realtimePcInfo, setRealtimePcInfo] = useState<
-    Record<string, InstanceDetail>
-  >({});
+  const [realtimePcInfo, setRealtimePcInfo] = useState<Record<string, InstanceDetail>>({});
 
   // Heartbeat
   useEffect(() => {
@@ -331,10 +284,7 @@ const CloudPCPage = () => {
           description: `Idle timeout was cleared for ${selectedPCForIdle.systemName}`,
         });
       } else {
-        await setIdleTimeout(
-          selectedPCForIdle.instanceId,
-          Number(selectedIdleTimeout)
-        );
+        await setIdleTimeout(selectedPCForIdle.instanceId, Number(selectedIdleTimeout));
         toast({
           title: "Idle Timeout Saved",
           description: `Timeout set to ${selectedIdleTimeout} minutes for ${selectedPCForIdle.systemName}`,
@@ -357,20 +307,12 @@ const CloudPCPage = () => {
     setStoppingInstances((prev) => [...prev, instanceId]);
     try {
       await stopVM(instanceId).unwrap();
-      toast({
-        title: "Computer Stopping",
-        description: "The Computer is stopping....",
-      });
+      toast({ title: "Computer Stopping", description: "The Computer is stopping...." });
     } catch (error) {
       console.error("StopVM error:", error);
       let errorMessage =
         "Unable to stop the Computer. Please wait a few moments and try again.";
-      if (
-        error &&
-        typeof error === "object" &&
-        "data" in error &&
-        typeof (error as any).data === "string"
-      ) {
+      if (error && typeof error === "object" && "data" in error && typeof (error as any).data === "string") {
         errorMessage = (error as any).data;
       }
       toast({
@@ -388,20 +330,12 @@ const CloudPCPage = () => {
     dispatch(addStartingInstance(instanceId));
     try {
       await startVM(instanceId).unwrap();
-      toast({
-        title: "Computer Starting",
-        description: "The Computer is starting .....",
-      });
+      toast({ title: "Computer Starting", description: "The Computer is starting ....." });
     } catch (error) {
       console.error("StartVM error:", error);
       let errorMessage =
         "Unable to start the Computer. Please wait a few moments and try again.";
-      if (
-        error &&
-        typeof error === "object" &&
-        "data" in error &&
-        typeof (error as any).data === "string"
-      ) {
+      if (error && typeof error === "object" && "data" in error && typeof (error as any).data === "string") {
         errorMessage = (error as any).data;
       }
       toast({
@@ -418,16 +352,11 @@ const CloudPCPage = () => {
       const response = await launchVM({ instanceId, userId }).unwrap();
       toast({
         title: "Computer Connected",
-        description:
-          "The Computer has been connected successfully. Redirecting...",
+        description: "The Computer has been connected successfully. Redirecting...",
       });
       dispatch(setLaunchVMResponse({ instanceId, response, pcName }));
       const encodedSession = btoa(instanceId);
-      window.open(
-        `${routes?.pcViewer}?session=${encodedSession}`,
-        "_blank",
-        "noopener,noreferrer"
-      );
+      window.open(`${routes?.pcViewer}?session=${encodedSession}`, "_blank", "noopener,noreferrer");
     } catch (error) {
       console.log(error);
       toast({
@@ -444,9 +373,7 @@ const CloudPCPage = () => {
     if (!selectedInstance) return;
     try {
       const { id: instanceId, name: instanceName } = selectedInstance;
-      const instance = data?.find(
-        (item: DesktopInstance) => item.instanceId === instanceId
-      );
+      const instance = data?.find((item: DesktopInstance) => item.instanceId === instanceId);
       if (instance?.state === "running") {
         await stopVM(instanceId).unwrap();
       }
@@ -512,10 +439,10 @@ const CloudPCPage = () => {
 
   /** Open the CPU-resize dialog with current PC values */
   function openPCResizeDialog(pc: PC) {
-    if (!isPCResizeAllowed(pc)) {
+    if (!pc.state || pc.state.toLowerCase() !== "stopped") {
       toast({
         title: "PC must be stopped",
-        description: "Stop the PC first to change CPU and Memory.",
+        description: "Stop the PC before applying CPU/Memory resize.",
         variant: "destructive",
       });
       return;
@@ -525,8 +452,7 @@ const CloudPCPage = () => {
     if (!pc.region) {
       toast({
         title: "Region missing",
-        description:
-          "This PC has no region metadata. Please refresh or try again.",
+        description: "This PC has no region metadata. Please refresh or try again.",
         variant: "destructive",
       });
       return;
@@ -543,6 +469,45 @@ const CloudPCPage = () => {
     });
     setShowPCResizeDialog(true);
   }
+
+  function openStorageIncreaseDialog(pc: PC) {
+    if (!pc.state || pc.state.toLowerCase() !== "running") {
+      toast({
+        title: "PC must be running",
+        description: "Start the PC before increasing storage.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!pc.region) {
+      toast({
+        title: "Region missing",
+        description: "This PC has no region metadata. Please refresh or try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setSelectedPCForStorage({
+      instanceId: pc.instanceId,
+      systemName: pc.systemName,
+      region: pc.region,
+      state: pc.state,
+      operatingSystem: (pc as any).operatingSystem ?? undefined,
+      configId: (pc as any).configId ?? undefined,
+      storageGiB: extractStorageGiB(pc),
+    });
+    setShowStorageIncreaseDialog(true);
+  }
+
+  function closeStorageIncreaseDialog() {
+    setShowStorageIncreaseDialog(false);
+    setSelectedPCForStorage(null);
+  }
+
+  const loadPcForStorageIncrease = React.useCallback(async () => {
+    if (!selectedPCForStorage?.systemName) return undefined;
+    return await fetchPcConfig(apiUserId, selectedPCForStorage.systemName);
+  }, [apiUserId, selectedPCForStorage?.systemName]);
 
   /** Close & clear selection */
   function closePCResizeDialog() {
@@ -580,17 +545,14 @@ const CloudPCPage = () => {
   async function fetchPcConfig(
     userId: string,
     computerName: string
-  ): Promise<
-    | {
-        pcName: string;
-        operatingSystem: string;
-        cpu: string;
-        region: string;
-        billingPlan: "hourly" | "daily" | "monthly";
-        storage?: string;
-      }
-    | undefined
-  > {
+  ): Promise<{
+    pcName: string;
+    operatingSystem: string;
+    cpu: string;
+    region: string;
+    billingPlan: "hourly" | "daily" | "monthly";
+    storage?: string;
+  } | undefined> {
     try {
       if (!userId || !computerName) return undefined;
 
@@ -617,10 +579,7 @@ const CloudPCPage = () => {
         operatingSystem: payload.operatingSystem ?? "Linux",
         cpu: payload.configId ?? "",
         region: payload.location ?? payload.region ?? "us-east-1",
-        billingPlan: (payload.billingPlan ?? "hourly") as
-          | "hourly"
-          | "daily"
-          | "monthly",
+        billingPlan: (payload.billingPlan ?? "hourly") as "hourly" | "daily" | "monthly",
         storage: String(
           payload.storage ??
             payload.storageGiB ??
@@ -640,14 +599,12 @@ const CloudPCPage = () => {
 
   // 🔒 Memoize locked fields to avoid new array identity every render
   const resizeLockedFields = React.useMemo(
-    () =>
-      [
-        "pcName",
-        "operatingSystem",
-        "region",
-        "billingPlan",
-        "storage",
-      ] as const,
+    () => ["pcName", "operatingSystem", "region", "billingPlan", "storage"] as const,
+    []
+  );
+  // (No "cpu" here; keys must match dialog's allowed union)
+  const storageOnlyLockedFields = React.useMemo(
+    () => ["pcName", "operatingSystem", "region", "billingPlan"] as const,
     []
   );
 
@@ -659,7 +616,7 @@ const CloudPCPage = () => {
 
   /** Submit resize via POST /dev/resize (Option A) */
   const handleConfirmPCResize = React.useCallback(
-    async (draft: { cpu: string; storage: string }) => {
+    async (draft: { cpu: string }) => {
       const err = validateCPUResizeDraft(draft);
       if (err || !selectedPCForCPUResize) {
         toast({
@@ -671,101 +628,38 @@ const CloudPCPage = () => {
       }
 
       try {
-        // Helpful debug log
-        let isUpdated = false;
+        console.log("[Resize] POST → /dev/resize", {
+          userId: apiUserId,
+          computerName: selectedPCForCPUResize.systemName,
+          targetConfigId: draft.cpu,
+        });
 
-        // 1. Handle CPU resize
-        if (
-          draft.cpu &&
-          draft.cpu !== selectedPCForCPUResize?.operatingSystem
-        ) {
-          console.log("[Resize] POST → /dev/resize", {
-            userId: apiUserId,
-            computerName: selectedPCForCPUResize?.systemName,
-            targetConfigId: draft.cpu,
-          });
-
-          const res = await fetch(
-            "https://y2yvok8mk6.execute-api.us-east-1.amazonaws.com/dev/resize",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                userId: apiUserId,
-                computerName: selectedPCForCPUResize?.systemName,
-                targetConfigId: draft.cpu, // required by your working API
-              }),
-            }
-          );
-
-          if (!res.ok) {
-            let msg = `HTTP ${res.status}`;
-            try {
-              const body = await res.json();
-              msg = body?.message || msg;
-            } catch {
-              /* ignore parse errors */
-            }
-            throw new Error(msg);
+        const res = await fetch(
+          "https://y2yvok8mk6.execute-api.us-east-1.amazonaws.com/dev/resize",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: apiUserId,
+              computerName: selectedPCForCPUResize.systemName,
+              targetConfigId: draft.cpu,
+            }),
           }
+        );
 
-          isUpdated = true;
-
-          toast({
-            title: "Resize submitted",
-            description: `${selectedPCForCPUResize?.systemName} is updating its CPU & Memory. It does not take more than 60 seconds.`,
-          });
+        if (!res.ok) {
+          let msg = `HTTP ${res.status}`;
+          try {
+            const body = await res.json();
+            msg = body?.message || msg;
+          } catch { /* ignore */ }
+          throw new Error(msg);
         }
 
-        // 2. Handle Storage increase
-        if (
-          draft.storage &&
-          Number(draft.storage) > Number(selectedPCForCPUResize?.storageGiB)
-        ) {
-          console.log("[Resize] POST → /increase-volume", {
-            userId: apiUserId,
-            computerName: selectedPCForCPUResize?.systemName,
-            newVolumeSizeGiB: draft.storage,
-          });
-
-          const res = await fetch(
-            "https://y2yvok8mk6.execute-api.us-east-1.amazonaws.com/increase-volume",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                userId: apiUserId,
-                computerName: selectedPCForCPUResize?.systemName,
-                newVolumeSizeGiB: Number(draft.storage),
-              }),
-            }
-          );
-
-          if (!res.ok) {
-            let msg = `HTTP ${res.status}`;
-            try {
-              const body = await res.json();
-              msg = body?.message || msg;
-            } catch {}
-            throw new Error(msg);
-          }
-
-          isUpdated = true;
-          toast({
-            title: "Storage resize submitted",
-            description: `${selectedPCForCPUResize?.systemName} is increasing its storage. It may take a few minutes.`,
-          });
-        }
-
-        if (!isUpdated) {
-          toast({
-            title: "No change detected",
-            description:
-              "Choose a different CPU or Storage to apply the resize.",
-            variant: "destructive",
-          });
-          return false;
-        }
+        toast({
+          title: "Resize submitted",
+          description: `${selectedPCForCPUResize.systemName} is updating its CPU & Memory. It does not take more than 60 seconds.`,
+        });
 
         await refetchRemoteDesktops();
         closePCResizeDialog();
@@ -773,8 +667,7 @@ const CloudPCPage = () => {
       } catch (e: any) {
         toast({
           title: "Resize failed",
-          description:
-            e?.message || "Failed to resize this PC. Please try again.",
+          description: e?.message || "Failed to resize this PC. Please try again.",
           variant: "destructive",
         });
         return false;
@@ -782,6 +675,79 @@ const CloudPCPage = () => {
     },
     [apiUserId, selectedPCForCPUResize, refetchRemoteDesktops]
   );
+
+  const handleConfirmStorageIncrease = React.useCallback(
+    async (draft: { storage: string }) => {
+      if (!selectedPCForStorage) {
+        toast({
+          title: "Invalid selection",
+          description: "No PC selected.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      const size = parseInt(String(draft.storage), 10);
+      if (!size || size <= 0) {
+        toast({
+          title: "Invalid size",
+          description: "Please choose a valid storage size.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      try {
+        console.log("[Increase Volume] POST →", INCREASE_VOLUME_URL, {
+          userId: apiUserId,
+          computerName: selectedPCForStorage.systemName,
+          newVolumeSizeGiB: size,
+        });
+
+        const res = await fetch(INCREASE_VOLUME_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: apiUserId,
+            computerName: selectedPCForStorage.systemName,
+            newVolumeSizeGiB: size,
+          }),
+        });
+
+        if (!res.ok) {
+          let msg = `HTTP ${res.status}`;
+          try {
+            const body = await res.json();
+            msg = body?.message || msg;
+          } catch {}
+          throw new Error(msg);
+        }
+
+        toast({
+          title: "Storage increase submitted",
+          description: `${selectedPCForStorage.systemName} storage is being increased to ${size} GiB.`,
+        });
+
+        await refetchRemoteDesktops();
+        closeStorageIncreaseDialog();
+        return true;
+      } catch (e: any) {
+        toast({
+          title: "Increase failed",
+          description: e?.message || "Failed to increase volume (ssd). Please try again.",
+          variant: "destructive",
+        });
+        return false;
+      }
+    },
+    [apiUserId, selectedPCForStorage, refetchRemoteDesktops]
+  );
+
+  // ---- Derived flags for dialogs ----
+  const cpuDialogIsStopped =
+    selectedPCForCPUResize?.state?.toLowerCase() === "stopped";
+  const storageDialogIsRunning =
+    selectedPCForStorage?.state?.toLowerCase() === "running";
 
   return (
     <div className="flex flex-col h-full">
@@ -885,9 +851,7 @@ const CloudPCPage = () => {
                               >
                                 <Checkbox
                                   checked={selectedPCs.includes(index)}
-                                  onCheckedChange={() =>
-                                    handlePCSelection(index)
-                                  }
+                                  onCheckedChange={() => handlePCSelection(index)}
                                   className="mt-[2px]"
                                 />
                               </div>
@@ -927,10 +891,7 @@ const CloudPCPage = () => {
                               </div>
 
                               {/* Uptime */}
-                              <TooltipProvider
-                                delayDuration={0}
-                                skipDelayDuration={0}
-                              >
+                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="flex items-center gap-2">
@@ -943,10 +904,7 @@ const CloudPCPage = () => {
                               </TooltipProvider>
 
                               {/* Region */}
-                              <TooltipProvider
-                                delayDuration={0}
-                                skipDelayDuration={0}
-                              >
+                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="hidden lg:flex items-center gap-2">
@@ -959,18 +917,13 @@ const CloudPCPage = () => {
                               </TooltipProvider>
 
                               {/* Schedule */}
-                              <TooltipProvider
-                                delayDuration={0}
-                                skipDelayDuration={0}
-                              >
+                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="flex items-center gap-2">
                                       <CalendarClock className="h-4 w-4" />
                                       {pcInfo?.schedule?.enabled === false ? (
-                                        <span className="truncate">
-                                          disabled
-                                        </span>
+                                        <span className="truncate">disabled</span>
                                       ) : pcInfo?.schedule?.autoStartTime ||
                                         pcInfo?.schedule?.autoStopTime ? (
                                         <span className="truncate">
@@ -993,10 +946,7 @@ const CloudPCPage = () => {
                               </TooltipProvider>
 
                               {/* Idle Timeout */}
-                              <TooltipProvider
-                                delayDuration={0}
-                                skipDelayDuration={0}
-                              >
+                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="hidden lg:flex items-center gap-2">
@@ -1113,6 +1063,17 @@ const CloudPCPage = () => {
                                   >
                                     <Shield className="h-4 w-4 mr-2" />
                                     PC Resize
+                                  </DropdownMenuItem>
+
+                                  {/* NEW: Increase Storage */}
+                                  <DropdownMenuItem
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      openStorageIncreaseDialog(pc);
+                                    }}
+                                  >
+                                    <Cpu className="h-4 w-4 mr-2" />
+                                    Add Volume (SSD)
                                   </DropdownMenuItem>
 
                                   {!isMember && (
@@ -1259,6 +1220,17 @@ const CloudPCPage = () => {
                                 PC Resize
                               </DropdownMenuItem>
 
+                              {/* NEW: Increase Storage */}
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openStorageIncreaseDialog(pc);
+                                }}
+                              >
+                                <Cpu className="h-4 w-4 mr-2" />
+                                Add Volume (SSD)
+                              </DropdownMenuItem>
+
                               {!isMember && (
                                 <DropdownMenuItem
                                   onClick={(e) => {
@@ -1338,14 +1310,9 @@ const CloudPCPage = () => {
                           {/* --- END REALTIME INFO --- */}
 
                           <div className="flex items-center justify-between border-t pt-4 mt-2">
-                            <div className="flex items-center gap-2">
-                              {/* meta */}
-                            </div>
+                            <div className="flex items-center gap-2">{/* meta */}</div>
                             <div className="flex items-center gap-4">
-                              <TooltipProvider
-                                delayDuration={0}
-                                skipDelayDuration={0}
-                              >
+                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <span>
@@ -1353,23 +1320,17 @@ const CloudPCPage = () => {
                                         size="sm"
                                         variant="default"
                                         onClick={() =>
-                                          handleLaunch(
-                                            pc.instanceId,
-                                            pc.systemName
-                                          )
+                                          handleLaunch(pc.instanceId, pc.systemName)
                                         }
                                         disabled={
                                           isBusy(pc.state) ||
                                           pc.state !== "running" ||
-                                          (!isMember &&
-                                            isPCAssigned(pc.instanceId))
+                                          (!isMember && isPCAssigned(pc.instanceId))
                                         }
                                         className="h-8"
                                       >
                                         <ExternalLink className="h-4 w-4 mr-1.5" />
-                                        {launchingInstances.includes(
-                                          pc.instanceId
-                                        )
+                                        {launchingInstances.includes(pc.instanceId)
                                           ? "Connecting..."
                                           : "Connect"}
                                       </Button>
@@ -1377,18 +1338,14 @@ const CloudPCPage = () => {
                                   </TooltipTrigger>
                                   {!isMember && isPCAssigned(pc.instanceId) && (
                                     <TooltipContent>
-                                      This PC is assigned to a member, usassign
-                                      to launch.
+                                      This PC is assigned to a member, usassign to launch.
                                     </TooltipContent>
                                   )}
                                 </Tooltip>
                               </TooltipProvider>
 
                               {pc.state === "running" ? (
-                                <TooltipProvider
-                                  delayDuration={0}
-                                  skipDelayDuration={0}
-                                >
+                                <TooltipProvider delayDuration={0} skipDelayDuration={0}>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <span>
@@ -1405,45 +1362,33 @@ const CloudPCPage = () => {
                                           className="h-8"
                                           disabled={
                                             isBusy(pc.state) ||
-                                            stoppingInstances.includes(
-                                              pc.instanceId
-                                            ) ||
-                                            (!isMember &&
-                                              isPCAssigned(pc.instanceId))
+                                            stoppingInstances.includes(pc.instanceId) ||
+                                            (!isMember && isPCAssigned(pc.instanceId))
                                           }
                                         >
                                           <StopCircle className="h-4 w-4 mr-1.5" />
-                                          {stoppingInstances.includes(
-                                            pc.instanceId
-                                          )
+                                          {stoppingInstances.includes(pc.instanceId)
                                             ? "Stopping..."
                                             : "Stop"}
                                         </Button>
                                       </span>
                                     </TooltipTrigger>
-                                    {!isMember &&
-                                      isPCAssigned(pc.instanceId) && (
-                                        <TooltipContent className="text-white text-sm font-semibold px-4 py-2 rounded shadow-md border">
-                                          This PC is assigned to a member.
-                                          Unassign to stop.
-                                        </TooltipContent>
-                                      )}
+                                    {!isMember && isPCAssigned(pc.instanceId) && (
+                                      <TooltipContent className="text-white text-sm font-semibold px-4 py-2 rounded shadow-md border">
+                                        This PC is assigned to a member. Unassign to stop.
+                                      </TooltipContent>
+                                    )}
                                   </Tooltip>
                                 </TooltipProvider>
                               ) : (
-                                <TooltipProvider
-                                  delayDuration={0}
-                                  skipDelayDuration={0}
-                                >
+                                <TooltipProvider delayDuration={0} skipDelayDuration={0}>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <span>
                                         <Button
                                           size="sm"
                                           variant="outline"
-                                          onClick={() =>
-                                            handleStart(pc.instanceId)
-                                          }
+                                          onClick={() => handleStart(pc.instanceId)}
                                           className="h-8"
                                           disabled={
                                             isBusy(pc.state) ||
@@ -1452,8 +1397,7 @@ const CloudPCPage = () => {
                                               pc.state,
                                               startingInstances
                                             ) ||
-                                            (!isMember &&
-                                              isPCAssigned(pc.instanceId))
+                                            (!isMember && isPCAssigned(pc.instanceId))
                                           }
                                         >
                                           <Play className="h-4 w-4 mr-1.5" />
@@ -1467,13 +1411,11 @@ const CloudPCPage = () => {
                                         </Button>
                                       </span>
                                     </TooltipTrigger>
-                                    {!isMember &&
-                                      isPCAssigned(pc.instanceId) && (
-                                        <TooltipContent className=" text-white text-sm font-semibold px-4 py-2 rounded shadow-md border">
-                                          This PC is assigned to a member.
-                                          Unassign to start.
-                                        </TooltipContent>
-                                      )}
+                                    {!isMember && isPCAssigned(pc.instanceId) && (
+                                      <TooltipContent className=" text-white text-sm font-semibold px-4 py-2 rounded shadow-md border">
+                                        This PC is assigned to a member. Unassign to start.
+                                      </TooltipContent>
+                                    )}
                                   </Tooltip>
                                 </TooltipProvider>
                               )}
@@ -1558,18 +1500,27 @@ const CloudPCPage = () => {
         />
       )}
 
-      {/* NEW: CPU-only PC Resize dialog (reuses SmartPCConfigDialog in resize mode) */}
+      {/* CPU Resize dialog */}
       <SmartPCConfigDialog
-        key={
-          selectedPCForCPUResize?.instanceId ||
-          (showPCResizeDialog ? "open" : "closed")
-        }
         mode="resize"
         showNewPCDialog={showPCResizeDialog}
         setShowNewPCDialog={setShowPCResizeDialog}
         loadExisting={loadPcForResize}
-        lockedFields={[...resizeLockedFields]}
-        onConfirm={handleConfirmPCResize}
+        lockedFields={["pcName", "operatingSystem", "region", "billingPlan"] as const}
+        pcIsStopped={cpuDialogIsStopped}
+        onConfirm={({ cpu }) => handleConfirmPCResize({ cpu })}
+      />
+
+      {/* Increase Storage dialog (reuse same component) */}
+      <SmartPCConfigDialog
+        mode="resize"
+        showNewPCDialog={showStorageIncreaseDialog}
+        setShowNewPCDialog={setShowStorageIncreaseDialog}
+        loadExisting={loadPcForStorageIncrease}
+        lockedFields={["pcName", "operatingSystem", "region", "billingPlan"] as const}
+        storageOnly
+        pcIsRunning={storageDialogIsRunning}
+        onConfirmStorage={({ storage }) => handleConfirmStorageIncrease({ storage })}
       />
     </div>
   );

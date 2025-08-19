@@ -205,7 +205,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                       },
                       {
                         icon: HardDrive,
-                        label: "Storage",
+                        label: "SSD",
                         value: pc[0]?.specs?.storage,
                       },
                       {
