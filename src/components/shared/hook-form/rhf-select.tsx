@@ -83,7 +83,6 @@ export const RHFSelect = forwardRef<HTMLButtonElement, RHFSelectProps>(
                         htmlFor={name}
                         className={cn(
                           hasError && "text-red-500",
-                          disabled && "text-gray-500",
                           labelClassName
                         )}
                       >
@@ -118,8 +117,11 @@ export const RHFSelect = forwardRef<HTMLButtonElement, RHFSelectProps>(
               <Select
                 value={field.value || ""}
                 onValueChange={(val) => {
-                  field.onChange(val);
-                  onValueChange?.(val);
+                  if (onValueChange) {
+                    onValueChange(val);
+                  } else {
+                    field.onChange(val);
+                  }
                 }}
                 disabled={disabled}
               >
