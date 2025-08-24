@@ -1,3 +1,5 @@
+
+//build-smartpc/src/app/build-smartpc/_components/selected-pc.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -25,6 +27,9 @@ import { RootState } from "@/redux/store";
 import { BillingPlanDialog } from "./billing-dialog";
 import { toast } from "@/components/ui/use-toast";
 import { useAddBillingPlanMutation } from "@/api/billing";
+import { getFriendlyOSName } from "@/lib/utils/format-string";
+
+
 
 const INSTANCE_DETAILS_API = process.env.NEXT_PUBLIC_INSTANCE_DETAILS_URL;
 
@@ -76,12 +81,15 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
             )
               ? 0
               : parseFloat(matched.memoryUsage!.replace("%", "")),
+
             region: matched.region,
             uptime: matched.uptime,
             specs: matched.specs,
             billingPlan: matched.billingPlan,
             billingPlanDescription: matched.billingPlanDescription,
             assignedUser: matched.assignedUser,
+            monthlyBillingTotal: parseFloat(matched?.monthlyBilling?.total ?? "0"),
+
           };
 
           const updatedCloudPCs = [...cloudPCs];
@@ -184,16 +192,17 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                   </span>
                 </div>
 
-                {/* Cost */}
+                {/* Monthly Cost */}
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <AlertCircle className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium">Cost</span>
                   </div>
                   <span className="text-sm text-muted-foreground">
-                    ${pc[0]?.cost?.toFixed(2) ?? "0.00"} this month
+                    ${pc[0]?.monthlyBillingTotal?.toFixed(2) ?? "0.00"} this month
                   </span>
                 </div>
+
 
                 <div className="col-span-full mt-4 border-t pt-4">
                   <h4 className="text-sm font-medium mb-3">Specifications</h4>
@@ -215,7 +224,8 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                         label: "GPU",
                         value: pc[0]?.specs?.gpu,
                       },
-                      { icon: Settings, label: "OS", value: pc[0]?.specs?.os },
+                      { icon: Settings, label: "OS", value: getFriendlyOSName(pc[0]?.specs?.os ?? "") },
+
                     ].map(({ icon: Icon, label, value }) => (
                       <div key={label} className="space-y-1">
                         <div className="flex items-center gap-2">

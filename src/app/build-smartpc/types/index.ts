@@ -11,6 +11,8 @@ export interface DesktopInstance {
   systemName: string;
 }
 
+
+
 export type PC = {
   id: string;
   systemName: string;
@@ -56,6 +58,7 @@ export type PC = {
     name: string;
     email: string;
   };
+  monthlyBillingTotal?: number;
 };
 export interface CloudPC {
   id?: string;

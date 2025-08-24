@@ -116,19 +116,3 @@ export const isStartingInstance = (
 
   return isInList && isValidState;
 };
-
-export function inferLinuxCategoryFromConfigId(
-  configId = ""
-):
-  | "Ubuntu_24.04_LTS_X64"
-  | "Ubuntu_24.04_LTS_ARM"
-  | "Ubuntu_22.04_LTS_X64"
-  | "Ubuntu_22.04_LTS_ARM"
-  | undefined {
-  const id = configId.toLowerCase();
-  if (id.includes("24.04") && id.includes("x64")) return "Ubuntu_24.04_LTS_X64";
-  if (id.includes("24.04") && id.includes("arm")) return "Ubuntu_24.04_LTS_ARM";
-  if (id.includes("22.04") && id.includes("x64")) return "Ubuntu_22.04_LTS_X64";
-  if (id.includes("22.04") && id.includes("arm")) return "Ubuntu_22.04_LTS_ARM";
-  return undefined;
-}

@@ -34,7 +34,7 @@ const baseQuery = fetchBaseQuery({
 export const billingAPI = createApi({
   reducerPath: "billingAPI",
   baseQuery,
-  tagTypes: ["PaymentMethods", "Balance", "BillingPlan", "UsageHistory"],
+  tagTypes: ["PaymentMethods", "Balance", "BillingPlan", "UsageHistory", "AutoRecharge", "Storage"],
   endpoints: (builder) => ({
     // payment methods
     getPaymentMethods: builder.query<any, void>({
@@ -57,16 +57,47 @@ export const billingAPI = createApi({
       }),
       invalidatesTags: ["PaymentMethods"],
     }),
+    detachPaymentMethod: builder.mutation({
+      query: (body) => ({
+        url: "payment-methods/detach",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["PaymentMethods"],
+    }),
 
     // balance
     getCurrentBalance: builder.query<any, void>({
       query: () => "balance",
       providesTags: ["Balance"],
     }),
+
+    // auto-recharge
+    getAutoRecharge: builder.query<any, void>({
+      query: () => "auto-recharge",
+      providesTags: ["AutoRecharge"],
+    }),
+    updateAutoRecharge: builder.mutation({
+      query: (body) => ({
+        url: "auto-recharge",
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["AutoRecharge"],
+    }),
+
+    // storage pricing
+    getStoragePricingTier: builder.query<any, void>({
+      query: () => "storage/tier-pricing",
+      providesTags: ["Storage"],
+    }),
+      // monthly spending
     getMonthlySpending: builder.query<MonthlyChangeSummary, void>({
       query: () => "monthly-spending",
       providesTags: ["Balance"],
     }),
+
+    // recharge
     recharge: builder.mutation({
       query: (body) => ({
         url: "recharge",
@@ -123,7 +154,7 @@ export const billingAPI = createApi({
         return `recharge?${queryParams.toString()}`;
       },
       providesTags: ["UsageHistory"],
-    }),
+    })
   }),
 });
 
@@ -131,6 +162,7 @@ export const {
   // payment methods
   useGetPaymentMethodsQuery,
   useAddPaymentMethodMutation,
+  useDetachPaymentMethodMutation,
   useSetDefaultPaymentMethodMutation,
 
   // balance
@@ -144,4 +176,11 @@ export const {
   // history
   useLazySearchUsageHistoryQuery,
   useLazySearchRechargeHistoryQuery,
+
+  // auto-recharge
+  useGetAutoRechargeQuery,
+  useUpdateAutoRechargeMutation,
+
+  // storage
+  useGetStoragePricingTierQuery,
 } = billingAPI;

@@ -29,47 +29,38 @@ import { useToast } from "@/hooks/use-toast";
 const navItems = [
   {
     name: "Sense PC",
-    path: "/dashboard/smart-pc",
+    path: routes.dashboard,
     icon: Monitor,
   },
   {
     name: "Sense Storage",
-    path: "/dashboard/storage",
+    path: routes.storage,
     icon: HardDrive,
   },
   {
     name: "Users",
-    path: "/dashboard/users",
+    path: routes.users,
     icon: Users,
   },
   {
     name: "Billing",
-    path: "/dashboard/billing",
+    path: routes.billing,
     icon: CreditCard,
   },
   {
     name: "Support",
-    path: "/dashboard/support",
+    path: routes.support,
     icon: LifeBuoy,
   },
-  // {
-  //   name: "Profile",
-  //   path: "/dashboard/profile",
-  //   icon: User,
-  // },
-  // {
-  //   name: "Notifications",
-  //   path: "/dashboard/notifications",
-  //   icon: Bell,
-  // },
+
   {
     name: "Tutorials",
-    path: "/dashboard/tutorials",
+    path: routes.tutorials,
     icon: GraduationCap,
   },
   {
     name: "Security & Privacy",
-    path: "/dashboard/security",
+    path: routes.profileSecurity,
     icon: Shield,
   },
 ];

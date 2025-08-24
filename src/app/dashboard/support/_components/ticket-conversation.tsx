@@ -16,6 +16,8 @@ import {
 import { useFileValidation } from "../hooks/use-file-validation";
 import { useUploadAttachment } from "../hooks/use-upload-attachment";
 import { formatDateLabel, formatTimeLabel } from "@/lib/utils/format-time";
+import { useDownloadAttachment } from "../hooks/use-download-attachment";
+import { filterNonNullable } from "@/lib/utils/index";
 
 interface Props {
   ticketId: string;
@@ -35,23 +37,21 @@ const TicketConversation: React.FC<Props> = ({
 }) => {
   const { toast } = useToast();
 
-  const [sendMessage, { isLoading: isSending }] =
-    useSendTicketMessageMutation();
+  const [sendMessage, { isLoading: isSending }] = useSendTicketMessageMutation();
+  const { data: messagesData = [], isLoading: isMsgsLoading } = useGetTicketMessagesQuery(
+    { userId, id: ticketId },
+    { skip: !userId || !ticketId }
+  );
 
-  const { data: messagesData = [], isLoading: isMsgsLoading } =
-    useGetTicketMessagesQuery(
-      { userId, id: ticketId },
-      { skip: !userId || !ticketId }
-    );
   const [updateStatus] = useUpdateTicketStatusMutation();
-
   const [messages, setMessages] = useState<Message[]>([]);
   const [reply, setReply] = useState("");
-  const { attachments, setAttachments, onFileChange, removeAttachment } =
-    useFileValidation();
+  const { attachments, setAttachments, onFileChange, removeAttachment } = useFileValidation();
   const { uploadAttachment } = useUploadAttachment(userId, ticketId);
   const containerRef = useRef<HTMLDivElement>(null);
-
+  const { downloadAttachment } = useDownloadAttachment(userId, ticketId);
+  
+  
   useEffect(() => {
     setMessages(messagesData || []);
   }, [messagesData]);
@@ -68,18 +68,9 @@ const TicketConversation: React.FC<Props> = ({
     if (!reply.trim()) return;
 
     try {
+     
       const uploaded = await Promise.all(attachments.map(uploadAttachment));
-      // await fetchWithUserId(`${API_BASE}/ticket/${ticketId}/message`, {
-      //   method: "POST",
-      //   userId,
-      //   body: {
-      //     senderId: userId,
-      //     senderType,
-      //     type: "message",
-      //     content: reply,
-      //     attachments: uploaded,
-      //   },
-      // });
+      const validUploads = filterNonNullable(uploaded);
 
       await sendMessage({
         userId,
@@ -89,30 +80,16 @@ const TicketConversation: React.FC<Props> = ({
           senderType,
           type: "message",
           content: reply,
-          attachments: uploaded,
+          attachments: validUploads,
         },
       }).unwrap();
 
-      if (ticketStatus === "resolved") {
-        // await fetchWithUserId(`${API_BASE}/ticket/${ticketId}/status`, {
-        //   method: "PATCH",
-        //   userId,
-        //   body: { status: "in-progress" },
-        // });
-
-        await updateStatus({
-          userId,
-          id: ticketId,
-          status: "in-progress",
-        }).unwrap();
-      }
-
       setReply("");
       setAttachments([]);
-
       toast({ title: "Reply sent" });
-    } catch {
+    } catch (err) {
       toast({ title: "Failed to send reply", variant: "destructive" });
+      console.error("Reply failed:", err);
     }
   };
 
@@ -137,11 +114,6 @@ const TicketConversation: React.FC<Props> = ({
                   {formatDateLabel(msg.timestamp)}
                 </div>
               )}
-              {/* <div
-                className={`w-full flex items-start gap-3 p-4 rounded-lg border shadow-sm ${
-                  msg.senderType === "agent" ? "bg-muted/50" : "bg-white"
-                }`}
-              > */}
               <div
                 className={`flex items-start gap-3 p-4 rounded border shadow-sm w-full ${
                   msg.senderType === "agent"
@@ -156,9 +128,7 @@ const TicketConversation: React.FC<Props> = ({
                 </Avatar>
                 <div className="flex-1">
                   <div className="flex justify-between">
-                    <div className="font-semibold">
-                      {msg.senderName || "Me"}
-                    </div>
+                    <div className="font-semibold">{msg.senderName || "Me"}</div>
                     <div className="text-sm text-muted-foreground">
                       {formatTimeLabel(msg.timestamp)}
                     </div>
@@ -166,20 +136,30 @@ const TicketConversation: React.FC<Props> = ({
                   <div className="mt-1 text-base whitespace-pre-wrap">
                     {msg.content}
                   </div>
-                  {Array.isArray(msg.attachments) &&
-                    msg.attachments.length > 0 && (
-                      <div className="mt-2 space-y-1">
-                        {msg.attachments.map((file, i) => (
-                          <div
-                            key={i}
-                            className="flex items-center gap-2 text-sm"
-                          >
+
+                  {Array.isArray(msg.attachments) && msg.attachments.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {msg.attachments.map((file, i) =>
+                        file ? (
+                          <div key={i} className="flex items-center gap-2 text-sm">
                             <FileText className="h-4 w-4" />
-                            <span>{file.name}</span>
+                            <span className="truncate max-w-[200px]">
+                              {file.name || "attachment"}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                downloadAttachment(file.fileKey, file.name || "attachment")
+                              }
+                            >
+                              Download
+                            </Button>
                           </div>
-                        ))}
-                      </div>
-                    )}
+                        ) : null
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </React.Fragment>
@@ -190,8 +170,7 @@ const TicketConversation: React.FC<Props> = ({
       {/* Reply Form */}
       {isClosed ? (
         <div className="bg-muted p-4 rounded-md text-sm text-muted-foreground border">
-          This ticket is closed. If you need further assistance, please open a
-          new ticket.
+          This ticket is closed. If you need further assistance, please open a new ticket.
         </div>
       ) : (
         <Card>
@@ -199,11 +178,17 @@ const TicketConversation: React.FC<Props> = ({
             <CardTitle className="text-base">Reply to Support</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleReplySubmit} className="space-y-4">
+            <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleReplySubmit(e);
+                }}
+                className="space-y-4"
+            >
+
               {ticketStatus === "resolved" && (
                 <div className="bg-yellow-100 text-yellow-800 text-sm p-3 rounded">
-                  This ticket has been marked as resolved. Your reply will
-                  reopen it.
+                  This ticket has been marked as resolved. Your reply will reopen it.
                 </div>
               )}
 
@@ -246,9 +231,9 @@ const TicketConversation: React.FC<Props> = ({
               </div>
 
               <div className="flex justify-end">
-                <Button type="submit" disabled={!reply.trim()}>
+                <Button type="submit" disabled={!reply.trim() || isSending}>
                   <Send className="h-4 w-4 mr-1" />
-                  Send Reply
+                  {isSending ? "Sending..." : "Send Reply"}
                 </Button>
               </div>
             </form>
