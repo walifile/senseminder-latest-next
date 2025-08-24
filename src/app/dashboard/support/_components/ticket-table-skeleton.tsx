@@ -1,4 +1,6 @@
+
 "use client";
+
 import {
   Card,
   CardContent,
@@ -23,29 +25,44 @@ export default function TicketTableSkeleton() {
       </CardHeader>
 
       <CardContent>
-        <div className="rounded-md border">
-          {/* Table header skeleton */}
-          <div className="grid grid-cols-4 md:grid-cols-6 p-4 font-medium border-b bg-muted/50 text-sm text-muted-foreground">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-4 w-10" />
-            <Skeleton className="h-4 w-32 col-span-2" />
-            <Skeleton className="h-4 w-20 hidden md:block" />
-            <Skeleton className="h-4 w-16 hidden md:block" />
-          </div>
+        <div className="overflow-auto rounded-md border">
+          <table className="min-w-[1000px] w-full text-sm border-separate border-spacing-0">
+           <thead className="bg-muted/50 text-sm font-medium text-muted-foreground border-b border-border sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-muted/50">
 
-          {/* Table rows skeleton */}
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className="grid grid-cols-4 md:grid-cols-6 p-4 items-center gap-2 border-b"
-            >
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-14" />
-              <Skeleton className="h-4 w-40 col-span-2" />
-              <Skeleton className="h-4 w-24 hidden md:block" />
-              <Skeleton className="h-5 w-16 rounded-full hidden md:block" />
-            </div>
-          ))}
+              <tr>
+                {[
+                  "Created",
+                  "ID",
+                  "Subject",
+                  "Last activity",
+                  "Status",
+                  "Email",
+                  "Role",
+                ].map((header, i) => (
+                  <th
+                    key={i}
+                    className="px-4 py-3 text-left border-b border-gray-200"
+                  >
+                    <Skeleton className="h-4 w-24" />
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[...Array(5)].map((_, rowIdx) => (
+                <tr key={rowIdx} className="border-b border-gray-200">
+                  {Array.from({ length: 7 }).map((_, colIdx) => (
+                    <td
+                      key={colIdx}
+                      className="px-4 py-4 border-b border-gray-100"
+                    >
+                      <Skeleton className="h-4 w-full" />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </CardContent>
     </Card>

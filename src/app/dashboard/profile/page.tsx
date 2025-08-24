@@ -38,7 +38,8 @@ import MfaTotpDialog from "@/app/dashboard/_components/MfaTotpDialog";
 import { fetchActiveSessions, SmartPCSession } from "@/api/session";
 import { fetchUserAttributes, updateMFAPreference } from "aws-amplify/auth";
 
-import { fetchMFAPreference } from "aws-amplify/auth"; // ✅ Make sure this is imported
+import { fetchMFAPreference } from "aws-amplify/auth"; 
+import { useSearchParams } from "next/navigation";
 
 const ProfilePage = () => {
   const { toast } = useToast();
@@ -61,6 +62,8 @@ const ProfilePage = () => {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const searchParams = useSearchParams();
+  const defaultTab = searchParams.get("tab") || "account";
   
 
   const orgInputRef = useRef<HTMLInputElement>(null);
@@ -157,23 +160,6 @@ const ProfilePage = () => {
 }, []);
 
 
-// useEffect(() => {
-//   const checkMFAPreference = async () => {
-//     try {
-//       const result = await fetchMFAPreference();
-//       console.log("MFA preference result:", result);
-
-//       const isTOTPEnabled = result.enabled?.includes("TOTP") || result.preferred === "TOTP";
-
-//       setIs2FAEnabled(isTOTPEnabled);
-//     } catch (err) {
-//       setIs2FAEnabled(false);
-//     }
-//   };
-
-//   checkMFAPreference();
-// }, []);
-
 useEffect(() => {
   const checkMFAPreference = async () => {
     try {
@@ -197,9 +183,6 @@ useEffect(() => {
 const handleToggleEmailMFA = async () => {
   try {
     const newStatus = !isEmailMFAEnabled;
-    // await updateMFAPreference({
-    //   email: newStatus ? "PREFERRED" : "DISABLED",
-    // });
     await updateMFAPreference({
         email: newStatus ? "NOT_PREFERRED" : "DISABLED",
         totp: is2FAEnabled ? "NOT_PREFERRED" : "DISABLED",
@@ -470,7 +453,7 @@ const handleToggleEmailMFA = async () => {
       </div>
 
       {/* --- Tabs Content: Account/Security --- */}
-      <Tabs defaultValue="account" className="w-full">
+      <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full md:w-auto grid-cols-2">
           <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
@@ -772,22 +755,7 @@ const handleToggleEmailMFA = async () => {
 
                   />
               </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="font-medium">SMS Authentication</p>
-                  <p className="text-sm text-muted-foreground">
-                    Receive codes via text message
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  disabled
-                  onClick={() => handleMFAMethodChange("sms")}
-                >
-                  <Smartphone className="h-4 w-4 mr-2" />
-                  Setup
-                </Button>
-              </div>
+        
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="font-medium">Email Authentication</p>

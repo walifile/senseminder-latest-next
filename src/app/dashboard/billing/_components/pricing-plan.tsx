@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -19,11 +19,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle, HardDrive, Cpu, Server, Zap } from "lucide-react";
 import { billingPlans } from "../data";
+import { useGetStoragePricingTierQuery } from "@/api/billing";
 
 const PricingPlan = () => {
   const [selectedService, setSelectedService] = useState("smartpc");
 
-  const [storageTier, setStorageTier] = useState(1);
+  const [storageTier, setStorageTier] = useState<number>(1);
   const [selectedServer, setSelectedServer] = useState("us-east");
 
   const serverLocations = [{ id: "us-east", name: "US East (N. Virginia)" }];
@@ -31,6 +32,13 @@ const PricingPlan = () => {
   const PRICE_PER_TIER = 0.5;
   const getStorageSizeFromTier = (tier: number) => `${tier * 20} GB`;
   const price = storageTier === 1 ? 0 : (storageTier - 1) * PRICE_PER_TIER;
+  const { data: storagePricingTierResponse } = useGetStoragePricingTierQuery();
+
+  useEffect(() => {
+    if (storagePricingTierResponse) {
+      setStorageTier(Number(storagePricingTierResponse.tier.tier));
+    }
+  }, [storagePricingTierResponse]);
 
   return (
     <Card className="relative overflow-hidden">

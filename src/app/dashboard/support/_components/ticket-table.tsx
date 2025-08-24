@@ -17,17 +17,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, ArrowDown, ArrowUp } from "lucide-react";
-import { selectUserId } from "@/redux/slices/auth/auth-slice";
+import { selectUserId, selectUserEmail } from "@/redux/slices/auth/auth-slice";
 import { useSelector } from "react-redux";
 import { useGetTicketsQuery } from "@/api/supportAPI";
 import TicketTableSkeleton from "./ticket-table-skeleton";
 import { useRouter } from "next/navigation";
 import { getStatusBadgeClass } from "../utils/get-status-badge-class";
 import { formatDate, formatRelativeTime } from "@/lib/utils/format-time";
+import { shortEmail } from "@/lib/utils/format-string";
 
 export default function TicketTable() {
   const router = useRouter();
   const userId = useSelector(selectUserId);
+  const userEmail = useSelector(selectUserEmail);
 
   const { data, isFetching } = useGetTicketsQuery(
     { userId: userId! },
@@ -68,8 +70,10 @@ export default function TicketTable() {
       <ArrowDown className="inline h-4 w-4 ml-1" />
     );
 
-  const handleTicketClick = (ticketId: string) => {
-    router.push(`/dashboard/support/ticket/${ticketId}`);
+  const handleTicketClick = (ticketId: string, ticketEmail?: string) => {
+    if (ticketEmail === userEmail) {
+      router.push(`/dashboard/support/ticket/${ticketId}`);
+    }
   };
 
   if (isFetching) return <TicketTableSkeleton />;
@@ -112,46 +116,94 @@ export default function TicketTable() {
       </CardHeader>
 
       <CardContent>
-        <div className="rounded-md border">
-          <div className="grid grid-cols-4 md:grid-cols-6 p-4 font-medium border-b bg-muted/50 text-sm text-muted-foreground">
-            <div
-              className="col-span-1 flex items-center cursor-pointer"
-              onClick={toggleSort}
-            >
-              Created <SortIcon />
-            </div>
-            <div className="col-span-1">ID</div>
-            <div className="col-span-2">Subject</div>
-            <div className="hidden md:block">Last activity</div>
-            <div className="hidden md:block">Status</div>
-          </div>
+        <div className="overflow-auto rounded border">
+          <table className="min-w-[1000px] w-full text-sm border-collapse">
+            <thead className="bg-muted/50 text-sm font-medium text-muted-foreground border-b border-border sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-muted/50">
+              <tr>
+                <th
+                  className="px-4 py-3 text-left cursor-pointer border-b border-border"
+                  onClick={toggleSort}
+                >
+                  Created <SortIcon />
+                </th>
+                <th className="px-4 py-3 text-left border-b border-border">
+                  ID
+                </th>
+                <th className="px-4 py-3 text-left border-b border-border">
+                  Subject
+                </th>
+                <th className="px-4 py-3 text-left border-b border-border">
+                  Last activity
+                </th>
+                <th className="px-4 py-3 text-left border-b border-border">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-left border-b border-border">
+                  Email
+                </th>
+                <th className="px-4 py-3 text-left border-b border-border">
+                  Role
+                </th>
+              </tr>
+            </thead>
 
-          {filtered.length > 0 ? (
-            filtered.map((ticket) => (
-              <div
-                key={ticket.ticketId}
-                onClick={() => handleTicketClick(ticket.ticketId)}
-                className="grid grid-cols-4 md:grid-cols-6 p-4 cursor-pointer hover:bg-muted/50 text-sm"
-              >
-                <div>{formatDate(ticket.createdAt)}</div>
-                <div className="text-muted-foreground">#{ticket.ticketId}</div>
-                <div className="col-span-2 truncate">{ticket.subject}</div>
-                <div className="hidden md:block">
-                  {formatRelativeTime(ticket.lastUpdated || ticket.createdAt)}
-                </div>
-                <div className="hidden md:block">
-                  <span className={getStatusBadgeClass(ticket.status)}>
-                    {ticket.status.charAt(0).toUpperCase() +
-                      ticket.status.slice(1)}
-                  </span>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="p-6 text-center text-muted-foreground">
-              No tickets found.
-            </div>
-          )}
+            <tbody>
+              {filtered.length > 0 ? (
+                filtered.map((ticket) => {
+                  const isOwner = ticket.email === userEmail;
+                  return (
+                    <tr
+                      key={ticket.ticketId}
+                      onClick={() =>
+                        handleTicketClick(ticket.ticketId, ticket.email)
+                      }
+                      className={`border-b ${
+                        isOwner
+                          ? "hover:bg-muted/40 cursor-pointer"
+                          : "cursor-not-allowed opacity-70"
+                      }`}
+                    >
+                      <td className="px-4 py-2 whitespace-nowrap">
+                        {formatDate(ticket.createdAt)}
+                      </td>
+                      <td className="px-4 py-2 text-muted-foreground whitespace-nowrap">
+                        #{ticket.ticketId}
+                      </td>
+                      <td className="px-4 py-2 whitespace-normal break-words max-w-[300px]">
+                        {ticket.subject}
+                      </td>
+                      <td className="px-4 py-2">
+                        {formatRelativeTime(
+                          ticket.lastUpdated || ticket.createdAt
+                        )}
+                      </td>
+                      <td className="px-4 py-2">
+                        <span className={getStatusBadgeClass(ticket.status)}>
+                          {ticket.status.charAt(0).toUpperCase() +
+                            ticket.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 break-all">
+                        {shortEmail(ticket.email)}
+                      </td>
+                      <td className="px-4 py-2 capitalize">
+                        {ticket.role === "owner" ? "Me" : ticket.role || "—"}
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="p-6 text-center text-muted-foreground"
+                  >
+                    No tickets found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </CardContent>
     </Card>

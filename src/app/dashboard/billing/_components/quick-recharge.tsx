@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -21,9 +21,13 @@ import { ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/use-toast";
-import { useRechargeMutation } from "@/api/billing";
 import { quickRechargeAmounts } from "../data";
 import { useBoolean } from "@/hooks/use-boolean";
+import {
+  useGetAutoRechargeQuery,
+  useUpdateAutoRechargeMutation,
+  useRechargeMutation
+} from "@/api/billing";
 
 const QuickRecharge = () => {
   const showConfirm = useBoolean();
@@ -32,14 +36,24 @@ const QuickRecharge = () => {
   const [customAmount, setCustomAmount] = useState<number | null>(null);
 
   const [autoRechargeEnabled, setAutoRechargeEnabled] = useState(false);
+  const [addFundsAutoRechargeEnabled, setAddFundsAutoRechargeEnabled] = useState(false);
 
   const [recharge, { isLoading: isRecharging }] = useRechargeMutation();
+  const { data: autoRechargeResponse, refetch } = useGetAutoRechargeQuery();
+  const [updateAutoRecharge] = useUpdateAutoRechargeMutation();
+
+  useEffect(() => {
+      if (autoRechargeResponse) {
+        setAutoRechargeEnabled(autoRechargeResponse.autoRecharge);
+      }
+    }, [autoRechargeResponse]);
 
   const doRecharge = async (amount: number | null) => {
     if (!amount) return;
     try {
       const data = await recharge({
         amount,
+        autoRecharge: addFundsAutoRechargeEnabled
       }).unwrap();
 
       toast({
@@ -47,6 +61,9 @@ const QuickRecharge = () => {
         description: `Your wallet balance has been updated successfully. New balance amount is ${data.newBalance}`,
       });
       setCustomAmount(null);
+      setAddFundsAutoRechargeEnabled(false);
+      const refreshed = await refetch().unwrap();
+      setAutoRechargeEnabled(refreshed.autoRecharge);
       showConfirm.onFalse();
     } catch (error: unknown) {
       console.error("Failed to recharge wallet:", error);
@@ -54,6 +71,27 @@ const QuickRecharge = () => {
         error instanceof Error ? error.message : "Could not recharge wallet";
       toast({
         title: "Error recharging wallet",
+        description: message,
+      });
+    }
+  };
+
+  const setAutoRecharge = async (enabled: boolean) => {
+    try {
+      setAutoRechargeEnabled(enabled);
+      await updateAutoRecharge({ autoRecharge: enabled }).unwrap();
+      const refreshed = await refetch().unwrap();
+      setAutoRechargeEnabled(refreshed.autoRecharge);
+      toast({
+        title: "Auto-Recharge Updated",
+        description: `Auto-recharge has been ${enabled ? "enabled" : "disabled"}.`,
+      });
+    } catch (error: unknown) {
+      console.error("Failed to update auto-recharge:", error);
+      const message =
+        error instanceof Error ? error.message : "Could not update auto-recharge";
+      toast({
+        title: "Error updating auto-recharge",
         description: message,
       });
     }
@@ -154,7 +192,7 @@ const QuickRecharge = () => {
                   type="checkbox"
                   className="mr-2 h-4 w-4 accent-primary"
                   checked={autoRechargeEnabled}
-                  onChange={() => setAutoRechargeEnabled(!autoRechargeEnabled)}
+                  onChange={() => setAutoRecharge(!autoRechargeEnabled)}
                 />
                 Enable auto-recharge when balance drops below $10
               </label>
@@ -179,8 +217,8 @@ const QuickRecharge = () => {
               type="checkbox"
               id="autoRecharge"
               className="mr-2 h-4 w-4 accent-primary"
-              checked={autoRechargeEnabled}
-              onChange={() => setAutoRechargeEnabled(!autoRechargeEnabled)}
+              checked={addFundsAutoRechargeEnabled}
+              onChange={() => setAddFundsAutoRechargeEnabled(!addFundsAutoRechargeEnabled)}
             />
             <label htmlFor="autoRecharge">Enable automatic reoccurring</label>
           </div>
@@ -189,8 +227,8 @@ const QuickRecharge = () => {
             <Button variant="outline" onClick={showConfirm.onFalse}>
               Cancel
             </Button>
-            <Button onClick={() => doRecharge(selectedAmount)}>
-              Yes, Recharge
+            <Button onClick={() => doRecharge(selectedAmount)} disabled={isRecharging}>
+              {isRecharging ? "Recharging..." : "Yes, Recharge"}
             </Button>
           </div>
         </DialogContent>

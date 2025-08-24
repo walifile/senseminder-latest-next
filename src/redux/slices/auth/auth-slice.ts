@@ -104,3 +104,5 @@ export const selectIsAuthenticated = (state: RootState) =>
 export const selectAuthToken = (state: RootState) => state.auth.token;
 export const selectTempUser = (state: RootState) => state.auth.tempUser;
 export const selectAuthLoading = (state: RootState) => state.auth.loading;
+export const selectUserEmail = (state: RootState) => state.auth.user?.email;
+

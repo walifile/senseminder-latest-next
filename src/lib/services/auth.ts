@@ -195,7 +195,7 @@ export const handleSignIn = async (email: string, password: string) => {
       store.dispatch(setTempUser(signInResponse));
       sessionStorage.setItem("tempUserMFA", JSON.stringify(signInResponse));
       sessionStorage.setItem("mfaOptions", JSON.stringify(availableMfas));
-      sessionStorage.setItem("mfaEmail", email); // ✅ helpful for UI
+      sessionStorage.setItem("mfaEmail", email);
 
       if (preferredMfa && availableMfas.includes(preferredMfa)) {
         if (preferredMfa === "TOTP") {
@@ -209,7 +209,7 @@ export const handleSignIn = async (email: string, password: string) => {
         success: false,
         chooseMFA: true,
         mfaOptions: availableMfas,
-        signInResult: signInResponse, // ✅ this is the fix
+        signInResult: signInResponse,
       };
     }
 
@@ -217,7 +217,7 @@ export const handleSignIn = async (email: string, password: string) => {
     if (
       signInResponse.nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_EMAIL_CODE"
     ) {
-      sessionStorage.setItem("tempUserMFA", JSON.stringify(signInResponse)); // ✅ persist the session
+      sessionStorage.setItem("tempUserMFA", JSON.stringify(signInResponse));
       store.dispatch(setLoading(false));
       return {
         success: false,
@@ -231,7 +231,8 @@ export const handleSignIn = async (email: string, password: string) => {
       signInResponse.nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_TOTP_CODE"
     ) {
       store.dispatch(setTempUser(signInResponse)); // Save session
-      sessionStorage.setItem("tempUserMFA", JSON.stringify(signInResponse)); // ⬅️ Save to session
+      sessionStorage.setItem("tempUserMFA", JSON.stringify(signInResponse));
+      sessionStorage.setItem("mfaEmail", email);
 
       store.dispatch(setLoading(false));
       return {
