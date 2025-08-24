@@ -63,7 +63,7 @@ const CloudPCPage = () => {
   const { user } = useSelector((state: RootState) => state.auth);
 
   // Derive API userId
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   function getApiUserId(u: any) {
     if (!u) return "";
     if (u.role === "member" || u.role === "admin") return u.ownerid;
@@ -1506,7 +1506,6 @@ const CloudPCPage = () => {
         showNewPCDialog={showPCResizeDialog}
         setShowNewPCDialog={setShowPCResizeDialog}
         loadExisting={loadPcForResize}
-        lockedFields={["pcName", "operatingSystem", "region", "billingPlan"] as const}
         pcIsStopped={cpuDialogIsStopped}
         onConfirm={({ cpu }) => handleConfirmPCResize({ cpu })}
       />
@@ -1517,10 +1516,11 @@ const CloudPCPage = () => {
         showNewPCDialog={showStorageIncreaseDialog}
         setShowNewPCDialog={setShowStorageIncreaseDialog}
         loadExisting={loadPcForStorageIncrease}
-        lockedFields={["pcName", "operatingSystem", "region", "billingPlan"] as const}
-        storageOnly
+        isStorageOnly
         pcIsRunning={storageDialogIsRunning}
-        onConfirmStorage={({ storage }) => handleConfirmStorageIncrease({ storage })}
+        onConfirmStorage={({ storage }) =>
+          handleConfirmStorageIncrease({ storage })
+        }
       />
     </div>
   );
