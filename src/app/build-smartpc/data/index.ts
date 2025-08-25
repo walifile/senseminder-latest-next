@@ -321,6 +321,18 @@ export const pcTemplates = [
   },
 ];
 
+export const timeOptions = [
+  { value: "none", label: "none" },
+  { value: "15", label: "15 minutes" },
+  { value: "30", label: "30 minutes" },
+  { value: "45", label: "45 minutes" },
+  { value: "60", label: "1 hour" },
+  { value: "120", label: "2 hours" },
+  { value: "180", label: "3 hours" },
+  { value: "240", label: "4 hours" },
+  { value: "360", label: "6 hours" },
+];
+
 // const cpuOptions = [
 //   { value: "2", label: "2 Core", pricePerHour: 0.25 },
 //   { value: "4", label: "4 Core", pricePerHour: 0.5 },

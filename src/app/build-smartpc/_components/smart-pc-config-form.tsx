@@ -69,10 +69,6 @@ const SmartPcConfigForm = ({
     ? linuxCategoryCpuOptions
     : cpuOptions[selectedOS] || [];
 
-  console.log("check1", existingData);
-  console.log("check2", cpu);
-  console.log("check3", cpuOptionsForOS);
-
   // auto cpu selection
   useEffect(() => {
     if (!isResize && selectedOS) {
@@ -226,7 +222,7 @@ const SmartPcConfigForm = ({
                 <FieldChangePreview
                   oldValue={`${existingStorage} GB`}
                   newValue={`${storage} GB`}
-                  hasChanged={storage !== existingStorage}
+                  hasChanged={Number(storage) !== Number(existingStorage)}
                 />
               )}
             </div>

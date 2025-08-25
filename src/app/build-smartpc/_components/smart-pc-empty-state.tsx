@@ -1,23 +1,19 @@
 import React from "react";
 import Link from "next/link";
 import { Monitor, Plus, GraduationCap } from "lucide-react";
-import { Button } from "@/components/ui/button"
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
-;
+import { Button } from "@/components/ui/button";
 
 type SmartPCEmptyStateProps = {
+  isMember: boolean;
   searchQuery: string;
-  setShowNewPCDialog: (value: boolean) => void;
-  isError?: boolean;
+  handleShowNewPCDialog: () => void;
 };
 
 const SmartPCEmptyState: React.FC<SmartPCEmptyStateProps> = ({
+  isMember,
   searchQuery,
-  setShowNewPCDialog,
+  handleShowNewPCDialog,
 }) => {
-  const userRole = useSelector((state: RootState) => state.auth.user?.role);
-  const isMember = userRole === "member";
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="rounded-full bg-primary/10 p-4 mb-4">
@@ -30,12 +26,8 @@ const SmartPCEmptyState: React.FC<SmartPCEmptyStateProps> = ({
           : "Get started by building your first Sense PC. Check out our tutorials to learn more about Sense PC features."}
       </p>
       <div className="flex gap-4">
-        {/* <Button onClick={() => setShowNewPCDialog(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Build Sense PC
-        </Button> */}
         {!isMember && (
-          <Button onClick={() => setShowNewPCDialog(true)}>
+          <Button onClick={handleShowNewPCDialog}>
             <Plus className="h-4 w-4 mr-2" />
             Build Sense PC
           </Button>

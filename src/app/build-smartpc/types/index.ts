@@ -8,10 +8,10 @@ export interface DesktopInstance {
   instanceId: string;
   status?: string;
   state?: string;
+  region?: string;
   systemName: string;
+  storageGiB?: number;
 }
-
-
 
 export type PC = {
   id: string;
@@ -118,7 +118,10 @@ export type SelectedPcProps = {
   setShowDetails: React.Dispatch<React.SetStateAction<boolean>>;
   cloudPCs: PC[];
   setCloudPCs: React.Dispatch<React.SetStateAction<PC[]>>;
-  handleAssignUser: (pc: PC) => void;
+  handleAssignUser: () => void;
+  setSelectedInstance: React.Dispatch<
+    React.SetStateAction<DesktopInstance | null>
+  >;
 };
 
 export type SmartPCConfigDialogMode = "create" | "resize";
@@ -129,6 +132,17 @@ export type ResizeInitial = {
   region: string;
   billingPlan: "hourly" | "daily" | "monthly";
   storage?: string;
+  configId?: string;
+};
+
+export type PCForCPUResize = {
+  instanceId: string;
+  systemName: string;
+  region: string;
+  state: string;
+  operatingSystem?: string;
+  configId?: string;
+  storageGiB?: number;
 };
 
 export type ExtraResizeProps = {

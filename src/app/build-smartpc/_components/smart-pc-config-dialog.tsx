@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -17,36 +17,39 @@ import { RootState } from "@/redux/store";
 import { useGetEstimateMutation } from "@/api/fileManagerAPI";
 import { clearSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
 import { fetchEstimate } from "../api/fetch-estimate";
-import { ResizeInitial, SmartPCConfigDialogProps } from "../types";
-import { inferLinuxCategoryFromConfigId } from "../utils";
+import { DesktopInstance, ResizeInitial } from "../types";
+import {
+  inferLinuxCategoryFromConfigId,
+  makeResizeRequest,
+  validateStorageIncrease,
+} from "../utils";
 import ConfirmPurchaseDialog from "./confirm-purchase-dialog";
 import { useBoolean } from "@/hooks/use-boolean";
 import CostSummary from "./cost-summary";
 import SmartPcConfigForm from "./smart-pc-config-form";
 import SmartPcConfigDialogHeader from "./smart-pc-config-dialog-header";
 
-interface ExtendedProps extends SmartPCConfigDialogProps {
+type Props = {
+  isResize?: boolean;
   isStorageOnly?: boolean;
-  onConfirmStorage?: (draft: { storage: string }) => Promise<boolean> | boolean;
-  pcIsRunning?: boolean;
-  pcIsStopped?: boolean;
-}
+  open: boolean;
+  onClose: () => void;
+  userId?: string;
+  selectedInstance?: DesktopInstance | null;
+  onSuccess: () => void;
+};
 
 const SmartPCConfigDialog = ({
-  showNewPCDialog,
-  setShowNewPCDialog,
-  mode = "create",
-  onConfirm,
-  loadExisting,
+  isResize = false,
   isStorageOnly = false,
-  onConfirmStorage,
-  pcIsRunning = false,
-  pcIsStopped = false,
-}: ExtendedProps) => {
+  open,
+  onClose,
+  userId,
+  selectedInstance,
+  onSuccess,
+}: Props) => {
   const dispatch = useDispatch();
   const { toast } = useToast();
-
-  const isResize = mode === "resize";
 
   const config = useSelector((state: RootState) => state.smartPcConfig);
 
@@ -64,10 +67,15 @@ const SmartPCConfigDialog = ({
     undefined
   );
 
-  const existingCPU = existingData?.cpu || "";
-  const existingStorage = isStorageOnly ? "" : existingData?.storage || "";
+  const existingCPU = existingData?.configId || "";
+  const existingStorage = isStorageOnly ? existingData?.storage || "" : "";
 
   const disableAction = isEstimating || loadingExisting || resizeSubmitting;
+
+  const pcIsStopped =
+    isResize && selectedInstance?.state?.toLowerCase() === "stopped";
+  const pcIsRunning =
+    isResize && selectedInstance?.state?.toLowerCase() === "running";
 
   // ------ React Hook Form ------
   const defaultValues: Partial<FormValues> = useMemo(
@@ -134,26 +142,42 @@ const SmartPCConfigDialog = ({
   // ------ Load existing data for resize ------
   useEffect(() => {
     (async () => {
-      if (!isResize || !showNewPCDialog || !loadExisting) return;
+      if (!isResize || !open) return;
 
       setLoadingExisting(true);
       try {
-        const src: ResizeInitial | undefined = await loadExisting();
+        const res = await fetch(
+          "https://y2yvok8mk6.execute-api.us-east-1.amazonaws.com/dev/resize",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId,
+              computerName: selectedInstance?.systemName,
+            }),
+          }
+        );
+
+        const json = await res.json();
+        const src = json?.data ?? json;
+
         if (!src) return;
 
-        const currentLinuxCategory = inferLinuxCategoryFromConfigId(src.cpu);
+        const currentLinuxCategory = inferLinuxCategoryFromConfigId(
+          src.configId
+        );
 
         setExistingData(src);
 
         reset({
-          pcName: src?.pcName,
-          operatingSystem: src?.operatingSystem,
-          cpu: src?.cpu,
-          storage: src?.storage,
-          region: src?.region,
-          billingPlan: src?.billingPlan,
+          pcName: src.computerName ?? selectedInstance?.systemName,
+          operatingSystem: src.operatingSystem ?? "Linux",
+          cpu: src.configId ?? "",
+          region: src.location ?? "us-east-1",
+          billingPlan: src.billingPlan,
+          storage: src?.storage ?? "",
           linuxCategory:
-            src?.operatingSystem === "Linux"
+            src.operatingSystem === "Linux"
               ? currentLinuxCategory
               : "Ubuntu_24.04_LTS_X64",
         });
@@ -170,95 +194,124 @@ const SmartPCConfigDialog = ({
     })();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isResize, showNewPCDialog, loadExisting]);
+  }, [isResize, open]);
 
   /* ----- resize flows ----- */
   async function handleResizeSubmit() {
-    try {
-      setResizeSubmitting(true);
-
-      // STORAGE-ONLY MODE
-      if (isStorageOnly) {
-        const valid = await trigger(["storage"]);
-        if (!valid) return;
-
-        if (existingStorage) {
-          const prev = parseInt(existingStorage, 10);
-          const next = parseInt(storage, 10);
-          if (isNaN(next)) {
-            toast({
-              title: "Invalid size",
-              description: "Please choose a valid storage size.",
-              variant: "destructive",
-            });
-            return;
-          }
-          if (next < prev) {
-            toast({
-              title: "Storage cannot be decreased",
-              description:
-                "Choose a size equal to or larger than the current storage.",
-              variant: "destructive",
-            });
-            return;
-          }
-          if (next === prev) {
-            toast({
-              title: "No change detected",
-              description:
-                "Choose a larger storage size to apply the increase.",
-              variant: "destructive",
-            });
-            return;
-          }
-        }
-
-        const ok = await onConfirmStorage?.({ storage });
-        if (ok) {
-          reset();
-          setShowNewPCDialog(false);
-        }
-      } else {
-        // CPU-RESIZE MODE
-        const valid = await trigger(["cpu"]);
-        if (!valid) return;
-
-        const ok = await onConfirm?.({ cpu });
-        if (ok) {
-          reset();
-          setShowNewPCDialog(false);
-        }
-      }
-    } catch (error) {
-      console.error("Resize submit failed:", error);
+    if (!selectedInstance?.systemName) {
       toast({
-        title: "Something went wrong",
-        description: "We couldn't apply your changes. Please try again.",
+        title: "Error",
+        description: "No instance selected for resize.",
         variant: "destructive",
       });
+      return;
+    }
+
+    setResizeSubmitting(true);
+
+    try {
+      if (isStorageOnly) {
+        await handleConfirmStorageIncrease(storage);
+      } else {
+        await handleConfirmPCResize(cpu);
+      }
+    } catch (error) {
+      console.error("Resize operation failed:", error);
     } finally {
       setResizeSubmitting(false);
     }
   }
 
-  /* ----- cleanup ----- */
-  React.useEffect(() => {
-    if (!showNewPCDialog) {
-      setExistingData(undefined);
-      setDrag({ x: 0, y: 0 });
-      dispatch(clearSmartPcConfig());
+  const handleConfirmPCResize = async (cpu: string) => {
+    try {
+      const valid = await trigger(["cpu"]);
+      if (!valid) return;
+
+      await makeResizeRequest(
+        "https://y2yvok8mk6.execute-api.us-east-1.amazonaws.com/dev/resize",
+        {
+          userId,
+          computerName: selectedInstance?.systemName,
+          targetConfigId: cpu,
+        }
+      );
+
+      toast({
+        title: "Resize submitted",
+        description: `${selectedInstance?.systemName} is updating its CPU & Memory. It does not take more than 60 seconds.`,
+      });
+
+      onSuccess();
+      closeDialog();
+    } catch (error: any) {
+      console.error("CPU resize failed:", error);
+      toast({
+        title: "Resize failed",
+        description:
+          error.message || "Failed to resize this PC. Please try again.",
+        variant: "destructive",
+      });
     }
-  }, [showNewPCDialog, dispatch]);
+  };
+
+  const handleConfirmStorageIncrease = async (storage: string) => {
+    try {
+      const valid = await trigger(["storage"]);
+      if (!valid) return;
+
+      const validation = validateStorageIncrease(existingStorage, storage);
+      if (!validation.valid) {
+        toast({
+          title: validation.error!,
+          description: validation.description!,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const newVolumeSizeGiB = parseInt(storage, 10);
+
+      await makeResizeRequest(
+        "https://y2yvok8mk6.execute-api.us-east-1.amazonaws.com/dev/increase-volume",
+        {
+          userId,
+          computerName: selectedInstance?.systemName,
+          newVolumeSizeGiB,
+        }
+      );
+
+      toast({
+        title: "Storage increase submitted",
+        description: `${selectedInstance?.systemName} storage is being increased to ${newVolumeSizeGiB} GiB.`,
+      });
+
+      onSuccess();
+      closeDialog();
+    } catch (error: any) {
+      console.error("Storage increase failed:", error);
+      toast({
+        title: "Storage increase failed",
+        description:
+          error.message || "Failed to increase volume (SSD). Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Close dialog
+  const closeDialog = useCallback(() => {
+    reset();
+    onClose();
+    setExistingData(undefined);
+    setDrag({ x: 0, y: 0 });
+    dispatch(clearSmartPcConfig());
+  }, [reset, onClose, dispatch]);
 
   return (
     <>
       <Dialog
-        open={
-          isResize
-            ? showNewPCDialog
-            : showNewPCDialog && !showConfirmation.value
-        }
-        onOpenChange={setShowNewPCDialog}
+        open={isResize ? open : open && !showConfirmation.value}
+        onOpenChange={closeDialog}
       >
         <DialogContent
           key={isResize ? "resize" : "build"}
@@ -309,7 +362,7 @@ const SmartPCConfigDialog = ({
             <DialogFooter className="gap-2">
               <Button
                 variant="outline"
-                onClick={() => setShowNewPCDialog(false)}
+                onClick={closeDialog}
                 disabled={loadingExisting}
               >
                 Cancel
@@ -334,10 +387,7 @@ const SmartPCConfigDialog = ({
                     (!isStorageOnly && !pcIsStopped) || // CPU: must be hourly AND stopped
                     (isStorageOnly && !pcIsRunning) // Storage: must be hourly AND running
                   }
-                  onClick={async (e) => {
-                    e.preventDefault();
-                    await handleResizeSubmit();
-                  }}
+                  onClick={handleResizeSubmit}
                 >
                   {isStorageOnly
                     ? isNoStorageChange
@@ -372,8 +422,8 @@ const SmartPCConfigDialog = ({
         estimateData={estimateData}
         isEstimating={isEstimating}
         onSuccess={() => {
-          reset();
-          setShowNewPCDialog(false);
+          onSuccess();
+          closeDialog();
         }}
       />
     </>
