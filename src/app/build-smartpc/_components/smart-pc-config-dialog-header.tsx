@@ -1,37 +1,10 @@
-"use client";
-import React, { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import React from "react";
 import { cn } from "@/lib/utils";
 import {
-  Dialog,
-  DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { formSchema, FormValues } from "../schema";
-import {
-  cpuCategories,
-  cpuOptions,
-  locationOptions,
-  osOptions,
-  storageOptions,
-} from "../data";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
-import { useGetEstimateMutation } from "@/api/fileManagerAPI";
-import { clearSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
-import { fetchEstimate } from "../api/fetch-estimate";
-import { ResizeInitial, SmartPCConfigDialogProps } from "../types";
-import { inferLinuxCategoryFromConfigId } from "../utils";
-import ConfirmPurchaseDialog from "./confirm-purchase-dialog";
-import { useBoolean } from "@/hooks/use-boolean";
-import CostSummary from "./cost-summary";
-import SmartPcConfigForm from "./smart-pc-config-form";
 
 type Props = {
   drag: { x: number; y: number };

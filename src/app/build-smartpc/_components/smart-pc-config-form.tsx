@@ -82,7 +82,7 @@ const SmartPcConfigForm = ({
   }, [isResize, selectedOS, setValue]);
 
   useEffect(() => {
-    if (!isResize && isLinuxOS) {
+    if (!isResize && isLinuxOS && linuxCategoryCpuOptions.length > 0) {
       setValue("cpu", linuxCategoryCpuOptions[0].value, {
         shouldValidate: true,
       });
