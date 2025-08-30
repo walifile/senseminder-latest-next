@@ -3,7 +3,7 @@ import { ArrowUpRight, Copy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { TabsContent } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
-import { searchRechargeHistory } from "@/api/billing";
+import { useLazySearchRechargeHistoryQuery } from "@/api/billing";
 import {
   Tooltip,
   TooltipContent,
@@ -23,7 +23,7 @@ export function RechargeHistoryTab() {
 
   const { filteredHistory, date, setDate, loading, hasMore, fetchHistory } =
     useHistoryData<Recharge>({
-      fetchFunction: searchRechargeHistory,
+      lazyQueryHook: useLazySearchRechargeHistoryQuery,
       filterFunction,
       query,
     });

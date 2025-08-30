@@ -1,9 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import {
-  Dialog, DialogContent, DialogDescription, DialogFooter,
-  DialogHeader, DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +19,7 @@ type ApiUser = {
   email: string;
   firstName?: string;
   lastName?: string;
-  role: "admin"|"member";
+  role: "admin" | "member";
   status?: string;
 };
 
@@ -28,16 +31,19 @@ type PC = {
 
 type AssignUserDialogProps = {
   open: boolean;
+  onClose: () => void;
   pc: PC | null;
-  onOpenChange: (val: boolean) => void;
   onSuccess: () => void;
 };
 
-// Shows a list of member users; 
+// Shows a list of member users;
 // If PC is assigned, shows option to unassign/assign to another.
 
 const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
-  open, pc, onOpenChange, onSuccess
+  open,
+  onClose,
+  pc,
+  onSuccess,
 }) => {
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<ApiUser[]>([]);
@@ -79,7 +85,10 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
   if (pc && assignments) {
     for (const uid in assignments) {
       const arr = assignments[uid];
-      if (Array.isArray(arr) && arr.some((a: any) => a.instanceId === pc.instanceId)) {
+      if (
+        Array.isArray(arr) &&
+        arr.some((a: any) => a.instanceId === pc.instanceId)
+      ) {
         assignedUser = users.find((u) => u.id === uid) || null;
         break;
       }
@@ -96,22 +105,40 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
     // If assigned to another, unassign first
     if (assignedUser && assignedUser.id !== user.id) {
       try {
-        await unassignPC({ instanceId: pc.instanceId, memberId: assignedUser.id });
+        await unassignPC({
+          instanceId: pc.instanceId,
+          memberId: assignedUser.id,
+        });
       } catch (e) {
         console.error("Failed to unassign before assigning:", e);
-        toast({ title: "Failed to unassign before assigning", variant: "destructive" });
+        toast({
+          title: "Failed to unassign before assigning",
+          variant: "destructive",
+        });
         setLoadingAssign(false);
         return;
       }
     }
     try {
-      //@ts-expect-error abc
-      await assignPC({ instanceId: pc.instanceId, memberId: user.id, systemName: pc.systemName });
-      toast({ title: "Assigned!", description: `${pc.systemName} now assigned to ${user.firstName || user.email}` });
-      onOpenChange(false);
-      onSuccess();   // reload
+      await assignPC({
+        instanceId: pc.instanceId,
+        memberId: user.id,
+        systemName: pc.systemName || "",
+      });
+      toast({
+        title: "Assigned!",
+        description: `${pc.systemName} now assigned to ${
+          user.firstName || user.email
+        }`,
+      });
+      onSuccess(); // reload
+      closeDialog();
     } catch (e: any) {
-      toast({ title: "Failed to assign", variant: "destructive", description: e?.message });
+      toast({
+        title: "Failed to assign",
+        variant: "destructive",
+        description: e?.message,
+      });
     } finally {
       setLoadingAssign(false);
     }
@@ -122,19 +149,33 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
     if (!pc || !assignedUser) return;
     setLoadingAssign(true);
     try {
-      await unassignPC({ instanceId: pc.instanceId, memberId: assignedUser.id });
-      toast({ title: "Unassigned!", description: `${pc.systemName} is now unassigned` });
-      onOpenChange(false);
-      onSuccess();   // reload
+      await unassignPC({
+        instanceId: pc.instanceId,
+        memberId: assignedUser.id,
+      });
+      toast({
+        title: "Unassigned!",
+        description: `${pc.systemName} is now unassigned`,
+      });
+      onSuccess(); // reload
+      closeDialog();
     } catch (e: any) {
-      toast({ title: "Failed to unassign", variant: "destructive", description: e?.message });
+      toast({
+        title: "Failed to unassign",
+        variant: "destructive",
+        description: e?.message,
+      });
     } finally {
       setLoadingAssign(false);
     }
   };
 
+  const closeDialog = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Assign SmartPC</DialogTitle>
@@ -143,13 +184,18 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        {loading ? (<div>Loading members...</div>) : (
+        {loading ? (
+          <div>Loading members...</div>
+        ) : (
           <div className="space-y-3">
             {/* Current Assignment */}
             {assignedUser ? (
               <div>
-                <div>Currently assigned to:
-                  <Badge className="ml-2">{assignedUser.firstName || assignedUser.email}</Badge>
+                <div>
+                  Currently assigned to:
+                  <Badge className="ml-2">
+                    {assignedUser.firstName || assignedUser.email}
+                  </Badge>
                 </div>
                 <Button
                   variant="destructive"
@@ -162,7 +208,9 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
                 </Button>
               </div>
             ) : (
-              <div className="text-muted-foreground">This PC is not assigned to any user.</div>
+              <div className="text-muted-foreground">
+                This PC is not assigned to any user.
+              </div>
             )}
 
             {/* Assignment options */}
@@ -174,13 +222,17 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
                   <Button
                     disabled={!!assignedUser && assignedUser.id === user.id}
                     variant={
-                      !!assignedUser && assignedUser.id === user.id ? "secondary" : "default"
+                      !!assignedUser && assignedUser.id === user.id
+                        ? "secondary"
+                        : "default"
                     }
                     key={user.id}
                     onClick={() => assignToMember(user)}
                   >
-                    {(user.firstName || user.email)}
-                    {!!assignedUser && assignedUser.id === user.id && " (Already Assigned)"}
+                    {user.firstName || user.email}
+                    {!!assignedUser &&
+                      assignedUser.id === user.id &&
+                      " (Already Assigned)"}
                   </Button>
                 ))}
               </div>
@@ -189,7 +241,9 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
         )}
 
         <DialogFooter>
-          <Button onClick={() => onOpenChange(false)} variant="outline">Close</Button>
+          <Button onClick={closeDialog} variant="outline">
+            Close
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

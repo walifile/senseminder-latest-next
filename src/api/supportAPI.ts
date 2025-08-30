@@ -16,7 +16,7 @@ export type Ticket = {
 
 export const ticketsAPI = createApi({
   reducerPath: "ticketsAPI",
-  baseQuery: baseQueryWithReauth(false),
+  baseQuery: baseQueryWithReauth(false), 
   refetchOnMountOrArgChange: true,
   tagTypes: ["Tickets", "Ticket", "Messages"],
   endpoints: (builder) => ({
@@ -28,6 +28,7 @@ export const ticketsAPI = createApi({
       }),
       providesTags: ["Tickets"],
     }),
+
     getTicketMessages: builder.query({
       query: ({ userId, id }) => ({
         url: `${BASE_URL}/ticket/${id}/messages`,
@@ -36,15 +37,20 @@ export const ticketsAPI = createApi({
       }),
       providesTags: ["Messages"],
     }),
+
     sendTicketMessage: builder.mutation({
       query: ({ userId, id, body }) => ({
         url: `${BASE_URL}/ticket/${id}/message`,
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-user-id": userId },
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": userId,
+        },
         body,
       }),
-      invalidatesTags: ["Messages", "Ticket"],
+      invalidatesTags: ["Messages",],
     }),
+
     getTicketById: builder.query({
       query: ({ userId, id }) => ({
         url: `${BASE_URL}/ticket/${id}`,
@@ -71,26 +77,73 @@ export const ticketsAPI = createApi({
       query: ({ userId, id, status }) => ({
         url: `${BASE_URL}/ticket/${id}/status`,
         method: "PATCH",
-        headers: { "Content-Type": "application/json", "x-user-id": userId },
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": userId,
+        },
         body: { status },
       }),
       invalidatesTags: ["Tickets", "Ticket"],
+    }),
+
+    updateTicketPriority: builder.mutation({
+      query: ({ userId, id, priority }) => ({
+        url: `${BASE_URL}/ticket/${id}/priority`,
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": userId,
+        },
+        body: { priority },
+      }),
     }),
 
     assignTicket: builder.mutation({
       query: ({ userId, id, assignedTo }) => ({
         url: `${BASE_URL}/ticket/${id}/assign`,
         method: "PATCH",
-        headers: { "Content-Type": "application/json", "x-user-id": userId },
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": userId,
+        },
         body: { assignedTo },
       }),
     }),
+
     presignTicketUpload: builder.mutation({
+    query: ({ userId, ticketId, body }) => ({
+      url: `${BASE_URL}/ticket/${ticketId}/presign-upload`,
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": userId,
+      },
+      body,
+    }),
+  }),
+
+
+    presignTicketUpload2: builder.mutation({
       query: ({ userId, body }) => ({
-        url: `${BASE_URL}/ticket/presign-upload`,
+        url: `${BASE_URL}/presign-upload-2`,
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-user-id": userId },
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": userId,
+        },
         body,
+      }),
+    }),
+
+    presignTicketDownload: builder.mutation({
+      query: ({ userId, ticketId, fileKey }) => ({
+        url: `${BASE_URL}/ticket/${ticketId}/presign-download`,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": userId,
+        },
+        body: { fileKey },
       }),
     }),
   }),
@@ -103,6 +156,9 @@ export const {
   useUpdateTicketStatusMutation,
   useAssignTicketMutation,
   usePresignTicketUploadMutation,
+  usePresignTicketUpload2Mutation,
+  usePresignTicketDownloadMutation,
   useGetTicketMessagesQuery,
   useSendTicketMessageMutation,
+  useUpdateTicketPriorityMutation,
 } = ticketsAPI;

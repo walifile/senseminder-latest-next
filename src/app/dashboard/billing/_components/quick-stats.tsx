@@ -1,80 +1,28 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { toast } from "@/components/ui/use-toast";
-import { getCurrentBalance, getMonthlySpending } from "@/api/billing";
+import {
+  useGetCurrentBalanceQuery,
+  useGetMonthlySpendingQuery,
+} from "@/api/billing";
 import { promotionsAndCashback } from "../data";
-import { MonthlyChangeSummary } from "../types";
 import QuickStatsTooltip from "../_components/quick-stats-tooltip";
 import { fCurrency } from "@/lib/utils/format-number";
 import QuickStatsLoading from "../_components/quick-stats-loading";
 
-interface Props {
-  balance: number | null;
-  setBalance: (balance: number | null) => void;
-}
+const QuickStats = () => {
+  const { data: balanceData, isLoading: balanceLoading } =
+    useGetCurrentBalanceQuery();
+  const { data: spendingData, isLoading: spendingLoading } =
+    useGetMonthlySpendingQuery();
 
-const QuickStats = ({ balance, setBalance }: Props) => {
-  const [lastRechargeTimestamp, setLastRechargeTimestamp] = useState<
-    string | null
-  >(null);
-  const [currentMonthSpending, setCurrentMonthSpending] = useState<
-    number | null
-  >(null);
-  const [monthSpendingPercentChange, setMonthSpendingPercentChange] =
-    useState(0.0);
-  const [balanceLoading, setBalanceLoading] = useState(true);
-  const [spendingLoading, setSpendingLoading] = useState(true);
-
-  const fetchCurrentBalance = async () => {
-    try {
-      setBalanceLoading(true); // 👈 Start loading
-      const data = await getCurrentBalance();
-      setBalance(data.balance);
-      if (data?.lastRecharge?.timestamp) {
-        setLastRechargeTimestamp(data.lastRecharge.timestamp);
-      }
-    } catch (error) {
-      console.error("Failed to get wallet balance:", error);
-      toast({
-        title: "Error loading wallet balance",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Could not fetch wallet balance",
-      });
-    } finally {
-      setBalanceLoading(false); // 👈 Stop loading
-    }
-  };
-
-  const fetchMonthlySpending = async () => {
-    try {
-      setSpendingLoading(true);
-      const data: MonthlyChangeSummary = await getMonthlySpending();
-      setCurrentMonthSpending(data.currentMonth);
-      setMonthSpendingPercentChange(data.percentChange);
-    } catch (error: unknown) {
-      console.error("Failed to get monthly spending:", error);
-      toast({
-        title: "Error loading monthly spending",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Could not fetch monthly spending",
-      });
-    } finally {
-      setSpendingLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCurrentBalance();
-    fetchMonthlySpending();
-  }, []);
+  const balance = balanceData?.balance ?? null;
+  const lastRechargeTimestamp = balanceData?.lastRecharge?.timestamp ?? null;
+  const currentMonthSpending = spendingData?.currentMonth ?? null;
+  const monthSpendingPercentChange = spendingData?.percentChange ?? 0.0;
 
   // Get balance color based on amount
   const getBalanceColor = () => {

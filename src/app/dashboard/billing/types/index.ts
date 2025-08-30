@@ -46,3 +46,11 @@ export interface UsageHistory {
   maxStorage: string;
   netStorage: string;
 }
+
+export type SearchHistoryParams = {
+  from?: Date | null; // ISO date string
+  to?: Date | null; // ISO date string
+  limit?: number;
+  startingAfter?: string | null;
+  isStorageHistory?: boolean | null;
+};

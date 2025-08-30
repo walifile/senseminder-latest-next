@@ -1,39 +1,12 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { useForm, Controller, useWatch } from "react-hook-form";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
-import { Info } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { formSchema, FormValues } from "../schema";
 import {
-  cpuCategories,
   cpuOptions,
   locationOptions,
   osOptions,
@@ -41,239 +14,173 @@ import {
 } from "../data";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import {
-  useGetEstimateMutation,
-  useListRemoteDesktopQuery,
-} from "@/api/fileManagerAPI";
-import { useCreateVMMutation } from "@/api/vmManagement";
+import { useGetEstimateMutation } from "@/api/fileManagerAPI";
 import { clearSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
-import { Field, Form } from "@/components/shared/hook-form";
 import { fetchEstimate } from "../api/fetch-estimate";
-import { fCurrency } from "@/lib/utils/format-number";
-import { ResizeInitial, SmartPCConfigDialogProps } from "../types";
+import { DesktopInstance, ResizeInitial } from "../types";
+import {
+  inferLinuxCategoryFromConfigId,
+  makeResizeRequest,
+  validateStorageIncrease,
+} from "../utils";
+import ConfirmPurchaseDialog from "./confirm-purchase-dialog";
+import { useBoolean } from "@/hooks/use-boolean";
+import CostSummary from "./cost-summary";
+import SmartPcConfigForm from "./smart-pc-config-form";
+import SmartPcConfigDialogHeader from "./smart-pc-config-dialog-header";
 
-const SmartPCConfigDialog = (props: SmartPCConfigDialogProps) => {
-  const {
-    showNewPCDialog,
-    setShowNewPCDialog,
-    mode = "create",
-    initial,
-    lockedFields = [],
-    onConfirm,
-    instanceIdForResize,
-    loadExisting,
-  } = props;
+type Props = {
+  isResize?: boolean;
+  isStorageOnly?: boolean;
+  open: boolean;
+  onClose: () => void;
+  userId?: string;
+  selectedInstance?: DesktopInstance | null;
+  onSuccess: () => void;
+};
 
+const SmartPCConfigDialog = ({
+  isResize = false,
+  isStorageOnly = false,
+  open,
+  onClose,
+  userId,
+  selectedInstance,
+  onSuccess,
+}: Props) => {
   const dispatch = useDispatch();
   const { toast } = useToast();
 
-  const isResize = mode === "resize";
-  const locked = new Set(lockedFields);
-
-  const userId = useSelector((state: RootState) => state.auth.user?.id);
   const config = useSelector((state: RootState) => state.smartPcConfig);
 
   const [drag, setDrag] = React.useState({ x: 0, y: 0 });
-  const dragStartRef = React.useRef<{ x: number; y: number } | null>(null);
 
-  const [getEstimate, { data, isLoading }] = useGetEstimateMutation();
-  const { refetch: refetchRemoteDesktops } = useListRemoteDesktopQuery({
-    userId,
-  });
-  const [createVM, { isLoading: isCreating }] = useCreateVMMutation();
+  const [getEstimate, { data: estimateData, isLoading: isEstimating }] =
+    useGetEstimateMutation();
 
-  function isLocked(
-    field: "pcName" | "operatingSystem" | "region" | "billingPlan" | "storage"
-  ) {
-    return isResize && (locked.has(field) || field === "storage");
-  }
+  const showConfirmation = useBoolean();
 
-  const OS_VALUES = osOptions.map((o) => o.value);
+  const [resizeSubmitting, setResizeSubmitting] = useState(false);
 
-  function normalizeOSFromApi(
-    raw?: string,
-    configId?: string
-  ): "Windows 11" | "Windows 10" | "Linux" {
-    const val = (raw || "").trim();
-
-    // direct match first
-    if (OS_VALUES.includes(val as any)) return val as any;
-
-    // soft match for Windows
-    if (/windows\s*11/i.test(val)) return "Windows 11";
-    if (/windows\s*10/i.test(val)) return "Windows 10";
-
-    // derive from configId when OS text is missing/ambiguous
-    if (configId) {
-      if (/win11/i.test(configId) || /_win11_/i.test(configId))
-        return "Windows 11";
-      if (/win10/i.test(configId) || /_win10_/i.test(configId))
-        return "Windows 10";
-      if (/ubuntu|_lts_|_arm_|_x64_/i.test(configId)) return "Linux";
-    }
-
-    // last resort: Linux (so we don't show blank)
-    return "Linux";
-  }
-
-  /** Given a Linux configId, try to pick the right Linux category select value */
-  function inferLinuxCategoryFromConfigId(
-    configId = ""
-  ):
-    | "Ubuntu_24.04_LTS_X64"
-    | "Ubuntu_24.04_LTS_ARM"
-    | "Ubuntu_22.04_LTS_X64"
-    | "Ubuntu_22.04_LTS_ARM"
-    | undefined {
-    const id = configId.toLowerCase();
-    if (id.includes("24.04") && id.includes("x64"))
-      return "Ubuntu_24.04_LTS_X64";
-    if (id.includes("24.04") && id.includes("arm"))
-      return "Ubuntu_24.04_LTS_ARM";
-    if (id.includes("22.04") && id.includes("x64"))
-      return "Ubuntu_22.04_LTS_X64";
-    if (id.includes("22.04") && id.includes("arm"))
-      return "Ubuntu_22.04_LTS_ARM";
-    return undefined;
-  }
-
-  function coerceCpuForOS(
-    os: string,
-    cpuFromApi: string | undefined,
-    linuxCategory: string | undefined
-  ): { cpu: string; linuxCategory?: string } {
-    if (os === "Linux") {
-      const chosenCategory =
-        linuxCategory ||
-        inferLinuxCategoryFromConfigId(cpuFromApi) ||
-        "Ubuntu_24.04_LTS_X64";
-
-      const opts = cpuCategories.Linux[chosenCategory] || [];
-      const match = opts.find((o) => o.value === cpuFromApi)?.value;
-      return {
-        cpu: match || (opts[0]?.value ?? ""),
-        linuxCategory: chosenCategory,
-      };
-    }
-
-    const opts = cpuOptions[os] || [];
-    const match = opts.find((o) => o.value === cpuFromApi)?.value;
-    return { cpu: match || (opts[0]?.value ?? "") };
-  }
-
-  // ------ Dialog drag (no external dependency) ------
-
-  const onDragStart = React.useCallback(
-    (e: React.MouseEvent) => {
-      // skip dragging from interactive controls
-      if ((e.target as HTMLElement).closest("[data-cancel-drag]")) return;
-      dragStartRef.current = { x: e.clientX - drag.x, y: e.clientY - drag.y };
-
-      const onMove = (ev: MouseEvent) => {
-        if (!dragStartRef.current) return;
-        setDrag({
-          x: ev.clientX - dragStartRef.current.x,
-          y: ev.clientY - dragStartRef.current.y,
-        });
-      };
-      const onUp = () => {
-        dragStartRef.current = null;
-        window.removeEventListener("mousemove", onMove);
-        window.removeEventListener("mouseup", onUp);
-      };
-
-      window.addEventListener("mousemove", onMove);
-      window.addEventListener("mouseup", onUp);
-    },
-    [drag.x, drag.y]
+  const [loadingExisting, setLoadingExisting] = useState(false);
+  const [existingData, setExistingData] = useState<ResizeInitial | undefined>(
+    undefined
   );
 
-  // reset drag when dialog closes
-  React.useEffect(() => {
-    if (!showNewPCDialog) setDrag({ x: 0, y: 0 });
-  }, [showNewPCDialog]);
+  const existingCPU = existingData?.configId || "";
+  const existingStorage = isStorageOnly ? existingData?.storage || "" : "";
+
+  const disableAction = isEstimating || loadingExisting || resizeSubmitting;
+
+  const pcIsStopped =
+    isResize && selectedInstance?.state?.toLowerCase() === "stopped";
+  const pcIsRunning =
+    isResize && selectedInstance?.state?.toLowerCase() === "running";
 
   // ------ React Hook Form ------
-  const {
-    control,
-    handleSubmit,
-    reset,
-    trigger,
-    getValues,
-    setValue,
-    formState: { errors },
-  } = useForm<FormValues>({
+  const defaultValues: Partial<FormValues> = useMemo(
+    () => ({
+      pcName: "",
+      operatingSystem: config.operatingSystem || osOptions[0].value || "",
+      cpu: config.cpu || cpuOptions[osOptions[0].value][0].value || "",
+      storage: config.storage || storageOptions[0].value || "",
+      region: config.region || locationOptions[0].value || "",
+      billingPlan: "hourly",
+      linuxCategory: "",
+    }),
+    [config]
+  );
+
+  const methods = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
-    defaultValues: {
-      pcName: "",
-      operatingSystem: config.operatingSystem || osOptions[0].value,
-      cpu: config.cpu || cpuOptions[config.operatingSystem]?.[0]?.value || "",
-      storage: config.storage || storageOptions[0].value,
-      region: config.region || locationOptions[0].value,
-      billingPlan: "hourly",
-      linuxCategory: "Ubuntu_24.04_LTS_X64",
-    },
+    defaultValues,
   });
 
-  // ------ Baseline CPU for "current → new" badge ------
-  const initialCpuRef = React.useRef<string | null>(null);
-  React.useEffect(() => {
-    if (!showNewPCDialog) initialCpuRef.current = null;
-  }, [showNewPCDialog]);
+  const { reset, watch, trigger } = methods;
 
-  // ------ Fetch & prefill for resize ------
-  const [loadingExisting, setLoadingExisting] = useState(false);
+  const values = watch();
+  const { billingPlan, cpu, region, storage } = values;
 
+  // Disable STORAGE-only submit when no change
+  const isNoStorageChange = useMemo(
+    () => storage === existingStorage,
+    [existingStorage, storage]
+  );
+
+  // Disable CPU-resize submit when no CPU change
+  const isNoResizeChange = useMemo(
+    () => cpu === existingCPU,
+    [existingCPU, cpu]
+  );
+
+  // Plan check: CPU resize uses isPlanBlocked; storage increase has its own guard
+  const isPlanBlocked = useMemo(
+    // CPU resize (hourly only)
+    () => isResize && billingPlan !== "hourly",
+    [isResize, billingPlan]
+  );
+
+  // estimate
   useEffect(() => {
-    let cancelled = false;
+    fetchEstimate({
+      methods,
+      getEstimate,
+      toast,
+      showError: false,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cpu, storage, region]);
 
-    async function hydrate() {
-      if (!isResize || !showNewPCDialog) return;
-      if (!loadExisting && !instanceIdForResize && !initial) return;
+  const handleEstimate = async () =>
+    await fetchEstimate({
+      methods,
+      getEstimate,
+      toast,
+    });
+
+  // ------ Load existing data for resize ------
+  useEffect(() => {
+    (async () => {
+      if (!isResize || !open) return;
 
       setLoadingExisting(true);
       try {
-        let src: ResizeInitial | undefined;
-
-        if (loadExisting) {
-          src = await loadExisting();
-        }
-
-        if (!src) src = initial;
-        if (cancelled || !src) return;
-
-        // Normalize OS & CPU (handle Linux category)
-        const normalizedOS = normalizeOSFromApi(src.operatingSystem, src.cpu);
-        const currentLinuxCategory = inferLinuxCategoryFromConfigId(src.cpu);
-        const coerced = coerceCpuForOS(
-          normalizedOS,
-          src.cpu,
-          currentLinuxCategory
+        const res = await fetch(
+          "https://y2yvok8mk6.execute-api.us-east-1.amazonaws.com/dev/resize",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId,
+              computerName: selectedInstance?.systemName,
+            }),
+          }
         );
 
-        // Write fields in dependency-safe order
-        setValue("pcName", src.pcName ?? "", { shouldDirty: false });
-        setValue("operatingSystem", normalizedOS, { shouldDirty: false });
+        const json = await res.json();
+        const src = json?.data ?? json;
 
-        if (normalizedOS === "Linux" && coerced.linuxCategory) {
-          setValue("linuxCategory", coerced.linuxCategory as any, {
-            shouldDirty: false,
-          });
-        }
+        if (!src) return;
 
-        setValue("cpu", coerced.cpu, { shouldDirty: false });
+        const currentLinuxCategory = inferLinuxCategoryFromConfigId(
+          src.configId
+        );
 
-        // Record the current CPU once for the badge (resize only)
-        if (isResize && !initialCpuRef.current) {
-          initialCpuRef.current = coerced.cpu;
-        }
+        setExistingData(src);
 
-        if (src.storage)
-          setValue("storage", String(src.storage), { shouldDirty: false });
-        if (src.region) setValue("region", src.region, { shouldDirty: false });
-        if (src.billingPlan)
-          setValue("billingPlan", src.billingPlan, { shouldDirty: false });
+        reset({
+          pcName: src.computerName ?? selectedInstance?.systemName,
+          operatingSystem: src.operatingSystem ?? "Linux",
+          cpu: src.configId ?? "",
+          region: src.location ?? "us-east-1",
+          billingPlan: src.billingPlan,
+          storage: src?.storage ?? "",
+          linuxCategory:
+            src.operatingSystem === "Linux"
+              ? currentLinuxCategory
+              : "Ubuntu_24.04_LTS_X64",
+        });
       } catch (e) {
         console.error("Failed to load existing PC config for resize:", e);
         toast({
@@ -282,725 +189,169 @@ const SmartPCConfigDialog = (props: SmartPCConfigDialogProps) => {
           variant: "destructive",
         });
       } finally {
-        if (!cancelled) setLoadingExisting(false);
+        setLoadingExisting(false);
       }
-    }
+    })();
 
-    hydrate();
-    return () => {
-      cancelled = true;
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isResize, showNewPCDialog, instanceIdForResize, loadExisting, setValue]);
+  }, [isResize, open]);
 
-  /* ----- dynamic form logic ----- */
-  const selectedOS = useWatch({ control, name: "operatingSystem" });
-  const isLinuxOS = selectedOS === "Linux";
-  const selectedLinuxCategory = useWatch({ control, name: "linuxCategory" });
-  const linuxCategoryCpuOptions =
-    cpuCategories.Linux[`${selectedLinuxCategory}`] || [];
-
-  const cpuOptionsForOS = isLinuxOS
-    ? linuxCategoryCpuOptions
-    : cpuOptions[selectedOS] || [];
-
-  // label helper (after cpuOptionsForOS is defined)
-  const cpuLabelFor = React.useCallback(
-    (val?: string | null) => {
-      if (!val) return "";
-      const found = cpuOptionsForOS.find((o) => o.value === val);
-      return found?.label ?? val;
-    },
-    [cpuOptionsForOS]
-  );
-
-  // when OS (or Linux category) changes, ensure CPU remains valid
-  useEffect(() => {
-    const current = getValues("cpu");
-    const validValues = cpuOptionsForOS.map((o) => o.value);
-    if (!validValues.includes(current)) {
-      const next = validValues[0] || "";
-      setValue("cpu", next, { shouldDirty: false, shouldValidate: false });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedOS, selectedLinuxCategory]);
-
-  const billingPlan = useWatch({ control, name: "billingPlan" });
-  const cpu = useWatch({ control, name: "cpu" });
-  const region = useWatch({ control, name: "region" });
-  const storage = useWatch({ control, name: "storage" });
-
-  // Disable resize unless configuration changes"
-  const isNoResizeChange = React.useMemo(
-    () => isResize && !!initialCpuRef.current && cpu === initialCpuRef.current,
-    [isResize, cpu]
-  );
-
-  // Disable resize unless plan is "hourly"
-  const isPlanBlocked = React.useMemo(
-    () => isResize && billingPlan !== "hourly",
-    [isResize, billingPlan]
-  );
-
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [deleteConfirmed, setDeleteConfirmed] = useState(false);
-  const [confirmationAccepted, setConfirmationAccepted] = useState(false);
-
-  /* ----- estimate helpers ----- */
-  const getFormattedTotalPrice = () => {
-    if (isLoading || !data?.total) return "...";
-    const price =
-      billingPlan === "hourly"
-        ? data.total.pricePerHour?.toFixed(3)
-        : billingPlan === "daily"
-        ? data.total.pricePerDay?.toFixed(2)
-        : data.total.pricePerMonth?.toFixed(2);
-    const suffix =
-      billingPlan === "hourly"
-        ? "/hour"
-        : billingPlan === "daily"
-        ? "/day"
-        : "/month";
-    return `$${price} ${suffix}`;
-  };
-
-  // debounce estimates
-  useEffect(() => {
-    if (!cpu || !storage || !region) return;
-    const t = setTimeout(() => {
-      getEstimate({ configId: cpu, storageSize: storage, region })
-        .unwrap()
-        .catch(() => {});
-    }, 300);
-    return () => clearTimeout(t);
-  }, [cpu, storage, region, billingPlan, getEstimate]);
-
-  // If a CPU was pre-selected in Redux for this OS, adopt it; else ensure some CPU is set
-  useEffect(() => {
-    const opts = cpuOptionsForOS.map((o) => o.value);
-    const current = getValues("cpu");
-    if (config.cpu && opts.includes(config.cpu) && current !== config.cpu) {
-      setValue("cpu", config.cpu, {
-        shouldDirty: false,
-        shouldValidate: false,
-      });
-    } else if (!current && opts.length > 0) {
-      setValue("cpu", opts[0], { shouldDirty: false, shouldValidate: false });
-    }
-  }, [config.cpu, cpuOptionsForOS, getValues, setValue]);
-
-  // initial estimate
-  useEffect(() => {
-    const v = getValues();
-    if (!v.cpu || !v.storage || !v.region) return;
-    getEstimate({ configId: v.cpu, storageSize: v.storage, region: v.region })
-      .unwrap()
-      .catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleEstimate = async () => {
-    const valid = await trigger();
-    if (!valid) return;
-    const v = getValues();
-    await getEstimate({
-      configId: v.cpu,
-      storageSize: v.storage,
-      region: v.region,
-    })
-      .unwrap()
-      .catch(() => {
-        toast({
-          title: "Error",
-          description: "Failed to fetch estimate",
-          variant: "destructive",
-        });
-      });
-  };
-
-  /* ----- submit flows ----- */
-  const onSubmit = async (form: FormValues) => {
-    if (!deleteConfirmed) return;
-    try {
-      await createVM({
-        action: "create",
-        configId: form.cpu,
-        systemName: form.pcName,
-        region: form.region || "us-east-1",
-        storageSize: parseInt(form.storage, 10),
-        billingPlan: form.billingPlan,
-      }).unwrap();
-
-      while (true) {
-        const res = await refetchRemoteDesktops();
-        if (res.status === "fulfilled") break;
-        await new Promise((r) => setTimeout(r, 2000));
-      }
-
-      toast({
-        title: "Sense PC Created",
-        description: `${form.pcName} has been successfully created.`,
-      });
-
-      reset();
-      setShowNewPCDialog(false);
-      setShowConfirmation(false);
-      setDeleteConfirmed(false);
-      return true;
-    } catch (err) {
-      const errorData = (err as { data?: any })?.data;
-      const errorMsg =
-        errorData?.message ??
-        "Something went wrong. Please try again or contact support.";
-
-      toast({
-        title: "Failed to Create Computer",
-        description: errorMsg,
-        variant: "destructive",
-      });
-
-      setShowConfirmation(false);
-      setDeleteConfirmed(false);
-      return false;
-    }
-  };
-
+  /* ----- resize flows ----- */
   async function handleResizeSubmit() {
-    if (isPlanBlocked) {
+    if (!selectedInstance?.systemName) {
       toast({
-        title: "Plan not eligible",
-        description: "CPU resize is only allowed on the Hourly billing plan.",
+        title: "Error",
+        description: "No instance selected for resize.",
         variant: "destructive",
       });
       return;
     }
 
-    if (loadingExisting) return;
-    const valid = await trigger(["cpu"]);
-    if (!valid) return;
+    setResizeSubmitting(true);
 
-    const cpuVal = getValues("cpu");
-
-    // ⛔ stop if user picked the same config
-    if (isResize && initialCpuRef.current && cpuVal === initialCpuRef.current) {
-      toast({
-        title: "No change detected",
-        description: "Choose a different CPU size to apply the resize.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!onConfirm) {
-      setShowNewPCDialog(false);
-      return;
-    }
-
-    const ok = await onConfirm({ cpu: cpuVal });
-    if (ok) {
-      reset();
-      setShowNewPCDialog(false);
+    try {
+      if (isStorageOnly) {
+        await handleConfirmStorageIncrease(storage);
+      } else {
+        await handleConfirmPCResize(cpu);
+      }
+    } catch (error) {
+      console.error("Resize operation failed:", error);
+    } finally {
+      setResizeSubmitting(false);
     }
   }
+
+  const handleConfirmPCResize = async (cpu: string) => {
+    try {
+      const valid = await trigger(["cpu"]);
+      if (!valid) return;
+
+      await makeResizeRequest(
+        "https://y2yvok8mk6.execute-api.us-east-1.amazonaws.com/dev/resize",
+        {
+          userId,
+          computerName: selectedInstance?.systemName,
+          targetConfigId: cpu,
+        }
+      );
+
+      toast({
+        title: "Resize submitted",
+        description: `${selectedInstance?.systemName} is updating its CPU & Memory. It does not take more than 60 seconds.`,
+      });
+
+      onSuccess();
+      closeDialog();
+    } catch (error: any) {
+      console.error("CPU resize failed:", error);
+      toast({
+        title: "Resize failed",
+        description:
+          error.message || "Failed to resize this PC. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleConfirmStorageIncrease = async (storage: string) => {
+    try {
+      const valid = await trigger(["storage"]);
+      if (!valid) return;
+
+      const validation = validateStorageIncrease(existingStorage, storage);
+      if (!validation.valid) {
+        toast({
+          title: validation.error!,
+          description: validation.description!,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const newVolumeSizeGiB = parseInt(storage, 10);
+
+      await makeResizeRequest(
+        "https://y2yvok8mk6.execute-api.us-east-1.amazonaws.com/dev/increase-volume",
+        {
+          userId,
+          computerName: selectedInstance?.systemName,
+          newVolumeSizeGiB,
+        }
+      );
+
+      toast({
+        title: "Storage increase submitted",
+        description: `${selectedInstance?.systemName} storage is being increased to ${newVolumeSizeGiB} GiB.`,
+      });
+
+      onSuccess();
+      closeDialog();
+    } catch (error: any) {
+      console.error("Storage increase failed:", error);
+      toast({
+        title: "Storage increase failed",
+        description:
+          error.message || "Failed to increase volume (SSD). Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Close dialog
+  const closeDialog = useCallback(() => {
+    reset();
+    onClose();
+    setExistingData(undefined);
+    setDrag({ x: 0, y: 0 });
+    dispatch(clearSmartPcConfig());
+  }, [reset, onClose, dispatch]);
 
   return (
     <>
       <Dialog
-        open={isResize ? showNewPCDialog : showNewPCDialog && !showConfirmation}
-        onOpenChange={(isOpen) => {
-          setShowNewPCDialog(isOpen);
-          if (!isOpen) dispatch(clearSmartPcConfig());
-        }}
+        open={isResize ? open : open && !showConfirmation.value}
+        onOpenChange={closeDialog}
       >
         <DialogContent
-          key={isResize ? initial?.pcName || "resize" : "build"}
+          key={isResize ? "resize" : "build"}
           style={{
             transform: `translate(calc(-50% + ${drag.x}px), calc(-50% + ${drag.y}px))`,
           }}
           className="sm:max-w-[760px] max-h-[95vh] overflow-hidden p-0"
         >
           {/* Header (drag handle) */}
-          <div
-            className="dialog-handle cursor-move select-none px-6 pt-6 pb-3 border-b"
-            onMouseDown={onDragStart}
-          >
-            <DialogHeader data-cancel-drag>
-              <div
-                className="flex items-start justify-between pr-12 sm:pr-1"
-                // ↑ keeps the badge away from the top-right X (DialogClose)
-              >
-                <div>
-                  <DialogTitle className="text-xl">
-                    {isResize
-                      ? "PC Resize (CPU & Memory)"
-                      : "Choose Your Computer Configurations"}
-                  </DialogTitle>
-                  <DialogDescription className="mt-1">
-                    {isResize
-                      ? "Update CPU & Memory for your existing Computer."
-                      : "Customize your Computer."}
-                  </DialogDescription>
-                </div>
-
-                <span
-                  className={cn(
-                    // slim the pill a bit and add right margin
-                    "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium mr-8 sm:mr-12",
-                    isResize
-                      ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
-                      : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-                  )}
-                  data-cancel-drag
-                >
-                  {isResize ? "Resize" : "Build"}
-                </span>
-              </div>
-
-              {isResize && (
-                <div
-                  className="mt-3 rounded-md border border-amber-200 bg-amber-50 text-amber-800 text-xs px-3 py-2"
-                  data-cancel-drag
-                >
-                  Changes require the PC to be{" "}
-                  <span className="font-semibold">Stopped</span> and are allowed
-                  only for <span className="font-semibold">Hourly</span> plans.
-                </div>
-              )}
-            </DialogHeader>
-          </div>
+          <SmartPcConfigDialogHeader
+            drag={drag}
+            setDrag={setDrag}
+            isResize={isResize}
+            isStorageOnly={isStorageOnly}
+          />
 
           {/* Body (scrollable); footer is outside to avoid covering Billing */}
           <div
             className="grid gap-6 px-6 pt-6 pb-40 md:grid-cols-12 max-h-[calc(95vh-64px)] overflow-y-auto"
             data-cancel-drag
           >
-            {/* LEFT: FORM with section panels */}
-            <div
-              className={cn(
-                "md:col-span-8 space-y-6",
-                loadingExisting && "opacity-60 pointer-events-none"
-              )}
-            >
-              <form
-                onSubmit={handleSubmit(
-                  isResize ? async () => handleResizeSubmit() : onSubmit
-                )}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") e.preventDefault();
-                }}
-                aria-busy={loadingExisting}
-              >
-                {/* Basics (section) */}
-                <section className="rounded-lg border bg-muted/30 p-4 space-y-4">
-                  <h4 className="text-sm font-semibold text-muted-foreground">
-                    Basics :
-                  </h4>
+            {/* LEFT: FORM */}
+            <SmartPcConfigForm
+              methods={methods}
+              isResize={isResize}
+              isStorageOnly={isStorageOnly}
+              existingCPU={existingCPU}
+              existingStorage={existingStorage}
+              existingData={existingData}
+              loadingExisting={loadingExisting}
+            />
 
-                  {/* OS */}
-                  <div className="space-y-2">
-                    <Label>Select Operating System (OS)</Label>
-                    <Controller
-                      control={control}
-                      name="operatingSystem"
-                      render={({ field }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          disabled={
-                            isLocked("operatingSystem") || loadingExisting
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select Operating System" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {osOptions.map((os) => (
-                              <SelectItem key={os.value} value={os.value}>
-                                {os.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                    {!isResize && errors.operatingSystem && (
-                      <p className="text-red-500 text-xs">
-                        {errors.operatingSystem.message}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Name */}
-                  <div className="space-y-2">
-                    <Label>Name of the computer</Label>
-                    <Controller
-                      control={control}
-                      name="pcName"
-                      rules={
-                        isResize
-                          ? undefined
-                          : {
-                              required: "Computer name is required",
-                              pattern: {
-                                value: /^[a-zA-Z0-9-_ ]{1,30}$/,
-                                message:
-                                  "Only letters, numbers, spaces, dash and underscore allowed (max 30)",
-                              },
-                            }
-                      }
-                      render={({ field }) => (
-                        <Input
-                          className={cn(
-                            !isResize && errors.pcName && "border-red-500"
-                          )}
-                          placeholder="Enter a name for your computer"
-                          {...field}
-                          disabled={isLocked("pcName") || loadingExisting}
-                          data-cancel-drag
-                        />
-                      )}
-                    />
-                    {!isResize && errors.pcName && (
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <AlertCircle className="h-4 w-4 text-yellow-600" />
-                        <p className="text-xs text-yellow-700">
-                          {errors.pcName.message}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </section>
-
-                {/* Configuration (section) */}
-                <section className="rounded-lg border bg-muted/20 p-4 space-y-4">
-                  <h4 className="text-sm font-semibold text-muted-foreground">
-                    Configuration :
-                  </h4>
-
-                  {/* Linux category */}
-                  {isLinuxOS && (
-                    <div className="space-y-2">
-                      <Label>Category</Label>
-                      <Controller
-                        control={control}
-                        name="linuxCategory"
-                        render={({ field }) => (
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            disabled={isResize || loadingExisting}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select Linux category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {Object.keys(cpuCategories.Linux).map(
-                                (category) => (
-                                  <SelectItem key={category} value={category}>
-                                    {category}
-                                  </SelectItem>
-                                )
-                              )}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                      {!isResize && errors.cpu && (
-                        <p className="text-red-500 text-xs">
-                          {errors.cpu.message}
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* CPU */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <Label>CPU + Memory</Label>
-
-                      {/* current → new badge (resize only) */}
-                      {isResize && initialCpuRef.current && (
-                        <div className="flex items-center gap-1 text-[11px]">
-                          <span className="rounded-full bg-muted px-2 py-0.5">
-                            {cpuLabelFor(initialCpuRef.current)}
-                          </span>
-                          <span className="text-muted-foreground">→</span>
-                          <span
-                            className={cn(
-                              "rounded-full px-2 py-0.5",
-                              cpu !== initialCpuRef.current
-                                ? "bg-blue-50 text-blue-700 ring-1 ring-blue-200"
-                                : "bg-muted text-muted-foreground"
-                            )}
-                          >
-                            {cpuLabelFor(cpu)}
-                          </span>
-                          {cpu === initialCpuRef.current && (
-                            <span className="ml-2 text-[10px] text-muted-foreground">
-                              No change
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <Controller
-                      control={control}
-                      name="cpu"
-                      render={({ field }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          disabled={loadingExisting}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select CPU size" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {cpuOptionsForOS.map((opt) => (
-                              <SelectItem key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                    {errors.cpu && (
-                      <p className="text-red-500 text-xs">
-                        {errors.cpu.message}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Storage */}
-                  <div className="space-y-2">
-                    <Label>Storage (SSD)</Label>
-                    <Controller
-                      control={control}
-                      name="storage"
-                      render={({ field }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          disabled={isLocked("storage") || loadingExisting}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select storage size" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {storageOptions.map((s) => (
-                              <SelectItem key={s.value} value={s.value}>
-                                {s.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                    {!isResize && errors.storage && (
-                      <p className="text-red-500 text-xs">
-                        {errors.storage.message}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Region */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Label className="m-0">Location</Label>
-
-                      {/* Inline help (i) */}
-                      <TooltipProvider delayDuration={150}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button
-                              type="button"
-                              className="p-1 rounded-md text-muted-foreground hover:text-foreground"
-                              aria-label="Location help"
-                              data-cancel-drag
-                            >
-                              <Info className="h-4 w-4" />
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            side="right"
-                            align="start"
-                            className="max-w-xs"
-                          >
-                            Choose your nearest location for the best latency
-                            and performance.
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-
-                    <Controller
-                      control={control}
-                      name="region"
-                      render={({ field }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          disabled={isLocked("region") || loadingExisting}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select nearest datacenter" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {locationOptions.map((location) => (
-                              <SelectItem
-                                key={location.value}
-                                value={location.value}
-                              >
-                                {location.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-
-                    {!isResize && errors.region && (
-                      <p className="text-red-500 text-xs">
-                        {errors.region.message}
-                      </p>
-                    )}
-                  </div>
-                </section>
-
-                {/* Billing (section) */}
-                <section className="rounded-lg border bg-muted/10 p-4 space-y-3">
-                  <h4 className="text-sm font-semibold text-muted-foreground">
-                    Billing Plan :
-                  </h4>
-
-                  <div className="space-y-2">
-                    <Label>Billing Plan</Label>
-                    <Controller
-                      control={control}
-                      name="billingPlan"
-                      render={({ field }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          disabled={isLocked("billingPlan") || loadingExisting}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Choose billing plan" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="hourly">Hourly</SelectItem>
-                            <SelectItem value="daily">Daily</SelectItem>
-                            <SelectItem value="monthly">Monthly</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                  </div>
-                </section>
-
-                {/* Mobile actions (unchanged) */}
-                <div className="mt-6 flex gap-2 md:hidden">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowNewPCDialog(false)}
-                    disabled={loadingExisting}
-                    className="w-full"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleEstimate}
-                    disabled={isLoading || isCreating || loadingExisting}
-                    className="w-full"
-                  >
-                    {isLoading ? "Estimating..." : "Estimate"}
-                  </Button>
-                </div>
-              </form>
-            </div>
-
-            {/* RIGHT: SUMMARY (unchanged) */}
-            <aside className="md:col-span-4 space-y-4">
-              <div className="rounded-lg border bg-card text-card-foreground">
-                <div className="p-4 border-b">
-                  <h4 className="text-sm font-semibold">Summary</h4>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Estimated cost based on your selections.
-                  </p>
-                </div>
-                <div className="p-4 space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>CPU</span>
-                    <span className="font-medium">
-                      {isLoading
-                        ? "—"
-                        : billingPlan === "hourly"
-                        ? `$${data?.instance?.pricePerHour?.toFixed(3) ?? "-"}`
-                        : billingPlan === "daily"
-                        ? `$${data?.instance?.pricePerDay?.toFixed(2) ?? "-"}`
-                        : `$${
-                            data?.instance?.pricePerMonth?.toFixed(2) ?? "-"
-                          }`}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Storage{isResize ? " (current)" : ""}</span>
-                    <span className="font-medium">
-                      {isLoading
-                        ? "—"
-                        : billingPlan === "hourly"
-                        ? `$${data?.storage?.pricePerHour?.toFixed(3) ?? "-"}`
-                        : billingPlan === "daily"
-                        ? `$${data?.storage?.pricePerDay?.toFixed(2) ?? "-"}`
-                        : `$${data?.storage?.pricePerMonth?.toFixed(2) ?? "-"}`}
-                    </span>
-                  </div>
-                  <div className="flex justify-between pt-2 border-t font-semibold">
-                    <span>Total</span>
-                    <span>
-                      {isLoading
-                        ? "—"
-                        : billingPlan === "hourly"
-                        ? `$${data?.total?.pricePerHour?.toFixed(3) ?? "-"}`
-                        : billingPlan === "daily"
-                        ? `$${data?.total?.pricePerDay?.toFixed(2) ?? "-"}`
-                        : `$${data?.total?.pricePerMonth?.toFixed(2) ?? "-"}`}
-                    </span>
-                  </div>
-
-                  <div className="pt-3">
-                    <Button
-                      type="button"
-                      onClick={handleEstimate}
-                      disabled={isLoading || isCreating || loadingExisting}
-                      className="w-full"
-                    >
-                      {isLoading ? "Estimating..." : "Refresh Estimate"}
-                    </Button>
-                  </div>
-
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Estimates are approximate and may vary at runtime.
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-md border bg-muted/30 text-muted-foreground p-3 text-xs">
-                {isResize ? (
-                  <>
-                    Changes take a few minutes. You’ll see the new CPU once the
-                    PC starts again.
-                  </>
-                ) : (
-                  <>
-                    You can resize later. Some changes require the PC to be
-                    stopped.
-                  </>
-                )}
-              </div>
-            </aside>
+            {/* RIGHT: SUMMARY */}
+            <CostSummary
+              isResize={isResize}
+              billingPlan={billingPlan}
+              handleEstimate={handleEstimate}
+              estimateData={estimateData}
+              isEstimating={isEstimating}
+            />
           </div>
 
           {/* Sticky footer */}
@@ -1011,7 +362,7 @@ const SmartPCConfigDialog = (props: SmartPCConfigDialogProps) => {
             <DialogFooter className="gap-2">
               <Button
                 variant="outline"
-                onClick={() => setShowNewPCDialog(false)}
+                onClick={closeDialog}
                 disabled={loadingExisting}
               >
                 Cancel
@@ -1019,43 +370,40 @@ const SmartPCConfigDialog = (props: SmartPCConfigDialogProps) => {
 
               {!isResize && (
                 <Button
-                  type="button"
                   onClick={handleEstimate}
-                  disabled={isLoading || isCreating || loadingExisting}
+                  disabled={disableAction}
                   variant="secondary"
                 >
-                  {isLoading ? "Estimating..." : "Estimate"}
+                  {isEstimating ? "Estimating..." : "Estimate"}
                 </Button>
               )}
 
               {isResize ? (
                 <Button
-                  type="submit"
                   disabled={
-                    isCreating ||
-                    isLoading ||
-                    loadingExisting ||
-                    isNoResizeChange ||
-                    isPlanBlocked
+                    disableAction ||
+                    isPlanBlocked ||
+                    (isStorageOnly ? isNoStorageChange : isNoResizeChange) ||
+                    (!isStorageOnly && !pcIsStopped) || // CPU: must be hourly AND stopped
+                    (isStorageOnly && !pcIsRunning) // Storage: must be hourly AND running
                   }
-                  onClick={async (e) => {
-                    e.preventDefault();
-                    await handleResizeSubmit();
-                  }}
+                  onClick={handleResizeSubmit}
                 >
-                  {isNoResizeChange
+                  {isStorageOnly
+                    ? isNoStorageChange
+                      ? "No Changes to Apply"
+                      : "Apply Storage Increase"
+                    : isNoResizeChange
                     ? "No Changes to Apply"
                     : "Apply CPU Resize"}
                 </Button>
               ) : (
                 <Button
-                  type="button"
-                  disabled={isCreating || isLoading}
+                  disabled={disableAction}
                   onClick={async () => {
                     const valid = await trigger();
                     if (!valid) return;
-                    setShowConfirmation(true);
-                    setConfirmationAccepted(false);
+                    showConfirmation.onTrue();
                   }}
                 >
                   Build PC
@@ -1066,70 +414,20 @@ const SmartPCConfigDialog = (props: SmartPCConfigDialogProps) => {
         </DialogContent>
       </Dialog>
 
-      {/* Purchase confirmation (create only) — unchanged */}
-      {!isResize && (
-        <Dialog
-          open={showConfirmation}
-          onOpenChange={(open) => {
-            setShowConfirmation(open);
-            if (open) setShowNewPCDialog(false);
-          }}
-        >
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Confirm Your Purchase</DialogTitle>
-              <DialogDescription>
-                You are about to be charged upfront for this Computer based on
-                your selected plan.
-                <br />
-                <span className="mt-2 inline-block text-sm font-semibold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded-md">
-                  Estimated total: {getFormattedTotalPrice()}
-                </span>
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="mt-4 flex items-start gap-2">
-              <input
-                type="checkbox"
-                id="purchase-confirm-check"
-                checked={deleteConfirmed}
-                onChange={(e) => setDeleteConfirmed(e.target.checked)}
-                className="mt-1 h-4 w-4 border rounded"
-              />
-              <label
-                htmlFor="purchase-confirm-check"
-                className="text-sm text-muted-foreground leading-snug"
-              >
-                I acknowledge and accept the above statement.
-              </label>
-            </div>
-
-            <DialogFooter className="mt-4">
-              <Button
-                variant="outline"
-                onClick={() => setShowConfirmation(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                disabled={isCreating || !deleteConfirmed}
-                onClick={handleSubmit(async (formData) => {
-                  if (!deleteConfirmed) return;
-                  const success = await onSubmit(formData);
-                  setShowConfirmation(false);
-                  setShowNewPCDialog(false);
-                  setDeleteConfirmed(false);
-                  setConfirmationAccepted(false);
-                })}
-              >
-                {isCreating ? "Processing..." : "Confirm & Pay"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+      {/* Purchase confirmation (create only) */}
+      <ConfirmPurchaseDialog
+        open={showConfirmation.value}
+        onClose={showConfirmation.onFalse}
+        methods={methods}
+        estimateData={estimateData}
+        isEstimating={isEstimating}
+        onSuccess={() => {
+          onSuccess();
+          closeDialog();
+        }}
+      />
     </>
   );
 };
+
 export default SmartPCConfigDialog;

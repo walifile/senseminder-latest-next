@@ -2,15 +2,13 @@
 
 import React, { useState } from "react";
 import { PaymentMethodDialog } from "./_components/payment-method-dialog";
-import { StripeProvider } from "@/components/ui/StripeProvider";
+import { StripeProvider } from "@/providers/StripeProvider";
 import QuickRecharge from "./_components/quick-recharge";
 import PricingPlan from "./_components/pricing-plan";
 import QuickStats from "./_components/quick-stats";
 import BillingHistory from "./_components/billing-history";
 
 const BillingPage = () => {
-  const [balance, setBalance] = useState<number | null>(null);
-
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -21,11 +19,11 @@ const BillingPage = () => {
       </div>
 
       {/* Quick Stats */}
-      <QuickStats balance={balance} setBalance={setBalance} />
+      <QuickStats />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Quick Recharge Section */}
-        <QuickRecharge setBalance={setBalance} />
+        <QuickRecharge />
 
         {/* Plans Section */}
         <PricingPlan />

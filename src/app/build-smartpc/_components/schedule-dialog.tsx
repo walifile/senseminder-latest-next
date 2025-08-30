@@ -1,24 +1,40 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Clock, Calendar, Search, Trash, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Schedule, saveSchedule, getSchedule, deleteSchedule } from "@/api/schedule";
+import {
+  Schedule,
+  saveSchedule,
+  getSchedule,
+  deleteSchedule,
+} from "@/api/schedule";
 
 interface Props {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onClose: () => void;
   instanceId: string;
-  refreshSchedule: () => void;
+  onSuccess: () => void;
 }
 
 const detectTimeZone = (): string =>
@@ -42,23 +58,30 @@ const allTimeZones: string[] =
   typeof Intl.supportedValuesOf === "function"
     ? Intl.supportedValuesOf("timeZone")
     : [
-        "UTC", "Asia/Dhaka", "Asia/Kolkata", "America/New_York",
-        "Europe/Berlin", "Europe/London",
+        "UTC",
+        "Asia/Dhaka",
+        "Asia/Kolkata",
+        "America/New_York",
+        "Europe/Berlin",
+        "Europe/London",
       ];
 
 export default function ScheduleDialog({
   open,
-  onOpenChange,
+  onClose,
   instanceId,
-  refreshSchedule,
+  onSuccess,
 }: Props) {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
-  const [existingSchedule, setExistingSchedule] = useState<Schedule | null>(null);
+  const [existingSchedule, setExistingSchedule] = useState<Schedule | null>(
+    null
+  );
 
   const [selectedTimeZone, setSelectedTimeZone] = useState(detectTimeZone());
-  const [scheduleFrequency, setScheduleFrequency] =
-    useState<"everyday" | "weekdays" | "weekends" | "custom">("everyday");
+  const [scheduleFrequency, setScheduleFrequency] = useState<
+    "everyday" | "weekdays" | "weekends" | "custom"
+  >("everyday");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
   const [autoStartTime, setAutoStartTime] = useState<string | null>(null);
@@ -66,7 +89,9 @@ export default function ScheduleDialog({
   const [enabled, setEnabled] = useState(true);
 
   const [tzSearch, setTzSearch] = useState("");
-  const [loadedZones, setLoadedZones] = useState<{ value: string; label: string }[]>([]);
+  const [loadedZones, setLoadedZones] = useState<
+    { value: string; label: string }[]
+  >([]);
 
   useEffect(() => {
     if (!open || !instanceId) return;
@@ -108,9 +133,10 @@ export default function ScheduleDialog({
   const filteredZones = useMemo(() => {
     const term = tzSearch.toLowerCase();
     return loadedZones
-      .filter((z) =>
-        z.value.toLowerCase().includes(term) ||
-        z.label.toLowerCase().includes(term)
+      .filter(
+        (z) =>
+          z.value.toLowerCase().includes(term) ||
+          z.label.toLowerCase().includes(term)
       )
       .filter((z) => z.value !== selectedTimeZone);
   }, [tzSearch, loadedZones, selectedTimeZone]);
@@ -128,8 +154,8 @@ export default function ScheduleDialog({
         autoStopTime: autoStopTime || undefined,
         enabled,
       });
-      refreshSchedule();
-      onOpenChange(false);
+      onSuccess();
+      closeDialog();
     } catch (err) {
       console.error("Save error", err);
       alert("Failed to save schedule");
@@ -139,12 +165,13 @@ export default function ScheduleDialog({
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this schedule?")) return;
+    if (!window.confirm("Are you sure you want to delete this schedule?"))
+      return;
     setLoading(true);
     try {
       await deleteSchedule(instanceId);
-      refreshSchedule();
-      onOpenChange(false);
+      onSuccess();
+      closeDialog();
     } catch (err) {
       console.error("Delete error", err);
       alert("Failed to delete schedule");
@@ -153,10 +180,15 @@ export default function ScheduleDialog({
     }
   };
 
-  const timeInput = (label: string, value: string | null, setter: (v: string | null) => void) => (
+  const timeInput = (
+    label: string,
+    value: string | null,
+    setter: (v: string | null) => void
+  ) => (
     <div className="space-y-2" key={label}>
       <Label>
-        Auto {label} time <span className="text-xs text-muted-foreground">(optional)</span>
+        Auto {label} time{" "}
+        <span className="text-xs text-muted-foreground">(optional)</span>
       </Label>
       <div className="relative flex items-center">
         <Input
@@ -186,8 +218,12 @@ export default function ScheduleDialog({
     label: `${selectedTimeZone} (${getOffset(selectedTimeZone)})`,
   };
 
+  const closeDialog = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent className="sm:max-w-[420px]">
         <DialogHeader>
           <DialogTitle>Schedule Your PC</DialogTitle>
@@ -197,19 +233,26 @@ export default function ScheduleDialog({
         </DialogHeader>
 
         {fetching ? (
-          <div className="py-12 text-center text-muted-foreground">Loading schedule…</div>
+          <div className="py-12 text-center text-muted-foreground">
+            Loading schedule…
+          </div>
         ) : (
           <div className="space-y-4">
             {existingSchedule && (
               <div className="flex items-center gap-2">
                 <Switch checked={enabled} onCheckedChange={setEnabled} />
-                <span className="text-sm">{enabled ? "Enabled" : "Disabled"}</span>
+                <span className="text-sm">
+                  {enabled ? "Enabled" : "Disabled"}
+                </span>
               </div>
             )}
 
             <div className="space-y-2">
               <Label>Time Zone</Label>
-              <Select value={selectedTimeZone} onValueChange={setSelectedTimeZone}>
+              <Select
+                value={selectedTimeZone}
+                onValueChange={setSelectedTimeZone}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Pick time zone" />
                 </SelectTrigger>
@@ -225,7 +268,9 @@ export default function ScheduleDialog({
                   </div>
                   <SelectGroup>
                     <SelectLabel>Suggested</SelectLabel>
-                    <SelectItem value={suggestedOption.value}>{suggestedOption.label}</SelectItem>
+                    <SelectItem value={suggestedOption.value}>
+                      {suggestedOption.label}
+                    </SelectItem>
                   </SelectGroup>
                   {tzSearch && (
                     <SelectGroup>
@@ -243,7 +288,12 @@ export default function ScheduleDialog({
 
             <div className="space-y-2">
               <Label>Frequency</Label>
-              <Select value={scheduleFrequency} onValueChange={(val: "everyday" | "weekdays" | "weekends" | "custom") => setScheduleFrequency(val)}>
+              <Select
+                value={scheduleFrequency}
+                onValueChange={(
+                  val: "everyday" | "weekdays" | "weekends" | "custom"
+                ) => setScheduleFrequency(val)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Everyday" />
                 </SelectTrigger>
@@ -262,7 +312,8 @@ export default function ScheduleDialog({
                 <div className="grid gap-3">
                   {["Start", "End"].map((label, idx) => {
                     const val = idx === 0 ? customStartDate : customEndDate;
-                    const setter = idx === 0 ? setCustomStartDate : setCustomEndDate;
+                    const setter =
+                      idx === 0 ? setCustomStartDate : setCustomEndDate;
                     return (
                       <div className="relative" key={label}>
                         <Input
@@ -286,7 +337,11 @@ export default function ScheduleDialog({
         )}
 
         <DialogFooter className="flex flex-row gap-2 mt-4">
-          <Button onClick={handleSave} disabled={loading || fetching} className="w-full">
+          <Button
+            onClick={handleSave}
+            disabled={loading || fetching}
+            className="w-full"
+          >
             {existingSchedule ? "Update Schedule" : "Create Schedule"}
           </Button>
           {existingSchedule && (

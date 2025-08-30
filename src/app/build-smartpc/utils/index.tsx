@@ -49,6 +49,27 @@ export const formatUptime = (seconds: number): string => {
   return `${minutes}m`;
 };
 
+export const getStatusClasses = (state: PC["status"], isStarting: boolean) => {
+  if (isStarting) return "bg-yellow-500/10 text-yellow-500";
+
+  switch (state) {
+    case "running":
+      return "bg-green-500/10 text-green-500";
+    case "stopped":
+      return "bg-red-500/10 text-red-500";
+    case "initializing":
+    case "initialization":
+    case "pending":
+      return "bg-yellow-500/10 text-yellow-500";
+    case "stopping":
+      return "bg-orange-500/10 text-orange-500";
+    case "idle":
+      return "bg-blue-500/10 text-blue-500";
+    default:
+      return "bg-gray-500/10 text-gray-500";
+  }
+};
+
 export const getStatusText = (
   status: PC["status"],
   isStarting = false
@@ -115,4 +136,107 @@ export const isStartingInstance = (
   const isValidState = validStates.includes(state);
 
   return isInList && isValidState;
+};
+
+export function inferLinuxCategoryFromConfigId(
+  configId = ""
+):
+  | "Ubuntu_24.04_LTS_X64"
+  | "Ubuntu_24.04_LTS_ARM"
+  | "Ubuntu_22.04_LTS_X64"
+  | "Ubuntu_22.04_LTS_ARM"
+  | undefined {
+  const id = configId.toLowerCase();
+  if (id.includes("24.04") && id.includes("x64")) return "Ubuntu_24.04_LTS_X64";
+  if (id.includes("24.04") && id.includes("arm")) return "Ubuntu_24.04_LTS_ARM";
+  if (id.includes("22.04") && id.includes("x64")) return "Ubuntu_22.04_LTS_X64";
+  if (id.includes("22.04") && id.includes("arm")) return "Ubuntu_22.04_LTS_ARM";
+  return undefined;
+}
+
+export function extractStorageGiB(pc: any): number | undefined {
+  const candidates = [
+    pc.storageGiB,
+    pc.storage,
+    pc.storageSize,
+    pc.volumeSize,
+    pc.rootVolumeSize,
+    pc.diskSize,
+    pc.ssdSize,
+  ];
+  const val = candidates.find((v) => typeof v === "number" && v > 0);
+  return typeof val === "number" ? val : undefined;
+}
+
+export function getApiUserId(u: any) {
+  if (!u) return "";
+  if (u.role === "member" || u.role === "admin") return u.ownerid;
+  return u.id;
+}
+
+export function formatIdleTime(mins: number): string {
+  if (isNaN(mins)) return "—";
+  if (mins < 60) return `${mins}m`;
+  const hours = Math.floor(mins / 60);
+  const minutes = mins % 60;
+  return `${hours}h ${minutes}m`;
+}
+
+export const formatScheduleTime = (pcInfo?: {
+  schedule?: { autoStartTime?: string; autoStopTime?: string };
+}) => {
+  const start = pcInfo?.schedule?.autoStartTime;
+  const stop = pcInfo?.schedule?.autoStopTime;
+
+  if (start && stop) return `${start} – ${stop}`;
+  if (start) return `Starts at ${start}`;
+  if (stop) return `Stops at ${stop}`;
+  return null;
+};
+
+export const makeResizeRequest = async (url: string, payload: object) => {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    let errorMessage = `Request failed with status ${response.status}`;
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorData.error || errorMessage;
+    } catch {
+      errorMessage = response.statusText || errorMessage;
+    }
+    throw new Error(errorMessage);
+  }
+
+  return response.json();
+};
+
+export const validateStorageIncrease = (
+  currentStorage: string,
+  newStorage: string
+) => {
+  const prev = parseInt(currentStorage, 10);
+  const next = parseInt(newStorage, 10);
+
+  if (isNaN(next)) {
+    return {
+      valid: false,
+      error: "Invalid size",
+      description: "Please choose a valid storage size.",
+    };
+  }
+
+  if (next <= prev) {
+    return {
+      valid: false,
+      error: next < prev ? "Storage cannot be decreased" : "No change detected",
+      description: "Choose a larger storage size to apply the increase.",
+    };
+  }
+
+  return { valid: true };
 };

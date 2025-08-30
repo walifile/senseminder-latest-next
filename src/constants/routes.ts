@@ -13,6 +13,12 @@ export const routes = {
   buildPc: "/build-smartpc",
   pcViewer: "/pc-viewer",
   changePassword: "/auth/change-password",
+  users: "/dashboard/users",
+  billing: "/dashboard/billing",
+  support: "/dashboard/support",
+  tutorials: "/dashboard/tutorials",
+  profileSecurity: "/dashboard/profile?tab=security",
+
 };
 
 export const publicRoutes: string[] = [
@@ -23,7 +29,6 @@ export const publicRoutes: string[] = [
   routes.resetPassword,
   routes.verifyOTP,
   routes.callback,
-  routes.smartStorage,
   routes.buildPc,
   routes.changePassword,
   "/login",

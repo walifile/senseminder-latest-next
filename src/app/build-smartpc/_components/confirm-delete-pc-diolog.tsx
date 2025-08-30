@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import {
   Tooltip,
   TooltipTrigger,
@@ -19,30 +19,80 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { Loader2, Trash2 } from "lucide-react";
+import { useDeleteVMMutation } from "@/api/vmManagement";
+import { DesktopInstance } from "../types";
+import { useStopVMMutation } from "@/api/fileManagerAPI";
+import { useToast } from "@/hooks/use-toast";
+import { useDispatch } from "react-redux";
+import { removeStartingInstance } from "@/redux/slices/dcv/starting-instances-slice";
 
 type ConfirmDeleteModalProps = {
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
-  onConfirm: () => void;
-  desktopName?: string;
-  isDeleting?: boolean;
+  selectedInstance: DesktopInstance | null;
+  setSelectedInstance: (instance: DesktopInstance | null) => void;
+  onSuccess: () => void;
 };
 
 export const ConfirmDeleteModal = ({
-  isOpen,
+  open,
   onClose,
-  onConfirm,
-  desktopName,
-  isDeleting,
+  selectedInstance,
+  setSelectedInstance,
+  onSuccess,
 }: ConfirmDeleteModalProps) => {
+  const { toast } = useToast();
+
+  const dispatch = useDispatch();
+
   const [isChecked, setIsChecked] = useState(false);
 
-  useEffect(() => {
-    if (!isOpen) setIsChecked(false); // reset checkbox when modal closes
-  }, [isOpen]);
+  const [deleteVM, { isLoading: isDeleting }] = useDeleteVMMutation();
+  const [stopVM, { isLoading: isStopping }] = useStopVMMutation();
+
+  const loading = isDeleting || isStopping;
+
+  const handleConfirmDelete = async () => {
+    if (!selectedInstance) return;
+    try {
+      const { instanceId, systemName, region, state } = selectedInstance;
+
+      if (state === "running") {
+        await stopVM(instanceId).unwrap();
+      }
+      if (!region) {
+        console.warn(
+          "Region is missing from Computer metadata:",
+          selectedInstance
+        );
+        throw new Error("Missing region for selected Computer");
+      }
+      await deleteVM({ instanceId, region }).unwrap();
+      toast({
+        title: "Computer Deleted",
+        description: `Computer "${systemName}" has been deleted successfully.`,
+      });
+      dispatch(removeStartingInstance(instanceId));
+      onSuccess();
+      closeDialog();
+    } catch (error) {
+      console.log("Delete Error:", error);
+      toast({
+        title: "Deletion Failed",
+        description: `Failed to delete this Computer". Please try again.`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const closeDialog = useCallback(() => {
+    setIsChecked(false);
+    setSelectedInstance(null);
+    onClose();
+  }, [onClose, setSelectedInstance]);
 
   return (
-    <AlertDialog open={isOpen}>
+    <AlertDialog open={open} onOpenChange={closeDialog}>
       <AlertDialogPortal>
         <AlertDialogOverlay className="bg-black/50 backdrop-blur-sm transition-opacity" />
         <AlertDialogContent className="w-full max-w-lg rounded-2xl border border-border bg-white dark:bg-[#0B0B13] dark:border-[#2C2C37] shadow-2xl p-8">
@@ -56,23 +106,35 @@ export const ConfirmDeleteModal = ({
               </AlertDialogTitle>
               <p className="text-center text-base text-muted-foreground mt-1">
                 You’re about to permanently delete{" "}
-                <span className="font-medium text-foreground">{desktopName}</span> computer. This action can not be undone.
+                <span className="font-medium text-foreground">
+                  {selectedInstance?.systemName}
+                </span>{" "}
+                computer. This action can not be undone.
               </p>
 
               <TooltipProvider>
                 <div className="mt-4 w-full rounded-md bg-yellow-100 text-yellow-800 dark:bg-yellow-500/10 dark:text-yellow-300 p-3 text-sm">
-                  I understand this will also <strong>permanently delete</strong> all data on this Computer{" "}
+                  I understand this will also{" "}
+                  <strong>permanently delete</strong> all data on this Computer{" "}
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="underline cursor-help text-yellow-900 dark:text-yellow-200">SSD</span>
+                      <span className="underline cursor-help text-yellow-900 dark:text-yellow-200">
+                        SSD
+                      </span>
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-xs text-xs leading-snug">
-                      A Solid State Drive (SSD) is a data storage device that uses integrated circuit assemblies
-                      to store data, unlike traditional Hard Disk Drives (HDDs) which use spinning disks. SSDs
-                      are known for their speed, reliability, and durability due to the absence of moving parts.
+                    <TooltipContent
+                      side="top"
+                      className="max-w-xs text-xs leading-snug"
+                    >
+                      A Solid State Drive (SSD) is a data storage device that
+                      uses integrated circuit assemblies to store data, unlike
+                      traditional Hard Disk Drives (HDDs) which use spinning
+                      disks. SSDs are known for their speed, reliability, and
+                      durability due to the absence of moving parts.
                     </TooltipContent>
                   </Tooltip>
-                  . If you wish to keep your data, please cancel and back it up first.
+                  . If you wish to keep your data, please cancel and back it up
+                  first.
                 </div>
               </TooltipProvider>
 
@@ -96,18 +158,18 @@ export const ConfirmDeleteModal = ({
 
           <AlertDialogFooter className="mt-6 flex justify-end gap-3">
             <AlertDialogCancel
-              onClick={onClose}
+              onClick={closeDialog}
               className="rounded-md border border-input bg-white dark:bg-transparent hover:bg-accent dark:hover:bg-[#ffffff0f] px-5 py-2 text-sm font-medium text-gray-700 dark:text-gray-200"
             >
               Cancel
             </AlertDialogCancel>
 
             <AlertDialogAction
-              onClick={onConfirm}
-              disabled={!isChecked || isDeleting}
+              onClick={handleConfirmDelete}
+              disabled={!isChecked || loading}
               className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white rounded-md px-5 py-2 text-sm font-medium flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {isDeleting ? (
+              {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Deleting...

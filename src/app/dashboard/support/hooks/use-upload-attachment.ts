@@ -1,4 +1,7 @@
-import { usePresignTicketUploadMutation } from "@/api/supportAPI";
+import {
+  usePresignTicketUploadMutation,
+  usePresignTicketUpload2Mutation,
+} from "@/api/supportAPI";
 import { useToast } from "@/components/ui/use-toast";
 import { sanitizeFilename } from "@/lib/utils/index";
 
@@ -8,9 +11,12 @@ export const useUploadAttachment = (
 ) => {
   const { toast } = useToast();
   const [presignUpload] = usePresignTicketUploadMutation();
+  const [presignUpload2] = usePresignTicketUpload2Mutation();
 
   const uploadAttachment = async (file: File) => {
-    if (!userId) return null;
+    if (!userId) {
+      return null;
+    }
 
     try {
       const sanitized = sanitizeFilename(file.name);
@@ -20,10 +26,11 @@ export const useUploadAttachment = (
         fileSize: file.size,
       };
 
-      const params: any = { userId, body: meta };
-      if (ticketId) params.id = ticketId;
+      const payload = { userId, body: meta };
 
-      const { uploadUrl, fileKey } = await presignUpload(params).unwrap();
+      const { uploadUrl, fileKey } = ticketId
+        ? await presignUpload({ userId, ticketId, body: meta }).unwrap()
+        : await presignUpload2({ userId, body: meta }).unwrap();
 
       await fetch(uploadUrl, {
         method: "PUT",
@@ -37,7 +44,8 @@ export const useUploadAttachment = (
         type: file.type,
         fileKey,
       };
-    } catch {
+    } catch (err) {
+      console.error("Upload failed:", err);
       toast({ title: `Upload failed for ${file.name}` });
       return null;
     }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,32 +16,87 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+// --- IDLE TIMEOUT API ---
+import { setIdleTimeout, deleteIdleTimeout } from "@/api/smartPC-Idle-settings";
+import { DesktopInstance } from "../types";
+import { InstanceDetail } from "@/api/realtime";
+import { timeOptions } from "../data";
 
 type IdleSettingsDialogProps = {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
-  editingPC?: { name: string };
-  selectedIdleTimeout: string;
-  setSelectedIdleTimeout: (value: string) => void;
-  onSave: () => void;
+  onClose: () => void;
+  realtimePcInfo: Record<string, InstanceDetail>;
+  selectedInstance: DesktopInstance | null;
+  onSuccess: () => void;
 };
 
 const IdleSettingsDialog: React.FC<IdleSettingsDialogProps> = ({
   open,
-  onOpenChange,
-  editingPC,
-  selectedIdleTimeout,
-  setSelectedIdleTimeout,
-  onSave,
+  onClose,
+  realtimePcInfo,
+  selectedInstance,
+  onSuccess,
 }) => {
+  const { toast } = useToast();
+
+  const [selectedIdleTimeout, setSelectedIdleTimeout] = useState<string>("30");
+
+  const handleSaveIdleSettings = async () => {
+    if (!selectedInstance) return;
+    const noneValues = ["", "none", "0"];
+    const trimmed = String(selectedIdleTimeout).trim().toLowerCase();
+    try {
+      if (noneValues.includes(trimmed)) {
+        await deleteIdleTimeout(selectedInstance.instanceId);
+        toast({
+          title: "Idle Timeout Removed",
+          description: `Idle timeout was cleared for ${selectedInstance.systemName}`,
+        });
+      } else {
+        await setIdleTimeout(
+          selectedInstance.instanceId,
+          Number(selectedIdleTimeout)
+        );
+        toast({
+          title: "Idle Timeout Saved",
+          description: `Timeout set to ${selectedIdleTimeout} minutes for ${selectedInstance.systemName}`,
+        });
+      }
+      onSuccess();
+      closeDialog();
+    } catch (e) {
+      console.error("Failed to save idle timeout:", e);
+      toast({
+        title: "Idle Timeout Change Failed",
+        description: "Could not update idle timeout",
+        variant: "destructive",
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (selectedInstance) {
+      const selectedPc = realtimePcInfo[selectedInstance.systemName];
+      setSelectedIdleTimeout(
+        selectedPc?.idleTimeout ? String(selectedPc.idleTimeout) : "30"
+      );
+    }
+  }, [realtimePcInfo, selectedInstance]);
+
+  const closeDialog = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
           <DialogTitle>Configure Idle Settings</DialogTitle>
           <DialogDescription>
-            Set the idle timeout duration for {editingPC?.name}. The PC will be
-            suspended after being idle for the specified duration.
+            Set the idle timeout duration for {selectedInstance?.systemName}.
+            The PC will be suspended after being idle for the specified
+            duration.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
@@ -53,23 +108,23 @@ const IdleSettingsDialog: React.FC<IdleSettingsDialogProps> = ({
             <SelectTrigger>
               <SelectValue placeholder="Select timeout duration" />
             </SelectTrigger>
+
             <SelectContent>
-              <SelectItem value="none">none</SelectItem>
-              <SelectItem value="15">15 minutes</SelectItem>
-              <SelectItem value="30">30 minutes</SelectItem>
-              <SelectItem value="45">45 minutes</SelectItem>
-              <SelectItem value="60">1 hour</SelectItem>
-              <SelectItem value="120">2 hours</SelectItem>
-              <SelectItem value="180">3 hours</SelectItem>
-              <SelectItem value="240">4 hours</SelectItem>
+              {timeOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={closeDialog}>
             Cancel
           </Button>
-          <Button onClick={onSave}>Save Changes</Button>
+          <Button disabled={!selectedInstance} onClick={handleSaveIdleSettings}>
+            Save Changes
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

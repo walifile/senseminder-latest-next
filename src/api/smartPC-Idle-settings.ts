@@ -40,29 +40,6 @@ export async function setIdleTimeout(instanceId: string, timeout: number) {
 }
 
 // ==========================
-// GET: Get idle timeout for an instance
-// ==========================
-export async function getIdleTimeout(instanceId: string) {
-  const idToken = await getIdToken();
-
-  const response = await fetch(IDLE_API_URL, {
-    method: "GET",
-    headers: {
-      Authorization: idToken,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ instanceId }), // Backend supports JSON body
-  });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to fetch idle timeout");
-  }
-
-  return data;
-}
-
-// ==========================
 // DELETE: Delete idle timeout entry
 // ==========================
 export async function deleteIdleTimeout(instanceId: string) {
