@@ -6,6 +6,8 @@ import { getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
 import { getUserAttributes, handleSignOut } from "@/lib/services/auth";
 import { useDispatch } from "react-redux";
 import { Loader2 } from "lucide-react";
+import { routes } from "@/constants/routes";
+import { useRouter } from "next/navigation";
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -13,6 +15,7 @@ interface AuthProviderProps {
 
 export default function AuthGuard({ children }: AuthProviderProps) {
   const dispatch = useDispatch();
+  const router = useRouter();
   const [initialized, setInitialized] = useState(false);
 
   const initializeAuth = async () => {
@@ -22,18 +25,21 @@ export default function AuthGuard({ children }: AuthProviderProps) {
       const currentUser = await getCurrentUser();
       if (!currentUser) {
         await handleSignOut();
+        router.push(routes.auth);
         return;
       }
 
       const session = await fetchAuthSession();
       if (!session?.tokens?.idToken) {
         await handleSignOut();
+        router.push(routes.auth);
         return;
       }
 
       const userInfo = await getUserAttributes();
       if (!userInfo) {
         await handleSignOut();
+        router.push(routes.auth);
         return;
       }
 
@@ -44,8 +50,9 @@ export default function AuthGuard({ children }: AuthProviderProps) {
         })
       );
     } catch (error) {
-      console.log("Auth initialization error:", error);
+      console.error("Auth initialization error:", error);
       await handleSignOut();
+      router.push(routes.auth);
     } finally {
       dispatch(setLoading(false));
       setInitialized(true);
