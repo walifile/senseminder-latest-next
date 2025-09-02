@@ -6,6 +6,7 @@ import Footer from "@/components/shared/layout/footer";
 import { ReduxProvider } from "@/redux/provider";
 import { AmplifyProvider } from "@/providers/AmplifyProvider";
 import { WebSocketProvider } from "@/providers/WebSocketProvider";
+import AuthGuard from "@/guards/auth-guard";
 
 export { metadata };
 
@@ -19,16 +20,17 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         <ReduxProvider>
           <AmplifyProvider>
-            <WebSocketProvider> 
-            <ThemeWrapper>
-              <div className="flex min-h-screen flex-col overflow-x-hidden">
-                <Navbar />
-                {children}
-                <Footer />
-              </div>
-            </ThemeWrapper>
-           </WebSocketProvider>
-           
+            <WebSocketProvider>
+              <ThemeWrapper>
+                <AuthGuard>
+                  <div className="flex min-h-screen flex-col overflow-x-hidden">
+                    <Navbar />
+                    {children}
+                    <Footer />
+                  </div>
+                </AuthGuard>
+              </ThemeWrapper>
+            </WebSocketProvider>
           </AmplifyProvider>
         </ReduxProvider>
       </body>

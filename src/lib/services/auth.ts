@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   signUp,
   confirmSignUp,
@@ -19,7 +18,6 @@ import {
   setLoading,
   setTempUser,
 } from "@/redux/slices/auth/auth-slice";
-import { deleteCookie } from "cookies-next";
 
 interface SignUpFormData {
   email: string;
@@ -339,7 +337,6 @@ export const handleSignOut = async () => {
   try {
     store.dispatch(setLoading(true));
     await signOut();
-    deleteCookie("auth.state");
     store.dispatch(clearAuth());
     return { success: true };
   } catch (error: any) {
