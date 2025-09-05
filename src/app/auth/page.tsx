@@ -53,7 +53,7 @@ export default function SignIn() {
         const decodedFrom = from ? decodeURIComponent(from).replace(/^\//, "") : "";
         const redirectTo = decodedFrom ? `/${decodedFrom}` : routes.dashboard;
 
-        window.location.href = redirectTo;
+        router.push(redirectTo);
 
       } else if ("requiresNewPassword" in response && response.requiresNewPassword) {
         toast({

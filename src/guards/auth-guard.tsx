@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { setUser, setLoading } from "@/redux/slices/auth/auth-slice";
 import { getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
 import { getUserAttributes, handleSignOut } from "@/lib/services/auth";
-import { useDispatch } from "react-redux";
 import { Loader2 } from "lucide-react";
-import { routes } from "@/constants/routes";
-import { useRouter } from "next/navigation";
+import { publicRoutes, routes } from "@/constants/routes";
+import { usePathname, useRouter } from "next/navigation";
+import { RootState } from "@/redux/store";
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -16,32 +17,25 @@ interface AuthProviderProps {
 export default function AuthGuard({ children }: AuthProviderProps) {
   const dispatch = useDispatch();
   const router = useRouter();
+  const pathname = usePathname();
+
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [initialized, setInitialized] = useState(false);
+
+  const isPublicRoute = publicRoutes.includes(pathname);
 
   const initializeAuth = async () => {
     try {
       dispatch(setLoading(true));
 
       const currentUser = await getCurrentUser();
-      if (!currentUser) {
-        await handleSignOut();
-        router.push(routes.auth);
-        return;
-      }
+      if (!currentUser) throw new Error("No user");
 
       const session = await fetchAuthSession();
-      if (!session?.tokens?.idToken) {
-        await handleSignOut();
-        router.push(routes.auth);
-        return;
-      }
+      if (!session?.tokens?.idToken) throw new Error("Invalid session");
 
       const userInfo = await getUserAttributes();
-      if (!userInfo) {
-        await handleSignOut();
-        router.push(routes.auth);
-        return;
-      }
+      if (!userInfo) throw new Error("No user info");
 
       dispatch(
         setUser({
@@ -52,7 +46,9 @@ export default function AuthGuard({ children }: AuthProviderProps) {
     } catch (error) {
       console.error("Auth initialization error:", error);
       await handleSignOut();
-      router.push(routes.auth);
+      if (!isPublicRoute) {
+        router.replace(routes.auth);
+      }
     } finally {
       dispatch(setLoading(false));
       setInitialized(true);
@@ -63,9 +59,11 @@ export default function AuthGuard({ children }: AuthProviderProps) {
     if (!initialized) {
       initializeAuth();
     }
-  }, [dispatch, initialized]);
 
-  if (!initialized) {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (!initialized || (!isPublicRoute && !isAuthenticated)) {
     return (
       <div className="flex items-center justify-center bg-gray-100 dark:bg-[#0A0A1B] px-4 min-h-screen">
         <div className="w-full max-w-md bg-white dark:bg-[#111827] p-8 rounded-2xl shadow-lg text-center space-y-4">
