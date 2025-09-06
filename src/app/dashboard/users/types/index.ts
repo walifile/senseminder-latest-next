@@ -1,9 +1,3 @@
-export type UserFormValues = {
-  name: string;
-  email: string;
-  role: string;
-};
-
 export type ApiUser = {
   email: string;
   firstName?: string;

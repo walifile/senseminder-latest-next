@@ -63,7 +63,7 @@ export default function AuthGuard({ children }: AuthProviderProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!initialized || (!isPublicRoute && !isAuthenticated)) {
+  if (!isPublicRoute && (!initialized || !isAuthenticated)) {
     return (
       <div className="flex items-center justify-center bg-gray-100 dark:bg-[#0A0A1B] px-4 min-h-screen">
         <div className="w-full max-w-md bg-white dark:bg-[#111827] p-8 rounded-2xl shadow-lg text-center space-y-4">

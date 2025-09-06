@@ -1,79 +1,58 @@
-"use client";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { getIdToken } from "../lib/utils";
 
-import { fetchAuthSession } from "aws-amplify/auth";
+const USER_API_URL = process.env.NEXT_PUBLIC_USER_MANAGEMENT_API!;
 
-const API_URL = process.env.NEXT_PUBLIC_USER_MANAGEMENT_API!;
-
-if (!API_URL) {
+if (!USER_API_URL) {
   throw new Error("Missing NEXT_PUBLIC_USER_MANAGEMENT_API in .env file");
 }
 
-async function getIdToken() {
-  const session = await fetchAuthSession();
-  const idToken = session.tokens?.idToken?.toString();
-  if (!idToken) throw new Error("User is not authenticated.");
-  return idToken;
-}
+const baseQuery = fetchBaseQuery({
+  baseUrl: USER_API_URL,
+  prepareHeaders: async (headers) => {
+    try {
+      const idToken = await getIdToken();
+      headers.set("Authorization", idToken);
+      headers.set("Content-Type", "application/json");
+    } catch (err) {
+      console.error("Failed to attach auth headers:", err);
+    }
+    return headers;
+  },
+});
 
-export async function inviteUser(userData: {
-  name: string;
-  email: string;
-  role: "admin" | "member";
-  group: string;
-}) {
-  const idToken = await getIdToken();
+export const userAPI = createApi({
+  reducerPath: "userAPI",
+  baseQuery,
+  tagTypes: ["Users"],
+  endpoints: (builder) => ({
+    getUsers: builder.query<any, void>({
+      query: () => "",
+      providesTags: ["Users"],
+    }),
 
-  const response = await fetch(API_URL, {
-    method: "POST",
-    headers: {
-      Authorization: idToken,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(userData),
-  });
+    inviteUser: builder.mutation({
+      query: (body) => ({
+        url: "",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Users"],
+    }),
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to invite user");
-  }
+    deleteUser: builder.mutation({
+      query: (body) => ({
+        url: "",
+        method: "DELETE",
+        body,
+      }),
+      invalidatesTags: ["Users"],
+    }),
+  }),
+});
 
-  return response.json();
-}
-
-export async function getUsers() {
-  const idToken = await getIdToken();
-
-  const response = await fetch(API_URL, {
-    method: "GET",
-    headers: {
-      Authorization: idToken,
-    },
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to fetch users");
-  }
-
-  return response.json();
-}
-
-export async function deleteUser(email: string, role: "admin" | "member") {
-  const idToken = await getIdToken();
-
-  const response = await fetch(API_URL, {
-    method: "DELETE",
-    headers: {
-      Authorization: idToken,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, role }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to delete user");
-  }
-
-  return response.json();
-}
+export const {
+  useGetUsersQuery,
+  useInviteUserMutation,
+  useDeleteUserMutation,
+} = userAPI;

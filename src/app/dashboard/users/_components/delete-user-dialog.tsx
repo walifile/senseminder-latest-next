@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { deleteUser } from "@/api/user";
+import { useDeleteUserMutation } from "@/api/user";
 import { toast } from "@/hooks/use-toast";
 
 const DeleteUserDialog = ({
@@ -21,16 +21,16 @@ const DeleteUserDialog = ({
   setSelectedUser,
   globalReload,
 }: any) => {
-  const [deletingUser, setDeletingUser] = useState(false);
   const [deleteConfirmInput, setDeleteConfirmInput] = useState("");
+
+  const [deleteUser, { isLoading }] = useDeleteUserMutation();
 
   const { email, role } = selectedUser || {};
 
   const handleDeleteUser = async () => {
     if (!email || !role) return;
-    setDeletingUser(true);
     try {
-      await deleteUser(email, role);
+      await deleteUser({ email, role }).unwrap();
       toast({
         title: "User deleted",
         description: `The user ${email} has been deleted.`,
@@ -43,8 +43,6 @@ const DeleteUserDialog = ({
         variant: "destructive",
         description: (e && e.message) || "Failed to delete user.",
       });
-    } finally {
-      setDeletingUser(false);
     }
   };
 
@@ -69,22 +67,18 @@ const DeleteUserDialog = ({
           placeholder='Type "confirm" to proceed'
           value={deleteConfirmInput}
           onChange={(e) => setDeleteConfirmInput(e.target.value)}
-          disabled={deletingUser}
+          disabled={isLoading}
         />
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={closeDialog}
-            disabled={deletingUser}
-          >
+          <Button variant="outline" onClick={closeDialog} disabled={isLoading}>
             Cancel
           </Button>
           <Button
             variant="destructive"
             onClick={handleDeleteUser}
-            disabled={deleteConfirmInput !== "confirm" || deletingUser}
+            disabled={deleteConfirmInput !== "confirm" || isLoading}
           >
-            {deletingUser ? "Deleting..." : "Delete"}
+            {isLoading ? "Deleting..." : "Delete"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -11,78 +11,25 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserPlus, Users, Search, Info } from "lucide-react";
-import { useForm } from "react-hook-form";
 import { toast } from "@/hooks/use-toast";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { inviteUser, getUsers, deleteUser } from "@/api/user";
+import { useGetUsersQuery } from "@/api/user";
 import UserTable from "./_components/user-table";
-import { ApiUser, UserFormValues } from "./types";
+import { ApiUser } from "./types";
+import { useBoolean } from "@/hooks/use-boolean";
+import InviteUserDialog from "./_components/invite-user-dialog";
 
 const UsersManagementPage = () => {
-  const [users, setUsers] = useState<ApiUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const inviteDialog = useBoolean();
   const [searchQuery, setSearchQuery] = useState("");
-  const [inviteLoading, setInviteLoading] = useState(false);
-
-  // Invite user form
-  const userForm = useForm<UserFormValues>({
-    defaultValues: {
-      name: "",
-      email: "",
-      role: "",
-    },
-  });
-
-  // Fetch users
-  const fetchUserList = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await getUsers();
-      setUsers(res.users || []);
-    } catch (e: any) {
-      toast({
-        title: "Failed to fetch users",
-        variant: "destructive",
-        description: (e && e.message) || "Failed to fetch users.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchUserList();
-  }, [fetchUserList]);
+  const { data, isLoading } = useGetUsersQuery();
+  const users: ApiUser[] = data?.users || [];
 
   // Find owner/admin for fetching remote desktops
   const mainUser = users.find(
@@ -100,37 +47,6 @@ const UsersManagementPage = () => {
       ).includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  // Handlers
-  const handleInviteUser = async (data: UserFormValues) => {
-    setInviteLoading(true);
-    try {
-      const apiPayload = {
-        name: data.name,
-        email: data.email,
-        role:
-          data.role === "admin" || data.role === "Admin" ? "admin" : "member",
-        group: "", // always send blank
-      };
-      //@ts-expect-error avc
-      await inviteUser(apiPayload);
-      toast({
-        title: "User invited",
-        description: `An invitation has been sent to ${data.email}`,
-      });
-      setIsInviteDialogOpen(false);
-      fetchUserList();
-      userForm.reset();
-    } catch (e: any) {
-      toast({
-        title: "Failed to invite user",
-        variant: "destructive",
-        description: (e && e.message) || "Failed to invite user.",
-      });
-    } finally {
-      setInviteLoading(false);
-    }
-  };
 
   // ---- UI ----
 
@@ -152,7 +68,7 @@ const UsersManagementPage = () => {
           </Popover>
         </div>
         <div className="flex space-x-2">
-          <Button onClick={() => setIsInviteDialogOpen(true)}>
+          <Button onClick={inviteDialog.onTrue}>
             <UserPlus className="h-4 w-4 mr-2" />
             Invite User
           </Button>
@@ -190,7 +106,7 @@ const UsersManagementPage = () => {
 
             <TabsContent value="users" className="space-y-4">
               <UserTable
-                loading={loading}
+                loading={isLoading}
                 mainUser={mainUser}
                 filteredUsers={filteredUsers}
               />
@@ -203,83 +119,10 @@ const UsersManagementPage = () => {
       </Card>
 
       {/* --------- INVITE USER DIALOG ------- */}
-      <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Invite User</DialogTitle>
-            <DialogDescription>
-              Send an invitation to a new user. They will receive an email to
-              set up their account.
-            </DialogDescription>
-          </DialogHeader>
-          <Form {...userForm}>
-            <form
-              onSubmit={userForm.handleSubmit(handleInviteUser)}
-              className="space-y-4"
-            >
-              <FormField
-                control={userForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={userForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="john.doe@example.com"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={userForm.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Role</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a role" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="member">Member</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter>
-                <Button type="submit" disabled={inviteLoading}>
-                  {inviteLoading ? "Sending..." : "Send Invitation"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+      <InviteUserDialog
+        open={inviteDialog.value}
+        onClose={inviteDialog.onFalse}
+      />
     </div>
   );
 };
