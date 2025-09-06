@@ -80,14 +80,21 @@ export const schemaHelper = {
     fieldKey: string,
     opts?: {
       required?: boolean;
+      min?: number;
+      max?: number;
     }
   ) => {
-    const { required = true } = opts || {};
+    const { required = true, min, max } = opts || {};
 
-    const baseSchema = z.number({
+    let baseSchema = z.number({
       required_error: `${fieldKey} is required`,
       invalid_type_error: `${fieldKey} must be a number`,
     });
+
+    if (min !== undefined)
+      baseSchema = baseSchema.min(min, `${fieldKey} must be at least ${min}`);
+    if (max !== undefined)
+      baseSchema = baseSchema.max(max, `${fieldKey} must be at most ${max}`);
 
     return required ? baseSchema : baseSchema.nullable().optional();
   },

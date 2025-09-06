@@ -20,14 +20,14 @@ export interface RHFTextProps {
   helperText?: string;
   tooltipText?: any; // optional tooltip content
   type?: "text" | "email" | "password" | "number" | "tel" | "url";
-  variant?: "input" | "textarea";
   icon?: ElementType; // icon component
+  multiline?: boolean;
   disabled?: boolean;
   required?: boolean;
   className?: string;
   labelClassName?: string;
   inputClassName?: string;
-  rows?: number; // for textarea variant
+  rows?: number; // for textarea
   maxLength?: number;
   minLength?: number;
   onChange?: (value: string) => void;
@@ -46,8 +46,8 @@ export const RHFText = forwardRef<
       helperText,
       tooltipText,
       type = "text",
-      variant = "input",
       icon: Icon,
+      multiline = false,
       disabled = false,
       required = false,
       className,
@@ -126,7 +126,7 @@ export const RHFText = forwardRef<
                   <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                 )}
 
-                {variant === "textarea" ? (
+                {multiline ? (
                   <Textarea
                     ref={ref as React.RefObject<HTMLTextAreaElement>}
                     id={name}
