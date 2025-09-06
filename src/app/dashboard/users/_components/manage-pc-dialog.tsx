@@ -12,11 +12,11 @@ import { toast } from "@/hooks/use-toast";
 import { assignPC, unassignPC } from "@/api/assignpc";
 import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
 import { ApiUser } from "../types";
+import { getPcButtonConfig } from "../utils";
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  mainUser?: ApiUser | undefined;
   selectedUser: ApiUser | null;
   setSelectedUser: (user: any) => void;
   globalReload: () => void;
@@ -27,7 +27,6 @@ type Props = {
 const ManagePcDialog = ({
   open,
   onClose,
-  mainUser,
   selectedUser,
   setSelectedUser,
   globalReload,
@@ -38,10 +37,10 @@ const ManagePcDialog = ({
 
   const { data: smartPCs = [], isLoading: isSmartPCLoading } =
     useListRemoteDesktopQuery(
-      mainUser
-        ? { userId: mainUser.owner_id || mainUser.id }
+      selectedUser
+        ? { userId: selectedUser.owner_id || selectedUser.id }
         : { userId: undefined },
-      { skip: !mainUser }
+      { skip: !selectedUser }
     );
 
   const isLoading = fetchAssignmentsLoading || isSmartPCLoading;
@@ -133,45 +132,14 @@ const ManagePcDialog = ({
           ) : (
             <div className="space-y-3">
               {smartPCs.map((pc: any) => {
-                const assignedToCurrent = (
-                  assignments[selectedUser.id] ?? []
-                ).some((a: any) => a.instanceId === pc.instanceId);
-
-                const isAssignedElsewhere = Object.keys(assignments).some(
-                  (assignment) =>
-                    assignment !== selectedUser.id &&
-                    assignments[assignment].some(
-                      (a: any) => a.instanceId === pc.instanceId
-                    )
-                );
-
-                const isAssigning = pcAssigningId === pc.instanceId;
-
-                const buttonConfig: any = {
-                  text: isAssigning ? "Assigning..." : "Assign",
-                  color: "bg-green-500 text-white hover:bg-green-700",
-                  onClick: async () => {
-                    await assignSmartPC(pc);
-                  },
-                  disabled: isAssigning,
-                };
-
-                if (assignedToCurrent) {
-                  buttonConfig.text = isAssigning
-                    ? "Unassigning..."
-                    : "Unassign";
-                  buttonConfig.color = "bg-red-500 text-white hover:bg-red-700";
-                  buttonConfig.onClick = async () => {
-                    await unassignSmartPC(pc);
-                  };
-                  buttonConfig.disabled = isAssigning;
-                } else if (isAssignedElsewhere) {
-                  buttonConfig.text = "Assigned to Another";
-                  buttonConfig.color =
-                    "bg-gray-400 text-white cursor-not-allowed";
-                  buttonConfig.onClick = undefined;
-                  buttonConfig.disabled = true;
-                }
+                const buttonConfig = getPcButtonConfig({
+                  pc,
+                  selectedUserId: selectedUser.id,
+                  assignments,
+                  pcAssigningId,
+                  assignSmartPC,
+                  unassignSmartPC,
+                });
 
                 return (
                   <div

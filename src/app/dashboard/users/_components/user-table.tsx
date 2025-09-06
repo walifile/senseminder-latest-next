@@ -25,11 +25,10 @@ const headers = ["Name", "Email", "Role", "Status", "Assigned PCs", ""];
 
 type Props = {
   loading: boolean;
-  mainUser: ApiUser | undefined;
   filteredUsers: ApiUser[];
 };
 
-const UserTable = ({ loading, mainUser, filteredUsers }: Props) => {
+const UserTable = ({ loading, filteredUsers }: Props) => {
   const showDeleteDialog = useBoolean();
   const managePCDialog = useBoolean();
   const [selectedUser, setSelectedUser] = useState<ApiUser | null>(null);
@@ -184,7 +183,6 @@ const UserTable = ({ loading, mainUser, filteredUsers }: Props) => {
       <ManagePcDialog
         open={managePCDialog.value}
         onClose={managePCDialog.onFalse}
-        mainUser={mainUser}
         selectedUser={selectedUser}
         setSelectedUser={setSelectedUser}
         globalReload={globalReload}

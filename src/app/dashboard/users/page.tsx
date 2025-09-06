@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserPlus, Users, Search, Info } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
 import {
   Popover,
   PopoverContent,
@@ -31,12 +30,6 @@ const UsersManagementPage = () => {
   const { data, isLoading } = useGetUsersQuery();
   const users: ApiUser[] = data?.users || [];
 
-  // Find owner/admin for fetching remote desktops
-  const mainUser = users.find(
-    // @ts-expect-error smv
-    (u) => u.role === "owner" || u.role === "admin" || u.role === "member"
-  );
-
   // Filter users (remove group search)
   const filteredUsers = users.filter(
     (user) =>
@@ -47,8 +40,6 @@ const UsersManagementPage = () => {
       ).includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  // ---- UI ----
 
   return (
     <div className="space-y-6">
@@ -105,14 +96,11 @@ const UsersManagementPage = () => {
             </TabsList>
 
             <TabsContent value="users" className="space-y-4">
-              <UserTable
-                loading={isLoading}
-                mainUser={mainUser}
-                filteredUsers={filteredUsers}
-              />
+              <UserTable loading={isLoading} filteredUsers={filteredUsers} />
             </TabsContent>
           </Tabs>
         </CardContent>
+
         <CardFooter className="border-t pt-6 flex justify-between text-muted-foreground text-sm">
           <p>Total users: {users.length}</p>
         </CardFooter>
