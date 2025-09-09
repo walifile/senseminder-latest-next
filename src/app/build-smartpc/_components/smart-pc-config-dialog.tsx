@@ -146,9 +146,7 @@ const SmartPCConfigDialog = ({
 
       setLoadingExisting(true);
       try {
-        const res = await fetch(
-          "https://y2yvok8mk6.execute-api.us-east-1.amazonaws.com/dev/resize",
-          {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_RESIZE_API_URL}/resize`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -227,8 +225,8 @@ const SmartPCConfigDialog = ({
       const valid = await trigger(["cpu"]);
       if (!valid) return;
 
-      await makeResizeRequest(
-        "https://y2yvok8mk6.execute-api.us-east-1.amazonaws.com/dev/resize",
+     await makeResizeRequest(
+        `${process.env.NEXT_PUBLIC_RESIZE_API_URL}/resize`,
         {
           userId,
           computerName: selectedInstance?.systemName,
@@ -272,7 +270,7 @@ const SmartPCConfigDialog = ({
       const newVolumeSizeGiB = parseInt(storage, 10);
 
       await makeResizeRequest(
-        "https://y2yvok8mk6.execute-api.us-east-1.amazonaws.com/dev/increase-volume",
+        `${process.env.NEXT_PUBLIC_RESIZE_API_URL}/increase-volume`,
         {
           userId,
           computerName: selectedInstance?.systemName,
