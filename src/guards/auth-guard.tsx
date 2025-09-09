@@ -65,17 +65,9 @@ export default function AuthGuard({ children }: AuthProviderProps) {
 
   if (!isPublicRoute && (!initialized || !isAuthenticated)) {
     return (
-      <div className="flex items-center justify-center bg-gray-100 dark:bg-[#0A0A1B] px-4 min-h-screen">
-        <div className="w-full max-w-md bg-white dark:bg-[#111827] p-8 rounded-2xl shadow-lg text-center space-y-4">
-          <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Completing Sign In
-          </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Please wait while we verify your credentials...
-          </p>
-        </div>
-      </div>
+      <div className="fixed inset-0 flex items-center justify-center bg-white/10 dark:bg-black/10 backdrop-blur-sm z-50">
+        <Loader2 className="h-12 w-12 animate-spin text-blue-600 dark:text-blue-400" />
+      </div>
     );
   }
 
