@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { assignPC, unassignPC, getAssignments } from "@/api/assignpc";
-import { getUsers } from "@/api/user";
+import { useGetUsersQuery } from "@/api/user";
 
 type ApiUser = {
   id: string;
@@ -45,24 +45,13 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
   pc,
   onSuccess,
 }) => {
-  const [loading, setLoading] = useState(false);
-  const [users, setUsers] = useState<ApiUser[]>([]);
   const [assignments, setAssignments] = useState<any>({});
   const [loadingAssign, setLoadingAssign] = useState(false);
 
-  // Fetch all users
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await getUsers();
-      setUsers((res && res.users) || []);
-    } catch (e: unknown) {
-      console.error(e);
-      toast({ title: "Failed to fetch users", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const { data, isLoading } = useGetUsersQuery(undefined, {
+    skip: !open,
+  });
+  const users: ApiUser[] = data?.users || [];
 
   // Fetch all assignments
   const fetchAssignments = useCallback(async () => {
@@ -75,10 +64,9 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
   // On open, fetch users and assignments fresh
   useEffect(() => {
     if (open) {
-      fetchUsers();
       fetchAssignments();
     }
-  }, [open, fetchUsers, fetchAssignments]);
+  }, [open, fetchAssignments]);
 
   // Find out if this PC is assigned, and to whom
   let assignedUser: ApiUser | null = null;
@@ -184,7 +172,7 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        {loading ? (
+        {isLoading ? (
           <div>Loading members...</div>
         ) : (
           <div className="space-y-3">

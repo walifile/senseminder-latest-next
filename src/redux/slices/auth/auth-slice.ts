@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { routes } from "@/constants/routes";
 import { syncAuthState } from "@/lib/utils/auth-sync";
 import { RootState } from "@/redux/store";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
@@ -43,21 +40,13 @@ export const authSlice = createSlice({
       action: PayloadAction<{
         user: User;
         token: string;
-      } | null>
+      }>
     ) => {
-      if (action.payload) {
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        state.isAuthenticated = true;
-        syncAuthState(true, action.payload.token);
-        state.tempUser = null; // clear tempUser on full login
-      } else {
-        state.user = null;
-        state.token = null;
-        state.isAuthenticated = false;
-        syncAuthState(false, null);
-        state.tempUser = null;
-      }
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.isAuthenticated = true;
+      syncAuthState(true, action.payload.token);
+      state.tempUser = null;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
@@ -69,19 +58,6 @@ export const authSlice = createSlice({
       state.loading = false;
       state.tempUser = null;
       syncAuthState(false, null);
-
-      if (typeof window !== "undefined") {
-        const currentPath = window.location.pathname;
-
-        // Clear browser history before redirecting
-        window.history.pushState(null, "", "/");
-
-        if (currentPath === "/" || currentPath === "/index") {
-          window.location.reload();
-        } else {
-          window.location.replace(`${routes?.signIn}`);
-        }
-      }
     },
     setTempUser: (state, action: PayloadAction<any | null>) => {
       state.tempUser = action.payload;
@@ -105,4 +81,3 @@ export const selectAuthToken = (state: RootState) => state.auth.token;
 export const selectTempUser = (state: RootState) => state.auth.tempUser;
 export const selectAuthLoading = (state: RootState) => state.auth.loading;
 export const selectUserEmail = (state: RootState) => state.auth.user?.email;
-

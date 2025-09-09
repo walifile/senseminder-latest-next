@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { publicRoutes, routes } from "./constants/routes";
@@ -20,16 +19,15 @@ export async function middleware(request: NextRequest) {
   );
   let hasAuthState = false;
   if (authStateCookie) {
+    let authState: any = null;
+
     try {
-      const authState = JSON.parse(authStateCookie.value);
-      hasAuthState = authState.isAuthenticated && authState.token;
-    } catch (e) {
-      console.error("Invalid auth state cookie");
-      // If there's an error parsing the cookie, force a redirect to login
-      const loginUrl = new URL(routes?.signIn, request.url);
-      loginUrl.searchParams.set("from", pathname);
-      return NextResponse.redirect(loginUrl);
+      authState = JSON.parse(authStateCookie.value);
+    } catch {
+      console.warn("Invalid JSON in auth.state cookie:", authStateCookie.value);
     }
+
+    hasAuthState = authState?.isAuthenticated && authState?.token;
   }
 
   const isAuthenticated = hasCognitoToken && hasAuthState;

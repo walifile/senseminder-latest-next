@@ -19,6 +19,7 @@ import smartPcConfigReducer from "../slices/build-pc/smart-pc-config-slice";
 import { legalDocumentsAPI } from "@/api/legalDocumentsAPI";
 import { ticketsAPI } from "@/api/supportAPI";
 import { billingAPI } from "@/api/billing";
+import { userAPI } from "@/api/user";
 
 interface RootStateType {
   auth: ReturnType<typeof authReducer>;
@@ -31,6 +32,7 @@ interface RootStateType {
   [newsletterAPI.reducerPath]: ReturnType<typeof newsletterAPI.reducer>;
   [legalDocumentsAPI.reducerPath]: ReturnType<typeof legalDocumentsAPI.reducer>;
   [billingAPI.reducerPath]: ReturnType<typeof billingAPI.reducer>;
+  [userAPI.reducerPath]: ReturnType<typeof userAPI.reducer>;
 }
 
 const persistConfig: PersistConfig<RootStateType> = {
@@ -50,6 +52,7 @@ const rootReducer = combineReducers({
   [newsletterAPI.reducerPath]: newsletterAPI.reducer,
   [legalDocumentsAPI.reducerPath]: legalDocumentsAPI.reducer,
   [billingAPI.reducerPath]: billingAPI.reducer,
+  [userAPI.reducerPath]: userAPI.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -68,7 +71,8 @@ export const store = configureStore({
       newsletterAPI.middleware,
       legalDocumentsAPI.middleware,
       ticketsAPI.middleware,
-      billingAPI.middleware
+      billingAPI.middleware,
+      userAPI.middleware
     ),
 });
 
