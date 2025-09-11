@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { RootState } from "@/redux/store";
-import { setTempUser, setLoading } from "@/redux/slices/auth-slice";
+import { setTempUser, setLoading } from "@/redux/slices/auth/auth-slice";
 import { handlePostAuthentication, handleSignOut } from "@/lib/services/auth";
 import { sendTotpRecovery } from "@/api/mfa-recovery";
 import {
