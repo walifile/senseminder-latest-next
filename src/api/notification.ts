@@ -2,8 +2,11 @@
 import { fetchAuthSession } from 'aws-amplify/auth';
 import { Notification } from '@/types/notification'; // ✅ NOT local declaration
 
-const API_BASE = 'https://yns7wkdio7.execute-api.us-east-1.amazonaws.com/dev/';
 
+const API_BASE = process.env.NEXT_PUBLIC_NOTIFICATION_API as string;
+if (!API_BASE) {
+  throw new Error("Missing NEXT_PUBLIC_NOTIFICATION_API in environment variables");
+}
 
 /** Returns a valid Cognito ID token for the current user */
 async function getIdToken(): Promise<string> {

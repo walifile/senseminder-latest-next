@@ -11,7 +11,11 @@ export function connectWebSocket(
   if (socket) return socket;
 
   const role = "customer";
-  const wsUrl = `wss://8t6v8dqxzk.execute-api.us-east-1.amazonaws.com/dev?userId=${userId}&role=${role}`;
+  const baseWsUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL;
+  if (!baseWsUrl) {
+    throw new Error("Missing NEXT_PUBLIC_WEBSOCKET_URL in environment variables");
+  }
+  const wsUrl = `${baseWsUrl}?userId=${userId}&role=${role}`;
   socket = new WebSocket(wsUrl);
 
   socket.onopen = () => {
