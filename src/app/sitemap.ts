@@ -4,7 +4,8 @@ import { MetadataRoute } from "next";
 
 export const revalidate = 3600;
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sensepc.com";
+const baseUrl =
+  process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL || "https://sensepc.com/";
 const baseDir = "src/app";
 const excludeDirs = ["api", "fonts"];
 
@@ -44,7 +45,7 @@ function collectRoutes(
     if (isDynamicSegment(entry.name)) continue;
 
     const isGroup = isRouteGroup(entry.name);
-    const nextSegment = isGroup ? "" : `/${entry.name}`;
+    const nextSegment = isGroup ? "" : `${entry.name}`;
     const nextPrefix = routePrefix + nextSegment || "/";
     const childDir = path.join(currentDir, entry.name);
 
@@ -62,9 +63,9 @@ async function getRoutes(): Promise<MetadataRoute.Sitemap> {
 
   return Array.from(routes).map((route) => ({
     url: `${baseUrl}${route}`,
-    // lastModified: now,
-    // changeFrequency: "weekly",
-    // priority: 1.0,
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: 1.0,
   }));
 }
 
