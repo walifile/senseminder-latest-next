@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { RootState } from "@/redux/store";
-import { setTempUser, setLoading } from "@/redux/slices/auth/auth-slice";
 import { handlePostAuthentication, handleSignOut } from "@/lib/services/auth";
 import { sendTotpRecovery } from "@/api/mfa-recovery";
 import {
@@ -30,6 +29,7 @@ import {
 import { routes } from "@/constants/routes";
 import { getSessionItemSafe } from "@/lib/utils/browser";
 import { maskEmail } from "@/lib/utils/index";
+import { setLoading, setTempUser } from "@/redux/slices/auth/auth-slice";
 
 export default function MfaTotpPage() {
   const [code, setCode] = useState("");

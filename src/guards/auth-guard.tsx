@@ -66,8 +66,8 @@ export default function AuthGuard({ children }: AuthProviderProps) {
   if (!isPublicRoute && (!initialized || !isAuthenticated)) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-white/10 dark:bg-black/10 backdrop-blur-sm z-50">
-        <Loader2 className="h-12 w-12 animate-spin text-blue-600 dark:text-blue-400" />
-      </div>
+        <Loader2 className="h-12 w-12 animate-spin text-blue-600 dark:text-blue-400" />
+      </div>
     );
   }
 

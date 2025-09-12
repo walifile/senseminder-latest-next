@@ -134,10 +134,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <FeedbackDialog
-        open={feedbackDialog.value}
-        onClose={feedbackDialog.onFalse}
-      />
+      <FeedbackDialog open={true} onClose={feedbackDialog.onFalse} />
     </div>
   );
 }
