@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 export const revalidate = 3600;
 
 const baseUrl =
-  process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL || "https://sensepc.com";
+  process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL || "https://sensepc.com/";
 const baseDir = "src/app";
 const excludeDirs = ["api", "fonts"];
 
