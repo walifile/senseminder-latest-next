@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { publicRoutes, routes } from "./constants/routes";
+import { passwordProtectionMiddleware } from "./middleware/password-protection";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -37,6 +38,11 @@ export async function middleware(request: NextRequest) {
     const loginUrl = new URL(routes?.signIn, request.url);
     loginUrl.searchParams.set("from", pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  const passwordProtectionResponse = passwordProtectionMiddleware(request);
+  if (passwordProtectionResponse) {
+    return passwordProtectionResponse;
   }
 
   return NextResponse.next();

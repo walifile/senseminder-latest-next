@@ -18,7 +18,6 @@ export const routes = {
   support: "/dashboard/support",
   tutorials: "/dashboard/tutorials",
   profileSecurity: "/dashboard/profile?tab=security",
-
 };
 
 export const publicRoutes: string[] = [
@@ -43,4 +42,5 @@ export const publicRoutes: string[] = [
   "/privacy",
   "/terms",
   "/auth/forgot-password/mfa",
+  "/auth/password-required",
 ];
