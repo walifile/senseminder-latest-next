@@ -18,8 +18,6 @@ import {
   Download,
   Clock,
 } from "lucide-react";
-import { useBoolean } from "@/hooks/use-boolean";
-import FeedbackDialog from "@/app/dashboard/_components/feedback-dialog";
 
 interface ResourceUsage {
   used: number;
@@ -35,8 +33,6 @@ interface ResourceCard {
 }
 
 export default function DashboardPage() {
-  const feedbackDialog = useBoolean(true);
-
   const resources: ResourceCard[] = [
     {
       title: "Storage Used",
@@ -133,8 +129,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-
-      <FeedbackDialog open={true} onClose={feedbackDialog.onFalse} />
     </div>
   );
 }

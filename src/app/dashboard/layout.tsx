@@ -3,7 +3,12 @@
 import React from "react";
 import DashboardSidebar from "@/app/dashboard/_components/dashboard-sidebar";
 import DashboardHeader from "@/app/dashboard/_components/dashboard-header";
-
+import FeedbackDialog from "@/app/dashboard/_components/feedback-dialog";
+import {
+  selectIsShow,
+  setIsShow,
+} from "@/redux/slices/feedback/feedback-slice";
+import { useDispatch, useSelector } from "react-redux";
 // import DesktopAppDialog from "./storage/_components/desktop-app-dialog";
 
 interface DashboardLayoutProps {
@@ -11,6 +16,13 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const dispatch = useDispatch();
+  const isShow = useSelector(selectIsShow);
+
+  const handleCloseFeedback = () => {
+    dispatch(setIsShow(false));
+  };
+
   return (
     <div className="min-h-screen grid-bg">
       {/* Main layout container */}
@@ -29,9 +41,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </main>
         </div>
       </div>
-
       {/* Dialog mounted globally in dashboard layout */}
       {/* <DesktopAppDialog /> */}
+      {/* Feedback dialog */}
+      <FeedbackDialog open={isShow} onClose={handleCloseFeedback} />;
     </div>
   );
 }

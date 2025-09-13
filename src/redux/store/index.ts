@@ -1,4 +1,5 @@
 import authReducer from "../slices/auth/auth-slice";
+import feedbackReducer from "../slices/feedback/feedback-slice";
 import dcvReducer from "../slices/dcv/dcv-slice";
 import { fileManagerAPI } from "@/api/fileManagerAPI";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
@@ -23,6 +24,7 @@ import { userAPI } from "@/api/user";
 
 interface RootStateType {
   auth: ReturnType<typeof authReducer>;
+  feedback: ReturnType<typeof feedbackReducer>;
   dcv: ReturnType<typeof dcvReducer>;
   startVM: ReturnType<typeof startVMReducer>;
   smartPcConfig: ReturnType<typeof smartPcConfigReducer>;
@@ -43,6 +45,7 @@ const persistConfig: PersistConfig<RootStateType> = {
 
 const rootReducer = combineReducers({
   auth: authReducer,
+  feedback: feedbackReducer,
   dcv: dcvReducer,
   startVM: startVMReducer,
   smartPcConfig: smartPcConfigReducer,
