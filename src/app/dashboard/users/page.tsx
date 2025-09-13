@@ -11,8 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserPlus, Users, Search, Info } from "lucide-react";
+import { UserPlus, Search, Info } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -54,7 +53,7 @@ const UsersManagementPage = () => {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[400px]" align="start">
-              {/* info here, unchanged */}
+              Invite and manage user access to your workspace.
             </PopoverContent>
           </Popover>
         </div>
@@ -87,18 +86,7 @@ const UsersManagementPage = () => {
         </CardHeader>
 
         <CardContent>
-          <Tabs defaultValue="users" value="users">
-            <TabsList className="mb-4">
-              <TabsTrigger value="users" className="flex items-center">
-                <Users className="h-4 w-4 mr-2" />
-                Users
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="users" className="space-y-4">
-              <UserTable loading={isLoading} filteredUsers={filteredUsers} />
-            </TabsContent>
-          </Tabs>
+          <UserTable loading={isLoading} filteredUsers={filteredUsers} />
         </CardContent>
 
         <CardFooter className="border-t pt-6 flex justify-between text-muted-foreground text-sm">
