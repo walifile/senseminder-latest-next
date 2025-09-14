@@ -2,29 +2,32 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
+import {
+  InputOTP,
+  InputOTPSlot,
+  InputOTPGroup,
+} from "@/components/ui/input-otp";
+import {
+  Form,
+  FormItem,
+  FormField,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  FormDescription,
+} from "@/components/ui/form";
+
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
 import { Loader2 } from "lucide-react";
 
-import { handleConfirmSignUp, handleResendOtp } from "@/lib/services/auth";
 import { useToast } from "@/hooks/use-toast";
+
+import { handleResendOtp, handleConfirmSignUp } from "@/lib/services/auth";
 
 const formSchema = z.object({
   pin: z

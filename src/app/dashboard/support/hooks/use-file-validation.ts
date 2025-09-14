@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { ALLOWED_TYPES, MAX_FILE_SIZE_MB, MAX_FILES } from "../constants";
+
 import { useToast } from "@/components/ui/use-toast";
+
+import { MAX_FILES, ALLOWED_TYPES, MAX_FILE_SIZE_MB } from "../constants";
 
 export function useFileValidation() {
   const { toast } = useToast();

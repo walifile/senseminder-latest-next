@@ -1,38 +1,39 @@
 "use client";
 
-import { useState, useEffect, Suspense, useRef } from "react";
-import { Button } from "@/components/ui/button";
+import { useSearchParams } from "next/navigation";
+import { useRef, useState, Suspense, useEffect } from "react";
+import DCVViewer from "@/app/pc-viewer/_components/dcv-viewer";
+import { selectLaunchVMResponse } from "@/redux/slices/dcv/dcv-slice";
+
+import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
-import { Badge } from "@/components/ui/badge";
-import { useSearchParams } from "next/navigation";
+
+import { useSelector } from "react-redux";
+
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  Power,
-  Keyboard,
-  Mouse,
-  Volume2,
-  Shield,
-  Maximize,
-  Monitor,
-  Signal,
-  MonitorPlay,
-  Minimize,
+  X,
   Usb,
+  Power,
+  Mouse,
+  Shield,
+  Signal,
+  Volume2,
+  Monitor,
   Glasses,
   Loader2,
-  ChevronLeft,
-  X,
-  ChevronRight,
-  Menu,
+  Keyboard,
+  Maximize,
+  Minimize,
   Settings,
-  ChevronsRightLeft,
+  MonitorPlay,
+  ChevronLeft,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
-import DCVViewer from "@/app/pc-viewer/_components/dcv-viewer";
-import { useSelector } from "react-redux";
-import { selectLaunchVMResponse } from "@/redux/slices/dcv/dcv-slice";
+
 import dcv from "../../../public/dcvjs/dcv";
 
 // Add ConnectionState type
@@ -778,21 +779,19 @@ const PCViewerContent = () => {
 };
 
 // Main page component
-const PCViewerPage = () => {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-8 w-8 animate-spin" />
-            <span className="text-lg">Loading PC Viewer...</span>
-          </div>
+const PCViewerPage = () => (
+  <Suspense
+    fallback={
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="text-lg">Loading PC Viewer...</span>
         </div>
-      }
-    >
-      <PCViewerContent />
-    </Suspense>
-  );
-};
+      </div>
+    }
+  >
+    <PCViewerContent />
+  </Suspense>
+);
 
 export default PCViewerPage;

@@ -1,4 +1,5 @@
 import React from "react";
+
 import { getFileIcon } from "../utils";
 
 const FileTypeIcon = ({
@@ -20,7 +21,7 @@ const FileTypeIcon = ({
       }`}
     >
       <IconComponent
-        className={`w-full h-full text-primary`}
+        className="w-full h-full text-primary"
         style={fileType === "folder" ? { color: "#eab308" } : undefined}
       />
     </div>

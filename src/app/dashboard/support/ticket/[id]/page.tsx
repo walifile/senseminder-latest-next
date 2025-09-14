@@ -1,25 +1,27 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, CheckCircle2 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import TicketConversation from "../../_components/ticket-conversation";
-import { format } from "date-fns";
+import { selectAuthUser } from "@/redux/slices/auth/auth-slice";
 import {
   useGetTicketByIdQuery,
   useUpdateTicketStatusMutation,
   useUpdateTicketPriorityMutation,
+  usePresignTicketDownloadMutation,
 } from "@/api/supportAPI";
-import PrioritySelectField from "../../_components/priority-select-field";
+
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
+
+import { useSelector } from "react-redux";
+
+import { format } from "date-fns";
+import { ChevronLeft, CheckCircle2 } from "lucide-react";
+
+import TicketConversation from "../../_components/ticket-conversation";
 import { getStatusBadgeClass } from "../../utils/get-status-badge-class";
-import { selectAuthUser } from "@/redux/slices/auth/auth-slice";
-import api from "@/api/apiConfig";
-import { usePresignTicketDownloadMutation } from "@/api/supportAPI";
+import PrioritySelectField from "../../_components/priority-select-field";
 
 const formatLabel = (text: string) =>
   text.charAt(0).toUpperCase() + text.slice(1).replace("-", " ");
@@ -38,8 +40,7 @@ const TicketDetailPage = () => {
     { url: string; name: string; type?: string }[]
   >([]);
 
-  const [updateStatus, { isLoading: isUpdatingStatus }] =
-    useUpdateTicketStatusMutation();
+  const [updateStatus] = useUpdateTicketStatusMutation();
   const [updatePriority] = useUpdateTicketPriorityMutation();
   const [presignDownload] = usePresignTicketDownloadMutation();
 
@@ -47,8 +48,6 @@ const TicketDetailPage = () => {
     data: ticket,
     isLoading,
     isFetching,
-    refetch,
-    error,
   } = useGetTicketByIdQuery(
     { userId, id: ticketId },
     { skip: !userId || !ticketId }

@@ -1,13 +1,18 @@
+import type { PC } from "@/app/build-smartpc/types";
+
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { StopCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { ConfirmStopModal } from "@/app/build-smartpc/_components/confirm-stop-pc-dialog";
-import { useDispatch } from "react-redux";
-import { useStopVMMutation } from "@/api/fileManagerAPI";
-import { PC } from "@/app/build-smartpc/types";
 import { isBusy } from "@/app/build-smartpc/utils";
+import { useStopVMMutation } from "@/api/fileManagerAPI";
 import { removeStartingInstance } from "@/redux/slices/dcv/starting-instances-slice";
+import { ConfirmStopModal } from "@/app/build-smartpc/_components/confirm-stop-pc-dialog";
+
+import { Button } from "@/components/ui/button";
+
+import { useDispatch } from "react-redux";
+
+import { StopCircle } from "lucide-react";
+
+import { useToast } from "@/hooks/use-toast";
 import { useBoolean } from "@/hooks/use-boolean";
 
 type Props = {

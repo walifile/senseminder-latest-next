@@ -1,6 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import {
   Tooltip,
   TooltipTrigger,
@@ -8,23 +11,22 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import {
+  Select,
+  SelectItem,
+  SelectValue,
+  SelectContent,
+  SelectTrigger,
+} from "@/components/ui/select";
+import {
   Dialog,
-  DialogContent,
-  DialogDescription,
+  DialogTitle,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogContent,
+  DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Server, Info } from "lucide-react";
+
+import { Info, Server } from "lucide-react";
 
 type StoragePlansDialogProps = {
   open: boolean;
@@ -43,13 +45,11 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
   const API_KEY = process.env.NEXT_PUBLIC_PING_API_KEY || "";
   const API_URL = process.env.NEXT_PUBLIC_PING_API_URL || "";
 
-  const serverLocations = [
-    { id: "us-east", name: "US East (N. Virginia)" },
-  ];
+  const serverLocations = [{ id: "us-east", name: "US East (N. Virginia)" }];
 
   const PING_ENDPOINTS: Record<string, string> = {
     "us-east": API_URL,
-  };  
+  };
 
   const getStorageSizeFromTier = (tier: number) => `${tier * 20} GB`;
   const PRICE_PER_TIER = 0.5;
@@ -95,7 +95,9 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
             <h3 className="text-sm font-medium">Storage Tier</h3>
             <div className="flex justify-between mt-1 mb-2">
               <span className="text-muted-foreground text-xs">T-1 (20GB)</span>
-              <span className="text-muted-foreground text-xs">T-50 (1000GB)</span>
+              <span className="text-muted-foreground text-xs">
+                T-50 (1000GB)
+              </span>
             </div>
             <Slider
               value={[storageTier]}
@@ -106,7 +108,8 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
             />
             <div className="mt-3 flex justify-between items-center">
               <span className="text-sm">
-                Selected: <strong>T-{storageTier}</strong> ({getStorageSizeFromTier(storageTier)})
+                Selected: <strong>T-{storageTier}</strong> (
+                {getStorageSizeFromTier(storageTier)})
               </span>
               <span className="text-l font-semibold">
                 {storageTier === 1 ? "FREE" : `$${price.toFixed(2)}`} / month
@@ -122,8 +125,13 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
                   <TooltipTrigger asChild>
                     <Info className="h-3.5 w-3.5 text-primary drop-shadow-sm cursor-pointer hover:drop-shadow-md transition-all duration-150" />
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-xs text-xs text-yellow-600">
-                    The latency indicates the estimated response time from your current location to each data center. Lower latency usually means better performance.
+                  <TooltipContent
+                    side="top"
+                    className="max-w-xs text-xs text-yellow-600"
+                  >
+                    The latency indicates the estimated response time from your
+                    current location to each data center. Lower latency usually
+                    means better performance.
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -157,11 +165,7 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
         </div>
 
         <DialogFooter>
-          <Button
-            variant="default"
-            className="w-full"
-            onClick={fetchLatencies}
-          >
+          <Button variant="default" className="w-full" onClick={fetchLatencies}>
             Test Latency
           </Button>
         </DialogFooter>

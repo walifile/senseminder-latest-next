@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 // app/auth/callback/page.tsx
 // "use client";
 // import { useEffect, useState } from "react";
@@ -65,22 +64,24 @@
 //     </div>
 //   );
 // }
+
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { handleAuthRedirect } from "@/lib/services/auth";
-import useErrorToast from "@/hooks/useErrorToast";
-import useToast from "@/hooks/useToast";
-import { Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { routes } from "@/constants/routes";
-import {claimSessionIfAvailable } from "@/api/session";
+import { claimSessionIfAvailable } from "@/api/session";
+import { useRouter, useSearchParams } from "next/navigation";
+
+import { Loader2 } from "lucide-react";
+
+import useErrorToast from "@/hooks/useErrorToast";
+
+import { handleAuthRedirect } from "@/lib/services/auth";
 
 export default function AuthCallback() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { handleError } = useErrorToast();
-  const { showToast } = useToast();
 
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 3;
@@ -119,7 +120,7 @@ export default function AuthCallback() {
             router.replace(routes?.signIn);
           }
         }
-      } catch (error) {
+      } catch {
         if (retryCount < maxRetries) {
           setTimeout(() => {
             setRetryCount((prev) => prev + 1);

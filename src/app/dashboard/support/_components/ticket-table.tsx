@@ -1,30 +1,34 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useGetTicketsQuery } from "@/api/supportAPI";
+import { selectUserId, selectUserEmail } from "@/redux/slices/auth/auth-slice";
+
 import { Input } from "@/components/ui/input";
+import { shortEmail } from "@/lib/utils/format-string";
+import { formatDate, formatRelativeTime } from "@/lib/utils/format-time";
 import {
   Card,
+  CardTitle,
+  CardHeader,
   CardContent,
   CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   Select,
-  SelectContent,
   SelectItem,
-  SelectTrigger,
   SelectValue,
+  SelectContent,
+  SelectTrigger,
 } from "@/components/ui/select";
-import { Search, ArrowDown, ArrowUp } from "lucide-react";
-import { selectUserId, selectUserEmail } from "@/redux/slices/auth/auth-slice";
+
 import { useSelector } from "react-redux";
-import { useGetTicketsQuery } from "@/api/supportAPI";
+
+import { Search, ArrowUp, ArrowDown } from "lucide-react";
+
 import TicketTableSkeleton from "./ticket-table-skeleton";
-import { useRouter } from "next/navigation";
 import { getStatusBadgeClass } from "../utils/get-status-badge-class";
-import { formatDate, formatRelativeTime } from "@/lib/utils/format-time";
-import { shortEmail } from "@/lib/utils/format-string";
 
 export default function TicketTable() {
   const router = useRouter();

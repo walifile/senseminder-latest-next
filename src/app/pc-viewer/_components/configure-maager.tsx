@@ -1,9 +1,11 @@
+import { useState } from "react";
+
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { useState, useRef } from "react";
-import { Settings, Monitor } from "lucide-react";
+
+import { Monitor, Settings } from "lucide-react";
 
 interface DisplayManagerProps {
   connection?: {
@@ -12,7 +14,10 @@ interface DisplayManagerProps {
   isConnected?: boolean;
 }
 
-export const DisplayManager = ({ connection, isConnected = false }: DisplayManagerProps) => {
+export const DisplayManager = ({
+  connection,
+  isConnected = false,
+}: DisplayManagerProps) => {
   const [availableResolutions] = useState([
     { width: 1920, height: 1080, label: "1920×1080 (Full HD)" },
     { width: 1366, height: 768, label: "1366×768 (HD)" },
@@ -20,17 +25,23 @@ export const DisplayManager = ({ connection, isConnected = false }: DisplayManag
     { width: 1024, height: 768, label: "1024×768 (XGA)" },
     { width: 1600, height: 900, label: "1600×900 (HD+)" },
     { width: 2560, height: 1440, label: "2560×1440 (QHD)" },
-    { width: 3840, height: 2160, label: "3840×2160 (4K UHD)" }
+    { width: 3840, height: 2160, label: "3840×2160 (4K UHD)" },
   ]);
 
-  const [currentResolution, setCurrentResolution] = useState({ width: 1920, height: 1080 });
+  const [currentResolution, setCurrentResolution] = useState({
+    width: 1920,
+    height: 1080,
+  });
   const [scaling, setScaling] = useState(100);
-  const [resolutionSettingsEnabled, setResolutionSettingsEnabled] = useState(true);
+  const [resolutionSettingsEnabled, setResolutionSettingsEnabled] =
+    useState(true);
   const [isChangingResolution, setIsChangingResolution] = useState(false);
 
   const changeResolution = async (width: number, height: number) => {
     if (!connection || !isConnected || !resolutionSettingsEnabled) {
-      console.warn('Cannot change resolution: connection not available, not connected, or settings disabled');
+      console.warn(
+        "Cannot change resolution: connection not available, not connected, or settings disabled"
+      );
       return;
     }
 
@@ -40,7 +51,7 @@ export const DisplayManager = ({ connection, isConnected = false }: DisplayManag
       setCurrentResolution({ width, height });
       console.log(`Resolution changed to ${width}x${height}`);
     } catch (err) {
-      console.error('Failed to change resolution:', err);
+      console.error("Failed to change resolution:", err);
     } finally {
       setIsChangingResolution(false);
     }
@@ -48,14 +59,14 @@ export const DisplayManager = ({ connection, isConnected = false }: DisplayManag
 
   const handleResolutionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (!resolutionSettingsEnabled) return;
-    
-    const [width, height] = e.target.value.split('x').map(Number);
+
+    const [width, height] = e.target.value.split("x").map(Number);
     changeResolution(width, height);
   };
 
   const fitToWindow = () => {
     if (!resolutionSettingsEnabled || !connection || !isConnected) return;
-    
+
     // Get current window dimensions
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -64,7 +75,7 @@ export const DisplayManager = ({ connection, isConnected = false }: DisplayManag
 
   const setNativeSize = () => {
     if (!resolutionSettingsEnabled || !connection || !isConnected) return;
-    
+
     // Set to Full HD as "native"
     changeResolution(1920, 1080);
   };
@@ -85,7 +96,7 @@ export const DisplayManager = ({ connection, isConnected = false }: DisplayManag
           />
         </div>
       </div>
-      
+
       <div className="space-y-3">
         {/* Connection Status Indicator */}
         {!isConnected && (
@@ -97,24 +108,31 @@ export const DisplayManager = ({ connection, isConnected = false }: DisplayManag
         {/* Resolution Dropdown */}
         <div>
           <Label className="text-xs">Resolution</Label>
-          <select 
+          <select
             className={`w-full mt-1 p-2 text-sm border rounded transition-opacity ${
               !resolutionSettingsEnabled || !isConnected || isChangingResolution
-                ? 'opacity-50 cursor-not-allowed' 
-                : 'hover:border-gray-400'
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:border-gray-400"
             }`}
             value={`${currentResolution.width}x${currentResolution.height}`}
             onChange={handleResolutionChange}
-            disabled={!resolutionSettingsEnabled || !isConnected || isChangingResolution}
+            disabled={
+              !resolutionSettingsEnabled || !isConnected || isChangingResolution
+            }
           >
-            {availableResolutions.map(res => (
-              <option key={`${res.width}x${res.height}`} value={`${res.width}x${res.height}`}>
+            {availableResolutions.map((res) => (
+              <option
+                key={`${res.width}x${res.height}`}
+                value={`${res.width}x${res.height}`}
+              >
                 {res.label}
               </option>
             ))}
           </select>
           {isChangingResolution && (
-            <div className="text-xs text-blue-600 mt-1">Applying resolution change...</div>
+            <div className="text-xs text-blue-600 mt-1">
+              Applying resolution change...
+            </div>
           )}
         </div>
 
@@ -141,21 +159,25 @@ export const DisplayManager = ({ connection, isConnected = false }: DisplayManag
 
         {/* Quick Action Buttons */}
         <div className="flex gap-2">
-          <Button 
-            size="sm" 
-            variant="outline" 
+          <Button
+            size="sm"
+            variant="outline"
             className="text-xs flex-1"
             onClick={fitToWindow}
-            disabled={!resolutionSettingsEnabled || !isConnected || isChangingResolution}
+            disabled={
+              !resolutionSettingsEnabled || !isConnected || isChangingResolution
+            }
           >
             Fit to Window
           </Button>
-          <Button 
-            size="sm" 
-            variant="outline" 
+          <Button
+            size="sm"
+            variant="outline"
             className="text-xs flex-1"
             onClick={setNativeSize}
-            disabled={!resolutionSettingsEnabled || !isConnected || isChangingResolution}
+            disabled={
+              !resolutionSettingsEnabled || !isConnected || isChangingResolution
+            }
           >
             Native Size
           </Button>
@@ -163,7 +185,8 @@ export const DisplayManager = ({ connection, isConnected = false }: DisplayManag
 
         {/* Current Status */}
         <div className="text-xs text-muted-foreground">
-          Current: {currentResolution.width}×{currentResolution.height} @ {scaling}%
+          Current: {currentResolution.width}×{currentResolution.height} @{" "}
+          {scaling}%
           {!resolutionSettingsEnabled && (
             <span className="text-yellow-600 block mt-1">
               ⚠️ Resolution controls are disabled

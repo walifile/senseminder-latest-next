@@ -1,22 +1,25 @@
 "use client";
 
-import { z } from "zod";
 import Link from "next/link";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { routes } from "@/constants/routes";
 import { useRouter, useSearchParams } from "next/navigation";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 import {
   handleResetPassword,
   handleConfirmResetPassword,
 } from "@/lib/services/auth";
+
 import OTPDialog from "../_components/otp-dialog";
-import { routes } from "@/constants/routes";
 
 const schema = z
   .object({

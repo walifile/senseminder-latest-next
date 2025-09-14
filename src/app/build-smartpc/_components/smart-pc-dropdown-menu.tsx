@@ -1,21 +1,23 @@
 import { Button } from "@/components/ui/button";
 import {
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+
+import {
+  Cpu,
   Plus,
+  Moon,
   Trash2,
   Shield,
-  CalendarClock,
-  Moon,
   MoreVertical,
-  Cpu,
+  CalendarClock,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { DesktopInstance } from "../types";
+
+import type { DesktopInstance } from "../types";
 
 type Props = {
   pc: DesktopInstance;
@@ -39,88 +41,86 @@ const SmartPcDropdownMenu = ({
   handleIdle,
   handleAssignUser,
   handleDelete,
-}: Props) => {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-        <Button variant="ghost" size="icon">
-          <MoreVertical className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+}: Props) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+      <Button variant="ghost" size="icon">
+        <MoreVertical className="h-4 w-4" />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end">
+      <DropdownMenuItem
+        onClick={(e) => {
+          e.stopPropagation();
+          setSelectedInstance(pc);
+          handleSchedule();
+        }}
+      >
+        <CalendarClock className="h-4 w-4 mr-2" />
+        Schedule
+      </DropdownMenuItem>
+
+      <DropdownMenuItem
+        onClick={(e) => {
+          e.stopPropagation();
+          setSelectedInstance(pc);
+          handleIdle();
+        }}
+      >
+        <Moon className="h-4 w-4 mr-2" />
+        Idle Settings
+      </DropdownMenuItem>
+
+      {/* NEW: PC Resize (CPU-only) */}
+      <DropdownMenuItem
+        onClick={(e) => {
+          e.stopPropagation();
+          openPCResizeDialog(pc);
+        }}
+      >
+        <Shield className="h-4 w-4 mr-2" />
+        PC Resize
+      </DropdownMenuItem>
+
+      {/* NEW: Increase Storage */}
+      <DropdownMenuItem
+        onClick={(e) => {
+          e.stopPropagation();
+          openStorageDialog(pc);
+        }}
+      >
+        <Cpu className="h-4 w-4 mr-2" />
+        Add Volume (SSD)
+      </DropdownMenuItem>
+
+      {!isMember && (
         <DropdownMenuItem
           onClick={(e) => {
             e.stopPropagation();
             setSelectedInstance(pc);
-            handleSchedule();
+            handleAssignUser();
           }}
         >
-          <CalendarClock className="h-4 w-4 mr-2" />
-          Schedule
+          <Plus className="h-4 w-4 mr-2" />
+          Assign User
         </DropdownMenuItem>
-
+      )}
+      <DropdownMenuSeparator />
+      {!isMember && (
         <DropdownMenuItem
+          className="text-destructive"
           onClick={(e) => {
             e.stopPropagation();
             setSelectedInstance(pc);
-            handleIdle();
+            handleDelete();
           }}
         >
-          <Moon className="h-4 w-4 mr-2" />
-          Idle Settings
+          <Trash2 className="h-4 w-4 mr-2" />
+          Delete
         </DropdownMenuItem>
-
-        {/* NEW: PC Resize (CPU-only) */}
-        <DropdownMenuItem
-          onClick={(e) => {
-            e.stopPropagation();
-            openPCResizeDialog(pc);
-          }}
-        >
-          <Shield className="h-4 w-4 mr-2" />
-          PC Resize
-        </DropdownMenuItem>
-
-        {/* NEW: Increase Storage */}
-        <DropdownMenuItem
-          onClick={(e) => {
-            e.stopPropagation();
-            openStorageDialog(pc);
-          }}
-        >
-          <Cpu className="h-4 w-4 mr-2" />
-          Add Volume (SSD)
-        </DropdownMenuItem>
-
-        {!isMember && (
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedInstance(pc);
-              handleAssignUser();
-            }}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Assign User
-          </DropdownMenuItem>
-        )}
-        <DropdownMenuSeparator />
-        {!isMember && (
-          <DropdownMenuItem
-            className="text-destructive"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedInstance(pc);
-              handleDelete();
-            }}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
+      )}
+    </DropdownMenuContent>
+  </DropdownMenu>
+);
 
 export default SmartPcDropdownMenu;

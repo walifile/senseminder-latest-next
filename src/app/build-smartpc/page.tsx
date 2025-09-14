@@ -1,55 +1,58 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
-import { motion } from "framer-motion";
+import type { RootState } from "@/redux/store";
+
 import { useRouter } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Cpu, HardDrive, MonitorPlay, Globe } from "lucide-react";
-import Navbar from "@/components/shared/layout/navbar";
 import { routes } from "@/constants/routes";
-import { useForm, useWatch } from "react-hook-form";
+import React, { useMemo, useEffect } from "react";
+import { useCreateVMMutation } from "@/api/vmManagement";
 import {
   useGetEstimateMutation,
   useListRemoteDesktopQuery,
 } from "@/api/fileManagerAPI";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardTitle,
+  CardHeader,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
 import {
   Form,
-  FormField,
   FormItem,
+  FormField,
   FormLabel,
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useCreateVMMutation } from "@/api/vmManagement";
-import { RootState } from "@/redux/store";
+
 import { useSelector } from "react-redux";
-import { formSchema, FormValues } from "./schema";
-import {
-  cpuCategories,
-  cpuOptions,
-  locationOptions,
-  osOptions,
-  storageOptions,
-} from "./data";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import { motion } from "framer-motion";
+import { Cpu, Globe, HardDrive, MonitorPlay } from "lucide-react";
+
+import { useToast } from "@/hooks/use-toast";
+
 import { Field } from "@/components/shared/hook-form";
+import Navbar from "@/components/shared/layout/navbar";
+
+import { formSchema } from "./schema";
 import { fetchEstimate } from "./api/fetch-estimate";
+import {
+  osOptions,
+  cpuOptions,
+  cpuCategories,
+  storageOptions,
+  locationOptions,
+} from "./data";
+
+import type { FormValues } from "./schema";
 
 export default function BuildSmartPCPage() {
   const router = useRouter();
@@ -83,22 +86,13 @@ export default function BuildSmartPCPage() {
     defaultValues,
   });
 
-  const {
-    control,
-    reset,
-    watch,
-    trigger,
-    setValue,
-    handleSubmit,
-    formState: { errors },
-  } = methods;
+  const { control, reset, watch, setValue, handleSubmit } = methods;
 
   const values = watch();
 
   const {
     operatingSystem: selectedOS,
     linuxCategory: selectedLinuxCategory,
-    billingPlan,
     cpu,
     region,
     storage,
@@ -136,13 +130,13 @@ export default function BuildSmartPCPage() {
   }, [cpu, storage, region]);
 
   // onSubmit
-  const handleEstimate = async () =>
-    await fetchEstimate({
-      methods,
-      getEstimate,
-      toast,
-      showError: true,
-    });
+  // const handleEstimate = async () =>
+  //   await fetchEstimate({
+  //     methods,
+  //     getEstimate,
+  //     toast,
+  //     showError: true,
+  //   });
 
   const onSubmit = handleSubmit(async (data: FormValues) => {
     if (!isAuthenticated) {

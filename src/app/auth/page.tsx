@@ -1,19 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import { useState } from "react";
+import { routes } from "@/constants/routes";
+import { claimSessionIfAvailable } from "@/api/session";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
+
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { handleSignIn } from "@/lib/services/auth";
-import SocailLogin from "./_components/socail-login";
+
 // import SocialSignIn from "./_components/social-signin";
 import { useToast } from "@/hooks/use-toast";
-import { routes } from "@/constants/routes";
-import {claimSessionIfAvailable } from "@/api/session";
 
+import { handleSignIn } from "@/lib/services/auth";
 
+import SocailLogin from "./_components/socail-login";
 
 export default function SignIn() {
   const router = useRouter();
@@ -44,25 +46,28 @@ export default function SignIn() {
         });
         try {
           await claimSessionIfAvailable();
-        } catch (error) { 
+        } catch (error) {
           console.error("Error claiming session:", error);
         }
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         const from = searchParams.get("from");
-        const decodedFrom = from ? decodeURIComponent(from).replace(/^\//, "") : "";
+        const decodedFrom = from
+          ? decodeURIComponent(from).replace(/^\//, "")
+          : "";
         const redirectTo = decodedFrom ? `/${decodedFrom}` : routes.dashboard;
 
         router.push(redirectTo);
-
-      } else if ("requiresNewPassword" in response && response.requiresNewPassword) {
+      } else if (
+        "requiresNewPassword" in response &&
+        response.requiresNewPassword
+      ) {
         toast({
           title: "Temporary Password Detected",
           description: "Please set a new password to continue.",
         });
 
         router.push(routes.changePassword);
-
       } else if ("requiresOTP" in response && response.requiresOTP) {
         toast({
           title: "Verification Required",
@@ -72,42 +77,46 @@ export default function SignIn() {
         setTimeout(() => {
           router.push(routes.verifyOTP);
         }, 1500);
-
-      }else if ("mfaRequired" in response && response.mfaRequired) {
+      } else if ("mfaRequired" in response && response.mfaRequired) {
         toast({
           title: "MFA Required",
-          description: "We sent a code to your email. Please enter it to continue.",
+          description:
+            "We sent a code to your email. Please enter it to continue.",
         });
 
         router.push("/auth/mfa-email");
       } else if ("mfaTotp" in response && response.mfaTotp) {
         toast({
           title: "Authenticator Code Required",
-          description: "Please enter the 6-digit code from your Authenticator App.",
+          description:
+            "Please enter the 6-digit code from your Authenticator App.",
         });
 
-        router.push("/auth/mfa-totp");}
+        router.push("/auth/mfa-totp");
+      } else if ("chooseMFA" in response && response.chooseMFA) {
+        toast({
+          title: "Choose MFA Method",
+          description: "Select how you want to verify your login.",
+        });
 
-      else if ("chooseMFA" in response && response.chooseMFA) {
-      toast({
-        title: "Choose MFA Method",
-        description: "Select how you want to verify your login.",
-      });
+        // Store session info
+        sessionStorage.setItem(
+          "tempUserMFA",
+          JSON.stringify(response.signInResult)
+        );
+        sessionStorage.setItem("mfaEmail", email);
+        sessionStorage.setItem(
+          "mfaOptions",
+          JSON.stringify(response.mfaOptions)
+        );
 
-      // Store session info
-      sessionStorage.setItem("tempUserMFA", JSON.stringify(response.signInResult));
-      sessionStorage.setItem("mfaEmail", email);
-      sessionStorage.setItem("mfaOptions", JSON.stringify(response.mfaOptions));
-
-      //  Go to selection page
-      router.push("/auth/mfa-select");
-    }
-
-      
-      else {
+        //  Go to selection page
+        router.push("/auth/mfa-select");
+      } else {
         toast({
           title: "Login Failed",
-          description: response.error || "Invalid credentials. Please try again.",
+          description:
+            response.error || "Invalid credentials. Please try again.",
         });
       }
     } catch (err) {
@@ -136,7 +145,10 @@ export default function SignIn() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-200" htmlFor="email">
+          <label
+            className="text-sm font-medium text-gray-700 dark:text-gray-200"
+            htmlFor="email"
+          >
             Email
           </label>
           <Input
@@ -151,7 +163,10 @@ export default function SignIn() {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-200" htmlFor="password">
+          <label
+            className="text-sm font-medium text-gray-700 dark:text-gray-200"
+            htmlFor="password"
+          >
             Password
           </label>
           <Input
@@ -173,7 +188,10 @@ export default function SignIn() {
               onCheckedChange={(checked) => setRememberMe(checked as boolean)}
               className="border-gray-200 data-[state=checked]:bg-blue-500 dark:border-[#ffffff1a]"
             />
-            <label htmlFor="remember" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+            <label
+              htmlFor="remember"
+              className="text-sm font-medium text-gray-700 dark:text-gray-200"
+            >
               Remember me
             </label>
           </div>
@@ -206,7 +224,6 @@ export default function SignIn() {
       </div>
 
       <SocailLogin />
-     
 
       <p className="text-center text-sm text-gray-500 dark:text-gray-400">
         Don't have an account?{" "}

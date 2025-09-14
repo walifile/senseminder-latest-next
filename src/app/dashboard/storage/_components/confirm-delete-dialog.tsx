@@ -1,17 +1,21 @@
-import { useDeleteFileMutation } from "@/api/fileManagerAPI";
+import type { RootState } from "@/redux/store";
+
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useDeleteFileMutation } from "@/api/fileManagerAPI";
+
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogContent,
+  DialogTitle,
   DialogHeader,
   DialogFooter,
-  DialogTitle,
+  DialogContent,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { RootState } from "@/redux/store";
-import { FileItem } from "../types";
+
+import { useSelector } from "react-redux";
+
+import type { FileItem } from "../types";
 
 interface ConfirmDeleteDialogProps {
   open: boolean;

@@ -1,28 +1,32 @@
 "use client";
 
+import type { RootState } from "@/redux/store";
+
 import React, { useRef, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Upload, Check, X, Loader2, Trash2 } from "lucide-react";
 // import { Progress } from "@/components/ui/progress";
 import {
   useUploadFileMutation,
   useUploadToPresignedUrlMutation,
 } from "@/api/fileManagerAPI";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
+
 import {
   Select,
-  SelectContent,
   SelectItem,
-  SelectTrigger,
   SelectValue,
+  SelectContent,
+  SelectTrigger,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogTitle,
+  DialogHeader,
+  DialogContent,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
+import { useSelector } from "react-redux";
+
+import { X, Check, Upload, Trash2, Loader2 } from "lucide-react";
 
 interface UploadDialogProps {
   open: boolean;
@@ -133,9 +137,9 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Upload Files</DialogTitle>
           <DialogDescription>
-            Choose files from your device to upload{folderPath ? ` to the folder "${folderPath}"` : ""}.
+            Choose files from your device to upload
+            {folderPath ? ` to the folder "${folderPath}"` : ""}.
           </DialogDescription>
-
         </DialogHeader>
         <div className="py-4 space-y-4">
           <div className="space-y-1">
@@ -158,8 +162,9 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
           {/* File upload zone */}
           <label
             htmlFor="file-upload"
-            className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition bg-muted/50 hover:bg-muted ${isDragging ? "border-primary bg-gray-100" : ""
-              }`}
+            className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition bg-muted/50 hover:bg-muted ${
+              isDragging ? "border-primary bg-gray-100" : ""
+            }`}
             onDragOver={(e) => {
               e.preventDefault();
               setIsDragging(true);
@@ -199,12 +204,11 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
                   className="flex items-center justify-between bg-muted px-3 py-2 rounded text-sm"
                 >
                   {/* <span className="truncate w-40">{file.name}</span> */}
-                    {file?.name?.length > 10 ? (
-                    <span
-                      className="truncate w-40"
-                      title={file?.name}
-                    >
-                      {`${file?.name.slice(0, 6)}...${file?.name?.slice(file?.name?.lastIndexOf("."))}`}
+                  {file?.name?.length > 10 ? (
+                    <span className="truncate w-40" title={file?.name}>
+                      {`${file?.name.slice(0, 6)}...${file?.name?.slice(
+                        file?.name?.lastIndexOf(".")
+                      )}`}
                     </span>
                   ) : (
                     <span className="truncate w-40">{file.name}</span>

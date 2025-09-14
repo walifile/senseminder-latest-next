@@ -1,7 +1,7 @@
+import type { MetadataRoute } from "next";
+
 import fs from "fs";
 import path from "path";
-import { MetadataRoute } from "next";
-import { cookies } from "next/headers";
 
 export const revalidate = 3600;
 

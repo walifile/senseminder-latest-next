@@ -1,25 +1,31 @@
 "use client";
 
+import { getAssignments } from "@/api/assignpc";
 import React, { useState, useEffect, useCallback } from "react";
+
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
+  TableRow,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
 } from "@/components/ui/table";
-import { UserCheck, UserX, Mail, Monitor } from "lucide-react";
-import { getRoleBadgeColor, getStatusColor } from "../utils";
-import { ApiUser } from "../types";
-import DeleteUserDialog from "./delete-user-dialog";
-import { useBoolean } from "@/hooks/use-boolean";
-import { cn } from "@/lib/utils";
-import { ActionsMenu } from "@/components/shared/menus";
-import ManagePcDialog from "./manage-pc-dialog";
+
+import { Mail, UserX, Monitor, UserCheck } from "lucide-react";
+
 import { toast } from "@/hooks/use-toast";
-import { getAssignments } from "@/api/assignpc";
+import { useBoolean } from "@/hooks/use-boolean";
+
+import { ActionsMenu } from "@/components/shared/menus";
+
+import ManagePcDialog from "./manage-pc-dialog";
+import DeleteUserDialog from "./delete-user-dialog";
+import { getStatusColor, getRoleBadgeColor } from "../utils";
+
+import type { ApiUser } from "../types";
 
 const headers = ["Name", "Email", "Role", "Status", "Assigned PCs", ""];
 

@@ -1,18 +1,22 @@
 import React, { useState, useCallback } from "react";
+import { assignPC, unassignPC } from "@/api/assignpc";
+import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
+  DialogTitle,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogContent,
+  DialogDescription,
 } from "@/components/ui/dialog";
+
 import { toast } from "@/hooks/use-toast";
-import { assignPC, unassignPC } from "@/api/assignpc";
-import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
-import { ApiUser } from "../types";
+
 import { getPcButtonConfig } from "../utils";
+
+import type { ApiUser } from "../types";
 
 type Props = {
   open: boolean;

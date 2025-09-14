@@ -1,32 +1,31 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { routes } from "@/constants/routes";
+import React, { useState, useEffect } from "react";
+
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { Shield, Share2, Clock, Cloud, Server } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import {
+  Card,
+  CardTitle,
+  CardHeader,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
+import {
   Select,
-  SelectContent,
   SelectItem,
-  SelectTrigger,
   SelectValue,
+  SelectContent,
+  SelectTrigger,
 } from "@/components/ui/select";
-import axios from "axios";
-import { routes } from "@/constants/routes";
+
+import { motion } from "framer-motion";
+import { Clock, Cloud, Shield, Share2, Server } from "lucide-react";
 
 export default function SmartStoragePage() {
   const router = useRouter();
-  const { toast } = useToast();
 
   const [storageTier, setStorageTier] = useState(1);
   const [selectedServer, setSelectedServer] = useState("us-east");
@@ -66,7 +65,7 @@ export default function SmartStoragePage() {
           await res.json();
           const end = performance.now();
           results[region] = Math.round(end - start);
-        } catch (err) {
+        } catch {
           results[region] = -1;
         }
       }

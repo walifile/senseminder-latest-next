@@ -1,71 +1,62 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import type { Notification } from "@/types/notification";
+
 import { useRouter } from "next/navigation";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
+import { getNotifications, markNotificationsAsRead } from "@/api/notification";
+
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Bell, ChevronRight, Settings, X } from "lucide-react";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/components/ui/use-toast";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
   DialogTitle,
+  DialogHeader,
+  DialogContent,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
 
-import {
-  getNotifications,
-  markNotificationsAsRead,
-} from "@/api/notification";
-import type { Notification } from "@/types/notification"; 
+import { X, Bell, Settings, ChevronRight } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────
 // helpers
 // ─────────────────────────────────────────────────────────
 const timeAgo = (iso: string) => {
   const diff = Date.now() - new Date(iso).getTime();
-  const min  = 60_000;
-  const hr   = 60 * min;
-  const day  = 24 * hr;
-  if (diff < hr)  return `${Math.round(diff / min)} minute(s) ago`;
+  const min = 60_000;
+  const hr = 60 * min;
+  const day = 24 * hr;
+  if (diff < hr) return `${Math.round(diff / min)} minute(s) ago`;
   if (diff < day) return `${Math.round(diff / hr)} hour(s) ago`;
   return `${Math.round(diff / day)} day(s) ago`;
 };
 
 const colourBySeverity = (sev: Notification["severity"]) => {
   if (sev === "critical") return "bg-destructive/20 text-destructive";
-  if (sev === "warning")  return "bg-orange-500/20 text-orange-500";
-  return "bg-primary/20 text-primary";          // info
+  if (sev === "warning") return "bg-orange-500/20 text-orange-500";
+  return "bg-primary/20 text-primary"; // info
 };
 
 // ─────────────────────────────────────────────────────────
 
 const NotificationsPage = () => {
   const { toast } = useToast();
-  const router    = useRouter();
+  const router = useRouter();
 
-  const [loading,      setLoading]      = useState(true);
+  const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   // optional preference toggles (pure UI for now)
   const [prefs, setPrefs] = useState({
     email: false,
-    push:  true,
-    system:true,
-    marketing:false,
+    push: true,
+    system: true,
+    marketing: false,
   });
 
   /*  GET notifications on mount  */
@@ -88,8 +79,8 @@ const NotificationsPage = () => {
   }, []);
 
   /*  Helpers  */
-  const unread   = notifications.filter((n) => !n.isRead);
-  const alerts   = notifications.filter((n) => n.severity !== "info");
+  const unread = notifications.filter((n) => !n.isRead);
+  const alerts = notifications.filter((n) => n.severity !== "info");
 
   const handleMarkAll = async () => {
     if (unread.length === 0) return;
@@ -121,7 +112,7 @@ const NotificationsPage = () => {
     });
 
   /*  UI lists  */
-  const listAll    = notifications;
+  const listAll = notifications;
   const listUnread = unread;
   const listAlerts = alerts;
 
@@ -148,12 +139,15 @@ const NotificationsPage = () => {
             </DialogHeader>
 
             {[
-              ["email",      "Email Notifications"],
-              ["push",       "Push Notifications"],
-              ["system",     "System Alerts"],
-              ["marketing",  "Marketing Updates"],
+              ["email", "Email Notifications"],
+              ["push", "Push Notifications"],
+              ["system", "System Alerts"],
+              ["marketing", "Marketing Updates"],
             ].map(([key, label]) => (
-              <div key={key} className="flex items-center justify-between space-x-4 py-2">
+              <div
+                key={key}
+                className="flex items-center justify-between space-x-4 py-2"
+              >
                 <div className="flex-1 space-y-1">
                   <Label htmlFor={key}>{label}</Label>
                 </div>
@@ -269,7 +263,7 @@ const NotificationCard: React.FC<CardProps> = ({ n, onRead, onNavigate }) => {
           {/* icon circle */}
           <div
             className={`h-10 w-10 rounded-full flex items-center justify-center ${colourBySeverity(
-              n.severity,
+              n.severity
             )}`}
           >
             <Bell className="h-5 w-5" />

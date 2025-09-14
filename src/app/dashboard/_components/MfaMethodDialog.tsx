@@ -1,18 +1,20 @@
 "use client";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogTitle,
+  DialogFooter,
+  DialogHeader,
+  DialogContent,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
 import { QrCode } from "lucide-react";
-import { useEffect, useState } from "react";
 
 interface Props {
   open: boolean;
@@ -21,7 +23,12 @@ interface Props {
   onComplete: () => void;
 }
 
-export default function MfaMethodDialog({ open, onClose, method, onComplete }: Props) {
+export default function MfaMethodDialog({
+  open,
+  onClose,
+  method,
+  onComplete,
+}: Props) {
   const [cooldown, setCooldown] = useState(0);
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
@@ -72,9 +79,12 @@ export default function MfaMethodDialog({ open, onClose, method, onComplete }: P
             {method === "email" && "Setup Email Authentication"}
           </DialogTitle>
           <DialogDescription>
-            {method === "app" && "Scan the QR code below with your authenticator app"}
-            {method === "sms" && "Enter your phone number to receive verification codes"}
-            {method === "email" && "We'll send verification codes to your email"}
+            {method === "app" &&
+              "Scan the QR code below with your authenticator app"}
+            {method === "sms" &&
+              "Enter your phone number to receive verification codes"}
+            {method === "email" &&
+              "We'll send verification codes to your email"}
           </DialogDescription>
         </DialogHeader>
 

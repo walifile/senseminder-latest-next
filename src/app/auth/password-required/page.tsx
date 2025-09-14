@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
-import { Eye, EyeOff } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+import { Eye, EyeOff } from "lucide-react";
+
+import { toast } from "@/hooks/use-toast";
 
 const staticPassword = process.env.NEXT_PUBLIC_STATIC_PASSWORD || "Sense@123";
 
@@ -41,7 +44,7 @@ export default function PasswordRequiredPage() {
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Something went wrong. Please try again.",

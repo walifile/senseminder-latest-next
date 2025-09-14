@@ -1,10 +1,12 @@
 "use client";
+
 import React, { useState } from "react";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import TicketTable from "./_components/ticket-table";
+import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
+
 import NewTicket from "./_components/new-ticket";
 import FAQSection from "./_components/faq-section";
+import TicketTable from "./_components/ticket-table";
 
 export default function SupportPage() {
   const [activeTab, setActiveTab] = useState("tickets");

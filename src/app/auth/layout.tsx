@@ -1,4 +1,5 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
+
 import AuthFooter from "@/app/auth/_components/auth-footer";
 
 interface AuthLayoutProps {

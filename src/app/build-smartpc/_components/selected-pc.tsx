@@ -1,32 +1,38 @@
 //build-smartpc/src/app/build-smartpc/_components/selected-pc.tsx
+
 "use client";
 
-import React, { useEffect, useState } from "react";
+import type { RootState } from "@/redux/store";
+
+import React, { useState, useEffect } from "react";
+import { useAddBillingPlanMutation } from "@/api/billing";
+
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
+import { getFriendlyOSName } from "@/lib/utils/format-string";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
+import { useSelector } from "react-redux";
+
 import { motion } from "framer-motion";
 import {
   Cpu,
-  MemoryStick,
-  HardDrive,
-  MonitorPlay,
+  Plus,
+  Users,
   Shield,
-  AlertCircle,
   Activity,
   Settings,
-  Users,
-  Plus,
-  ChevronDown,
+  HardDrive,
   ChevronUp,
+  MemoryStick,
+  MonitorPlay,
+  AlertCircle,
+  ChevronDown,
 } from "lucide-react";
-import { SelectedPcProps } from "../types";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import type { PC } from "../types";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
+
 import { BillingPlanDialog } from "./billing-dialog";
-import { toast } from "@/components/ui/use-toast";
-import { useAddBillingPlanMutation } from "@/api/billing";
-import { getFriendlyOSName } from "@/lib/utils/format-string";
+
+import type { PC, SelectedPcProps } from "../types";
 
 const INSTANCE_DETAILS_API = process.env.NEXT_PUBLIC_INSTANCE_DETAILS_URL;
 

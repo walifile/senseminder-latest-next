@@ -1,13 +1,18 @@
 import React, { useState } from "react";
-import { setLaunchVMResponse } from "@/redux/slices/dcv/dcv-slice";
 import { routes } from "@/constants/routes";
-import { Button } from "@/components/ui/button";
-import { ExternalLink } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useDispatch } from "react-redux";
-import { useLaunchVMMutation } from "@/api/fileManagerAPI";
 import { isBusy } from "@/app/build-smartpc/utils";
-import { PC } from "../types";
+import { useLaunchVMMutation } from "@/api/fileManagerAPI";
+import { setLaunchVMResponse } from "@/redux/slices/dcv/dcv-slice";
+
+import { Button } from "@/components/ui/button";
+
+import { useDispatch } from "react-redux";
+
+import { ExternalLink } from "lucide-react";
+
+import { useToast } from "@/hooks/use-toast";
+
+import type { PC } from "../types";
 
 type Props = {
   pc: PC;

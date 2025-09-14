@@ -1,16 +1,18 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
-  DialogContent,
-  DialogHeader,
   DialogTitle,
+  DialogHeader,
   DialogFooter,
+  DialogContent,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+
 import { CheckCircle } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Checkbox } from "@/components/ui/checkbox";
 
 const billingPlans = [
   {
@@ -71,18 +73,19 @@ export const BillingPlanDialog: React.FC<BillingPlanDialogProps> = ({
   onConfirm,
 }) => {
   const availablePlans = billingPlans.filter((plan) => plan.id !== currentPlan);
-  const [selectedPlan, setSelectedPlan] = useState<string>(availablePlans[0]?.id || "");
-const [consent, setConsent] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<string>(
+    availablePlans[0]?.id || ""
+  );
+  const [consent, setConsent] = useState(false);
 
   useEffect(() => {
     if (open) {
-      const defaultPlan = billingPlans.find((p) => p.id !== currentPlan)?.id || "";
+      const defaultPlan =
+        billingPlans.find((p) => p.id !== currentPlan)?.id || "";
       setSelectedPlan(defaultPlan);
       setConsent(false);
     }
   }, [open, currentPlan]);
-
-  const plan = billingPlans.find((p) => p.id === selectedPlan);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -133,7 +136,11 @@ const [consent, setConsent] = useState(false);
               </div>
 
               <div className="flex items-center space-x-2 mt-4">
-                <Checkbox id="consent" checked={consent} onCheckedChange={(v) => setConsent(!!v)} />
+                <Checkbox
+                  id="consent"
+                  checked={consent}
+                  onCheckedChange={(v) => setConsent(!!v)}
+                />
                 <label
                   htmlFor="consent"
                   className="text-sm text-muted-foreground cursor-pointer"
@@ -143,7 +150,10 @@ const [consent, setConsent] = useState(false);
               </div>
 
               <DialogFooter>
-                <Button onClick={() => onConfirm(selectedPlan)} disabled={!consent}>
+                <Button
+                  onClick={() => onConfirm(selectedPlan)}
+                  disabled={!consent}
+                >
                   Confirm Plan Change
                 </Button>
               </DialogFooter>

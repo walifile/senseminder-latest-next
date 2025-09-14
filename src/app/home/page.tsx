@@ -1,25 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { fetchAuthSession } from "aws-amplify/auth";
-import { checkFirstLogin } from "@/api/first-time-setup";
-import { handleSignOut } from "@/lib/services/auth";
-import { useToast } from "@/hooks/use-toast";
 import { routes } from "@/constants/routes";
+import { checkFirstLogin } from "@/api/first-time-setup";
 
-import CostCalculator from "./_components/cost-calculator";
+import { fetchAuthSession } from "aws-amplify/auth";
+
+import { useToast } from "@/hooks/use-toast";
+
+import { handleSignOut } from "@/lib/services/auth";
+
 import FAQ from "./_components/faq";
-import FutureVision from "./_components/future-vision";
 import Hero from "./_components/hero";
-import HowItWorks from "./_components/how-it-works";
 import { MainLayout } from "./_components/layout";
-import Pricing from "./_components/pricing";
+import HowItWorks from "./_components/how-it-works";
+import FutureVision from "./_components/future-vision";
+import CostCalculator from "./_components/cost-calculator";
 import ProblemSolution from "./_components/problem-solution";
 // import Testimonials from "./_components/testimonials";
 import TutorialSection from "./_components/tutorial-section";
-import WhyChooseUs from "./_components/why-choose-us";
-import WhySettle from "./_components/why-settle";
 
 const FIRST_TIME_SETUP_API = process.env.NEXT_PUBLIC_FIRST_TIME_TOKEN_URL!;
 

@@ -1,18 +1,20 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+
 import { Button } from "@/components/ui/button";
 import {
   InputOTP,
-  InputOTPGroup,
   InputOTPSlot,
+  InputOTPGroup,
 } from "@/components/ui/input-otp";
+import {
+  Dialog,
+  DialogTitle,
+  DialogHeader,
+  DialogContent,
+} from "@/components/ui/dialog";
+
 import { Loader2 } from "lucide-react";
 
 interface OTPDialogProps {

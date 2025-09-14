@@ -1,8 +1,10 @@
+import Link from "next/link";
 import React, { useState, useEffect } from "react";
+
+import { Button } from "@/components/ui/button";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 // import { useRouter } from "next/navigation";
 
 const slides = [
@@ -42,7 +44,7 @@ const HeroSlideshow = () => {
   // const router = useRouter();
 
   useEffect(() => {
-    if (!isAutoPlaying) return;
+    if (!isAutoPlaying) return undefined;
 
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);

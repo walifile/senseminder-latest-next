@@ -1,18 +1,23 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useMemo, useCallback } from "react";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
+  DialogTitle,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogContent,
+  DialogDescription,
 } from "@/components/ui/dialog";
-import { useForm } from "react-hook-form";
-import { toast } from "@/hooks/use-toast";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, Field } from "@/components/shared/hook-form";
+
 import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import { toast } from "@/hooks/use-toast";
+
+import { Form, Field } from "@/components/shared/hook-form";
+
 import { schemaHelper } from "../../../components/shared/hook-form/schema-helper";
 
 function getFeedbackContent(context: string) {
@@ -93,6 +98,7 @@ const FeedbackDialog = ({ open, onClose }: Props) => {
   // Handlers
   const onSubmit = handleSubmit(async (data) => {
     try {
+      console.log("Submitted Feedback:", data);
       toast({
         title: "Thank you for your feedback!",
         description: "We appreciate you taking the time to help us improve.",

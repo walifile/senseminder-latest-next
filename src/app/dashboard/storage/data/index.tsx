@@ -1,16 +1,16 @@
 import {
-  FileText,
-  Image as ImageIcon,
-  Folder,
+  Box,
+  Star,
   Music,
   Video,
-  Share2,
-  Star,
   Clock,
-  HardDrive,
-  Box,
   Apple,
+  Folder,
+  Share2,
   Chrome,
+  FileText,
+  HardDrive,
+  Image as ImageIcon,
 } from "lucide-react";
 
 export const storagePlans = [

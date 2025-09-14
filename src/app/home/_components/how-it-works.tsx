@@ -1,9 +1,12 @@
 "use client";
+
 import React from "react";
-import { motion } from "framer-motion";
-import { Settings, Play, Laptop, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
+
+import { motion } from "framer-motion";
+import { Play, Laptop, Settings, ArrowRight } from "lucide-react";
 
 const steps = [
   {
@@ -70,86 +73,84 @@ const steps = [
   },
 ];
 
-const HowItWorks = () => {
-  return (
-    <section className="py-24 relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
-      <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/5 rounded-full blur-3xl"></div>
+const HowItWorks = () => (
+  <section className="py-24 relative overflow-hidden">
+    {/* Background Effects */}
+    <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
+    <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/5 rounded-full blur-3xl" />
 
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center mb-16 max-w-3xl mx-auto">
-          <div className="inline-flex items-center bg-primary/10 dark:bg-primary/20 rounded-full mb-4 px-4 py-1.5">
-            <span className="text-sm font-medium text-primary">
-              Simple Process
-            </span>
-          </div>
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-3xl md:text-3xl font-bold mb-4"
-          >
-            Get Started in <span className="gradient-text">3 Easy Steps</span>
-          </motion.h2>
+    <div className="container mx-auto px-4 md:px-6">
+      <div className="text-center mb-16 max-w-3xl mx-auto">
+        <div className="inline-flex items-center bg-primary/10 dark:bg-primary/20 rounded-full mb-4 px-4 py-1.5">
+          <span className="text-sm font-medium text-primary">
+            Simple Process
+          </span>
         </div>
-
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {steps.map((step, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.2 }}
-              className="glass-card p-6 relative group dark:bg-gray-900/30 dark:border-gray-800/30"
-            >
-              <div className="absolute -inset-px rounded-lg bg-gradient-to-b from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-              {/* Step Number */}
-              <div className="absolute -top-4 -right-4 w-8 h-8 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center backdrop-blur-sm border border-primary/20 dark:border-primary/40">
-                <span className="text-sm font-bold text-primary">
-                  {index + 1}
-                </span>
-              </div>
-
-              {/* Icon */}
-              <div className="mb-6">{step.icon}</div>
-
-              {/* Content */}
-              <h3 className="text-xl font-bold mb-3">{step.title}</h3>
-              <p className="text-muted-foreground mb-6">{step.description}</p>
-
-              {/* Wireframe Illustration */}
-              {step.wireframe}
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Call to Action */}
-        <motion.div
+        <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="text-center mt-16"
+          transition={{ duration: 0.5 }}
+          className="text-3xl md:text-3xl font-bold mb-4"
         >
-          <Button
-            asChild
-            size="lg"
-            className="relative group bg-primary hover:bg-primary/90 text-primary-foreground"
-          >
-            <Link href="/signup" className="flex items-center gap-2">
-              Build Your Sense PC Now!
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary/0 via-primary-foreground/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500"></div>
-            </Link>
-          </Button>
-        </motion.div>
+          Get Started in <span className="gradient-text">3 Easy Steps</span>
+        </motion.h2>
       </div>
-    </section>
-  );
-};
+
+      <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        {steps.map((step, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: index * 0.2 }}
+            className="glass-card p-6 relative group dark:bg-gray-900/30 dark:border-gray-800/30"
+          >
+            <div className="absolute -inset-px rounded-lg bg-gradient-to-b from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+            {/* Step Number */}
+            <div className="absolute -top-4 -right-4 w-8 h-8 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center backdrop-blur-sm border border-primary/20 dark:border-primary/40">
+              <span className="text-sm font-bold text-primary">
+                {index + 1}
+              </span>
+            </div>
+
+            {/* Icon */}
+            <div className="mb-6">{step.icon}</div>
+
+            {/* Content */}
+            <h3 className="text-xl font-bold mb-3">{step.title}</h3>
+            <p className="text-muted-foreground mb-6">{step.description}</p>
+
+            {/* Wireframe Illustration */}
+            {step.wireframe}
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Call to Action */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay: 0.6 }}
+        className="text-center mt-16"
+      >
+        <Button
+          asChild
+          size="lg"
+          className="relative group bg-primary hover:bg-primary/90 text-primary-foreground"
+        >
+          <Link href="/signup" className="flex items-center gap-2">
+            Build Your Sense PC Now!
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary/0 via-primary-foreground/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
+          </Link>
+        </Button>
+      </motion.div>
+    </div>
+  </section>
+);
 
 export default HowItWorks;

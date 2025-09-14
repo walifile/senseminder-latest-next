@@ -1,16 +1,20 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { routes } from "@/constants/routes";
+
 import { Button } from "@/components/ui/button";
+
 import { FaApple } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
-import {
-  handleGoogleSignUp as googleSignUpService,
-  handleAppleSignUp as appleSignUpService,
-} from "@/lib/services/auth";
-import { useRouter } from "next/navigation";
+
 import { useToast } from "@/hooks/use-toast";
-import { routes } from "@/constants/routes";
+
+import {
+  handleAppleSignUp as appleSignUpService,
+  handleGoogleSignUp as googleSignUpService,
+} from "@/lib/services/auth";
 
 const SocailLogin = () => {
   const router = useRouter();
@@ -23,7 +27,7 @@ const SocailLogin = () => {
     try {
       setIsGoogleLoading(true);
       await googleSignUpService();
-      
+
       router.push(routes?.dashboard);
     } catch (err) {
       const error =
@@ -57,47 +61,45 @@ const SocailLogin = () => {
   };
 
   return (
-    <>
-      <div className="grid grid-cols-2 gap-4">
-        <Button
-          variant="outline"
-          onClick={handleGoogleSignUp}
-          disabled={isGoogleLoading}
-          className="w-full border-gray-200 bg-white/50 text-gray-700 hover:bg-gray-50 dark:border-[#ffffff1a] dark:bg-[#ffffff0f] dark:text-white dark:hover:bg-[#ffffff1a] disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {isGoogleLoading ? (
-            <span className="flex items-center gap-2">
-              <span className="h-4 w-4 animate-spin border-2 border-white border-t-transparent rounded-full" />
-              Google
-            </span>
-          ) : (
-            <>
-              <FcGoogle className="mr-2 h-4 w-4" />
-              Google
-            </>
-          )}
-        </Button>
+    <div className="grid grid-cols-2 gap-4">
+      <Button
+        variant="outline"
+        onClick={handleGoogleSignUp}
+        disabled={isGoogleLoading}
+        className="w-full border-gray-200 bg-white/50 text-gray-700 hover:bg-gray-50 dark:border-[#ffffff1a] dark:bg-[#ffffff0f] dark:text-white dark:hover:bg-[#ffffff1a] disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        {isGoogleLoading ? (
+          <span className="flex items-center gap-2">
+            <span className="h-4 w-4 animate-spin border-2 border-white border-t-transparent rounded-full" />
+            Google
+          </span>
+        ) : (
+          <>
+            <FcGoogle className="mr-2 h-4 w-4" />
+            Google
+          </>
+        )}
+      </Button>
 
-        <Button
-          variant="outline"
-          onClick={handleAppleSignUp}
-          disabled={isAppleLoading}
-          className="w-full border-gray-200 bg-white/50 text-gray-700 hover:bg-gray-50 dark:border-[#ffffff1a] dark:bg-[#ffffff0f] dark:text-white dark:hover:bg-[#ffffff1a] disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {isAppleLoading ? (
-            <span className="flex items-center gap-2">
-              <span className="h-4 w-4 animate-spin border-2 border-white border-t-transparent rounded-full" />
-              Apple
-            </span>
-          ) : (
-            <>
-              <FaApple className="mr-2 h-4 w-4" />
-              Apple
-            </>
-          )}
-        </Button>
-      </div>
-    </>
+      <Button
+        variant="outline"
+        onClick={handleAppleSignUp}
+        disabled={isAppleLoading}
+        className="w-full border-gray-200 bg-white/50 text-gray-700 hover:bg-gray-50 dark:border-[#ffffff1a] dark:bg-[#ffffff0f] dark:text-white dark:hover:bg-[#ffffff1a] disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        {isAppleLoading ? (
+          <span className="flex items-center gap-2">
+            <span className="h-4 w-4 animate-spin border-2 border-white border-t-transparent rounded-full" />
+            Apple
+          </span>
+        ) : (
+          <>
+            <FaApple className="mr-2 h-4 w-4" />
+            Apple
+          </>
+        )}
+      </Button>
+    </div>
   );
 };
 

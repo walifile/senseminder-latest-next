@@ -1,44 +1,52 @@
+import React, { useRef, useState, useEffect, useCallback } from "react";
+
+import { cn } from "@/lib/utils";
 // _components/audio-video-manager.tsx
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
+import { Progress } from "@/components/ui/progress";
+import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import {
-    Activity,
-    AlertCircle,
-    CheckCircle,
-    Mic,
-    Monitor,
-    Pause,
-    Play,
-    RotateCcw,
-    Settings,
-    Video,
-    VideoOff,
-    Volume2,
-    VolumeX,
-    Wifi
+  Select,
+  SelectItem,
+  SelectValue,
+  SelectContent,
+  SelectTrigger,
+} from "@/components/ui/select";
+
+import {
+  Mic,
+  Play,
+  Wifi,
+  Pause,
+  Video,
+  Monitor,
+  Volume2,
+  VolumeX,
+  Activity,
+  Settings,
+  VideoOff,
+  RotateCcw,
+  AlertCircle,
+  CheckCircle,
 } from "lucide-react";
-import React, { useCallback, useEffect, useRef, useState } from "react";
 
 // Audio/Video Types
 interface AudioDevice {
   deviceId: string;
   label: string;
-  kind: 'audioinput' | 'audiooutput';
+  kind: "audioinput" | "audiooutput";
   groupId: string;
 }
 
 interface VideoDevice {
   deviceId: string;
   label: string;
-  kind: 'videoinput';
+  kind: "videoinput";
   groupId: string;
 }
 
@@ -53,7 +61,7 @@ interface AudioSettings {
   autoGainControl: boolean;
   sampleRate: number;
   bitrate: number;
-  channels: 'mono' | 'stereo';
+  channels: "mono" | "stereo";
 }
 
 interface VideoSettings {
@@ -63,7 +71,7 @@ interface VideoSettings {
   frameRate: number;
   bitrate: number;
   codec: string;
-  quality: 'low' | 'medium' | 'high' | 'ultra';
+  quality: "low" | "medium" | "high" | "ultra";
 }
 
 interface MediaStats {
@@ -85,29 +93,29 @@ interface MediaStats {
   };
 }
 
-interface DcvConnection {
-  // Audio methods
-  setAudioEnabled: (enabled: boolean) => Promise<void>;
-  setAudioInputDevice: (deviceId: string) => Promise<void>;
-  setAudioOutputDevice: (deviceId: string) => Promise<void>;
-  setAudioInputVolume: (volume: number) => Promise<void>;
-  setAudioOutputVolume: (volume: number) => Promise<void>;
-  setAudioSettings: (settings: Partial<AudioSettings>) => Promise<void>;
-  
-  // Video methods
-  setVideoEnabled: (enabled: boolean) => Promise<void>;
-  setVideoDevice: (deviceId: string) => Promise<void>;
-  setVideoSettings: (settings: Partial<VideoSettings>) => Promise<void>;
-  
-  // Stats methods
-  getMediaStats: () => Promise<MediaStats>;
-  
-  // Test methods
-  startAudioTest: () => Promise<void>;
-  stopAudioTest: () => Promise<void>;
-  startVideoTest: () => Promise<void>;
-  stopVideoTest: () => Promise<void>;
-}
+// interface DcvConnection {
+//   // Audio methods
+//   setAudioEnabled: (enabled: boolean) => Promise<void>;
+//   setAudioInputDevice: (deviceId: string) => Promise<void>;
+//   setAudioOutputDevice: (deviceId: string) => Promise<void>;
+//   setAudioInputVolume: (volume: number) => Promise<void>;
+//   setAudioOutputVolume: (volume: number) => Promise<void>;
+//   setAudioSettings: (settings: Partial<AudioSettings>) => Promise<void>;
+
+//   // Video methods
+//   setVideoEnabled: (enabled: boolean) => Promise<void>;
+//   setVideoDevice: (deviceId: string) => Promise<void>;
+//   setVideoSettings: (settings: Partial<VideoSettings>) => Promise<void>;
+
+//   // Stats methods
+//   getMediaStats: () => Promise<MediaStats>;
+
+//   // Test methods
+//   startAudioTest: () => Promise<void>;
+//   stopAudioTest: () => Promise<void>;
+//   startVideoTest: () => Promise<void>;
+//   stopVideoTest: () => Promise<void>;
+// }
 
 interface AudioVideoManagerProps {
   connection: any | null;
@@ -116,18 +124,18 @@ interface AudioVideoManagerProps {
 
 export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
   connection,
-  isConnected
+  isConnected,
 }) => {
   // Device states
   const [audioDevices, setAudioDevices] = useState<AudioDevice[]>([]);
   const [videoDevices, setVideoDevices] = useState<VideoDevice[]>([]);
   const [isLoadingDevices, setIsLoadingDevices] = useState(false);
-  
+
   // Settings states
   const [audioSettings, setAudioSettings] = useState<AudioSettings>({
     enabled: true,
-    inputDevice: 'default',
-    outputDevice: 'default',
+    inputDevice: "default",
+    outputDevice: "default",
     inputVolume: 75,
     outputVolume: 75,
     echoCancellation: true,
@@ -135,19 +143,19 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
     autoGainControl: true,
     sampleRate: 44100,
     bitrate: 128,
-    channels: 'stereo'
+    channels: "stereo",
   });
-  
+
   const [videoSettings, setVideoSettings] = useState<VideoSettings>({
     enabled: true,
-    device: 'default',
-    resolution: '1280x720',
+    device: "default",
+    resolution: "1280x720",
     frameRate: 30,
     bitrate: 2000,
-    codec: 'H.264',
-    quality: 'medium'
+    codec: "H.264",
+    quality: "medium",
   });
-  
+
   // Stats and monitoring
   const [mediaStats, setMediaStats] = useState<MediaStats>({
     audio: {
@@ -156,23 +164,23 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
       packetsLost: 0,
       latency: 0,
       jitter: 0,
-      bitrate: 0
+      bitrate: 0,
     },
     video: {
       frameRate: 0,
-      resolution: '',
+      resolution: "",
       packetsLost: 0,
       latency: 0,
       bitrate: 0,
-      droppedFrames: 0
-    }
+      droppedFrames: 0,
+    },
   });
-  
+
   // Test states
   const [isAudioTesting, setIsAudioTesting] = useState(false);
   const [isVideoTesting, setIsVideoTesting] = useState(false);
   const [testStream, setTestStream] = useState<MediaStream | null>(null);
-  
+
   // Refs
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -185,40 +193,40 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
     try {
       // Request permissions first
       await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-      
+
       const devices = await navigator.mediaDevices.enumerateDevices();
-      
+
       const audioInputs = devices
-        .filter(device => device.kind === 'audioinput')
-        .map(device => ({
+        .filter((device) => device.kind === "audioinput")
+        .map((device) => ({
           deviceId: device.deviceId,
           label: device.label || `Microphone ${device.deviceId.slice(0, 8)}`,
-          kind: 'audioinput' as const,
-          groupId: device.groupId
+          kind: "audioinput" as const,
+          groupId: device.groupId,
         }));
-        
+
       const audioOutputs = devices
-        .filter(device => device.kind === 'audiooutput')
-        .map(device => ({
+        .filter((device) => device.kind === "audiooutput")
+        .map((device) => ({
           deviceId: device.deviceId,
           label: device.label || `Speaker ${device.deviceId.slice(0, 8)}`,
-          kind: 'audiooutput' as const,
-          groupId: device.groupId
+          kind: "audiooutput" as const,
+          groupId: device.groupId,
         }));
-        
+
       const videoInputs = devices
-        .filter(device => device.kind === 'videoinput')
-        .map(device => ({
+        .filter((device) => device.kind === "videoinput")
+        .map((device) => ({
           deviceId: device.deviceId,
           label: device.label || `Camera ${device.deviceId.slice(0, 8)}`,
-          kind: 'videoinput' as const,
-          groupId: device.groupId
+          kind: "videoinput" as const,
+          groupId: device.groupId,
         }));
-      
+
       setAudioDevices([...audioInputs, ...audioOutputs]);
       setVideoDevices(videoInputs);
     } catch (error) {
-      console.error('Failed to load media devices:', error);
+      console.error("Failed to load media devices:", error);
     } finally {
       setIsLoadingDevices(false);
     }
@@ -227,35 +235,40 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
   // Initialize component
   useEffect(() => {
     loadDevices();
-    
+
     // Listen for device changes
     const handleDeviceChange = () => loadDevices();
-    navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange);
-    
+    navigator.mediaDevices.addEventListener("devicechange", handleDeviceChange);
+
     return () => {
-      navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
+      navigator.mediaDevices.removeEventListener(
+        "devicechange",
+        handleDeviceChange
+      );
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
       if (testStream) {
-        testStream.getTracks().forEach(track => track.stop());
+        testStream.getTracks().forEach((track) => track.stop());
       }
     };
   }, [loadDevices]);
 
   // Update stats periodically
   useEffect(() => {
-    if (!isConnected || !connection) return;
-    
+    if (!isConnected || !connection) {
+      return undefined;
+    }
+
     const updateStats = async () => {
       try {
         const stats = await connection.getMediaStats();
         setMediaStats(stats);
       } catch (error) {
-        console.error('Failed to get media stats:', error);
+        console.error("Failed to get media stats:", error);
       }
     };
-    
+
     const interval = setInterval(updateStats, 1000);
     return () => clearInterval(interval);
   }, [isConnected, connection]);
@@ -263,48 +276,54 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
   // Audio level monitoring during tests
   const monitorAudioLevel = useCallback(() => {
     if (!analyserRef.current) return;
-    
+
     const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
     analyserRef.current.getByteFrequencyData(dataArray);
-    
+
     // Calculate average level
     const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
     const level = (average / 255) * 100;
-    
-    setMediaStats(prev => ({
+
+    setMediaStats((prev) => ({
       ...prev,
-      audio: { ...prev.audio, inputLevel: level }
+      audio: { ...prev.audio, inputLevel: level },
     }));
-    
+
     if (isAudioTesting) {
       animationFrameRef.current = requestAnimationFrame(monitorAudioLevel);
     }
   }, [isAudioTesting]);
 
   // Handle audio setting changes
-  const handleAudioSettingChange = async (key: keyof AudioSettings, value: any) => {
+  const handleAudioSettingChange = async (
+    key: keyof AudioSettings,
+    value: any
+  ) => {
     const newSettings = { ...audioSettings, [key]: value };
     setAudioSettings(newSettings);
-    
+
     if (connection && isConnected) {
       try {
         await connection.setAudioSettings({ [key]: value });
       } catch (error) {
-        console.error('Failed to update audio setting:', error);
+        console.error("Failed to update audio setting:", error);
       }
     }
   };
 
   // Handle video setting changes
-  const handleVideoSettingChange = async (key: keyof VideoSettings, value: any) => {
+  const handleVideoSettingChange = async (
+    key: keyof VideoSettings,
+    value: any
+  ) => {
     const newSettings = { ...videoSettings, [key]: value };
     setVideoSettings(newSettings);
-    
+
     if (connection && isConnected) {
       try {
         await connection.setVideoSettings({ [key]: value });
       } catch (error) {
-        console.error('Failed to update video setting:', error);
+        console.error("Failed to update video setting:", error);
       }
     }
   };
@@ -314,56 +333,59 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          deviceId: audioSettings.inputDevice !== 'default' ? audioSettings.inputDevice : undefined,
+          deviceId:
+            audioSettings.inputDevice !== "default"
+              ? audioSettings.inputDevice
+              : undefined,
           echoCancellation: audioSettings.echoCancellation,
           noiseSuppression: audioSettings.noiseSuppression,
-          autoGainControl: audioSettings.autoGainControl
-        }
+          autoGainControl: audioSettings.autoGainControl,
+        },
       });
-      
+
       setTestStream(stream);
       setIsAudioTesting(true);
-      
+
       // Set up audio analysis
       audioContextRef.current = new AudioContext();
       analyserRef.current = audioContextRef.current.createAnalyser();
       const source = audioContextRef.current.createMediaStreamSource(stream);
       source.connect(analyserRef.current);
-      
+
       analyserRef.current.fftSize = 256;
       monitorAudioLevel();
-      
+
       if (connection && isConnected) {
         await connection.startAudioTest();
       }
     } catch (error) {
-      console.error('Failed to start audio test:', error);
+      console.error("Failed to start audio test:", error);
     }
   };
 
   // Stop audio test
   const stopAudioTest = async () => {
     if (testStream) {
-      testStream.getTracks().forEach(track => track.stop());
+      testStream.getTracks().forEach((track) => track.stop());
       setTestStream(null);
     }
-    
+
     if (audioContextRef.current) {
       audioContextRef.current.close();
       audioContextRef.current = null;
     }
-    
+
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
-    
+
     setIsAudioTesting(false);
-    
+
     if (connection && isConnected) {
       try {
         await connection.stopAudioTest();
       } catch (error) {
-        console.error('Failed to stop audio test:', error);
+        console.error("Failed to stop audio test:", error);
       }
     }
   };
@@ -373,46 +395,49 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          deviceId: videoSettings.device !== 'default' ? videoSettings.device : undefined,
+          deviceId:
+            videoSettings.device !== "default"
+              ? videoSettings.device
+              : undefined,
           width: { ideal: 1280 },
           height: { ideal: 720 },
-          frameRate: { ideal: videoSettings.frameRate }
-        }
+          frameRate: { ideal: videoSettings.frameRate },
+        },
       });
-      
+
       setTestStream(stream);
       setIsVideoTesting(true);
-      
+
       if (videoPreviewRef.current) {
         videoPreviewRef.current.srcObject = stream;
       }
-      
+
       if (connection && isConnected) {
         await connection.startVideoTest();
       }
     } catch (error) {
-      console.error('Failed to start video test:', error);
+      console.error("Failed to start video test:", error);
     }
   };
 
   // Stop video test
   const stopVideoTest = async () => {
     if (testStream) {
-      testStream.getTracks().forEach(track => track.stop());
+      testStream.getTracks().forEach((track) => track.stop());
       setTestStream(null);
     }
-    
+
     if (videoPreviewRef.current) {
       videoPreviewRef.current.srcObject = null;
     }
-    
+
     setIsVideoTesting(false);
-    
+
     if (connection && isConnected) {
       try {
         await connection.stopVideoTest();
       } catch (error) {
-        console.error('Failed to stop video test:', error);
+        console.error("Failed to stop video test:", error);
       }
     }
   };
@@ -421,8 +446,8 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
   const resetToDefaults = () => {
     const defaultAudio: AudioSettings = {
       enabled: true,
-      inputDevice: 'default',
-      outputDevice: 'default',
+      inputDevice: "default",
+      outputDevice: "default",
       inputVolume: 75,
       outputVolume: 75,
       echoCancellation: true,
@@ -430,19 +455,19 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
       autoGainControl: true,
       sampleRate: 44100,
       bitrate: 128,
-      channels: 'stereo'
+      channels: "stereo",
     };
-    
+
     const defaultVideo: VideoSettings = {
       enabled: true,
-      device: 'default',
-      resolution: '1280x720',
+      device: "default",
+      resolution: "1280x720",
       frameRate: 30,
       bitrate: 2000,
-      codec: 'H.264',
-      quality: 'medium'
+      codec: "H.264",
+      quality: "medium",
     };
-    
+
     setAudioSettings(defaultAudio);
     setVideoSettings(defaultVideo);
   };
@@ -460,8 +485,15 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
       <div className="flex items-center justify-between">
         <h4 className="font-medium">Audio & Video Settings</h4>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={loadDevices} disabled={isLoadingDevices}>
-            <RotateCcw className={cn("h-3 w-3", isLoadingDevices && "animate-spin")} />
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={loadDevices}
+            disabled={isLoadingDevices}
+          >
+            <RotateCcw
+              className={cn("h-3 w-3", isLoadingDevices && "animate-spin")}
+            />
           </Button>
           <Button size="sm" variant="outline" onClick={resetToDefaults}>
             <Settings className="h-3 w-3" />
@@ -499,7 +531,9 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
                 </div>
                 <Switch
                   checked={audioSettings.enabled}
-                  onCheckedChange={(checked) => handleAudioSettingChange('enabled', checked)}
+                  onCheckedChange={(checked) =>
+                    handleAudioSettingChange("enabled", checked)
+                  }
                 />
               </div>
 
@@ -508,7 +542,9 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
                 <Label>Microphone</Label>
                 <Select
                   value={audioSettings.inputDevice}
-                  onValueChange={(value) => handleAudioSettingChange('inputDevice', value)}
+                  onValueChange={(value) =>
+                    handleAudioSettingChange("inputDevice", value)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select microphone" />
@@ -516,9 +552,12 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
                   <SelectContent>
                     <SelectItem value="default">Default Microphone</SelectItem>
                     {audioDevices
-                      .filter(device => device.kind === 'audioinput')
-                      .map(device => (
-                        <SelectItem key={device.deviceId} value={device.deviceId}>
+                      .filter((device) => device.kind === "audioinput")
+                      .map((device) => (
+                        <SelectItem
+                          key={device.deviceId}
+                          value={device.deviceId}
+                        >
                           {device.label}
                         </SelectItem>
                       ))}
@@ -531,7 +570,9 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
                 <Label>Speakers</Label>
                 <Select
                   value={audioSettings.outputDevice}
-                  onValueChange={(value) => handleAudioSettingChange('outputDevice', value)}
+                  onValueChange={(value) =>
+                    handleAudioSettingChange("outputDevice", value)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select speakers" />
@@ -539,9 +580,12 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
                   <SelectContent>
                     <SelectItem value="default">Default Speakers</SelectItem>
                     {audioDevices
-                      .filter(device => device.kind === 'audiooutput')
-                      .map(device => (
-                        <SelectItem key={device.deviceId} value={device.deviceId}>
+                      .filter((device) => device.kind === "audiooutput")
+                      .map((device) => (
+                        <SelectItem
+                          key={device.deviceId}
+                          value={device.deviceId}
+                        >
                           {device.label}
                         </SelectItem>
                       ))}
@@ -554,24 +598,32 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label>Microphone Volume</Label>
-                    <span className="text-sm text-muted-foreground">{audioSettings.inputVolume}%</span>
+                    <span className="text-sm text-muted-foreground">
+                      {audioSettings.inputVolume}%
+                    </span>
                   </div>
                   <Slider
                     value={[audioSettings.inputVolume]}
-                    onValueChange={(value) => handleAudioSettingChange('inputVolume', value[0])}
+                    onValueChange={(value) =>
+                      handleAudioSettingChange("inputVolume", value[0])
+                    }
                     max={100}
                     step={1}
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label>Speaker Volume</Label>
-                    <span className="text-sm text-muted-foreground">{audioSettings.outputVolume}%</span>
+                    <span className="text-sm text-muted-foreground">
+                      {audioSettings.outputVolume}%
+                    </span>
                   </div>
                   <Slider
                     value={[audioSettings.outputVolume]}
-                    onValueChange={(value) => handleAudioSettingChange('outputVolume', value[0])}
+                    onValueChange={(value) =>
+                      handleAudioSettingChange("outputVolume", value[0])
+                    }
                     max={100}
                     step={1}
                   />
@@ -581,28 +633,34 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
               {/* Audio Processing */}
               <div className="space-y-3">
                 <Label className="text-sm font-medium">Audio Processing</Label>
-                
+
                 <div className="flex items-center justify-between">
                   <Label className="text-sm">Echo Cancellation</Label>
                   <Switch
                     checked={audioSettings.echoCancellation}
-                    onCheckedChange={(checked) => handleAudioSettingChange('echoCancellation', checked)}
+                    onCheckedChange={(checked) =>
+                      handleAudioSettingChange("echoCancellation", checked)
+                    }
                   />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <Label className="text-sm">Noise Suppression</Label>
                   <Switch
                     checked={audioSettings.noiseSuppression}
-                    onCheckedChange={(checked) => handleAudioSettingChange('noiseSuppression', checked)}
+                    onCheckedChange={(checked) =>
+                      handleAudioSettingChange("noiseSuppression", checked)
+                    }
                   />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <Label className="text-sm">Auto Gain Control</Label>
                   <Switch
                     checked={audioSettings.autoGainControl}
-                    onCheckedChange={(checked) => handleAudioSettingChange('autoGainControl', checked)}
+                    onCheckedChange={(checked) =>
+                      handleAudioSettingChange("autoGainControl", checked)
+                    }
                   />
                 </div>
               </div>
@@ -610,12 +668,14 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
               {/* Advanced Settings */}
               <div className="space-y-4">
                 <Label className="text-sm font-medium">Advanced Settings</Label>
-                
+
                 <div className="space-y-2">
                   <Label className="text-sm">Sample Rate</Label>
                   <Select
                     value={audioSettings.sampleRate.toString()}
-                    onValueChange={(value) => handleAudioSettingChange('sampleRate', parseInt(value))}
+                    onValueChange={(value) =>
+                      handleAudioSettingChange("sampleRate", parseInt(value))
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -628,12 +688,14 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label className="text-sm">Channels</Label>
                   <Select
                     value={audioSettings.channels}
-                    onValueChange={(value) => handleAudioSettingChange('channels', value)}
+                    onValueChange={(value) =>
+                      handleAudioSettingChange("channels", value)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -644,15 +706,19 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label className="text-sm">Bitrate</Label>
-                    <span className="text-sm text-muted-foreground">{audioSettings.bitrate} kbps</span>
+                    <span className="text-sm text-muted-foreground">
+                      {audioSettings.bitrate} kbps
+                    </span>
                   </div>
                   <Slider
                     value={[audioSettings.bitrate]}
-                    onValueChange={(value) => handleAudioSettingChange('bitrate', value[0])}
+                    onValueChange={(value) =>
+                      handleAudioSettingChange("bitrate", value[0])
+                    }
                     min={64}
                     max={320}
                     step={32}
@@ -685,7 +751,9 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
                 </div>
                 <Switch
                   checked={videoSettings.enabled}
-                  onCheckedChange={(checked) => handleVideoSettingChange('enabled', checked)}
+                  onCheckedChange={(checked) =>
+                    handleVideoSettingChange("enabled", checked)
+                  }
                 />
               </div>
 
@@ -694,14 +762,16 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
                 <Label>Camera</Label>
                 <Select
                   value={videoSettings.device}
-                  onValueChange={(value) => handleVideoSettingChange('device', value)}
+                  onValueChange={(value) =>
+                    handleVideoSettingChange("device", value)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select camera" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="default">Default Camera</SelectItem>
-                    {videoDevices.map(device => (
+                    {videoDevices.map((device) => (
                       <SelectItem key={device.deviceId} value={device.deviceId}>
                         {device.label}
                       </SelectItem>
@@ -715,7 +785,9 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
                 <Label>Resolution</Label>
                 <Select
                   value={videoSettings.resolution}
-                  onValueChange={(value) => handleVideoSettingChange('resolution', value)}
+                  onValueChange={(value) =>
+                    handleVideoSettingChange("resolution", value)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -723,7 +795,9 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
                   <SelectContent>
                     <SelectItem value="640x480">640x480 (SD)</SelectItem>
                     <SelectItem value="1280x720">1280x720 (HD)</SelectItem>
-                    <SelectItem value="1920x1080">1920x1080 (Full HD)</SelectItem>
+                    <SelectItem value="1920x1080">
+                      1920x1080 (Full HD)
+                    </SelectItem>
                     <SelectItem value="2560x1440">2560x1440 (QHD)</SelectItem>
                     <SelectItem value="3840x2160">3840x2160 (4K)</SelectItem>
                   </SelectContent>
@@ -734,11 +808,15 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>Frame Rate</Label>
-                  <span className="text-sm text-muted-foreground">{videoSettings.frameRate} fps</span>
+                  <span className="text-sm text-muted-foreground">
+                    {videoSettings.frameRate} fps
+                  </span>
                 </div>
                 <Slider
                   value={[videoSettings.frameRate]}
-                  onValueChange={(value) => handleVideoSettingChange('frameRate', value[0])}
+                  onValueChange={(value) =>
+                    handleVideoSettingChange("frameRate", value[0])
+                  }
                   min={15}
                   max={60}
                   step={15}
@@ -750,7 +828,9 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
                 <Label>Quality Preset</Label>
                 <Select
                   value={videoSettings.quality}
-                  onValueChange={(value) => handleVideoSettingChange('quality', value)}
+                  onValueChange={(value) =>
+                    handleVideoSettingChange("quality", value)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -768,11 +848,15 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>Bitrate</Label>
-                  <span className="text-sm text-muted-foreground">{formatBitrate(videoSettings.bitrate)}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {formatBitrate(videoSettings.bitrate)}
+                  </span>
                 </div>
                 <Slider
                   value={[videoSettings.bitrate]}
-                  onValueChange={(value) => handleVideoSettingChange('bitrate', value[0])}
+                  onValueChange={(value) =>
+                    handleVideoSettingChange("bitrate", value[0])
+                  }
                   min={500}
                   max={10000}
                   step={500}
@@ -784,14 +868,20 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
                 <Label>Codec</Label>
                 <Select
                   value={videoSettings.codec}
-                  onValueChange={(value) => handleVideoSettingChange('codec', value)}
+                  onValueChange={(value) =>
+                    handleVideoSettingChange("codec", value)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="H.264">H.264 (Widely Compatible)</SelectItem>
-                    <SelectItem value="H.265">H.265 (More Efficient)</SelectItem>
+                    <SelectItem value="H.264">
+                      H.264 (Widely Compatible)
+                    </SelectItem>
+                    <SelectItem value="H.265">
+                      H.265 (More Efficient)
+                    </SelectItem>
                     <SelectItem value="VP8">VP8 (Open Source)</SelectItem>
                     <SelectItem value="VP9">VP9 (Open Source)</SelectItem>
                   </SelectContent>
@@ -815,26 +905,38 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label className="text-sm">Microphone Level</Label>
-                  <Progress value={mediaStats.audio.inputLevel} className="h-2" />
+                  <Progress
+                    value={mediaStats.audio.inputLevel}
+                    className="h-2"
+                  />
                   <div className="text-xs text-muted-foreground">
                     {mediaStats.audio.inputLevel.toFixed(0)}%
                   </div>
                 </div>
-                
+
                 <div className="flex gap-2">
                   {!isAudioTesting ? (
-                    <Button onClick={startAudioTest} size="sm" className="flex-1">
+                    <Button
+                      onClick={startAudioTest}
+                      size="sm"
+                      className="flex-1"
+                    >
                       <Play className="h-3 w-3 mr-1" />
                       Start Test
                     </Button>
                   ) : (
-                    <Button onClick={stopAudioTest} size="sm" variant="destructive" className="flex-1">
+                    <Button
+                      onClick={stopAudioTest}
+                      size="sm"
+                      variant="destructive"
+                      className="flex-1"
+                    >
                       <Pause className="h-3 w-3 mr-1" />
                       Stop Test
                     </Button>
                   )}
                 </div>
-                
+
                 {isAudioTesting && (
                   <div className="text-xs text-green-600 dark:text-green-400">
                     ✓ Microphone is working. Speak to see the level indicator.
@@ -869,21 +971,30 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex gap-2">
                   {!isVideoTesting ? (
-                    <Button onClick={startVideoTest} size="sm" className="flex-1">
+                    <Button
+                      onClick={startVideoTest}
+                      size="sm"
+                      className="flex-1"
+                    >
                       <Play className="h-3 w-3 mr-1" />
                       Start Test
                     </Button>
                   ) : (
-                    <Button onClick={stopVideoTest} size="sm" variant="destructive" className="flex-1">
+                    <Button
+                      onClick={stopVideoTest}
+                      size="sm"
+                      variant="destructive"
+                      className="flex-1"
+                    >
                       <Pause className="h-3 w-3 mr-1" />
                       Stop Test
                     </Button>
                   )}
                 </div>
-                
+
                 {isVideoTesting && (
                   <div className="text-xs text-green-600 dark:text-green-400">
                     ✓ Camera is working. You should see the preview above.
@@ -910,38 +1021,62 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
                   <span className="text-sm text-muted-foreground">Latency</span>
                   <Badge variant="outline">{mediaStats.audio.latency}ms</Badge>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Jitter</span>
                   <Badge variant="outline">{mediaStats.audio.jitter}ms</Badge>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Bitrate</span>
-                  <Badge variant="outline">{mediaStats.audio.bitrate} kbps</Badge>
+                  <Badge variant="outline">
+                    {mediaStats.audio.bitrate} kbps
+                  </Badge>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Packets Lost</span>
-                  <Badge variant={mediaStats.audio.packetsLost > 0 ? "destructive" : "outline"}>
+                  <span className="text-sm text-muted-foreground">
+                    Packets Lost
+                  </span>
+                  <Badge
+                    variant={
+                      mediaStats.audio.packetsLost > 0
+                        ? "destructive"
+                        : "outline"
+                    }
+                  >
                     {mediaStats.audio.packetsLost}
                   </Badge>
                 </div>
-                
+
                 <div className="space-y-1">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Input Level</span>
-                    <span className="text-sm">{mediaStats.audio.inputLevel.toFixed(0)}%</span>
+                    <span className="text-sm text-muted-foreground">
+                      Input Level
+                    </span>
+                    <span className="text-sm">
+                      {mediaStats.audio.inputLevel.toFixed(0)}%
+                    </span>
                   </div>
-                  <Progress value={mediaStats.audio.inputLevel} className="h-1" />
+                  <Progress
+                    value={mediaStats.audio.inputLevel}
+                    className="h-1"
+                  />
                 </div>
-                
+
                 <div className="space-y-1">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Output Level</span>
-                    <span className="text-sm">{mediaStats.audio.outputLevel.toFixed(0)}%</span>
+                    <span className="text-sm text-muted-foreground">
+                      Output Level
+                    </span>
+                    <span className="text-sm">
+                      {mediaStats.audio.outputLevel.toFixed(0)}%
+                    </span>
                   </div>
-                  <Progress value={mediaStats.audio.outputLevel} className="h-1" />
+                  <Progress
+                    value={mediaStats.audio.outputLevel}
+                    className="h-1"
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -956,35 +1091,61 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Frame Rate</span>
-                  <Badge variant="outline">{mediaStats.video.frameRate} fps</Badge>
+                  <span className="text-sm text-muted-foreground">
+                    Frame Rate
+                  </span>
+                  <Badge variant="outline">
+                    {mediaStats.video.frameRate} fps
+                  </Badge>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Resolution</span>
-                  <Badge variant="outline">{mediaStats.video.resolution || 'N/A'}</Badge>
+                  <span className="text-sm text-muted-foreground">
+                    Resolution
+                  </span>
+                  <Badge variant="outline">
+                    {mediaStats.video.resolution || "N/A"}
+                  </Badge>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Latency</span>
                   <Badge variant="outline">{mediaStats.video.latency}ms</Badge>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Bitrate</span>
-                  <Badge variant="outline">{formatBitrate(mediaStats.video.bitrate)}</Badge>
+                  <Badge variant="outline">
+                    {formatBitrate(mediaStats.video.bitrate)}
+                  </Badge>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Packets Lost</span>
-                  <Badge variant={mediaStats.video.packetsLost > 0 ? "destructive" : "outline"}>
+                  <span className="text-sm text-muted-foreground">
+                    Packets Lost
+                  </span>
+                  <Badge
+                    variant={
+                      mediaStats.video.packetsLost > 0
+                        ? "destructive"
+                        : "outline"
+                    }
+                  >
                     {mediaStats.video.packetsLost}
                   </Badge>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Dropped Frames</span>
-                  <Badge variant={mediaStats.video.droppedFrames > 0 ? "destructive" : "outline"}>
+                  <span className="text-sm text-muted-foreground">
+                    Dropped Frames
+                  </span>
+                  <Badge
+                    variant={
+                      mediaStats.video.droppedFrames > 0
+                        ? "destructive"
+                        : "outline"
+                    }
+                  >
                     {mediaStats.video.droppedFrames}
                   </Badge>
                 </div>
@@ -1004,52 +1165,74 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
               <div className="flex items-center gap-4">
                 <div className="flex-1">
                   <div className="flex justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">Overall Quality</span>
+                    <span className="text-sm text-muted-foreground">
+                      Overall Quality
+                    </span>
                     <span className="text-sm font-medium">
                       {(() => {
-                        const avgLatency = (mediaStats.audio.latency + mediaStats.video.latency) / 2;
-                        const totalPacketsLost = mediaStats.audio.packetsLost + mediaStats.video.packetsLost;
-                        
-                        if (avgLatency < 50 && totalPacketsLost === 0) return "Excellent";
-                        if (avgLatency < 100 && totalPacketsLost < 5) return "Good";
-                        if (avgLatency < 200 && totalPacketsLost < 10) return "Fair";
+                        const avgLatency =
+                          (mediaStats.audio.latency +
+                            mediaStats.video.latency) /
+                          2;
+                        const totalPacketsLost =
+                          mediaStats.audio.packetsLost +
+                          mediaStats.video.packetsLost;
+
+                        if (avgLatency < 50 && totalPacketsLost === 0)
+                          return "Excellent";
+                        if (avgLatency < 100 && totalPacketsLost < 5)
+                          return "Good";
+                        if (avgLatency < 200 && totalPacketsLost < 10)
+                          return "Fair";
                         return "Poor";
                       })()}
                     </span>
                   </div>
-                  <Progress 
+                  <Progress
                     value={(() => {
-                      const avgLatency = (mediaStats.audio.latency + mediaStats.video.latency) / 2;
-                      const totalPacketsLost = mediaStats.audio.packetsLost + mediaStats.video.packetsLost;
-                      
+                      const avgLatency =
+                        (mediaStats.audio.latency + mediaStats.video.latency) /
+                        2;
+                      const totalPacketsLost =
+                        mediaStats.audio.packetsLost +
+                        mediaStats.video.packetsLost;
+
                       if (avgLatency < 50 && totalPacketsLost === 0) return 90;
                       if (avgLatency < 100 && totalPacketsLost < 5) return 70;
                       if (avgLatency < 200 && totalPacketsLost < 10) return 50;
                       return 25;
-                    })()} 
+                    })()}
                     className="h-2"
                   />
                 </div>
-                
+
                 <div className="flex gap-2">
                   {(() => {
-                    const avgLatency = (mediaStats.audio.latency + mediaStats.video.latency) / 2;
-                    const totalPacketsLost = mediaStats.audio.packetsLost + mediaStats.video.packetsLost;
-                    
+                    const avgLatency =
+                      (mediaStats.audio.latency + mediaStats.video.latency) / 2;
+                    const totalPacketsLost =
+                      mediaStats.audio.packetsLost +
+                      mediaStats.video.packetsLost;
+
                     if (avgLatency < 50 && totalPacketsLost === 0) {
                       return <CheckCircle className="h-5 w-5 text-green-500" />;
                     }
                     if (avgLatency < 200 && totalPacketsLost < 10) {
-                      return <AlertCircle className="h-5 w-5 text-yellow-500" />;
+                      return (
+                        <AlertCircle className="h-5 w-5 text-yellow-500" />
+                      );
                     }
                     return <AlertCircle className="h-5 w-5 text-red-500" />;
                   })()}
                 </div>
               </div>
-              
+
               <div className="mt-4 text-xs text-muted-foreground">
-                Quality is based on latency, packet loss, and connection stability.
-                {isConnected ? " Real-time data from active session." : " Connect to view live statistics."}
+                Quality is based on latency, packet loss, and connection
+                stability.
+                {isConnected
+                  ? " Real-time data from active session."
+                  : " Connect to view live statistics."}
               </div>
             </CardContent>
           </Card>
@@ -1063,7 +1246,8 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
             <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
               <AlertCircle className="h-4 w-4" />
               <span className="text-sm">
-                Connect to DCV session to enable audio/video functionality and view real-time statistics.
+                Connect to DCV session to enable audio/video functionality and
+                view real-time statistics.
               </span>
             </div>
           </CardContent>

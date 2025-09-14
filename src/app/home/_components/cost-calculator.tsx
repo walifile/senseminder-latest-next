@@ -1,55 +1,39 @@
 "use client";
+
+import type { RootState } from "@/redux/store";
+import type { FormValues, BaseFormValues } from "@/app/build-smartpc/schema";
+
 import React, { useEffect } from "react";
-import { motion } from "framer-motion";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Info, Check } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  cpuCategories,
-  cpuOptions,
-  locationOptions,
-  osOptions,
-  storageOptions,
-} from "@/app/build-smartpc/data";
-import {
-  useGetEstimateMutation,
-  useListRemoteDesktopQuery,
-} from "@/api/fileManagerAPI";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
 import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
-import { useToast } from "@/hooks/use-toast";
-import {
-  baseFormSchema,
-  BaseFormValues,
-  formSchema,
-  FormValues,
-} from "@/app/build-smartpc/schema";
+import { baseFormSchema } from "@/app/build-smartpc/schema";
+import { useGetEstimateMutation } from "@/api/fileManagerAPI";
 import { setSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
-import { Field, Form } from "@/components/shared/hook-form";
+import {
+  osOptions,
+  cpuOptions,
+  cpuCategories,
+  storageOptions,
+  locationOptions,
+} from "@/app/build-smartpc/data";
+
+import { Button } from "@/components/ui/button";
+
+import { useDispatch, useSelector } from "react-redux";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import { motion } from "framer-motion";
+import { Check, ArrowRight } from "lucide-react";
+
+import { Form, Field } from "@/components/shared/hook-form";
 
 const CostCalculator = () => {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { toast } = useToast();
 
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-  const userId = useSelector((state: RootState) => state.auth.user?.id);
 
   const [getEstimate, { data: estimateData, isLoading }] =
     useGetEstimateMutation();
@@ -65,13 +49,7 @@ const CostCalculator = () => {
     },
   });
 
-  const {
-    setValue,
-    control,
-    handleSubmit,
-    formState: { errors },
-    watch,
-  } = methods;
+  const { setValue, handleSubmit, watch } = methods;
 
   const values = watch();
 
@@ -145,8 +123,8 @@ const CostCalculator = () => {
     <Form methods={methods} onSubmit={handleSubmit(onSubmit)}>
       <section className="py-20 relative overflow-hidden">
         {/* Background Effects */}
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/5 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/5 rounded-full blur-3xl" />
 
         <div className="container mx-auto px-4">
           {/* Header */}

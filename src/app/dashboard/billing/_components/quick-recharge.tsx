@@ -1,33 +1,37 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import {
+  useRechargeMutation,
+  useGetAutoRechargeQuery,
+  useUpdateAutoRechargeMutation,
+} from "@/api/billing";
+
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
+import { Separator } from "@/components/ui/separator";
 import {
   Card,
+  CardTitle,
+  CardHeader,
   CardContent,
   CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   Dialog,
+  DialogTitle,
+  DialogHeader,
   DialogContent,
   DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import { ArrowUpRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { toast } from "@/components/ui/use-toast";
-import { quickRechargeAmounts } from "../data";
+
 import { useBoolean } from "@/hooks/use-boolean";
-import {
-  useGetAutoRechargeQuery,
-  useUpdateAutoRechargeMutation,
-  useRechargeMutation
-} from "@/api/billing";
+
+import { quickRechargeAmounts } from "../data";
 
 const QuickRecharge = () => {
   const showConfirm = useBoolean();
@@ -36,24 +40,25 @@ const QuickRecharge = () => {
   const [customAmount, setCustomAmount] = useState<number | null>(null);
 
   const [autoRechargeEnabled, setAutoRechargeEnabled] = useState(false);
-  const [addFundsAutoRechargeEnabled, setAddFundsAutoRechargeEnabled] = useState(false);
+  const [addFundsAutoRechargeEnabled, setAddFundsAutoRechargeEnabled] =
+    useState(false);
 
   const [recharge, { isLoading: isRecharging }] = useRechargeMutation();
   const { data: autoRechargeResponse, refetch } = useGetAutoRechargeQuery();
   const [updateAutoRecharge] = useUpdateAutoRechargeMutation();
 
   useEffect(() => {
-      if (autoRechargeResponse) {
-        setAutoRechargeEnabled(autoRechargeResponse.autoRecharge);
-      }
-    }, [autoRechargeResponse]);
+    if (autoRechargeResponse) {
+      setAutoRechargeEnabled(autoRechargeResponse.autoRecharge);
+    }
+  }, [autoRechargeResponse]);
 
   const doRecharge = async (amount: number | null) => {
     if (!amount) return;
     try {
       const data = await recharge({
         amount,
-        autoRecharge: addFundsAutoRechargeEnabled
+        autoRecharge: addFundsAutoRechargeEnabled,
       }).unwrap();
 
       toast({
@@ -84,12 +89,16 @@ const QuickRecharge = () => {
       setAutoRechargeEnabled(refreshed.autoRecharge);
       toast({
         title: "Auto-Recharge Updated",
-        description: `Auto-recharge has been ${enabled ? "enabled" : "disabled"}.`,
+        description: `Auto-recharge has been ${
+          enabled ? "enabled" : "disabled"
+        }.`,
       });
     } catch (error: unknown) {
       console.error("Failed to update auto-recharge:", error);
       const message =
-        error instanceof Error ? error.message : "Could not update auto-recharge";
+        error instanceof Error
+          ? error.message
+          : "Could not update auto-recharge";
       toast({
         title: "Error updating auto-recharge",
         description: message,
@@ -218,7 +227,9 @@ const QuickRecharge = () => {
               id="autoRecharge"
               className="mr-2 h-4 w-4 accent-primary"
               checked={addFundsAutoRechargeEnabled}
-              onChange={() => setAddFundsAutoRechargeEnabled(!addFundsAutoRechargeEnabled)}
+              onChange={() =>
+                setAddFundsAutoRechargeEnabled(!addFundsAutoRechargeEnabled)
+              }
             />
             <label htmlFor="autoRecharge">Enable automatic reoccurring</label>
           </div>
@@ -227,7 +238,10 @@ const QuickRecharge = () => {
             <Button variant="outline" onClick={showConfirm.onFalse}>
               Cancel
             </Button>
-            <Button onClick={() => doRecharge(selectedAmount)} disabled={isRecharging}>
+            <Button
+              onClick={() => doRecharge(selectedAmount)}
+              disabled={isRecharging}
+            >
               {isRecharging ? "Recharging..." : "Yes, Recharge"}
             </Button>
           </div>

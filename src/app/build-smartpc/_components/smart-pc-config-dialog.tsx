@@ -1,33 +1,42 @@
 "use client";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+
+import type { RootState } from "@/redux/store";
+
+import { useGetEstimateMutation } from "@/api/fileManagerAPI";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
+import { clearSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
+
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogFooter, DialogContent } from "@/components/ui/dialog";
+
+import { useDispatch, useSelector } from "react-redux";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
+
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
-import { formSchema, FormValues } from "../schema";
-import {
-  cpuOptions,
-  locationOptions,
-  osOptions,
-  storageOptions,
-} from "../data";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
-import { useGetEstimateMutation } from "@/api/fileManagerAPI";
-import { clearSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
+import { useBoolean } from "@/hooks/use-boolean";
+
+import { formSchema } from "../schema";
+import CostSummary from "./cost-summary";
 import { fetchEstimate } from "../api/fetch-estimate";
-import { DesktopInstance, ResizeInitial } from "../types";
+import SmartPcConfigForm from "./smart-pc-config-form";
+import ConfirmPurchaseDialog from "./confirm-purchase-dialog";
+import SmartPcConfigDialogHeader from "./smart-pc-config-dialog-header";
 import {
-  inferLinuxCategoryFromConfigId,
+  osOptions,
+  cpuOptions,
+  storageOptions,
+  locationOptions,
+} from "../data";
+import {
   makeResizeRequest,
   validateStorageIncrease,
+  inferLinuxCategoryFromConfigId,
 } from "../utils";
-import ConfirmPurchaseDialog from "./confirm-purchase-dialog";
-import { useBoolean } from "@/hooks/use-boolean";
-import CostSummary from "./cost-summary";
-import SmartPcConfigForm from "./smart-pc-config-form";
-import SmartPcConfigDialogHeader from "./smart-pc-config-dialog-header";
+
+import type { FormValues } from "../schema";
+import type { ResizeInitial, DesktopInstance } from "../types";
 
 type Props = {
   isResize?: boolean;
@@ -146,7 +155,9 @@ const SmartPCConfigDialog = ({
 
       setLoadingExisting(true);
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_RESIZE_API_URL}/resize`, {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_RESIZE_API_URL}/resize`,
+          {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -225,7 +236,7 @@ const SmartPCConfigDialog = ({
       const valid = await trigger(["cpu"]);
       if (!valid) return;
 
-     await makeResizeRequest(
+      await makeResizeRequest(
         `${process.env.NEXT_PUBLIC_RESIZE_API_URL}/resize`,
         {
           userId,

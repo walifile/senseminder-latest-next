@@ -1,47 +1,55 @@
 "use client";
-import AssignUserDialog from "../_components/assign-user-dialog";
+
+import type { RootState } from "@/redux/store";
+import type { InstanceDetail } from "@/api/realtime";
+import type { PC, DesktopInstance } from "@/app/build-smartpc/types";
+
+import { getAssignments } from "@/api/assignpc";
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Clock, CalendarClock, Moon, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import SmartPCConfigDialog from "@/app/build-smartpc/_components/smart-pc-config-dialog";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
-import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
-import { DesktopInstance, PC } from "@/app/build-smartpc/types";
+import { fetchInstanceDetails } from "@/api/realtime";
+import { updateSessionHeartbeat } from "@/api/session";
 import { stableStates } from "@/app/build-smartpc/data";
+import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
+import SelectedPc from "@/app/build-smartpc/_components/selected-pc";
+import ScheduleDialog from "@/app/build-smartpc/_components/schedule-dialog";
+import SmartPcToolbar from "@/app/build-smartpc/_components/smart-pc-toolbar";
+import SmartPCEmptyState from "@/app/build-smartpc/_components/smart-pc-empty-state";
+import SmartPcStopButton from "@/app/build-smartpc/_components/smart-pc-stop-button";
+import IdleSettingsDialog from "@/app/build-smartpc/_components/idle-settings-dialog";
+import SmartPcStartButton from "@/app/build-smartpc/_components/smart-pc-start-button";
+import SmartPCConfigDialog from "@/app/build-smartpc/_components/smart-pc-config-dialog";
+import SmartPcDropdownMenu from "@/app/build-smartpc/_components/smart-pc-dropdown-menu";
+import SmartPcConnectButton from "@/app/build-smartpc/_components/smart-pc-connect-button";
+import { ConfirmDeleteModal } from "@/app/build-smartpc/_components/confirm-delete-pc-diolog";
 import {
-  extractStorageGiB,
-  formatIdleTime,
-  formatScheduleTime,
   getApiUserId,
-  getStatusClasses,
   getStatusIcon,
   getStatusText,
+  formatIdleTime,
+  getStatusClasses,
+  extractStorageGiB,
+  formatScheduleTime,
   isStartingInstance,
 } from "@/app/build-smartpc/utils";
-import SmartPCEmptyState from "@/app/build-smartpc/_components/smart-pc-empty-state";
-import ScheduleDialog from "@/app/build-smartpc/_components/schedule-dialog";
-import IdleSettingsDialog from "@/app/build-smartpc/_components/idle-settings-dialog";
-import { ConfirmDeleteModal } from "@/app/build-smartpc/_components/confirm-delete-pc-diolog";
+
+import { cn } from "@/lib/utils/index";
 import { Checkbox } from "@/components/ui/checkbox";
-import SelectedPc from "@/app/build-smartpc/_components/selected-pc";
-import { fetchInstanceDetails, InstanceDetail } from "@/api/realtime";
-import { getAssignments } from "@/api/assignpc";
+import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
+  TooltipProvider,
 } from "@/components/ui/tooltip";
-import { updateSessionHeartbeat } from "@/api/session";
-import SmartPcToolbar from "@/app/build-smartpc/_components/smart-pc-toolbar";
-import SmartPcDropdownMenu from "@/app/build-smartpc/_components/smart-pc-dropdown-menu";
+
+import { useSelector } from "react-redux";
+
+import { Moon, Clock, Shield, Loader2, CalendarClock } from "lucide-react";
+
+import { useToast } from "@/hooks/use-toast";
 import { useBoolean } from "@/hooks/use-boolean";
-import SmartPcConnectButton from "@/app/build-smartpc/_components/smart-pc-connect-button";
-import { cn } from "@/lib/utils/index";
-import SmartPcStartButton from "@/app/build-smartpc/_components/smart-pc-start-button";
-import SmartPcStopButton from "@/app/build-smartpc/_components/smart-pc-stop-button";
+
+import AssignUserDialog from "../_components/assign-user-dialog";
 
 const CloudPCPage = () => {
   const { toast } = useToast();

@@ -1,14 +1,18 @@
 import { useState } from "react";
-import { Monitor } from "lucide-react";
+import { useLazySearchUsageHistoryQuery } from "@/api/billing";
+
 import { Badge } from "@/components/ui/badge";
 import { TabsContent } from "@/components/ui/tabs";
-import { useLazySearchUsageHistoryQuery } from "@/api/billing";
-import { formatInstanceDuration, getUsagePeriod } from "../utils";
-import { UsageHistory } from "../types";
 import { fCurrency } from "@/lib/utils/format-number";
-import HistoryLoadMoreButton from "./history-load-more-button";
+
+import { Monitor } from "lucide-react";
+
 import HistoryFilters from "./history-filters";
 import { useHistoryData } from "../hooks/use-history-data";
+import HistoryLoadMoreButton from "./history-load-more-button";
+import { getUsagePeriod, formatInstanceDuration } from "../utils";
+
+import type { UsageHistory } from "../types";
 
 export function SmartPCUsageHistoryTab() {
   const [query, setQuery] = useState("");

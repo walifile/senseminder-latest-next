@@ -159,33 +159,39 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { confirmSignIn } from "aws-amplify/auth";
-import { Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useDispatch } from "react-redux";
-import { setTempUser, setLoading } from "@/redux/slices/auth/auth-slice";
-import { handlePostAuthentication, handleSignOut } from "@/lib/services/auth";
+import { setLoading, setTempUser } from "@/redux/slices/auth/auth-slice";
 
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
 import {
+  InputOTP,
+  InputOTPSlot,
+  InputOTPGroup,
+} from "@/components/ui/input-otp";
+import {
   Form,
-  FormField,
   FormItem,
+  FormField,
   FormLabel,
   FormControl,
-  FormDescription,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
+
+import { confirmSignIn } from "aws-amplify/auth";
+
+import { useDispatch } from "react-redux";
+
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+
+import { Loader2 } from "lucide-react";
+
+import { useToast } from "@/hooks/use-toast";
+
+import { handleSignOut, handlePostAuthentication } from "@/lib/services/auth";
 
 const formSchema = z.object({
   code: z
@@ -224,6 +230,7 @@ export default function MfaEmailPage() {
     let user: unknown;
     try {
       user = JSON.parse(stored);
+      console.log(user);
     } catch {
       toast({
         title: "Invalid Session",

@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, HelpCircle, ChevronDown, MessageCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, HelpCircle, ChevronDown } from "lucide-react";
 
 const faqItems = [
   {
@@ -59,13 +60,16 @@ const FAQ = () => {
   );
 
   return (
-    <section id="faq" className="py-6 relative"> {/* Much smaller top/bottom padding */}
+    <section id="faq" className="py-6 relative">
+      {" "}
+      {/* Much smaller top/bottom padding */}
       {/* Background Effects */}
-      <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl"></div>
-      <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/5 dark:bg-secondary/10 rounded-full blur-3xl"></div>
-
+      <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl" />
+      <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/5 dark:bg-secondary/10 rounded-full blur-3xl" />
       <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center mb-4"> {/* Reduced spacing */}
+        <div className="text-center mb-4">
+          {" "}
+          {/* Reduced spacing */}
           <div className="inline-flex items-center bg-primary/10 dark:bg-primary/20 rounded-full mb-1 px-3 py-0.5">
             <span className="text-xs font-medium text-primary">FAQ</span>
           </div>
@@ -128,7 +132,9 @@ const FAQ = () => {
                     )}
                   >
                     <button
-                      onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                      onClick={() =>
+                        setOpenIndex(openIndex === index ? null : index)
+                      }
                       className={cn(
                         "w-full px-3 py-2 flex items-center justify-between text-left text-sm",
                         "hover:bg-gray-50 dark:hover:bg-white/5"

@@ -1,22 +1,24 @@
 "use client";
 
 import React from "react";
+
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import {
   Card,
+  CardTitle,
+  CardHeader,
   CardContent,
   CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
+
 import {
-  HardDrive,
   Cpu,
-  MemoryStick,
+  Clock,
   Upload,
   Download,
-  Clock,
+  HardDrive,
+  MemoryStick,
 } from "lucide-react";
 
 interface ResourceUsage {

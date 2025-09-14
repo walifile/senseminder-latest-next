@@ -1,37 +1,39 @@
 "use client";
-import { useRouter, useSearchParams } from "next/navigation";
+
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import {
-  FileText,
-  Star,
-  FolderIcon,
-  ChevronRight,
-  Home,
-  Download,
-  Users,
-} from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   usePublicSharedListQuery,
   useLazyDownloadFolderQuery,
 } from "@/api/fileManagerAPI";
+
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import {
+  Card,
+  CardTitle,
+  CardHeader,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableRow,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+} from "@/components/ui/table";
+
+import {
+  Star,
+  Home,
+  FileText,
+  Download,
+  FolderIcon,
+  ChevronRight,
+} from "lucide-react";
 
 const formatFileSize = (bytes: number) => {
   if (bytes === 0) return "0 Bytes";
@@ -43,17 +45,15 @@ const formatFileSize = (bytes: number) => {
   );
 };
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString();
-};
+const formatDate = (dateString: string) =>
+  new Date(dateString).toLocaleDateString();
 
-const FileTypeIcon = ({ fileType }: { fileType: string }) => {
-  return fileType === "folder" ? (
+const FileTypeIcon = ({ fileType }: { fileType: string }) =>
+  fileType === "folder" ? (
     <FolderIcon className="h-6 w-6 text-blue-500" />
   ) : (
     <FileText className="h-6 w-6 text-gray-500" />
   );
-};
 
 // Enhanced Breadcrumbs component with duplicate prevention
 const EnhancedBreadcrumbs = ({
@@ -67,15 +67,19 @@ const EnhancedBreadcrumbs = ({
 }) => {
   const handleClick = (folderPath: string) => {
     // Normalize paths for comparison
-    const normalizedCurrent = currentKey.endsWith("/") ? currentKey : currentKey + "/";
-    const normalizedTarget = folderPath.endsWith("/") ? folderPath : folderPath + "/";
-    
+    const normalizedCurrent = currentKey.endsWith("/")
+      ? currentKey
+      : currentKey + "/";
+    const normalizedTarget = folderPath.endsWith("/")
+      ? folderPath
+      : folderPath + "/";
+
     // Don't navigate if we're already at this path
     if (normalizedCurrent === normalizedTarget) {
       console.log("Already at this path, not navigating");
       return;
     }
-    
+
     onNavigate(folderPath);
   };
 
@@ -93,9 +97,12 @@ const EnhancedBreadcrumbs = ({
       {path.map((folder, index) => {
         const isCurrentFolder = index === path.length - 1;
         const isClickable = !isCurrentFolder; // Don't allow clicking on current folder
-        
+
         return (
-          <div key={`${folder.id}-${index}`} className="flex items-center gap-2">
+          <div
+            key={`${folder.id}-${index}`}
+            className="flex items-center gap-2"
+          >
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
             <Button
               variant="ghost"
@@ -148,12 +155,12 @@ const StaticStoragePage = () => {
     // Remove the first part (usually the root identifier) and build meaningful path
     const meaningfulParts = parts.slice(1);
     const pathArr = [];
-    
+
     for (let i = 0; i < meaningfulParts.length; i++) {
       const pathUpToHere = parts.slice(0, i + 2).join("/") + "/";
       pathArr.push({
         id: pathUpToHere,
-        name: meaningfulParts[i]
+        name: meaningfulParts[i],
       });
     }
 
@@ -167,10 +174,10 @@ const StaticStoragePage = () => {
     // Clean the current key (remove trailing slash for consistency)
     const cleanKey = key.endsWith("/") ? key.slice(0, -1) : key;
     const keyParts = cleanKey.split("/").filter(Boolean);
-    
+
     // Get the current folder we're in (last part of the path)
     const currentFolder = keyParts[keyParts.length - 1];
-    
+
     // If we're clicking on the same folder we're already in, don't navigate
     if (currentFolder === file.fileName) {
       console.log("Already in this folder, not navigating");
@@ -179,15 +186,15 @@ const StaticStoragePage = () => {
 
     // Check if this folder already exists somewhere in our current path
     const folderExistsInPath = keyParts.includes(file.fileName);
-    
+
     let newPath;
-    
+
     if (folderExistsInPath) {
       // This folder exists somewhere in our path - navigate to that level
       // This handles going back to a parent folder
       const folderIndex = keyParts.indexOf(file.fileName);
       const pathToFolder = keyParts.slice(0, folderIndex + 1);
-      
+
       // Rebuild the full path including the root part
       if (keyParts.length > 0) {
         const rootPart = keyParts[0];
@@ -199,12 +206,12 @@ const StaticStoragePage = () => {
       // This is a new folder - determine if it's a child or sibling
       // Since we're showing current directory contents, we need to determine
       // if this should replace the current folder (sibling) or be added (child)
-      
+
       // For now, we'll assume it's a child navigation (standard file browser behavior)
       // If you need sibling detection, you'd need additional logic here
       newPath = key ? `${key}${file.fileName}/` : `${file.fileName}/`;
     }
-    
+
     router.push(`/shared-folder-viewer?key=${encodeURIComponent(newPath)}`);
   };
 
@@ -212,8 +219,10 @@ const StaticStoragePage = () => {
   const handleBreadcrumbNavigate = (folderPath: string) => {
     // Normalize paths for comparison
     const normalizedCurrent = key.endsWith("/") ? key : key + "/";
-    const normalizedTarget = folderPath.endsWith("/") ? folderPath : folderPath + "/";
-    
+    const normalizedTarget = folderPath.endsWith("/")
+      ? folderPath
+      : folderPath + "/";
+
     // Don't navigate if we're already at this path
     if (normalizedCurrent === normalizedTarget) {
       console.log("Already at this path, not navigating");
@@ -228,31 +237,31 @@ const StaticStoragePage = () => {
   };
 
   // Alternative: Explicit sibling navigation (uncomment if needed)
-  const handleSiblingNavigation = (file: any) => {
-    if (file.fileType !== "folder") return;
+  // const handleSiblingNavigation = (file: any) => {
+  //   if (file.fileType !== "folder") return;
 
-    const cleanKey = key.endsWith("/") ? key.slice(0, -1) : key;
-    const keyParts = cleanKey.split("/").filter(Boolean);
-    
-    if (keyParts.length === 0) {
-      // At root level - just navigate to the folder
-      const newPath = `${file.fileName}/`;
-      router.push(`/shared-folder-viewer?key=${encodeURIComponent(newPath)}`);
-      return;
-    }
+  //   const cleanKey = key.endsWith("/") ? key.slice(0, -1) : key;
+  //   const keyParts = cleanKey.split("/").filter(Boolean);
 
-    // For sibling navigation, replace the last folder in the path
-    const parentParts = keyParts.slice(0, -1);
-    let newPath;
-    
-    if (parentParts.length === 0) {
-      newPath = `${file.fileName}/`;
-    } else {
-      newPath = `${parentParts.join("/")}/${file.fileName}/`;
-    }
-    
-    router.push(`/shared-folder-viewer?key=${encodeURIComponent(newPath)}`);
-  };
+  //   if (keyParts.length === 0) {
+  //     // At root level - just navigate to the folder
+  //     const newPath = `${file.fileName}/`;
+  //     router.push(`/shared-folder-viewer?key=${encodeURIComponent(newPath)}`);
+  //     return;
+  //   }
+
+  //   // For sibling navigation, replace the last folder in the path
+  //   const parentParts = keyParts.slice(0, -1);
+  //   let newPath;
+
+  //   if (parentParts.length === 0) {
+  //     newPath = `${file.fileName}/`;
+  //   } else {
+  //     newPath = `${parentParts.join("/")}/${file.fileName}/`;
+  //   }
+
+  //   router.push(`/shared-folder-viewer?key=${encodeURIComponent(newPath)}`);
+  // };
 
   const handleDownloadFolder = async () => {
     if (!key) {

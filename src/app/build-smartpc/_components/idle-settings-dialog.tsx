@@ -1,27 +1,32 @@
-import React, { useCallback, useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import type { InstanceDetail } from "@/api/realtime";
+
+import React, { useState, useEffect, useCallback } from "react";
 // --- IDLE TIMEOUT API ---
 import { setIdleTimeout, deleteIdleTimeout } from "@/api/smartPC-Idle-settings";
-import { DesktopInstance } from "../types";
-import { InstanceDetail } from "@/api/realtime";
+
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectItem,
+  SelectValue,
+  SelectContent,
+  SelectTrigger,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogTitle,
+  DialogFooter,
+  DialogHeader,
+  DialogContent,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
+import { useToast } from "@/hooks/use-toast";
+
 import { timeOptions } from "../data";
+
+import type { DesktopInstance } from "../types";
 
 type IdleSettingsDialogProps = {
   open: boolean;

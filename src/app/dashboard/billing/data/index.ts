@@ -1,9 +1,4 @@
-import {
-  Clock,
-  Calendar,
-  CalendarDays,
-  Calendar as CalendarIcon,
-} from "lucide-react";
+import { Clock, Calendar, CalendarDays } from "lucide-react";
 
 export const quickRechargeAmounts = [
   {

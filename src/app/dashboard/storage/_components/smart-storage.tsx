@@ -1,71 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import type { RootState } from "@/redux/store";
+
 import Link from "next/link";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import {
-  MoreHorizontal,
-  FileText,
-  FolderPlus,
-  Upload,
-  Download,
-  Trash2,
-  Share2,
-  Star,
-  Search,
-  Grid,
-  List,
-  Users,
-  Copy,
-  SortAsc,
-  RefreshCw,
-  HardDrive,
-  FolderIcon,
-  GripVertical,
-  FolderSync,
-  GraduationCap,
-  Loader2,
-  Filter,
-  ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
-  ListFilter,
-  Eye,
-  Earth,
-} from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-} from "@/components/ui/dropdown-menu";
-import { ScrollArea } from "@/components/ui/scroll-area";
+  useListFilesQuery,
+  useStarFileMutation,
+  useCopyFilesMutation,
+  useMoveFilesMutation,
+  useUnstarFileMutation,
+  useDeleteFilesMutation,
+  useLazyDownloadFileQuery,
+  useLazyDownloadFolderQuery,
+} from "@/api/fileManagerAPI";
+
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 // import {
 //   Tooltip,
 //   TooltipContent,
@@ -73,46 +26,101 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 //   TooltipTrigger,
 // } from "@/components/ui/tooltip";
 import { Checkbox } from "@/components/ui/checkbox";
-import { recentActivity, storagePlans } from "../data";
-import StoragePlansDialog from "./storag-plans-dialog";
-import ShareDialog from "./share-dialog";
-import MoveFilesDialog from "./move-files-dialog";
-import CopyFilesDialog from "./copy-files-dialog";
-import StorageSyncDialog from "./storage-sync-dialog";
-import NewFolderDialog from "./new-folder-dialog";
-import { SidebarPanel } from "./storage-sidebar";
-import FileTypeIcon from "./file-type-icon";
-import {
-  formatDate,
-  formatFileSize,
-  formatTimeAgo,
-  getRelativePath,
-} from "../utils";
-import UploadDialog from "./upload-dialog";
-import {
-  useCopyFilesMutation,
-  useDeleteFilesMutation,
-  useLazyDownloadFileQuery,
-  useLazyDownloadFolderQuery,
-  useListFilesQuery,
-  useMoveFilesMutation,
-  useUnstarFileMutation,
-} from "@/api/fileManagerAPI";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
-import ConfirmBulkDeleteDialog from "./confirm-bulk-delete-dialog";
-import ConfirmDeleteDialog from "./confirm-delete-dialog";
-import { useStarFileMutation } from "@/api/fileManagerAPI";
-import { FileItem } from "../types";
-import { useDebounce } from "@/hooks/useDebounce";
-import FilePreviewDialog from "./file-preview-dialog";
-import BulkShareDialog from "./bulk-share-dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsList, TabsContent } from "@/components/ui/tabs";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
+  TooltipProvider,
 } from "@/components/ui/tooltip";
+import {
+  Card,
+  CardTitle,
+  CardHeader,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableRow,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuRadioItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuCheckboxItem,
+} from "@/components/ui/dropdown-menu";
+
+import { useSelector } from "react-redux";
+
+import {
+  Eye,
+  Star,
+  Grid,
+  List,
+  Copy,
+  Users,
+  Earth,
+  Upload,
+  Trash2,
+  Share2,
+  Search,
+  Filter,
+  SortAsc,
+  Loader2,
+  FileText,
+  Download,
+  RefreshCw,
+  HardDrive,
+  ArrowLeft,
+  FolderPlus,
+  FolderIcon,
+  FolderSync,
+  ListFilter,
+  ChevronLeft,
+  GripVertical,
+  ChevronRight,
+  GraduationCap,
+  MoreHorizontal,
+} from "lucide-react";
+
+import { useToast } from "@/hooks/use-toast";
+import { useDebounce } from "@/hooks/useDebounce";
+
+import ShareDialog from "./share-dialog";
+import { recentActivity } from "../data";
+import UploadDialog from "./upload-dialog";
+import FileTypeIcon from "./file-type-icon";
+import { SidebarPanel } from "./storage-sidebar";
+import MoveFilesDialog from "./move-files-dialog";
+import CopyFilesDialog from "./copy-files-dialog";
+import NewFolderDialog from "./new-folder-dialog";
+import BulkShareDialog from "./bulk-share-dialog";
+import StorageSyncDialog from "./storage-sync-dialog";
+import FilePreviewDialog from "./file-preview-dialog";
+import StoragePlansDialog from "./storag-plans-dialog";
+import ConfirmDeleteDialog from "./confirm-delete-dialog";
+import ConfirmBulkDeleteDialog from "./confirm-bulk-delete-dialog";
+import {
+  formatDate,
+  formatTimeAgo,
+  formatFileSize,
+  getRelativePath,
+} from "../utils";
+
+import type { FileItem } from "../types";
+
 const CloudStorage = () => {
   const router = useRouter();
   const { toast } = useToast();
@@ -217,23 +225,23 @@ const CloudStorage = () => {
 
   const paths = path.map((f) => f.fileName).join("/");
   console.log({ paths });
-  const handleDownloadClick = async () => {
-    if (!userId) return;
+  // const handleDownloadClick = async () => {
+  //   if (!userId) return;
 
-    try {
-      const { downloadUrl } = await triggerFolderDownload({
-        userId,
-        region: "virginia",
-        folder: "",
-      }).unwrap();
+  //   try {
+  //     const { downloadUrl } = await triggerFolderDownload({
+  //       userId,
+  //       region: "virginia",
+  //       folder: "",
+  //     }).unwrap();
 
-      // Trigger browser download
-      window.location.href = downloadUrl;
-    } catch (err) {
-      console.error("Download failed", err);
-      alert("Failed to download folder");
-    }
-  };
+  //     // Trigger browser download
+  //     window.location.href = downloadUrl;
+  //   } catch (err) {
+  //     console.error("Download failed", err);
+  //     alert("Failed to download folder");
+  //   }
+  // };
 
   const handleFolderDownload = async (file: FileItem) => {
     if (!userId) return;
@@ -275,17 +283,17 @@ const CloudStorage = () => {
   //   setSelectedFolder(file);
   //   setSelectedFiles([]);
   // };
-const handleFolderSelection = (file: FileItem) => {
-  if (file.fileType !== "folder") return;
+  const handleFolderSelection = (file: FileItem) => {
+    if (file.fileType !== "folder") return;
 
-  // Navigate into folder
-  setPath((prev) => [...prev, file]);
-  setSelectedFolder(file);
-  setSelectedFiles([]);
-  
-  // This ensures you see all content inside the folder, not just folders
-  // setSelectedCategory("folders");
-};
+    // Navigate into folder
+    setPath((prev) => [...prev, file]);
+    setSelectedFolder(file);
+    setSelectedFiles([]);
+
+    // This ensures you see all content inside the folder, not just folders
+    // setSelectedCategory("folders");
+  };
 
   const handleCloseFolder = () => {
     // remove last folder
@@ -410,8 +418,9 @@ const handleFolderSelection = (file: FileItem) => {
       }).unwrap();
 
       toast({
-        title: `${fileNames.length} ${fileNames.length === 1 ? "item" : "items"
-          } deleted`,
+        title: `${fileNames.length} ${
+          fileNames.length === 1 ? "item" : "items"
+        } deleted`,
         description: "The selected files and folders have been moved to trash.",
         variant: "destructive",
       });
@@ -444,8 +453,9 @@ const handleFolderSelection = (file: FileItem) => {
 
       toast({
         title: file.starred ? "Unstarred" : "Starred",
-        description: `"${file.fileName}" was ${file.starred ? "removed from" : "added to"
-          } your starred items`,
+        description: `"${file.fileName}" was ${
+          file.starred ? "removed from" : "added to"
+        } your starred items`,
       });
     } catch (err) {
       console.error("Star/unstar error:", err);
@@ -658,8 +668,9 @@ const handleFolderSelection = (file: FileItem) => {
 
         toast({
           title: `Files ${operation === "copy" ? "Copied" : "Moved"}`,
-          description: `${fileIds.length} file(s) ${operation === "copy" ? "copied" : "moved"
-            } successfully`,
+          description: `${fileIds.length} file(s) ${
+            operation === "copy" ? "copied" : "moved"
+          } successfully`,
         });
 
         setSelectedFiles([]);
@@ -720,7 +731,6 @@ const handleFolderSelection = (file: FileItem) => {
           region: "virginia",
           key: file.id,
         });
-
 
         if (downloadData?.downloadUrl) {
           const blobResp = await fetch(downloadData.downloadUrl);
@@ -828,8 +838,9 @@ const handleFolderSelection = (file: FileItem) => {
         </CardHeader>
         <CardContent className="p-0">
           <div
-            className={`flex flex-col md:flex-row min-h-[600px] relative ${isDragging ? "bg-muted/50" : ""
-              }`}
+            className={`flex flex-col md:flex-row min-h-[600px] relative ${
+              isDragging ? "bg-muted/50" : ""
+            }`}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -1028,7 +1039,7 @@ const handleFolderSelection = (file: FileItem) => {
                                     ? "cursor-not-allowed opacity-50 pointer-events-none w-full"
                                     : "w-full"
                                 }
-                              // className={"w-full"}
+                                // className={"w-full"}
                               >
                                 <Share2 className="h-4 w-4 mr-2" />
                                 Share
@@ -1151,18 +1162,19 @@ const handleFolderSelection = (file: FileItem) => {
                                     <TableHead>Size</TableHead>
                                     <TableHead>Uploaded</TableHead>
                                     <TableHead>Status</TableHead>
-                                    <TableHead></TableHead>
+                                    <TableHead />
                                   </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                   {(files as FileItem[]).map((file, index) => (
                                     <TableRow
                                       key={file.id}
-                                      className={`hover:bg-muted/50 ${dragOverFolderId === file.id
-                                        ? "bg-muted ring-2 ring-primary"
-                                        : ""
-                                        }`}
-                                      draggable={true}
+                                      className={`hover:bg-muted/50 ${
+                                        dragOverFolderId === file.id
+                                          ? "bg-muted ring-2 ring-primary"
+                                          : ""
+                                      }`}
+                                      draggable
                                       onDragStart={(e) =>
                                         handleItemDragStart(e, file.id)
                                       }
@@ -1200,8 +1212,10 @@ const handleFolderSelection = (file: FileItem) => {
                                           {...(file.fileType === "folder" && {
                                             title: "Click to open folder",
                                           })}
-                                          className={`flex items-center gap-2 ${file.fileType === "folder" && "cursor-pointer"
-                                            }`}
+                                          className={`flex items-center gap-2 ${
+                                            file.fileType === "folder" &&
+                                            "cursor-pointer"
+                                          }`}
                                           onClick={() => {
                                             // Only navigate if it's a folder and we're not in "Folders" category view
                                             if (file.fileType === "folder") {
@@ -1301,7 +1315,7 @@ const handleFolderSelection = (file: FileItem) => {
                                                   }}
                                                 >
                                                   {downloadingFile ===
-                                                    file.fileName ? (
+                                                  file.fileName ? (
                                                     <>
                                                       <Loader2 className="h-4 w-4 mr-2 animate-spin text-primary" />
                                                       Downloading...
@@ -1394,32 +1408,48 @@ const handleFolderSelection = (file: FileItem) => {
                                       }
                                     }}
                                     className={`relative group px-4 rounded-lg border border-border hover:bg-muted/50 transition-colors ${
-                                      dragOverFolderId === file.id ? "bg-muted ring-2 ring-primary" : ""
-                                    } ${file.fileType === "folder" ? "py-3" : "pt-2 pb-3"}`}
+                                      dragOverFolderId === file.id
+                                        ? "bg-muted ring-2 ring-primary"
+                                        : ""
+                                    } ${
+                                      file.fileType === "folder"
+                                        ? "py-3"
+                                        : "pt-2 pb-3"
+                                    }`}
                                     draggable
-                                    onDragStart={(e) => handleItemDragStart(e, file.id)}
+                                    onDragStart={(e) =>
+                                      handleItemDragStart(e, file.id)
+                                    }
                                     onDragOver={(e) =>
-                                      file.fileType === "folder" ? handleFolderDragOver(e, file.id) : undefined
+                                      file.fileType === "folder"
+                                        ? handleFolderDragOver(e, file.id)
+                                        : undefined
                                     }
                                     onDragLeave={(e) =>
-                                      file.fileType === "folder" ? handleFolderDragLeave(e) : undefined
+                                      file.fileType === "folder"
+                                        ? handleFolderDragLeave(e)
+                                        : undefined
                                     }
                                     onDrop={(e) =>
-                                      file.fileType === "folder" ? handleFolderDrop(e, file.id) : undefined
+                                      file.fileType === "folder"
+                                        ? handleFolderDrop(e, file.id)
+                                        : undefined
                                     }
                                   >
                                     <div
-                                      className={`${file.fileType === "folder"
-                                        ? "h-full flex flex-col justify-between gap-1"
-                                        : "w-full flex items-center gap-1"
-                                        }`}
+                                      className={`${
+                                        file.fileType === "folder"
+                                          ? "h-full flex flex-col justify-between gap-1"
+                                          : "w-full flex items-center gap-1"
+                                      }`}
                                     >
                                       {/* drag handle + checkbox */}
                                       <div
-                                        className={`flex items-center gap-2 ${file.fileType === "folder"
-                                          ? "absolute top-2 left-2"
-                                          : "flex-shrink-0 mr-2"
-                                          }`}
+                                        className={`flex items-center gap-2 ${
+                                          file.fileType === "folder"
+                                            ? "absolute top-2 left-2"
+                                            : "flex-shrink-0 mr-2"
+                                        }`}
                                       >
                                         <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
                                         <Checkbox
@@ -1437,10 +1467,11 @@ const handleFolderSelection = (file: FileItem) => {
                                         {...(file.fileType === "folder" && {
                                           title: "Click to open folder",
                                         })}
-                                        className={`flex items-center ${file.fileType === "folder"
-                                          ? "flex-col cursor-pointer text-center mb-3"
-                                          : "gap-2 flex-1 min-w-0"
-                                          }`}
+                                        className={`flex items-center ${
+                                          file.fileType === "folder"
+                                            ? "flex-col cursor-pointer text-center mb-3"
+                                            : "gap-2 flex-1 min-w-0"
+                                        }`}
                                         onClick={() => {
                                           // Only navigate if it's a folder and we're not in "Folders" category view
                                           if (file.fileType === "folder") {
@@ -1449,28 +1480,32 @@ const handleFolderSelection = (file: FileItem) => {
                                         }}
                                       >
                                         <div
-                                          className={`${file.fileType === "folder" && "mb-2"
-                                            }`}
+                                          className={`${
+                                            file.fileType === "folder" && "mb-2"
+                                          }`}
                                         >
-                                          {file.fileType === "folder" &&
+                                          {file.fileType === "folder" && (
                                             <FileTypeIcon
                                               index={index}
                                               fileName={file.fileName}
                                               fileType={file.fileType}
                                               size="large"
-                                            />}
+                                            />
+                                          )}
                                         </div>
                                         <div
-                                          className={`${file.fileType === "folder"
-                                            ? "w-full"
-                                            : "flex-1 min-w-0"
-                                            }`}
+                                          className={`${
+                                            file.fileType === "folder"
+                                              ? "w-full"
+                                              : "flex-1 min-w-0"
+                                          }`}
                                         >
                                           <div
-                                            className={`font-medium truncate text-sm ${file.fileType === "folder"
-                                              ? ""
-                                              : "min-w-0"
-                                              }`}
+                                            className={`font-medium truncate text-sm ${
+                                              file.fileType === "folder"
+                                                ? ""
+                                                : "min-w-0"
+                                            }`}
                                             title={file.fileName}
                                           >
                                             {file.fileName}
@@ -1498,10 +1533,11 @@ const handleFolderSelection = (file: FileItem) => {
                                       </div>
 
                                       <div
-                                        className={`${file.fileType === "folder"
-                                          ? "absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                          : ""
-                                          }`}
+                                        className={`${
+                                          file.fileType === "folder"
+                                            ? "absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            : ""
+                                        }`}
                                       >
                                         <DropdownMenu>
                                           <DropdownMenuTrigger asChild>
@@ -1691,7 +1727,7 @@ const handleFolderSelection = (file: FileItem) => {
                                 {pagination.total === 0
                                   ? 0
                                   : (pagination.page - 1) * pagination.limit +
-                                  1}{" "}
+                                    1}{" "}
                                 to{" "}
                                 {Math.min(
                                   pagination.page * pagination.limit,
@@ -1937,8 +1973,8 @@ const handleFolderSelection = (file: FileItem) => {
         open={showUploadDialog}
         onOpenChange={setShowUploadDialog}
         folderPath={folderPath}
-      // handleFileUpload={handleFileUpload}
-      // uploadProgress={uploadProgress}
+        // handleFileUpload={handleFileUpload}
+        // uploadProgress={uploadProgress}
       />
 
       {/* Storage Sync Dialog */}
@@ -1957,7 +1993,7 @@ const handleFolderSelection = (file: FileItem) => {
         open={showNewFolderDialog}
         onOpenChange={setShowNewFolderDialog}
         folderPath={folderPath}
-      // onCreate={handleCreateFolder}
+        // onCreate={handleCreateFolder}
       />
     </>
   );

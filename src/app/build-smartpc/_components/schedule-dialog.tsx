@@ -1,34 +1,33 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import type { Schedule } from "@/api/schedule";
+
+import React, { useMemo, useState, useEffect, useCallback } from "react";
+import { getSchedule, saveSchedule, deleteSchedule } from "@/api/schedule";
+
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
+  DialogTitle,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogContent,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Select,
-  SelectContent,
-  SelectGroup,
   SelectItem,
+  SelectGroup,
   SelectLabel,
-  SelectTrigger,
   SelectValue,
+  SelectContent,
+  SelectTrigger,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Clock, Calendar, Search, Trash, X } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import {
-  Schedule,
-  saveSchedule,
-  getSchedule,
-  deleteSchedule,
-} from "@/api/schedule";
+
+import { X, Clock, Trash, Search, Calendar } from "lucide-react";
 
 interface Props {
   open: boolean;

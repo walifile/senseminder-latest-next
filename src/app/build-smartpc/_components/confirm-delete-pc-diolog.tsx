@@ -1,6 +1,10 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useDeleteVMMutation } from "@/api/vmManagement";
+import { useStopVMMutation } from "@/api/fileManagerAPI";
+import { removeStartingInstance } from "@/redux/slices/dcv/starting-instances-slice";
+
 import {
   Tooltip,
   TooltipTrigger,
@@ -9,22 +13,23 @@ import {
 } from "@/components/ui/tooltip";
 import {
   AlertDialog,
+  AlertDialogTitle,
   AlertDialogPortal,
-  AlertDialogOverlay,
-  AlertDialogContent,
   AlertDialogHeader,
   AlertDialogFooter,
-  AlertDialogTitle,
   AlertDialogAction,
   AlertDialogCancel,
+  AlertDialogOverlay,
+  AlertDialogContent,
 } from "@/components/ui/alert-dialog";
-import { Loader2, Trash2 } from "lucide-react";
-import { useDeleteVMMutation } from "@/api/vmManagement";
-import { DesktopInstance } from "../types";
-import { useStopVMMutation } from "@/api/fileManagerAPI";
-import { useToast } from "@/hooks/use-toast";
+
 import { useDispatch } from "react-redux";
-import { removeStartingInstance } from "@/redux/slices/dcv/starting-instances-slice";
+
+import { Trash2, Loader2 } from "lucide-react";
+
+import { useToast } from "@/hooks/use-toast";
+
+import type { DesktopInstance } from "../types";
 
 type ConfirmDeleteModalProps = {
   open: boolean;

@@ -1,17 +1,22 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { handleSignUp } from "@/lib/services/auth";
-import { useToast } from "@/hooks/use-toast";
-import SocailLogin from "../_components/socail-login";
 import { useSubscribeToNewsletterMutation } from "@/api/newsletterAPI";
-import useLocation from "@/hooks/use-location";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+
 import { Eye, EyeOff } from "lucide-react";
+
+import { useToast } from "@/hooks/use-toast";
+import useLocation from "@/hooks/use-location";
+
+import { handleSignUp } from "@/lib/services/auth";
+
+import SocailLogin from "../_components/socail-login";
 
 export default function SignUp() {
   const router = useRouter();

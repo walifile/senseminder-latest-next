@@ -1,15 +1,13 @@
-import { PC } from "../types";
-
 import {
-  StopCircle,
   Circle,
-  PlayCircle,
-  PauseCircle,
   Loader2,
   PowerOff,
+  StopCircle,
+  PlayCircle,
+  PauseCircle,
 } from "lucide-react";
-import { removeStartingInstance } from "@/redux/slices/dcv/starting-instances-slice";
-import { AppDispatch } from "@/redux/store";
+
+import type { PC } from "../types";
 
 export const isBuilding = (state: string) =>
   ["initializing", "initialization", "pending"].includes(state);

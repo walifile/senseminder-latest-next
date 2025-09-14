@@ -1,13 +1,15 @@
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogContent,
-  DialogHeader,
   DialogTitle,
+  DialogHeader,
   DialogFooter,
+  DialogContent,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { FileItem } from "../types";
+
 import { X, Download } from "lucide-react";
+
+import type { FileItem } from "../types";
 
 interface FilePreviewProps {
   file: FileItem | null;
@@ -84,22 +86,22 @@ const FilePreviewDialog: React.FC<FilePreviewProps> = ({
     <Dialog open={!!file} onOpenChange={onClose}>
       <DialogContent
         className="max-w-fit px-4 py-0 m-0"
-        style={{ '--hide-close-button': 'none' } as React.CSSProperties}
+        style={{ "--hide-close-button": "none" } as React.CSSProperties}
       >
-        <style jsx>{`
+        <style>{`
           [data-state="open"] > button[data-dialog-close] {
             display: var(--hide-close-button);
           }
         `}</style>
-  
+
         <DialogHeader>
           <DialogTitle>Preview: {file.fileName}</DialogTitle>
         </DialogHeader>
-  
+
         <div className="flex items-center justify-center p-0 m-0">
           {content}
         </div>
-  
+
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             <X className="h-4 w-4 text-red-500" />
@@ -110,7 +112,7 @@ const FilePreviewDialog: React.FC<FilePreviewProps> = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );  
+  );
 };
 
 export default FilePreviewDialog;

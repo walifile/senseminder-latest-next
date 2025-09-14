@@ -1,21 +1,24 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { confirmSignIn, updateMFAPreference } from 'aws-amplify/auth';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
+
+import { confirmSignIn, updateMFAPreference } from "aws-amplify/auth";
+
+import { useToast } from "@/hooks/use-toast";
 
 export default function MFASelectPage() {
   const router = useRouter();
   const { toast } = useToast();
 
   const [options, setOptions] = useState<string[]>([]);
-  const [remember, setRemember] = useState(false);
+  const [remember] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('tempUserMFA');
+    const stored = sessionStorage.getItem("tempUserMFA");
     if (stored) {
       try {
         const user = JSON.parse(stored);
@@ -23,29 +26,29 @@ export default function MFASelectPage() {
         setOptions(available);
       } catch {
         toast({
-          title: 'Invalid session',
-          description: 'MFA session data is corrupted.',
-          variant: 'destructive',
+          title: "Invalid session",
+          description: "MFA session data is corrupted.",
+          variant: "destructive",
         });
-        router.replace('/auth');
+        router.replace("/auth");
       }
     } else {
       toast({
-        title: 'Session expired',
-        description: 'Please log in again.',
-        variant: 'destructive',
+        title: "Session expired",
+        description: "Please log in again.",
+        variant: "destructive",
       });
-      router.replace('/auth');
+      router.replace("/auth");
     }
   }, []);
 
-  const handleSelect = async (method: 'TOTP' | 'EMAIL') => {
+  const handleSelect = async (method: "TOTP" | "EMAIL") => {
     setLoading(true);
     try {
-      const raw = sessionStorage.getItem('tempUserMFA');
-      if (!raw) throw new Error('Missing MFA session');
+      const raw = sessionStorage.getItem("tempUserMFA");
+      if (!raw) throw new Error("Missing MFA session");
 
-      const user = JSON.parse(raw);
+      // const user = JSON.parse(raw);
 
       const result = await confirmSignIn({
         challengeResponse: method,
@@ -54,25 +57,25 @@ export default function MFASelectPage() {
       // Optionally remember preference
       if (remember) {
         await updateMFAPreference({
-          [method.toLowerCase()]: 'PREFERRED',
+          [method.toLowerCase()]: "PREFERRED",
         });
       }
 
       // Route based on next step
       const next = result?.nextStep?.signInStep;
 
-      if (next === 'CONFIRM_SIGN_IN_WITH_TOTP_CODE') {
-        router.push('/auth/mfa-totp');
-      } else if (next === 'CONFIRM_SIGN_IN_WITH_EMAIL_CODE') {
-        router.push('/auth/mfa-email');
+      if (next === "CONFIRM_SIGN_IN_WITH_TOTP_CODE") {
+        router.push("/auth/mfa-totp");
+      } else if (next === "CONFIRM_SIGN_IN_WITH_EMAIL_CODE") {
+        router.push("/auth/mfa-email");
       } else {
-        router.push('/dashboard');
+        router.push("/dashboard");
       }
     } catch (err: any) {
       toast({
-        title: 'Error',
-        description: err?.message || 'Failed to continue MFA flow.',
-        variant: 'destructive',
+        title: "Error",
+        description: err?.message || "Failed to continue MFA flow.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -88,9 +91,9 @@ export default function MFASelectPage() {
         </p>
       </div>
 
-      {options.includes('TOTP') && (
+      {options.includes("TOTP") && (
         <Button
-          onClick={() => handleSelect('TOTP')}
+          onClick={() => handleSelect("TOTP")}
           className="w-full"
           disabled={loading}
         >
@@ -98,16 +101,15 @@ export default function MFASelectPage() {
         </Button>
       )}
 
-      {options.includes('EMAIL') && (
+      {options.includes("EMAIL") && (
         <Button
-          onClick={() => handleSelect('EMAIL')}
+          onClick={() => handleSelect("EMAIL")}
           className="w-full"
           disabled={loading}
         >
           Use Email Code
         </Button>
       )}
-
     </div>
   );
 }

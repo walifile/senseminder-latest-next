@@ -1,16 +1,19 @@
 "use client";
 
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Wallet } from "lucide-react";
-import { cn } from "@/lib/utils";
 import {
   useGetCurrentBalanceQuery,
   useGetMonthlySpendingQuery,
 } from "@/api/billing";
+
+import { cn } from "@/lib/utils";
+import { fCurrency } from "@/lib/utils/format-number";
+import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
+
+import { Wallet, TrendingUp } from "lucide-react";
+
 import { promotionsAndCashback } from "../data";
 import QuickStatsTooltip from "../_components/quick-stats-tooltip";
-import { fCurrency } from "@/lib/utils/format-number";
 import QuickStatsLoading from "../_components/quick-stats-loading";
 
 const QuickStats = () => {

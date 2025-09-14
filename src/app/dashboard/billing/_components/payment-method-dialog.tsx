@@ -1,28 +1,35 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Lock } from "lucide-react";
+import type { RootState } from "@/redux/store";
+
 import Image from "next/image";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import { RootState } from "@/redux/store";
-import { useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
 import {
   useGetPaymentMethodsQuery,
   useAddPaymentMethodMutation,
-  useSetDefaultPaymentMethodMutation,
   useDetachPaymentMethodMutation,
+  useSetDefaultPaymentMethodMutation,
 } from "@/api/billing";
-import { ExtendedPaymentMethod } from "../types";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogTitle,
+  DialogHeader,
+  DialogContent,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
+import { useSelector } from "react-redux";
+
+import { useStripe, CardElement, useElements } from "@stripe/react-stripe-js";
+
+import { Lock } from "lucide-react";
+
+import { useToast } from "@/hooks/use-toast";
+
+import type { ExtendedPaymentMethod } from "../types";
 
 export function PaymentMethodDialog() {
   const { toast } = useToast();
@@ -101,7 +108,7 @@ export function PaymentMethodDialog() {
     }
 
     try {
-      const result = await addPaymentMethod({
+      await addPaymentMethod({
         paymentMethodId: paymentMethod!.id,
         setAsDefault: savedPaymentMethods.length === 0,
       }).unwrap();
@@ -110,11 +117,11 @@ export function PaymentMethodDialog() {
         title: "Payment method added",
         description: "Your new payment method has been saved successfully.",
       });
-      
+
       const refreshed = await refetch().unwrap();
       setSavedPaymentMethods(mapPaymentMethodsFromAPI(refreshed));
       console.log("after savedPaymentMethods:", savedPaymentMethods);
-      
+
       setShowAddForm(false);
     } catch (error: unknown) {
       const message =
@@ -136,7 +143,9 @@ export function PaymentMethodDialog() {
       await setDefaultPaymentMethod({ paymentMethodId }).unwrap();
       setSavedPaymentMethods((prev) =>
         prev.map((pm) =>
-          pm.id === paymentMethodId ? { ...pm, isDefault: true } : { ...pm, isDefault: false }
+          pm.id === paymentMethodId
+            ? { ...pm, isDefault: true }
+            : { ...pm, isDefault: false }
         )
       );
       toast({
@@ -144,7 +153,6 @@ export function PaymentMethodDialog() {
         description:
           "Your default payment method has been updated successfully.",
       });
-      
     } catch (error: unknown) {
       const message =
         error instanceof Error
@@ -164,7 +172,6 @@ export function PaymentMethodDialog() {
   const handleDeletePaymentMethod = async (paymentMethodId: string) => {
     setDeletingId(paymentMethodId);
     try {
-
       await detachPaymentMethod({ paymentMethodId }).unwrap();
       toast({
         title: "Payment method removed",
@@ -173,9 +180,11 @@ export function PaymentMethodDialog() {
       setSavedPaymentMethods((prev) =>
         prev.filter((pm) => pm.id !== paymentMethodId)
       );
-      
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Failed to remove the payment method";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to remove the payment method";
       toast({
         title: "Error",
         description: message,
@@ -188,120 +197,141 @@ export function PaymentMethodDialog() {
   return (
     <>
       <Button onClick={() => setOpen(true)}>Add Payment Method</Button>
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-lg rounded-2xl shadow-xl border bg-gradient-to-b from-white to-gray-50">
-        <DialogHeader>
-          <div className="flex items-center gap-2">
-            <Lock className="w-5 h-5 text-green-600" />
-            <DialogTitle className="text-xl font-bold">Secure Payment Methods</DialogTitle>
-          </div>
-          <DialogDescription className="text-sm text-gray-600">
-            Your payment details are encrypted and safely processed by Stripe. We never store your card details.
-          </DialogDescription>
-        </DialogHeader>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-lg rounded-2xl shadow-xl border bg-gradient-to-b from-white to-gray-50">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <Lock className="w-5 h-5 text-green-600" />
+              <DialogTitle className="text-xl font-bold">
+                Secure Payment Methods
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-sm text-gray-600">
+              Your payment details are encrypted and safely processed by Stripe.
+              We never store your card details.
+            </DialogDescription>
+          </DialogHeader>
 
-        {/* Add Card Form */}
-        {!showAddForm && (
-          <Button
-            variant="outline"
-            onClick={() => setShowAddForm(true)}
-            className="w-full"
-          >
-            + Add Payment Method
-          </Button>
-        )}
-        {showAddForm && (
-        <div className="space-y-4 border rounded-xl p-5 shadow-sm bg-white">
-        <h4 className="text-base font-semibold text-gray-800">Add a New Card</h4>
-        <Input
-          placeholder="Cardholder name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="rounded-lg"
-        />
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <CardElement options={{ style: { base: { fontSize: "16px", color: "#1a1a1a" }, invalid: { color: "#e5424d" } } }} />
-        </div>
-        
-          <Button disabled={!stripe || loading} onClick={handleAdd} className="w-full font-semibold rounded-xl bg-blue-600 hover:bg-blue-700">
-            {loading ? "Saving..." : "Save Card Securely"}
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full text-red-500 hover:bg-red-100 rounded-xl"
-            onClick={() => setShowAddForm(false)}
-          >
-            Cancel
-          </Button>
-          
-          
-        </div>
-      )}
-        <div className="flex items-center justify-end mt-6 text-xs text-gray-400">
-          <Lock className="w-4 h-4 mr-1" /><span className="mr-* tracking-wide">Powered by</span>
-          <Image
-            src="/assets/icons/stripe-logo.svg"
-            alt="Stripe"
-            width={70}
-            height={20}
-          />
-        </div>
-        {/* Existing Payment Methods */}
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-2">Saved Cards</h3>
-          <div className="max-h-64 overflow-y-auto space-y-3 pr-2">
-            {(savedPaymentMethods && savedPaymentMethods.length > 0) ? (
-              savedPaymentMethods.map((method) => (
-                <div
-                  key={method.id}
-                  className="flex items-center justify-between border rounded-md p-3 shadow-sm hover:bg-gray-50 transition"
-                >
-                  <div className="flex flex-col">
-                    <span className="font-medium">
-                      {method.card?.brand.toUpperCase()} •••• {method.card?.last4}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      Expires {method.card?.exp_month}/{method.card?.exp_year}
-                    </span>
-                    {method.isDefault && (
-                      <span className="text-xs font-semibold text-green-600">Default</span>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    {!method.isDefault && (
+          {/* Add Card Form */}
+          {!showAddForm && (
+            <Button
+              variant="outline"
+              onClick={() => setShowAddForm(true)}
+              className="w-full"
+            >
+              + Add Payment Method
+            </Button>
+          )}
+          {showAddForm && (
+            <div className="space-y-4 border rounded-xl p-5 shadow-sm bg-white">
+              <h4 className="text-base font-semibold text-gray-800">
+                Add a New Card
+              </h4>
+              <Input
+                placeholder="Cardholder name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="rounded-lg"
+              />
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <CardElement
+                  options={{
+                    style: {
+                      base: { fontSize: "16px", color: "#1a1a1a" },
+                      invalid: { color: "#e5424d" },
+                    },
+                  }}
+                />
+              </div>
+
+              <Button
+                disabled={!stripe || loading}
+                onClick={handleAdd}
+                className="w-full font-semibold rounded-xl bg-blue-600 hover:bg-blue-700"
+              >
+                {loading ? "Saving..." : "Save Card Securely"}
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full text-red-500 hover:bg-red-100 rounded-xl"
+                onClick={() => setShowAddForm(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
+          <div className="flex items-center justify-end mt-6 text-xs text-gray-400">
+            <Lock className="w-4 h-4 mr-1" />
+            <span className="mr-* tracking-wide">Powered by</span>
+            <Image
+              src="/assets/icons/stripe-logo.svg"
+              alt="Stripe"
+              width={70}
+              height={20}
+            />
+          </div>
+          {/* Existing Payment Methods */}
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-2">Saved Cards</h3>
+            <div className="max-h-64 overflow-y-auto space-y-3 pr-2">
+              {savedPaymentMethods && savedPaymentMethods.length > 0 ? (
+                savedPaymentMethods.map((method) => (
+                  <div
+                    key={method.id}
+                    className="flex items-center justify-between border rounded-md p-3 shadow-sm hover:bg-gray-50 transition"
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-medium">
+                        {method.card?.brand.toUpperCase()} ••••{" "}
+                        {method.card?.last4}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        Expires {method.card?.exp_month}/{method.card?.exp_year}
+                      </span>
+                      {method.isDefault && (
+                        <span className="text-xs font-semibold text-green-600">
+                          Default
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      {!method.isDefault && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={makeDefaultId === method.id}
+                          onClick={() =>
+                            handleSetDefaultPaymentMethod(method.id)
+                          }
+                        >
+                          {makeDefaultId === method.id
+                            ? "Updating..."
+                            : "Make Default"}
+                        </Button>
+                      )}
+
                       <Button
+                        key={method.id}
                         size="sm"
                         variant="outline"
-                        disabled={makeDefaultId === method.id}
-                        onClick={() => handleSetDefaultPaymentMethod(method.id)}
+                        disabled={deletingId === method.id}
+                        className="px-3 py-1 rounded bg-red-600 text-white"
+                        onClick={() => handleDeletePaymentMethod(method.id)}
                       >
-                        {makeDefaultId === method.id ? "Updating..." : "Make Default"}
+                        {deletingId === method.id ? "Deleting..." : "Delete"}
                       </Button>
-                    )}
-
-                    <Button
-                      key={method.id}
-                      size="sm"
-                      variant="outline"
-                      disabled={deletingId === method.id}
-                      className="px-3 py-1 rounded bg-red-600 text-white"
-                      onClick={() => handleDeletePaymentMethod(method.id)}
-                    >
-                      {deletingId === method.id ? "Deleting..." : "Delete"}
-                    </Button>
+                    </div>
                   </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No payment methods saved.
-              </p>
-            )}
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No payment methods saved.
+                </p>
+              )}
             </div>
-            
-        </div>
-      </DialogContent>
-    </Dialog>
-  </>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

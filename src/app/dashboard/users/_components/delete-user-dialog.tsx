@@ -1,17 +1,19 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useDeleteUserMutation } from "@/api/user";
+import React, { useState, useCallback } from "react";
+
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
+  DialogTitle,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogContent,
+  DialogDescription,
 } from "@/components/ui/dialog";
-import { useDeleteUserMutation } from "@/api/user";
+
 import { toast } from "@/hooks/use-toast";
 
 const DeleteUserDialog = ({

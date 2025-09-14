@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from "react";
+import React, { useRef, useEffect, useCallback } from "react";
 
 interface DCVViewerProps {
   sessionId: string;
@@ -140,7 +140,7 @@ const DCVViewer: React.FC<DCVViewerProps> = ({
           clipboardBackward: true,
         },
         display: {
-          quality: quality,
+          quality,
           codec: "h264",
           width: "100%",
           height: "100%",
@@ -184,7 +184,10 @@ const DCVViewer: React.FC<DCVViewerProps> = ({
 
         // Wait for the SDK to load
         await new Promise<void>((resolve, reject) => {
-          if (!script) return reject(new Error("Script element not created"));
+          if (!script) {
+            reject(new Error("Script element not created"));
+            return;
+          }
 
           script.onload = () => {
             if (mounted) resolve();

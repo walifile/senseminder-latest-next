@@ -1,16 +1,18 @@
 "use client";
+
 import React from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { useGetLegalDocumentsQuery } from "@/api/legalDocumentsAPI";
 
+import { ArrowLeft } from "lucide-react";
+
 const Privacy = () => {
-  const { data, error, isLoading } = useGetLegalDocumentsQuery();
+  const { isLoading } = useGetLegalDocumentsQuery();
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[50vh]">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
       </div>
     );
   }

@@ -1,32 +1,38 @@
 "use client";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import type { RootState } from "@/redux/store";
+
+import React, { useState, useEffect } from "react";
+import { useShareFileMutation } from "@/api/fileManagerAPI";
+
 import { Input } from "@/components/ui/input";
-import { Copy, Download } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 // import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
-  SelectContent,
   SelectItem,
-  SelectTrigger,
   SelectValue,
+  SelectContent,
+  SelectTrigger,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogTitle,
+  DialogFooter,
+  DialogHeader,
+  DialogContent,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
+import { useSelector } from "react-redux";
+
+import { Copy, Download } from "lucide-react";
+
 // import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import React, { useEffect, useState } from "react";
-import { useShareFileMutation } from "@/api/fileManagerAPI";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
-import { FileItem } from "../types";
+
+import type { FileItem } from "../types";
 
 type ShareDialogProps = {
   open: boolean;

@@ -1,18 +1,21 @@
 "use client";
+
+import { useGetUsersQuery } from "@/api/user";
 import React, { useState, useEffect, useCallback } from "react";
+import { assignPC, unassignPC, getAssignments } from "@/api/assignpc";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
+  DialogTitle,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogContent,
+  DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import { toast } from "@/hooks/use-toast";
-import { assignPC, unassignPC, getAssignments } from "@/api/assignpc";
-import { useGetUsersQuery } from "@/api/user";
 
 type ApiUser = {
   id: string;
@@ -58,7 +61,9 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
     try {
       const a = await getAssignments();
       setAssignments(a || {});
-    } catch {}
+    } catch {
+      // Intentionally ignored
+    }
   }, []);
 
   // On open, fetch users and assignments fresh

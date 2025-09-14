@@ -1,38 +1,38 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useToast } from '@/components/ui/use-toast';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import React, { useState } from "react";
+import { useCreateTicketMutation } from "@/api/supportAPI";
+import { selectUserId, selectAuthUser } from "@/redux/slices/auth/auth-slice";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Select,
-  SelectContent,
   SelectItem,
-  SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+  SelectContent,
+  SelectTrigger,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardTitle,
+  CardFooter,
+  CardHeader,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
 
-import AttachmentUploader from './attachment-uploader';
-import PrioritySelectField from './priority-select-field';
+import { useSelector } from "react-redux";
 
-import { useFileValidation } from '../hooks/use-file-validation';
-import { useUploadAttachment } from '../hooks/use-upload-attachment';
-
-import { useCreateTicketMutation } from '@/api/supportAPI';
-import { selectAuthUser, selectUserId } from '@/redux/slices/auth/auth-slice';
+import AttachmentUploader from "./attachment-uploader";
+import PrioritySelectField from "./priority-select-field";
+import { useFileValidation } from "../hooks/use-file-validation";
+import { useUploadAttachment } from "../hooks/use-upload-attachment";
 
 interface Props {
-  setActiveTab: (tab: 'tickets' | 'new-ticket' | 'faq') => void;
+  setActiveTab: (tab: "tickets" | "new-ticket" | "faq") => void;
 }
 
 const NewTicket = ({ setActiveTab }: Props) => {
@@ -41,21 +41,21 @@ const NewTicket = ({ setActiveTab }: Props) => {
   const user = useSelector(selectAuthUser);
   const userId = useSelector(selectUserId);
 
-  const [createTicket, { isLoading: isCreating }] = useCreateTicketMutation();
+  const [createTicket] = useCreateTicketMutation();
 
   const [formState, setFormState] = useState({
-    subject: '',
-    category: 'technical',
-    priority: 'medium',
-    description: '',
+    subject: "",
+    category: "technical",
+    priority: "medium",
+    description: "",
   });
 
   const { attachments, setAttachments, onFileChange, removeAttachment } =
     useFileValidation();
-  const { uploadAttachment } = useUploadAttachment(userId); 
+  const { uploadAttachment } = useUploadAttachment(userId);
 
-  const [subjectError, setSubjectError] = useState('');
-  const [descriptionError, setDescriptionError] = useState('');
+  const [subjectError, setSubjectError] = useState("");
+  const [descriptionError, setDescriptionError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleInputChange = (
@@ -64,19 +64,20 @@ const NewTicket = ({ setActiveTab }: Props) => {
     const { id, value } = e.target;
     setFormState((prev) => ({ ...prev, [id]: value }));
 
-    const errorSetter = id === 'subject' ? setSubjectError : setDescriptionError;
-    const maxLength = id === 'subject' ? 50 : 500;
+    const errorSetter =
+      id === "subject" ? setSubjectError : setDescriptionError;
+    const maxLength = id === "subject" ? 50 : 500;
 
     if (value.length > maxLength) {
       errorSetter(`${id} cannot exceed ${maxLength} characters.`);
     } else if (!/^[a-zA-Z0-9\s.,-]*$/.test(value)) {
       errorSetter(
-        'Only letters, numbers, dash, space, comma, and dot are allowed.'
+        "Only letters, numbers, dash, space, comma, and dot are allowed."
       );
     } else if (/[.,-]{2,}/.test(value)) {
-      errorSetter('Avoid multiple special characters in a row.');
+      errorSetter("Avoid multiple special characters in a row.");
     } else {
-      errorSetter('');
+      errorSetter("");
     }
   };
 
@@ -106,19 +107,19 @@ const NewTicket = ({ setActiveTab }: Props) => {
 
       await createTicket({ userId, body }).unwrap();
 
-      toast({ title: 'Support ticket created' });
+      toast({ title: "Support ticket created" });
       setFormState({
-        subject: '',
-        category: 'technical',
-        priority: 'medium',
-        description: '',
+        subject: "",
+        category: "technical",
+        priority: "medium",
+        description: "",
       });
       setAttachments([]);
-      setSubjectError('');
-      setDescriptionError('');
-      setActiveTab('tickets');
+      setSubjectError("");
+      setDescriptionError("");
+      setActiveTab("tickets");
     } catch {
-      toast({ title: 'Ticket creation failed' });
+      toast({ title: "Ticket creation failed" });
     } finally {
       setLoading(false);
     }
@@ -149,7 +150,7 @@ const NewTicket = ({ setActiveTab }: Props) => {
               <label className="text-sm font-medium">Category</label>
               <Select
                 value={formState.category}
-                onValueChange={(val) => handleSelectChange('category', val)}
+                onValueChange={(val) => handleSelectChange("category", val)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
@@ -165,7 +166,7 @@ const NewTicket = ({ setActiveTab }: Props) => {
               <label className="text-sm font-medium">Priority</label>
               <PrioritySelectField
                 value={formState.priority}
-                setValue={(val) => handleSelectChange('priority', val)}
+                setValue={(val) => handleSelectChange("priority", val)}
               />
             </div>
           </div>
@@ -198,7 +199,7 @@ const NewTicket = ({ setActiveTab }: Props) => {
               !!descriptionError
             }
           >
-            {loading ? 'Submitting...' : 'Submit Ticket'}
+            {loading ? "Submitting..." : "Submit Ticket"}
           </Button>
         </CardFooter>
       </form>

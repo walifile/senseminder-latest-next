@@ -1,20 +1,22 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import React, { useState, useEffect } from "react";
+
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
+
 import {
   Cpu,
-  MemoryStick as Memory,
-  HardDrive,
-  Activity,
   Power,
+  Activity,
   Settings,
   Terminal,
+  HardDrive,
+  MemoryStick as Memory,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ResourceMetrics {
   cpu: number;

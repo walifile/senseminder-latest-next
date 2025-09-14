@@ -1,30 +1,33 @@
 "use client";
 
-import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import React, { useState } from "react";
+import { routes } from "@/constants/routes";
+import { useRouter, usePathname } from "next/navigation";
+
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+
 import {
-  Monitor,
-  HardDrive,
-  User,
-  Bell,
-  LogOut,
-  Menu,
   X,
+  Menu,
   Users,
-  CreditCard,
+  LogOut,
+  Shield,
+  Monitor,
   LifeBuoy,
+  HardDrive,
+  CreditCard,
+  GraduationCap,
   ArrowLeftToLine,
   ArrowRightToLine,
-  Shield,
-  GraduationCap,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Logo } from "@/components/shared/layout/Logo";
-import { routes } from "@/constants/routes";
-import { handleSignOut } from "@/lib/services/auth";
+
 import { useToast } from "@/hooks/use-toast";
+
+import { handleSignOut } from "@/lib/services/auth";
+
+import { Logo } from "@/components/shared/layout/Logo";
 
 const navItems = [
   {

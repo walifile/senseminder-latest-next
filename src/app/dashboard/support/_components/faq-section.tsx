@@ -1,10 +1,11 @@
 "use client";
+
 import {
   Card,
+  CardTitle,
+  CardHeader,
   CardContent,
   CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 
 export default function FAQSection() {

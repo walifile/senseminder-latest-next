@@ -1,17 +1,28 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  getSecurityQuestion,
+  setSecurityQuestion,
+} from "@/api/security-question";
+
 import { Label } from "@/components/ui/label";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
-import { getSecurityQuestion, setSecurityQuestion } from "@/api/security-question";
+import {
+  Dialog,
+  DialogTitle,
+  DialogHeader,
+  DialogContent,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectItem,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+} from "@/components/ui/select";
+
 import { useToast } from "@/hooks/use-toast";
 
 interface SecurityQuestionDialogProps {
@@ -24,10 +35,13 @@ const predefinedQuestions = [
   "What is your mother's maiden name?",
   "What was the name of your elementary school?",
   "What city were you born in?",
-  "What is your favorite teacher’s name?"
+  "What is your favorite teacher’s name?",
 ];
 
-export default function SecurityQuestionDialog({ open, onClose }: SecurityQuestionDialogProps) {
+export default function SecurityQuestionDialog({
+  open,
+  onClose,
+}: SecurityQuestionDialogProps) {
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
@@ -40,34 +54,33 @@ export default function SecurityQuestionDialog({ open, onClose }: SecurityQuesti
   const [submitting, setSubmitting] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
 
- useEffect(() => {
-  if (open) {
-    // reset all state on open
-    setOldAnswer("");
-    setNewAnswer("");
-    setNewQuestion("");
-    setSubmitting(false);
-    setShowForgot(false);
-    setLoading(true);
+  useEffect(() => {
+    if (open) {
+      // reset all state on open
+      setOldAnswer("");
+      setNewAnswer("");
+      setNewQuestion("");
+      setSubmitting(false);
+      setShowForgot(false);
+      setLoading(true);
 
-    getSecurityQuestion()
-      .then((res) => {
-        if (res?.question) {
-          setHasExistingQuestion(true);
-          setExistingQuestion(res.question);
-        } else {
+      getSecurityQuestion()
+        .then((res) => {
+          if (res?.question) {
+            setHasExistingQuestion(true);
+            setExistingQuestion(res.question);
+          } else {
+            setHasExistingQuestion(false);
+            setExistingQuestion(null);
+          }
+        })
+        .catch(() => {
           setHasExistingQuestion(false);
           setExistingQuestion(null);
-        }
-      })
-      .catch(() => {
-        setHasExistingQuestion(false);
-        setExistingQuestion(null);
-      })
-      .finally(() => setLoading(false));
-  }
-}, [open]);
-
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [open]);
 
   const handleSubmit = async () => {
     if (!newQuestion || !newAnswer.trim()) {
@@ -95,7 +108,10 @@ export default function SecurityQuestionDialog({ open, onClose }: SecurityQuesti
     } catch (err: unknown) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to update security question.",
+        description:
+          err instanceof Error
+            ? err.message
+            : "Failed to update security question.",
         variant: "destructive",
       });
     } finally {
@@ -109,14 +125,18 @@ export default function SecurityQuestionDialog({ open, onClose }: SecurityQuesti
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>
-              {hasExistingQuestion ? "Update Security Question" : "Set Security Question"}
+              {hasExistingQuestion
+                ? "Update Security Question"
+                : "Set Security Question"}
             </DialogTitle>
           </DialogHeader>
 
           {!loading && hasExistingQuestion && (
             <div className="space-y-2">
               <Label>Answer your current question</Label>
-              <p className="text-sm text-muted-foreground">{existingQuestion}</p>
+              <p className="text-sm text-muted-foreground">
+                {existingQuestion}
+              </p>
               <Input
                 type="password"
                 placeholder="Old Answer"
@@ -189,7 +209,8 @@ export default function SecurityQuestionDialog({ open, onClose }: SecurityQuesti
               <DialogTitle>Forgot Your Answer?</DialogTitle>
             </DialogHeader>
             <p className="text-sm text-muted-foreground">
-              Please contact our support team to reset your security question. This is to protect your account from unauthorized changes.
+              Please contact our support team to reset your security question.
+              This is to protect your account from unauthorized changes.
             </p>
           </DialogContent>
         </Dialog>

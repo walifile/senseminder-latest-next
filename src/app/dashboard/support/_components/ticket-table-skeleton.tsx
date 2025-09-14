@@ -1,14 +1,13 @@
-
 "use client";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
+  CardTitle,
+  CardHeader,
   CardContent,
   CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function TicketTableSkeleton() {
   return (
@@ -27,8 +26,7 @@ export default function TicketTableSkeleton() {
       <CardContent>
         <div className="overflow-auto rounded-md border">
           <table className="min-w-[1000px] w-full text-sm border-separate border-spacing-0">
-           <thead className="bg-muted/50 text-sm font-medium text-muted-foreground border-b border-border sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-muted/50">
-
+            <thead className="bg-muted/50 text-sm font-medium text-muted-foreground border-b border-border sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-muted/50">
               <tr>
                 {[
                   "Created",

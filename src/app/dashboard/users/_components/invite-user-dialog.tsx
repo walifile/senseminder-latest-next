@@ -1,19 +1,26 @@
-import React, { useCallback, useMemo } from "react";
+import { useInviteUserMutation } from "@/api/user";
+import React, { useMemo, useCallback } from "react";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
+  DialogTitle,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogContent,
+  DialogDescription,
 } from "@/components/ui/dialog";
+
 import { useForm } from "react-hook-form";
-import { toast } from "@/hooks/use-toast";
-import { useInviteUserMutation } from "@/api/user";
-import { formSchema, FormValues } from "../schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+
+import { toast } from "@/hooks/use-toast";
+
 import { Form, Field } from "@/components/shared/hook-form";
+
+import { formSchema } from "../schema";
+
+import type { FormValues } from "../schema";
 
 type Props = {
   open: boolean;

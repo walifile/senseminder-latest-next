@@ -1,45 +1,40 @@
 "use client";
 
-import SecurityQuestionDialog from "../_components/security-question-dialog";
-import MfaMethodDialog from "../_components/MfaMethodDialog";
+import type { SmartPCSession } from "@/api/session";
 
-import React, { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
+import { fetchActiveSessions } from "@/api/session";
+import React, { useRef, useState, useEffect } from "react";
+import MfaTotpDialog from "@/app/dashboard/_components/MfaTotpDialog";
+import { getUserProfile, updateUserProfile } from "@/api/profileManagement";
+
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
+  CardTitle,
+  CardHeader,
+  CardFooter,
   CardContent,
   CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter  
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Label } from "@/components/ui/label";
+
 import {
-  Camera,
-  Mail,
-  Key,
-  Shield,
-  AlertTriangle,
-  Smartphone,
-  QrCode,
-  Edit2,
-} from "lucide-react";
+  updatePassword,
+  fetchAuthSession,
+  fetchMFAPreference,
+  updateMFAPreference,
+} from "aws-amplify/auth";
+
+import { Key, Mail, Edit2, Camera, Shield } from "lucide-react";
+
 import { useToast } from "@/hooks/use-toast";
 
-import { getUserProfile, updateUserProfile } from "@/api/profileManagement"; 
-
-
-import {updatePassword } from "aws-amplify/auth";
-import { fetchAuthSession, signOut } from "aws-amplify/auth";
-import MfaTotpDialog from "@/app/dashboard/_components/MfaTotpDialog";
-import { fetchActiveSessions, SmartPCSession } from "@/api/session";
-import { fetchUserAttributes, updateMFAPreference } from "aws-amplify/auth";
-
-import { fetchMFAPreference } from "aws-amplify/auth"; 
-import { useSearchParams } from "next/navigation";
+import MfaMethodDialog from "../_components/MfaMethodDialog";
+import SecurityQuestionDialog from "../_components/security-question-dialog";
 
 const ProfilePage = () => {
   const { toast } = useToast();
@@ -64,7 +59,6 @@ const ProfilePage = () => {
   const [saving, setSaving] = useState(false);
   const searchParams = useSearchParams();
   const defaultTab = searchParams.get("tab") || "account";
-  
 
   const orgInputRef = useRef<HTMLInputElement>(null);
 
@@ -74,9 +68,7 @@ const ProfilePage = () => {
 
   const [sessions, setSessions] = useState<SmartPCSession[]>([]);
 
-  const [mfaMethod, setMfaMethod] = useState<"app" | "sms" | "email" | null>(
-    null
-  );
+  const [mfaMethod] = useState<"app" | "sms" | "email" | null>(null);
 
   const [cooldown, setCooldown] = useState(0);
 
@@ -90,13 +82,8 @@ const ProfilePage = () => {
   const [showSecurityDialog, setShowSecurityDialog] = useState(false);
   const [isEmailMFAEnabled, setIsEmailMFAEnabled] = useState(false);
 
-
-
-  
   // ===== Profile & Org Data Fetch/Sync =====
   useEffect(() => {
-
-
     const fetchProfile = async () => {
       setLoading(true);
       try {
@@ -111,9 +98,7 @@ const ProfilePage = () => {
         setOrgInput(data.organization || "");
       } catch (error: unknown) {
         const message =
-          error instanceof Error
-            ? error.message
-            : "Could not fetch profile.";
+          error instanceof Error ? error.message : "Could not fetch profile.";
 
         toast({
           title: "Error loading profile",
@@ -124,84 +109,87 @@ const ProfilePage = () => {
       }
     };
     fetchProfile();
-    
+
     // eslint-disable-next-line
   }, []);
   const [isFederatedUser, setIsFederatedUser] = useState(false);
   useEffect(() => {
-  const fetchSessions = async () => {
-    const data = await fetchActiveSessions();
-    setSessions(data);
-  };
+    const fetchSessions = async () => {
+      const data = await fetchActiveSessions();
+      setSessions(data);
+    };
 
-  fetchSessions();
-}, []);
+    fetchSessions();
+  }, []);
 
   useEffect(() => {
-  const checkFederatedStatus = async () => {
+    const checkFederatedStatus = async () => {
+      try {
+        const session = await fetchAuthSession();
+        const idToken = session.tokens?.idToken?.toString();
+        if (!idToken) return;
+
+        const decoded = JSON.parse(atob(idToken.split(".")[1]));
+        const isFederated =
+          Array.isArray(decoded?.identities) &&
+          decoded.identities.some((id: any) =>
+            ["google", "apple"].includes(id.providerType?.toLowerCase())
+          );
+        setIsFederatedUser(isFederated);
+      } catch (err) {
+        console.error("Failed to decode token for federated check:", err);
+      }
+    };
+
+    checkFederatedStatus();
+  }, []);
+
+  useEffect(() => {
+    const checkMFAPreference = async () => {
+      try {
+        const result = await fetchMFAPreference();
+        console.log("MFA preference result:", result);
+
+        const isTOTPEnabled =
+          result.enabled?.includes("TOTP") || result.preferred === "TOTP";
+        const isEmailEnabled =
+          result.enabled?.includes("EMAIL") || result.preferred === "EMAIL";
+
+        setIs2FAEnabled(isTOTPEnabled);
+        setIsEmailMFAEnabled(isEmailEnabled);
+      } catch {
+        setIs2FAEnabled(false);
+        setIsEmailMFAEnabled(false);
+      }
+    };
+
+    checkMFAPreference();
+  }, []);
+
+  const handleToggleEmailMFA = async () => {
     try {
-      const session = await fetchAuthSession();
-      const idToken = session.tokens?.idToken?.toString();
-      if (!idToken) return;
-
-      const decoded = JSON.parse(atob(idToken.split(".")[1]));
-      const isFederated =
-        Array.isArray(decoded?.identities) &&
-        decoded.identities.some((id: any) =>
-          ["google", "apple"].includes(id.providerType?.toLowerCase())
-        );
-      setIsFederatedUser(isFederated);
-    } catch (err) {
-      console.error("Failed to decode token for federated check:", err);
-    }
-  };
-
-  checkFederatedStatus();
-}, []);
-
-
-useEffect(() => {
-  const checkMFAPreference = async () => {
-    try {
-      const result = await fetchMFAPreference();
-      console.log("MFA preference result:", result);
-
-      const isTOTPEnabled = result.enabled?.includes("TOTP") || result.preferred === "TOTP";
-      const isEmailEnabled = result.enabled?.includes("EMAIL") || result.preferred === "EMAIL";
-
-      setIs2FAEnabled(isTOTPEnabled);
-      setIsEmailMFAEnabled(isEmailEnabled);
-    } catch (err) {
-      setIs2FAEnabled(false);
-      setIsEmailMFAEnabled(false);
-    }
-  };
-
-  checkMFAPreference();
-}, []);
-
-const handleToggleEmailMFA = async () => {
-  try {
-    const newStatus = !isEmailMFAEnabled;
-    await updateMFAPreference({
+      const newStatus = !isEmailMFAEnabled;
+      await updateMFAPreference({
         email: newStatus ? "NOT_PREFERRED" : "DISABLED",
         totp: is2FAEnabled ? "NOT_PREFERRED" : "DISABLED",
       });
 
-    setIsEmailMFAEnabled(newStatus);
-    toast({
-      title: `Email MFA ${newStatus ? "Enabled" : "Disabled"}`,
-      description: `Email-based multi-factor authentication has been ${newStatus ? "enabled" : "disabled"}.`,
-    });
-  } catch (err) {
-    toast({
-      title: "Error updating Email MFA",
-      description: err instanceof Error ? err.message : "Something went wrong",
-      variant: "destructive",
-    });
-  }
-};
-
+      setIsEmailMFAEnabled(newStatus);
+      toast({
+        title: `Email MFA ${newStatus ? "Enabled" : "Disabled"}`,
+        description: `Email-based multi-factor authentication has been ${
+          newStatus ? "enabled" : "disabled"
+        }.`,
+      });
+    } catch (err) {
+      toast({
+        title: "Error updating Email MFA",
+        description:
+          err instanceof Error ? err.message : "Something went wrong",
+        variant: "destructive",
+      });
+    }
+  };
 
   useEffect(() => {
     if (orgEditing && orgInputRef.current) {
@@ -217,14 +205,19 @@ const handleToggleEmailMFA = async () => {
   const fallbackInitials = (() => {
     if (!profile) return "JD";
     const parts = [profile.firstName, profile.lastName].filter(Boolean);
-    return parts
-      .map((s) => s.trim().charAt(0).toUpperCase())
-      .join("")
-      .slice(0, 2) || "JD";
+    return (
+      parts
+        .map((s) => s.trim().charAt(0).toUpperCase())
+        .join("")
+        .slice(0, 2) || "JD"
+    );
   })();
 
   // ===== Full Name (for API) Processing =====
-  function parseNameForApi(raw: string): { firstName: string; lastName: string } {
+  function parseNameForApi(raw: string): {
+    firstName: string;
+    lastName: string;
+  } {
     const trimmed = raw.trim().replace(/\s+/, " ");
     if (!trimmed) return { firstName: "", lastName: "" };
     const [first, ...rest] = trimmed.split(/\s+/);
@@ -238,7 +231,7 @@ const handleToggleEmailMFA = async () => {
   const handleSave = async () => {
     setSaving(true);
     const { firstName, lastName } = parseNameForApi(fullName);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const payload: any = {
       firstName,
       lastName,
@@ -248,13 +241,11 @@ const handleToggleEmailMFA = async () => {
       payload.organization = orgInput ?? "";
     }
 
-    Object.keys(payload).forEach(
-      (k) => payload[k] === "" && delete payload[k]
-    );
+    Object.keys(payload).forEach((k) => payload[k] === "" && delete payload[k]);
 
     if (Object.keys(payload).length === 0) {
       setSaving(false);
-      return toast({
+      toast({
         title: "Nothing to update!",
         description: "No new values to update.",
         variant: "destructive",
@@ -277,9 +268,7 @@ const handleToggleEmailMFA = async () => {
       setOrgEditing(false);
     } catch (error: unknown) {
       const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to save changes.";
+        error instanceof Error ? error.message : "Failed to save changes.";
 
       toast({
         title: "Error updating profile",
@@ -304,16 +293,14 @@ const handleToggleEmailMFA = async () => {
         description: "Organization name updated successfully.",
       });
     } catch (err: unknown) {
-        const message =
-          err instanceof Error
-            ? err.message
-            : "Could not update organization.";
+      const message =
+        err instanceof Error ? err.message : "Could not update organization.";
 
-        toast({
-          title: "Error updating organization",
-          description: message,
-        });
-      }
+      toast({
+        title: "Error updating organization",
+        description: message,
+      });
+    }
     setSaving(false);
   };
 
@@ -324,7 +311,7 @@ const handleToggleEmailMFA = async () => {
   };
 
   // ===== Prevent Default Submit =====
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   function prevent(e: any) {
     e.preventDefault();
   }
@@ -360,34 +347,33 @@ const handleToggleEmailMFA = async () => {
       description: "Two-factor authentication has been successfully enabled.",
     });
   };
- const handleDisableTotp = async () => {
-  try {
-    await updateMFAPreference({
-      totp: "DISABLED",
-    });
+  const handleDisableTotp = async () => {
+    try {
+      await updateMFAPreference({
+        totp: "DISABLED",
+      });
 
-    setIs2FAEnabled(false);
+      setIs2FAEnabled(false);
 
-    toast({
-      title: "TOTP Disabled",
-      description: "Authenticator App MFA has been turned off.",
-    });
-  } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Failed to disable TOTP.";
-    toast({
-      title: "Error",
-      description: message,
-      variant: "destructive",
-    });
-  }
-};
-
-
-  const handleMFAMethodChange = (method: "app" | "sms" | "email") => {
-    setMfaMethod(method);
-    setShow2FADialog(true);
+      toast({
+        title: "TOTP Disabled",
+        description: "Authenticator App MFA has been turned off.",
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to disable TOTP.";
+      toast({
+        title: "Error",
+        description: message,
+        variant: "destructive",
+      });
+    }
   };
+
+  // const handleMFAMethodChange = (method: "app" | "sms" | "email") => {
+  //   setMfaMethod(method);
+  //   setShow2FADialog(true);
+  // };
 
   // ===== Main Render =====
   return (
@@ -570,7 +556,8 @@ const handleToggleEmailMFA = async () => {
             <CardContent>
               {isFederatedUser ? (
                 <div className="text-sm text-muted-foreground">
-                  This account was created using Google or Apple. You don’t need a password to sign in.
+                  This account was created using Google or Apple. You don’t need
+                  a password to sign in.
                 </div>
               ) : !showPasswordForm ? (
                 <div className="text-sm text-muted-foreground">
@@ -601,12 +588,13 @@ const handleToggleEmailMFA = async () => {
                     try {
                       await updatePassword({
                         oldPassword: currentPassword,
-                        newPassword: newPassword,
+                        newPassword,
                       });
 
                       toast({
                         title: "Password Changed",
-                        description: "You can now log out and log back in with your new password.",
+                        description:
+                          "You can now log out and log back in with your new password.",
                       });
                     } catch (err) {
                       const message =
@@ -642,7 +630,8 @@ const handleToggleEmailMFA = async () => {
                       onChange={(e) => setNewPassword(e.target.value)}
                     />
                     <p className="text-xs text-muted-foreground">
-                      Must be at least 8 characters long and include a number or symbol.
+                      Must be at least 8 characters long and include a number or
+                      symbol.
                     </p>
                   </div>
 
@@ -688,14 +677,19 @@ const handleToggleEmailMFA = async () => {
             </CardHeader>
             <CardContent className="flex justify-between items-center">
               <p className="text-sm text-muted-foreground">
-                Setting up a security question adds an extra layer of protection for actions like changing your password or configuring multi-factor authentication.
+                Setting up a security question adds an extra layer of protection
+                for actions like changing your password or configuring
+                multi-factor authentication.
               </p>
               <Button size="sm" onClick={() => setShowSecurityDialog(true)}>
                 Edit
               </Button>
             </CardContent>
           </Card>
-          <SecurityQuestionDialog open={showSecurityDialog} onClose={() => setShowSecurityDialog(false)} />
+          <SecurityQuestionDialog
+            open={showSecurityDialog}
+            onClose={() => setShowSecurityDialog(false)}
+          />
 
           {/* ----- Multi-Factor Auth Card ----- */}
           <Card>
@@ -715,7 +709,7 @@ const handleToggleEmailMFA = async () => {
                       : "Use an authenticator app to generate one-time codes"}
                   </p>
                 </div>
-               <Button
+                <Button
                   variant={is2FAEnabled ? "destructive" : "outline"}
                   onClick={() => {
                     if (is2FAEnabled) {
@@ -729,33 +723,34 @@ const handleToggleEmailMFA = async () => {
                   {is2FAEnabled ? "Disable" : "Setup"}
                 </Button>
 
-
-                  <MfaTotpDialog
-                    open={showTotpDialog}
-                    onClose={() => setShowTotpDialog(false)}
+                <MfaTotpDialog
+                  open={showTotpDialog}
+                  onClose={() => setShowTotpDialog(false)}
                   onComplete={async () => {
-                      setShowTotpDialog(false);
-                      try {
-                           // Tell Cognito: TOTP is ENABLED, and set as PREFERRED
-                          await updateMFAPreference({
-                            totp: "NOT_PREFERRED",
-                            email: isEmailMFAEnabled ? "NOT_PREFERRED" : "DISABLED"
-                          });
-                        const result = await fetchMFAPreference();
-                        console.log("MFA preference result (onComplete):", result);
+                    setShowTotpDialog(false);
+                    try {
+                      // Tell Cognito: TOTP is ENABLED, and set as PREFERRED
+                      await updateMFAPreference({
+                        totp: "NOT_PREFERRED",
+                        email: isEmailMFAEnabled ? "NOT_PREFERRED" : "DISABLED",
+                      });
+                      const result = await fetchMFAPreference();
+                      console.log(
+                        "MFA preference result (onComplete):",
+                        result
+                      );
 
-                        const isTOTPEnabled = result.enabled?.includes("TOTP") || result.preferred === "TOTP";
-                        setIs2FAEnabled(isTOTPEnabled);
-                      } catch (err) {
-                        console.error("Error fetching MFA (onComplete):", err);
-                      }
-                    }}
-
-
-
-                  />
+                      const isTOTPEnabled =
+                        result.enabled?.includes("TOTP") ||
+                        result.preferred === "TOTP";
+                      setIs2FAEnabled(isTOTPEnabled);
+                    } catch (err) {
+                      console.error("Error fetching MFA (onComplete):", err);
+                    }
+                  }}
+                />
               </div>
-        
+
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="font-medium">Email Authentication</p>
@@ -763,14 +758,13 @@ const handleToggleEmailMFA = async () => {
                     Receive codes via email
                   </p>
                 </div>
-               <Button
-                variant={isEmailMFAEnabled ? "destructive" : "outline"}
-                onClick={handleToggleEmailMFA}
-              >
-                <Mail className="h-4 w-4 mr-2" />
-                {isEmailMFAEnabled ? "Disable" : "Setup"}
-              </Button>
-
+                <Button
+                  variant={isEmailMFAEnabled ? "destructive" : "outline"}
+                  onClick={handleToggleEmailMFA}
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  {isEmailMFAEnabled ? "Disable" : "Setup"}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -802,7 +796,11 @@ const handleToggleEmailMFA = async () => {
                         ? new Date(session.lastSeen).toLocaleString()
                         : "Unknown"}
                       {session.location?.city || session.location?.country
-                        ? ` • ${session.location?.city || "Unknown"}, ${session.location?.country || session.location?.region || ""}`
+                        ? ` • ${session.location?.city || "Unknown"}, ${
+                            session.location?.country ||
+                            session.location?.region ||
+                            ""
+                          }`
                         : ""}
                     </p>
                   </div>
@@ -818,8 +816,6 @@ const handleToggleEmailMFA = async () => {
               </form>
             </CardFooter>
           </Card>
-
-
         </TabsContent>
       </Tabs>
 
@@ -830,7 +826,6 @@ const handleToggleEmailMFA = async () => {
         method={mfaMethod}
         onComplete={complete2FASetup}
       />
-
     </div>
   );
 };

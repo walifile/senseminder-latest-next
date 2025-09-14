@@ -1,20 +1,26 @@
 "use client";
-import React, { useCallback, useState } from "react";
+
+import type { RootState } from "@/redux/store";
+
+import React, { useState, useCallback } from "react";
+import { useCreateVMMutation } from "@/api/vmManagement";
+import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
+
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
+  DialogTitle,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogContent,
+  DialogDescription,
 } from "@/components/ui/dialog";
-import { FormValues } from "../schema";
+
 import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
-import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
-import { useCreateVMMutation } from "@/api/vmManagement";
+
+import { useToast } from "@/hooks/use-toast";
+
+import type { FormValues } from "../schema";
 
 type Props = {
   open: boolean;

@@ -1,15 +1,18 @@
+import React from "react";
+
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
+  DialogTitle,
+  DialogHeader,
   DialogContent,
   DialogDescription,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+
 import { useToast } from "@/hooks/use-toast";
-import React from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { AssignedUser, PC } from "../types";
+
+import type { PC, AssignedUser } from "../types";
 
 type AssignUserDialogProps = {
   open: boolean;

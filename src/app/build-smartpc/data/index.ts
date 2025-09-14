@@ -1,4 +1,4 @@
-import { AssignedUser, Option } from "../types";
+import type { Option, AssignedUser } from "../types";
 
 export const osOptions: Option[] = [
   { value: "Windows 11", label: "Windows 11" },

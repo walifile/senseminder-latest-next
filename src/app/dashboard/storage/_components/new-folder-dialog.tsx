@@ -1,21 +1,25 @@
 "use client";
 
+import type { RootState } from "@/redux/store";
+
 import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { useCreateFolderMutation } from "@/api/fileManagerAPI";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { useCreateFolderMutation } from "@/api/fileManagerAPI";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogTitle,
+  DialogFooter,
+  DialogHeader,
+  DialogContent,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
 import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
+
+import { useToast } from "@/hooks/use-toast";
 
 interface NewFolderDialogProps {
   open: boolean;
@@ -77,9 +81,9 @@ const NewFolderDialog: React.FC<NewFolderDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Create New Folder</DialogTitle>
           <DialogDescription>
-            Enter a name for your new folder{folderPath ? ` located in "${folderPath}"` : ""}
+            Enter a name for your new folder
+            {folderPath ? ` located in "${folderPath}"` : ""}
           </DialogDescription>
-
         </DialogHeader>
         <div className="py-4 space-y-4">
           <div className="space-y-2">

@@ -1,26 +1,31 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import type { RootState } from "@/redux/store";
+
+import React, { useMemo, useState } from "react";
+import {
+  useMoveFilesMutation,
+  useListHierarchyQuery,
+} from "@/api/fileManagerAPI";
+
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
+  DialogTitle,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogContent,
+  DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { RootState } from "@/redux/store";
+
 import { useSelector } from "react-redux";
-import {
-  useListFilesQuery,
-  useListHierarchyQuery,
-  useMoveFilesMutation,
-} from "@/api/fileManagerAPI";
-import { FileItem } from "../types";
-import FolderListView from "./folder-list-view";
+
+import { useToast } from "@/hooks/use-toast";
+
 import { getRelativePath } from "../utils";
+import FolderListView from "./folder-list-view";
+
+import type { FileItem } from "../types";
 
 type HierarchyFolder = {
   name: string;
@@ -59,21 +64,26 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
     userId,
   });
 
-  const getCurrentLevelFolders = (hierarchyData: { folders: HierarchyFolder[] }, currentPath: FileItem[]): FileItem[] => {
+  const getCurrentLevelFolders = (
+    hierarchyData: { folders: HierarchyFolder[] },
+    currentPath: FileItem[]
+  ): FileItem[] => {
     if (!hierarchyData?.folders) return [];
-    
+
     let currentLevel = hierarchyData.folders;
-    
+
     for (const pathItem of currentPath) {
-      const foundFolder = currentLevel.find(folder => folder.name === pathItem.fileName);
+      const foundFolder = currentLevel.find(
+        (folder) => folder.name === pathItem.fileName
+      );
       if (foundFolder && foundFolder.children) {
         currentLevel = foundFolder.children;
       } else {
         return [];
       }
     }
-    
-    return currentLevel.map(folder => ({
+
+    return currentLevel.map((folder) => ({
       id: folder.path,
       fileName: folder.name,
       fileType: "folder" as const,
@@ -89,8 +99,6 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
   }, [data, path]);
 
   const handleMove = async () => {
-
-
     if (!selectedFolderId) {
       console.error(" No destination folder selected");
       toast({
@@ -104,7 +112,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
     if (!userId) {
       console.error("No userId available");
       toast({
-        title: "Move Failed", 
+        title: "Move Failed",
         description: "User authentication required",
         variant: "destructive",
       });
@@ -131,11 +139,11 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
       const destinationFolder = getRelativePath(selectedFolderId);
 
       // Check if getRelativePath is working correctly
-      if (sourceFileNames.some(name => !name || name.trim() === '')) {
+      if (sourceFileNames.some((name) => !name || name.trim() === "")) {
         throw new Error("Invalid source file paths");
       }
 
-      if (!destinationFolder || destinationFolder.trim() === '') {
+      if (!destinationFolder || destinationFolder.trim() === "") {
         console.error(" Destination folder is empty after getRelativePath");
         throw new Error("Invalid destination folder path");
       }
@@ -146,25 +154,24 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
         sourceFileNames,
         destinationFolder,
       };
-      const result = await moveFiles(movePayload).unwrap();
+      await moveFiles(movePayload).unwrap();
       toast({
         title: "Move Complete",
         description: `${sourceFileNames.length} item(s) moved to "${destinationFolder}"`,
       });
       setSelectedFiles([]);
       closeDialog();
-
     } catch (err: any) {
       console.error(" Move operation failed:", err);
-      
+
       // More detailed error handling
       let errorMessage = "Could not move selected items. Please try again.";
-      
+
       if (err?.data?.message) {
         errorMessage = err.data.message;
       } else if (err?.message) {
         errorMessage = err.message;
-      } else if (typeof err === 'string') {
+      } else if (typeof err === "string") {
         errorMessage = err;
       }
 
@@ -192,8 +199,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
   // Enhanced validation logic with logging
   const selectedFolderExists = selectedFiles?.some((id) => {
     const exists = id === selectedFolderId;
-    if (exists) {
-    }
+
     return exists;
   });
 
@@ -202,12 +208,13 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
     console.log("⚠️ ~ Trying to move to the same folder:", selectedFolder?.id);
   }
 
-  const canMove = selectedFolderId && 
-                  !selectedFolderExists && 
-                  !isSameAsCurrentFolder && 
-                  selectedFiles.length > 0 && 
-                  userId && 
-                  !isLoading;
+  const canMove =
+    selectedFolderId &&
+    !selectedFolderExists &&
+    !isSameAsCurrentFolder &&
+    selectedFiles.length > 0 &&
+    userId &&
+    !isLoading;
 
   console.log(" Move button enabled:", canMove, {
     selectedFolderId: !!selectedFolderId,
@@ -243,10 +250,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
           <Button variant="outline" onClick={closeDialog}>
             Cancel
           </Button>
-          <Button
-            onClick={handleMove}
-            disabled={!canMove}
-          >
+          <Button onClick={handleMove} disabled={!canMove}>
             {isLoading ? "Moving..." : "Move Files"}
           </Button>
         </DialogFooter>

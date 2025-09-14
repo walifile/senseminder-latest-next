@@ -1,6 +1,8 @@
 "use client";
-import { X } from "lucide-react";
+
 import { sanitizeFilename } from "@/lib/utils/index";
+
+import { X } from "lucide-react";
 
 interface Props {
   files: File[];

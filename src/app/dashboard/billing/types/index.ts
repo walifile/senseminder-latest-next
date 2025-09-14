@@ -1,4 +1,4 @@
-import { PaymentMethod } from "@stripe/stripe-js";
+import type { PaymentMethod } from "@stripe/stripe-js";
 
 export type ExtendedPaymentMethod = PaymentMethod & {
   isDefault?: boolean;

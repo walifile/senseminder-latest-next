@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { Zap, FolderOpen, HardDrive, Download } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
+
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogFooter, DialogContent } from "@/components/ui/dialog";
+
 import { motion } from "framer-motion";
+import { Zap, Download, HardDrive, FolderOpen } from "lucide-react";
 
 export default function DesktopAppDialog() {
   const pathname = usePathname();

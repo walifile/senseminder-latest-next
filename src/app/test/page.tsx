@@ -1,8 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useEffect, useState } from "react";
-import { fetchAuthSession, signOut } from "aws-amplify/auth";
+
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+
+import { signOut, fetchAuthSession } from "aws-amplify/auth";
 
 export default function Dashboard() {
   const [idToken, setIdToken] = useState<string | null>(null);
@@ -38,11 +39,14 @@ export default function Dashboard() {
 
   const handleCopy = (token: string | null, label: string) => {
     if (token) {
-      navigator.clipboard.writeText(token).then(() => {
-        alert(`${label} copied to clipboard!`);
-      }).catch((err) => {
-        console.error(`Error copying ${label}: `, err);
-      });
+      navigator.clipboard
+        .writeText(token)
+        .then(() => {
+          alert(`${label} copied to clipboard!`);
+        })
+        .catch((err) => {
+          console.error(`Error copying ${label}: `, err);
+        });
     }
   };
 
@@ -57,7 +61,9 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 space-y-6">
-      <h1 className="text-xl font-bold">Hello, {idPayload?.email || "Loading..."}</h1>
+      <h1 className="text-xl font-bold">
+        Hello, {idPayload?.email || "Loading..."}
+      </h1>
 
       {/* ID Token Section */}
       <section>
@@ -74,7 +80,9 @@ export default function Dashboard() {
           </button>
         </div>
         <pre className="text-xs bg-gray-50 p-2 rounded max-h-60 overflow-auto border">
-          {idPayload ? JSON.stringify(idPayload, null, 2) : "Loading ID token claims..."}
+          {idPayload
+            ? JSON.stringify(idPayload, null, 2)
+            : "Loading ID token claims..."}
         </pre>
       </section>
 
@@ -93,7 +101,9 @@ export default function Dashboard() {
           </button>
         </div>
         <pre className="text-xs bg-gray-50 p-2 rounded max-h-60 overflow-auto border">
-          {accessPayload ? JSON.stringify(accessPayload, null, 2) : "Loading access token claims..."}
+          {accessPayload
+            ? JSON.stringify(accessPayload, null, 2)
+            : "Loading access token claims..."}
         </pre>
       </section>
 

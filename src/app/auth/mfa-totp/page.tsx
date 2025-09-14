@@ -1,35 +1,40 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import type { RootState } from "@/redux/store";
+
 import { useRouter } from "next/navigation";
-import { confirmSignIn } from "aws-amplify/auth";
-import { useDispatch, useSelector } from "react-redux";
+import { routes } from "@/constants/routes";
+import React, { useState, useEffect } from "react";
+import { sendTotpRecovery } from "@/api/mfa-recovery";
+import { setLoading, setTempUser } from "@/redux/slices/auth/auth-slice";
+
 import { Input } from "@/components/ui/input";
+import { maskEmail } from "@/lib/utils/index";
 import { Button } from "@/components/ui/button";
+import { getSessionItemSafe } from "@/lib/utils/browser";
 import {
   Card,
-  CardHeader,
   CardTitle,
-  CardDescription,
+  CardHeader,
   CardContent,
+  CardDescription,
 } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { RootState } from "@/redux/store";
-import { handlePostAuthentication, handleSignOut } from "@/lib/services/auth";
-import { sendTotpRecovery } from "@/api/mfa-recovery";
 import {
   Dialog,
-  DialogContent,
-  DialogHeader,
   DialogTitle,
+  DialogHeader,
   DialogFooter,
+  DialogContent,
   DialogDescription,
 } from "@/components/ui/dialog";
 
-import { routes } from "@/constants/routes";
-import { getSessionItemSafe } from "@/lib/utils/browser";
-import { maskEmail } from "@/lib/utils/index";
-import { setLoading, setTempUser } from "@/redux/slices/auth/auth-slice";
+import { confirmSignIn } from "aws-amplify/auth";
+
+import { useDispatch, useSelector } from "react-redux";
+
+import { useToast } from "@/hooks/use-toast";
+
+import { handleSignOut, handlePostAuthentication } from "@/lib/services/auth";
 
 export default function MfaTotpPage() {
   const [code, setCode] = useState("");

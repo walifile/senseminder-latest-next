@@ -1,11 +1,16 @@
-import { Button } from "@/components/ui/button";
-import { Play } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useDispatch } from "react-redux";
-import { useStartVMMutation } from "@/api/fileManagerAPI";
-import { PC } from "@/app/build-smartpc/types";
+import type { PC } from "@/app/build-smartpc/types";
+
 import { isBusy } from "@/app/build-smartpc/utils";
+import { useStartVMMutation } from "@/api/fileManagerAPI";
 import { addStartingInstance } from "@/redux/slices/dcv/starting-instances-slice";
+
+import { Button } from "@/components/ui/button";
+
+import { useDispatch } from "react-redux";
+
+import { Play } from "lucide-react";
+
+import { useToast } from "@/hooks/use-toast";
 
 type Props = {
   pc: PC;

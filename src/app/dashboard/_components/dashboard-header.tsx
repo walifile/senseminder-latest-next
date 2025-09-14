@@ -1,25 +1,30 @@
 "use client";
 
+import type { Notification } from "@/types/notification";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
-import { Bell, Wallet } from "lucide-react";
+import { useGetCurrentBalanceQuery } from "@/api/billing";
+import { markNotificationsAsRead } from "@/api/notification";
+
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
+  DropdownMenuContent,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import Link from "next/link";
-import { ThemeToggle } from "@/components/shared/layout/theme-toggle";
-import { cn } from "@/lib/utils";
-import ProfileDropdown from "@/components/shared/layout/profile-dropdown";
-import { Logo } from "@/components/shared/layout/Logo";
-import { useRouter } from "next/navigation";
-import { markNotificationsAsRead } from "@/api/notification";
-import type { Notification } from "@/types/notification";
+
+import { Bell, Wallet } from "lucide-react";
+
 import { useNotifications } from "@/hooks/useNotifications";
-import { useGetCurrentBalanceQuery } from "@/api/billing";
+
+import { Logo } from "@/components/shared/layout/Logo";
+import { ThemeToggle } from "@/components/shared/layout/theme-toggle";
+import ProfileDropdown from "@/components/shared/layout/profile-dropdown";
 
 const DashboardHeader = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -88,7 +93,7 @@ const DashboardHeader = () => {
 
   return (
     <header className="sticky top-0 z-40 h-16 border-b border-border flex items-center justify-between px-4 bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="md:hidden w-10"></div>
+      <div className="md:hidden w-10" />
 
       {sidebarCollapsed && (
         <Link href="/" className="flex items-center">
@@ -96,7 +101,7 @@ const DashboardHeader = () => {
         </Link>
       )}
 
-      <div className="flex-1"></div>
+      <div className="flex-1" />
 
       <div className="flex items-center gap-4">
         <Link href="/dashboard/billing">

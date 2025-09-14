@@ -1,27 +1,32 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useGetUsersQuery } from "@/api/user";
+
 import { Input } from "@/components/ui/input";
-import { UserPlus, Search, Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useGetUsersQuery } from "@/api/user";
-import UserTable from "./_components/user-table";
-import { ApiUser } from "./types";
+import {
+  Card,
+  CardTitle,
+  CardHeader,
+  CardFooter,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
+
+import { Info, Search, UserPlus } from "lucide-react";
+
 import { useBoolean } from "@/hooks/use-boolean";
+
+import UserTable from "./_components/user-table";
 import InviteUserDialog from "./_components/invite-user-dialog";
+
+import type { ApiUser } from "./types";
 
 const UsersManagementPage = () => {
   const inviteDialog = useBoolean();

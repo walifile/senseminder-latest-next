@@ -1,9 +1,9 @@
-import { Metadata } from 'next'
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'SmartPC',
-  description: 'SmartPC Application',
+  title: "SmartPC",
+  description: "SmartPC Application",
   icons: {
-    icon: '/favicon.ico',
+    icon: "/favicon.ico",
   },
-} 
+};

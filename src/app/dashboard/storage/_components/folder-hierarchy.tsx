@@ -1,13 +1,16 @@
 import React from "react";
+
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 import { ChevronRight, MoreHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { FileItem } from "../types";
+
+import type { FileItem } from "../types";
 
 type FolderHierarchyProps = {
   path: FileItem[];
@@ -20,7 +23,7 @@ const FolderHierarchy: React.FC<FolderHierarchyProps> = ({
   setPath,
   setSelectedFolderId,
 }) => {
-  if (path.length === 0) return;
+  if (path.length === 0) return null;
 
   const handleSwitchFolder = (file: FileItem) => {
     setSelectedFolderId(file.id);

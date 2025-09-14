@@ -1,20 +1,20 @@
-
-
 "use client";
 
-import { z } from "zod";
 import Link from "next/link";
-import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { routes } from "@/constants/routes";
+import { checkMfaStatus, sendRecoveryEmail } from "@/api/mfa-recovery";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { routes } from "@/constants/routes";
+import { useToast } from "@/hooks/use-toast";
 
 import { handleResetPassword } from "@/lib/services/auth";
-import { checkMfaStatus, sendRecoveryEmail } from "@/api/mfa-recovery"; 
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -71,7 +71,9 @@ export default function ForgotPassword() {
           });
         }
       } else {
-        console.warn("Unexpected response from MFA API. Fallback to Cognito reset...");
+        console.warn(
+          "Unexpected response from MFA API. Fallback to Cognito reset..."
+        );
         const response = await handleResetPassword(email);
         if (response.success) {
           router.push(
@@ -87,7 +89,9 @@ export default function ForgotPassword() {
       }
     } catch (error) {
       const msg =
-        error instanceof Error ? error.message : "Something went wrong. Try again.";
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Try again.";
       console.error("Error in forgot password flow:", msg);
       toast({
         title: "Error",

@@ -1,21 +1,23 @@
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+
 import {
-  LineChart,
   Line,
-  ResponsiveContainer,
   XAxis,
   YAxis,
   Tooltip,
+  LineChart,
+  ResponsiveContainer,
 } from "recharts";
 import {
   Cpu,
-  MemoryStick,
-  HardDrive,
   Network,
   Activity,
+  HardDrive,
+  MemoryStick,
   AlertCircle,
 } from "lucide-react";
 
@@ -47,7 +49,7 @@ const ResourceMonitoring = () => {
 
   // Update data every second when live
   React.useEffect(() => {
-    if (!isLive) return;
+    if (!isLive) return undefined;
 
     const updateData = () => {
       const now = new Date();

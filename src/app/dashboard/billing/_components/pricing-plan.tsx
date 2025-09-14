@@ -1,25 +1,28 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useGetStoragePricingTierQuery } from "@/api/billing";
+
+import { Slider } from "@/components/ui/slider";
+import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
+  CardTitle,
+  CardHeader,
   CardContent,
   CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
-import { Slider } from "@/components/ui/slider";
 import {
   Select,
-  SelectContent,
   SelectItem,
-  SelectTrigger,
   SelectValue,
+  SelectContent,
+  SelectTrigger,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle, HardDrive, Cpu, Server, Zap } from "lucide-react";
+
+import { Cpu, Zap, Server, HardDrive, CheckCircle } from "lucide-react";
+
 import { billingPlans } from "../data";
-import { useGetStoragePricingTierQuery } from "@/api/billing";
 
 const PricingPlan = () => {
   const [selectedService, setSelectedService] = useState("smartpc");

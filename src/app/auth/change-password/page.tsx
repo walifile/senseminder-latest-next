@@ -1,15 +1,20 @@
 // app/change-password/page.tsx
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 "use client";
 
-import React, { useState, useEffect } from "react";
+import type { RootState } from "@/redux/store";
+
 import { useRouter } from "next/navigation";
-import { confirmSignIn } from "aws-amplify/auth";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
 import { setLoading, setTempUser } from "@/redux/slices/auth/auth-slice";
-import { RootState } from "@/redux/store";
-import { handleSignOut } from "@/lib/services/auth";
+
+import { confirmSignIn } from "aws-amplify/auth";
+
+import { useDispatch, useSelector } from "react-redux";
+
 import { useToast } from "@/hooks/use-toast";
+
+import { handleSignOut } from "@/lib/services/auth";
 
 export default function ChangePasswordPage() {
   const [newPassword, setNewPassword] = useState("");

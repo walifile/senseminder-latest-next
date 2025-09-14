@@ -1,20 +1,27 @@
 "use client";
-import React, { useEffect, useMemo } from "react";
-import { Controller } from "react-hook-form";
-import { AlertCircle } from "lucide-react";
+
+import React, { useMemo, useEffect } from "react";
+
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  cpuCategories,
-  cpuOptions,
-  locationOptions,
-  osOptions,
-  storageOptions,
-} from "../data";
+
+import { Controller } from "react-hook-form";
+
+import { AlertCircle } from "lucide-react";
+
 import { Form, Field } from "@/components/shared/hook-form";
-import { ResizeInitial } from "../types";
+
 import FieldChangePreview from "./field-change-preview";
+import {
+  osOptions,
+  cpuOptions,
+  cpuCategories,
+  storageOptions,
+  locationOptions,
+} from "../data";
+
+import type { ResizeInitial } from "../types";
 
 interface Props {
   methods: any;
@@ -35,6 +42,7 @@ const SmartPcConfigForm = ({
   existingData,
   loadingExisting,
 }: Props) => {
+  console.log("existingData", existingData);
   const locked = new Set([
     "pcName",
     "operatingSystem",
@@ -61,9 +69,10 @@ const SmartPcConfigForm = ({
   /* ----- dynamic form logic ----- */
   const isLinuxOS = selectedOS === "Linux";
 
-  const linuxCategoryCpuOptions = useMemo(() => {
-    return cpuCategories.Linux[`${selectedLinuxCategory}`] || [];
-  }, [selectedLinuxCategory]);
+  const linuxCategoryCpuOptions = useMemo(
+    () => cpuCategories.Linux[`${selectedLinuxCategory}`] || [],
+    [selectedLinuxCategory]
+  );
 
   const cpuOptionsForOS = isLinuxOS
     ? linuxCategoryCpuOptions

@@ -1,23 +1,29 @@
-import React, { useState, useMemo } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
+import type { RootState } from "@/redux/store";
+
+import React, { useMemo, useState } from "react";
 import {
   useCopyFilesMutation,
   useListHierarchyQuery,
 } from "@/api/fileManagerAPI";
-import { FileItem } from "../types";
-import FolderListView from "./folder-list-view";
+
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogTitle,
+  DialogFooter,
+  DialogHeader,
+  DialogContent,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
+import { useSelector } from "react-redux";
+
+import { useToast } from "@/hooks/use-toast";
+
 import { getRelativePath } from "../utils";
+import FolderListView from "./folder-list-view";
+
+import type { FileItem } from "../types";
 
 type HierarchyFolder = {
   name: string;
@@ -46,7 +52,6 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [path, setPath] = useState<FileItem[]>([]);
 
-
   // const { data, isLoading: isFilesLoading } = useListFilesQuery({
   //   userId,
   //   region: "virginia",
@@ -54,14 +59,14 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
   // });
 
   // Derive folderPath from the current path state
-  const folderPath = path.length > 0 ? path.map(item => item.fileName).join("/") : "";
+  const folderPath =
+    path.length > 0 ? path.map((item) => item.fileName).join("/") : "";
 
   const { data, isLoading: isFilesLoading } = useListHierarchyQuery({
     region: "virginia",
     userId,
     folder: folderPath,
   });
-
 
   const getCurrentLevelFolders = (
     hierarchyData: { folders: HierarchyFolder[] },
@@ -72,7 +77,9 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
     let currentLevel = hierarchyData.folders;
 
     for (const pathItem of currentPath) {
-      const foundFolder = currentLevel.find((folder) => folder.name === pathItem.fileName);
+      const foundFolder = currentLevel.find(
+        (folder) => folder.name === pathItem.fileName
+      );
       if (foundFolder?.children) {
         currentLevel = foundFolder.children;
       } else {
@@ -106,7 +113,10 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
     const destinationFolder = getRelativePath(selectedFolderId);
     // console.log(`🚀 ~ Destination: ${selectedFolderId} → ${destinationFolder}`);
 
-    if (sourceFileNames.some(name => !name?.trim()) || !destinationFolder?.trim()) {
+    if (
+      sourceFileNames.some((name) => !name?.trim()) ||
+      !destinationFolder?.trim()
+    ) {
       console.error("Invalid paths in copy");
       toast({
         title: "Copy Failed",
@@ -117,13 +127,12 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
     }
 
     try {
-      const result = await copyFiles({
+      await copyFiles({
         region: "virginia",
         userId,
         sourceFileNames,
         destinationFolder,
       }).unwrap();
-
 
       toast({
         title: "Items Copied",
@@ -199,10 +208,7 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
           <Button variant="outline" onClick={closeDialog}>
             Cancel
           </Button>
-          <Button
-            onClick={handleCopy}
-            disabled={!canCopy}
-          >
+          <Button onClick={handleCopy} disabled={!canCopy}>
             {isLoading ? "Copying..." : "Copy Files"}
           </Button>
         </DialogFooter>

@@ -1,12 +1,17 @@
-import { AlertCircle, FolderPlus, Upload } from "lucide-react";
+import type { RootState } from "@/redux/store";
+
+import { useGetUsageQuery } from "@/api/fileManagerAPI";
+
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useGetUsageQuery } from "@/api/fileManagerAPI";
-import { RootState } from "@/redux/store";
+
 import { useSelector } from "react-redux";
-import { formatBytes } from "../utils";
+
+import { Upload, FolderPlus, AlertCircle } from "lucide-react";
+
 import { categories } from "../data";
+import { formatBytes } from "../utils";
 
 interface SidebarPanelProps {
   selectedCategory: string;

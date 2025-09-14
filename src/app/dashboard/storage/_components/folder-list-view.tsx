@@ -1,9 +1,12 @@
 "use client";
 
 import React from "react";
-import { ChevronRight, Folder } from "lucide-react";
-import { FileItem } from "../types";
+
+import { Folder, ChevronRight } from "lucide-react";
+
 import FolderHierarchy from "./folder-hierarchy";
+
+import type { FileItem } from "../types";
 
 type FolderListViewProps = {
   folders: FileItem[];

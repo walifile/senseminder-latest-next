@@ -1,16 +1,17 @@
 import React from "react";
+
 import {
-  FileText,
-  Image,
-  FileVideo2,
-  Presentation,
-  Table2,
-  FileText as FileDocument,
-  AudioLines,
   File,
+  Image,
+  Table2,
+  Archive,
+  FileText,
   FileCode2,
   FileJson2,
-  Archive,
+  FileVideo2,
+  AudioLines,
+  Presentation,
+  FileText as FileDocument,
 } from "lucide-react";
 
 const FilledFolderIcon = ({

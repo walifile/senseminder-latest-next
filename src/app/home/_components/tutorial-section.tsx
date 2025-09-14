@@ -1,13 +1,15 @@
 import React, { useState } from "react";
-import { Play, Youtube } from "lucide-react";
-import { motion } from "framer-motion";
+
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogContent,
-  DialogHeader,
   DialogTitle,
+  DialogHeader,
+  DialogContent,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+
+import { motion } from "framer-motion";
+import { Play, Youtube } from "lucide-react";
 
 const tutorials = [
   {
@@ -50,7 +52,10 @@ const TutorialSection = () => {
   >(null);
 
   return (
-    <section id="tutorials" className="py-05 bg-background/50 dark:bg-background/80 backdrop-blur-sm">
+    <section
+      id="tutorials"
+      className="py-05 bg-background/50 dark:bg-background/80 backdrop-blur-sm"
+    >
       <div className="container relative space-y-6 py-8 md:py-12 lg:py-24 lg:space-y-10">
         <div className="text-center mb-12">
           <div className="inline-flex items-center bg-primary/10 dark:bg-primary/20 rounded-full mb-4 px-4 py-1.5">

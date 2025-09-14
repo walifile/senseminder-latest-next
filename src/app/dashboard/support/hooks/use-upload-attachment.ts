@@ -2,6 +2,7 @@ import {
   usePresignTicketUploadMutation,
   usePresignTicketUpload2Mutation,
 } from "@/api/supportAPI";
+
 import { useToast } from "@/components/ui/use-toast";
 import { sanitizeFilename } from "@/lib/utils/index";
 
@@ -25,8 +26,6 @@ export const useUploadAttachment = (
         fileType: file.type,
         fileSize: file.size,
       };
-
-      const payload = { userId, body: meta };
 
       const { uploadUrl, fileKey } = ticketId
         ? await presignUpload({ userId, ticketId, body: meta }).unwrap()
