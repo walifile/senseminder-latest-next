@@ -33,7 +33,7 @@ export function getFriendlyOSName(raw?: string | null): string {
   // --- Ubuntu versions: Ubuntu_22.04 / Ubuntu-24_10 / ubuntu22.07 / ubuntu 24.04 ---
   const ubuntuMatch = s.match(/ubuntu[\s_-]*?(\d{2})[.\-_](\d{2})/);
   if (ubuntuMatch) {
-    const [_, major, minor] = ubuntuMatch;
+    const [, major, minor] = ubuntuMatch;
     return `Ubuntu ${major}.${minor}`;
   }
   if (s.includes("ubuntu")) return "Ubuntu";

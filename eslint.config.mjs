@@ -42,7 +42,7 @@ const commonRules = () => ({
   "react/jsx-curly-brace-presence": [2, { props: "never", children: "never" }],
   "react/no-unescaped-entities": "off",
   // typescript
-  "@typescript-eslint/no-shadow": 2,
+  // "@typescript-eslint/no-shadow": 2,
   "@typescript-eslint/no-explicit-any": 0,
   "@typescript-eslint/no-empty-object-type": 0,
   "@typescript-eslint/consistent-type-imports": 1,

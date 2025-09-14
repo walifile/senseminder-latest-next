@@ -1,6 +1,8 @@
+import type { ApiError, ErrorResponse } from "@/types/errors";
+
 import { useCallback } from "react";
+
 import useToast from "./useToast";
-import { ErrorResponse, ApiError } from "@/types/errors";
 
 const useErrorToast = () => {
   const { showToast } = useToast();

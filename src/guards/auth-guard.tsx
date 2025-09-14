@@ -1,14 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
+
+import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { routes, publicRoutes } from "@/constants/routes";
 import { setUser, setLoading } from "@/redux/slices/auth/auth-slice";
+
 import { getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
-import { getUserAttributes, handleSignOut } from "@/lib/services/auth";
+
+import { useDispatch, useSelector } from "react-redux";
+
 import { Loader2 } from "lucide-react";
-import { publicRoutes, routes } from "@/constants/routes";
-import { usePathname, useRouter } from "next/navigation";
-import { RootState } from "@/redux/store";
+
+import { handleSignOut, getUserAttributes } from "@/lib/services/auth";
 
 interface AuthProviderProps {
   children: React.ReactNode;

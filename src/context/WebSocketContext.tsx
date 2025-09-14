@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { createContext, useContext } from 'react';
+import { useContext, createContext } from "react";
 
 /** Message shape expected from WebSocket server */
 /** Context structure */

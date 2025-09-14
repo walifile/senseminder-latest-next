@@ -1,16 +1,3 @@
-import {
-  signUp,
-  confirmSignUp,
-  signIn,
-  signOut,
-  fetchAuthSession,
-  resendSignUpCode,
-  fetchUserAttributes,
-  confirmResetPassword,
-  resetPassword,
-  signInWithRedirect,
-  getCurrentUser,
-} from "aws-amplify/auth";
 import { store } from "@/redux/store";
 import {
   setUser,
@@ -18,6 +5,20 @@ import {
   setLoading,
   setTempUser,
 } from "@/redux/slices/auth/auth-slice";
+
+import {
+  signUp,
+  signIn,
+  signOut,
+  confirmSignUp,
+  resetPassword,
+  getCurrentUser,
+  fetchAuthSession,
+  resendSignUpCode,
+  signInWithRedirect,
+  fetchUserAttributes,
+  confirmResetPassword,
+} from "aws-amplify/auth";
 
 interface SignUpFormData {
   email: string;
@@ -143,7 +144,7 @@ export const handleSignIn = async (email: string, password: string) => {
     // Sign in
     const signInResponse = await signIn({
       username: email,
-      password: password,
+      password,
     });
     console.log(
       "signInResponse from Cognito:",
@@ -411,7 +412,7 @@ export const handleConfirmResetPassword = async (
     await confirmResetPassword({
       username: email,
       confirmationCode: code,
-      newPassword: newPassword,
+      newPassword,
     });
     store.dispatch(setLoading(false));
     return { success: true };

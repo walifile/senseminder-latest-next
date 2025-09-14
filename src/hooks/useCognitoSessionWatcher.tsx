@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+
 import { fetchAuthSession } from "aws-amplify/auth";
 
 interface SessionStatus {
@@ -26,7 +27,7 @@ export function useCognitoSessionCheck(intervalMs = 60_000) {
 
       if (!isExpired && expiresAt - now < 300) {
         await fetchAuthSession({ forceRefresh: true });
-        return checkSession();
+        await checkSession();
       }
     } catch {
       setStatus({ isExpired: true, expiresAt: 0 });

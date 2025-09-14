@@ -1,6 +1,6 @@
 import { Amplify } from "aws-amplify";
-import { cognitoUserPoolsTokenProvider } from "aws-amplify/auth/cognito";
 import { CookieStorage } from "aws-amplify/utils";
+import { cognitoUserPoolsTokenProvider } from "aws-amplify/auth/cognito";
 // test commit
 export function configureAmplify() {
   const poolId = process.env.NEXT_PUBLIC_USER_POOL_ID;
@@ -35,7 +35,9 @@ export function configureAmplify() {
             domain: process.env.NEXT_PUBLIC_OAUTH_DOMAIN || "",
             scopes: ["email", "openid", "aws.cognito.signin.user.admin"],
             redirectSignIn: [
-              `${process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL}auth/callback` || "",
+              process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL
+                ? `${process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL}auth/callback`
+                : "",
             ],
             redirectSignOut: [process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL || ""],
             responseType: "code",
