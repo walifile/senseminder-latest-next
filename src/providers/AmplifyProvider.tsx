@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import { useState, useEffect } from "react";
 import { configureAmplify } from "@/config/amplify-config";
 
 export function AmplifyProvider({ children }: { children: React.ReactNode }) {

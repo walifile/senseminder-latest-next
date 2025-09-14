@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+
+import { NextResponse } from "next/server";
 
 async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder();

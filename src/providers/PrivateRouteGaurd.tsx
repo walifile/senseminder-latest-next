@@ -1,6 +1,8 @@
 "use client";
-import { usePathname } from "next/navigation";
+
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+
 import { useSelector } from "react-redux";
 
 const publicRoutes = [
@@ -42,14 +44,15 @@ const PrivateRouteGuard = ({ children }: { children: React.ReactNode }) => {
   }, [isAuthenticated, pathname]);
 
   // Add cleanup effect
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       if (!isAuthenticated && !isPublicRoute()) {
         // Clear history state on unmount
         window.history.replaceState(null, "", "/login");
       }
-    };
-  }, [isAuthenticated]);
+    },
+    [isAuthenticated]
+  );
 
   return isPublicRoute() || isAuthenticated ? children : null;
 };

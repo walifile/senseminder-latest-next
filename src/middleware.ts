@@ -1,6 +1,8 @@
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { publicRoutes, routes } from "./constants/routes";
+
+import { NextResponse } from "next/server";
+
+import { routes, publicRoutes } from "./constants/routes";
 import { passwordProtectionMiddleware } from "./middleware/password-protection";
 
 export async function middleware(request: NextRequest) {

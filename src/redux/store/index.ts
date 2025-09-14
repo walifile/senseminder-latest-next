@@ -1,26 +1,31 @@
-import authReducer from "../slices/auth/auth-slice";
-import feedbackReducer from "../slices/feedback/feedback-slice";
-import dcvReducer from "../slices/dcv/dcv-slice";
+import type { PersistConfig } from "redux-persist";
+
+import { userAPI } from "@/api/user";
+import { billingAPI } from "@/api/billing";
+import { ticketsAPI } from "@/api/supportAPI";
+import { newsletterAPI } from "@/api/newsletterAPI";
+import { vmManagementAPI } from "@/api/vmManagement";
 import { fileManagerAPI } from "@/api/fileManagerAPI";
-import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import { persistStore, persistReducer, PersistConfig } from "redux-persist";
+import { legalDocumentsAPI } from "@/api/legalDocumentsAPI";
+
 import storage from "redux-persist/lib/storage";
+import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import {
   FLUSH,
-  REHYDRATE,
   PAUSE,
-  PERSIST,
   PURGE,
+  PERSIST,
   REGISTER,
+  REHYDRATE,
+  persistStore,
+  persistReducer,
 } from "redux-persist";
-import { vmManagementAPI } from "@/api/vmManagement";
-import { newsletterAPI } from "@/api/newsletterAPI";
+
+import dcvReducer from "../slices/dcv/dcv-slice";
+import authReducer from "../slices/auth/auth-slice";
+import feedbackReducer from "../slices/feedback/feedback-slice";
 import startVMReducer from "../slices/dcv/starting-instances-slice";
 import smartPcConfigReducer from "../slices/build-pc/smart-pc-config-slice";
-import { legalDocumentsAPI } from "@/api/legalDocumentsAPI";
-import { ticketsAPI } from "@/api/supportAPI";
-import { billingAPI } from "@/api/billing";
-import { userAPI } from "@/api/user";
 
 interface RootStateType {
   auth: ReturnType<typeof authReducer>;
