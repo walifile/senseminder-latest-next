@@ -1,12 +1,13 @@
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 import { MoreHorizontal } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 type ActionItem = {
   label: string;
@@ -30,18 +31,16 @@ export default function ActionsMenu({ actions }: MoreActionsMenuProps) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end">
-        {actions.map((action, index) => {
-          return (
-            <DropdownMenuItem
-              key={index}
-              onClick={action.onClick}
-              className={cn(action.isDestructive && "text-destructive")}
-            >
-              {action.icon && <action.icon className="h-4 w-4 mr-2" />}
-              {action.label}
-            </DropdownMenuItem>
-          );
-        })}
+        {actions.map((action, index) => (
+          <DropdownMenuItem
+            key={index}
+            onClick={action.onClick}
+            className={cn(action.isDestructive && "text-destructive")}
+          >
+            {action.icon && <action.icon className="h-4 w-4 mr-2" />}
+            {action.label}
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );

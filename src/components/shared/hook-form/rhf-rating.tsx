@@ -1,16 +1,19 @@
 "use client";
 
 import { forwardRef } from "react";
-import { Controller, useFormContext } from "react-hook-form";
+
+import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
+  TooltipProvider,
 } from "@/components/ui/tooltip";
+
+import { Controller, useFormContext } from "react-hook-form";
+
 import { Star, Info } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export interface RFHRatingProps {
   name: string;

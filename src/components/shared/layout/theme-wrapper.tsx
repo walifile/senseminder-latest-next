@@ -1,9 +1,10 @@
 "use client";
 
-import { ThemeProvider } from "@/components/shared/layout/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+
+import { ThemeProvider } from "@/components/shared/layout/theme-provider";
 
 export function ThemeWrapper({ children }: { children: React.ReactNode }) {
   return (

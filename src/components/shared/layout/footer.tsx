@@ -1,25 +1,29 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
-import { ChevronRight, Mail, MapPin, Phone } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { usePathname, useSearchParams } from "next/navigation";
 
-import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
+import React, { useState, useEffect } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   useSubscribeToNewsletterMutation,
   useUnsubscribeFromNewsletterMutation,
 } from "@/api/newsletterAPI";
+
+import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+import { Mail, Phone, MapPin, ChevronRight } from "lucide-react";
+
+import { useToast } from "@/hooks/use-toast";
 import useLocation from "@/hooks/use-location";
+
 import { Logo } from "./Logo";
 
 const Footer = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const { userLocation, error } = useLocation();
+  const { userLocation } = useLocation();
   const currentYear = new Date().getFullYear();
 
   const [email, setEmail] = useState("");

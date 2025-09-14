@@ -1,21 +1,26 @@
-import { forwardRef, ElementType } from "react";
-import { Controller, useFormContext } from "react-hook-form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import type { ElementType } from "react";
+
+import { forwardRef } from "react";
+
+import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
+  TooltipProvider,
 } from "@/components/ui/tooltip";
+import {
+  Select,
+  SelectItem,
+  SelectValue,
+  SelectContent,
+  SelectTrigger,
+} from "@/components/ui/select";
+
+import { Controller, useFormContext } from "react-hook-form";
+
 import { Info } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export interface SelectOption {
   value: string;

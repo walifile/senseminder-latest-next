@@ -1,22 +1,28 @@
+import type { RootState } from "@/redux/store";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { routes } from "@/constants/routes";
+
+import { Button } from "@/components/ui/button";
+import { getAvatarFallback } from "@/lib/utils/index";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
+  DropdownMenuContent,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
-import { LogOut, CreditCard, User, ChevronDown } from "lucide-react";
+
 import { useSelector } from "react-redux";
-import { getAvatarFallback } from "@/lib/utils/index";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { handleSignOut } from "@/lib/services/auth";
+
+import { User, LogOut, CreditCard, ChevronDown } from "lucide-react";
+
 import { useToast } from "@/hooks/use-toast";
-import { routes } from "@/constants/routes";
-import { RootState } from "@/redux/store";
+
+import { handleSignOut } from "@/lib/services/auth";
 
 const ProfileDropdown = () => {
   const router = useRouter();

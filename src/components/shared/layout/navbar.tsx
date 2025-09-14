@@ -1,16 +1,22 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import type { RootState } from "@/redux/store";
+
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
-import { ThemeToggle } from "@/components/shared/layout/theme-toggle";
-import { Logo } from "@/components/shared/layout/Logo";
-import { usePathname } from "next/navigation";
-import ProfileDropdown from "./profile-dropdown";
-import { useSelector } from "react-redux";
 import { routes } from "@/constants/routes";
-import { RootState } from "@/redux/store";
+import { usePathname } from "next/navigation";
+import React, { useState, useEffect } from "react";
+
+import { Button } from "@/components/ui/button";
+
+import { useSelector } from "react-redux";
+
+import { X, Menu } from "lucide-react";
+
+import { Logo } from "@/components/shared/layout/Logo";
+import { ThemeToggle } from "@/components/shared/layout/theme-toggle";
+
+import ProfileDropdown from "./profile-dropdown";
 
 const Navbar = () => {
   const pathname = usePathname();

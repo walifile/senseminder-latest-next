@@ -1,16 +1,21 @@
-import { forwardRef, ElementType } from "react";
-import { Controller, useFormContext } from "react-hook-form";
+import type { ElementType } from "react";
+
+import { forwardRef } from "react";
+
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
+  TooltipProvider,
 } from "@/components/ui/tooltip";
+
+import { Controller, useFormContext } from "react-hook-form";
+
 import { Info } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export interface RHFTextProps {
   name: string;
