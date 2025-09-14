@@ -1,10 +1,9 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
+
+import api from "./apiConfig";
 import { baseQueryWithReauth } from "./apiUtils";
 
-if (!process.env.NEXT_PUBLIC_CONTACT_URL) {
-  throw new Error("Missing NEXT_PUBLIC_BASE_URL in env");
-}
-const BASE_URL = process.env.NEXT_PUBLIC_CONTACT_URL;
+const BASE_URL = api.CONTACT_URL;
 
 export const contactAPI = createApi({
   reducerPath: "contactAPI",

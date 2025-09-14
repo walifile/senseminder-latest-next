@@ -1,18 +1,16 @@
+import type { Notification } from "@/types/notification"; // ✅ NOT local declaration
 
-import { fetchAuthSession } from 'aws-amplify/auth';
-import { Notification } from '@/types/notification'; // ✅ NOT local declaration
+import { fetchAuthSession } from "aws-amplify/auth";
 
+import api from "./apiConfig";
 
-const API_BASE = process.env.NEXT_PUBLIC_NOTIFICATION_API as string;
-if (!API_BASE) {
-  throw new Error("Missing NEXT_PUBLIC_NOTIFICATION_API in environment variables");
-}
+const API_BASE = api.NOTIFICATION_API;
 
 /** Returns a valid Cognito ID token for the current user */
 async function getIdToken(): Promise<string> {
   const session = await fetchAuthSession();
-  const token   = session.tokens?.idToken?.toString();
-  if (!token) throw new Error('No Cognito idToken available');
+  const token = session.tokens?.idToken?.toString();
+  if (!token) throw new Error("No Cognito idToken available");
   return token;
 }
 
@@ -23,7 +21,7 @@ export async function getNotifications(): Promise<Notification[]> {
   const idToken = await getIdToken();
 
   const res = await fetch(API_BASE, {
-    method: 'GET',
+    method: "GET",
     headers: {
       Authorization: idToken,
     },
@@ -34,7 +32,9 @@ export async function getNotifications(): Promise<Notification[]> {
     throw new Error(`GET /notifications failed: ${res.status} ${msg}`);
   }
 
-  const { notifications } = (await res.json()) as { notifications: Notification[] };
+  const { notifications } = (await res.json()) as {
+    notifications: Notification[];
+  };
   return notifications;
 }
 
@@ -47,15 +47,12 @@ export async function markNotificationsAsRead(
 ): Promise<void> {
   const idToken = await getIdToken();
 
-  const body =
-    Array.isArray(ts)
-      ? { timestamps: ts }
-      : { timestamp: ts };
+  const body = Array.isArray(ts) ? { timestamps: ts } : { timestamp: ts };
 
   const res = await fetch(API_BASE, {
-    method: 'PATCH',
+    method: "PATCH",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: idToken,
     },
     body: JSON.stringify(body),

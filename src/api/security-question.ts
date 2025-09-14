@@ -2,11 +2,9 @@
 
 import { fetchAuthSession } from "aws-amplify/auth";
 
-const SECURITY_QUESTION_API = process.env.NEXT_PUBLIC_SECURITY_QUESTION_API!;
+import api from "./apiConfig";
 
-if (!SECURITY_QUESTION_API) {
-  throw new Error("Missing NEXT_PUBLIC_SECURITY_QUESTION_API in .env file");
-}
+const SECURITY_QUESTION_API = api.SECURITY_QUESTION_API;
 
 async function getIdToken(): Promise<string> {
   const session = await fetchAuthSession();

@@ -42,6 +42,8 @@ const api = {
   IPINFO_URL: process.env.NEXT_PUBLIC_IPINFO_URL!,
   STORAGE_PING_URL: process.env.NEXT_PUBLIC_STORAGE_PING_URL!,
   MFA_API_URL: process.env.NEXT_PUBLIC_MFA_API_URL!,
+  NOTIFICATION_API: process.env.NEXT_PUBLIC_NOTIFICATION_API!,
+  WEBSOCKET_URL: process.env.NEXT_PUBLIC_WEBSOCKET_URL!,
 };
 
 export default api;

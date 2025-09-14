@@ -1,6 +1,8 @@
 // src/api/websocket.ts
 
-import type { Notification } from '@/types/notification';
+import type { Notification } from "@/types/notification";
+
+import api from "./apiConfig";
 
 let socket: WebSocket | null = null;
 
@@ -11,10 +13,8 @@ export function connectWebSocket(
   if (socket) return socket;
 
   const role = "customer";
-  const baseWsUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL;
-  if (!baseWsUrl) {
-    throw new Error("Missing NEXT_PUBLIC_WEBSOCKET_URL in environment variables");
-  }
+  const baseWsUrl = api.WEBSOCKET_URL;
+
   const wsUrl = `${baseWsUrl}?userId=${userId}&role=${role}`;
   socket = new WebSocket(wsUrl);
 
@@ -38,7 +38,9 @@ export function connectWebSocket(
   };
 
   socket.onclose = (event) => {
-    console.log(`[WebSocket Closed] Code: ${event.code}, Reason: ${event.reason}`);
+    console.log(
+      `[WebSocket Closed] Code: ${event.code}, Reason: ${event.reason}`
+    );
     socket = null;
   };
 

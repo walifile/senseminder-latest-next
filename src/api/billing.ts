@@ -1,9 +1,13 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import {
-  MonthlyChangeSummary,
+import type {
   SearchHistoryParams,
+  MonthlyChangeSummary,
 } from "@/app/dashboard/billing/types";
+
 import { formatAsYYYYMMDD } from "@/lib/utils/format-time";
+
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+
+import api from "./apiConfig";
 import { getIdToken } from "../lib/utils";
 
 type InstanceBilling = {
@@ -11,11 +15,7 @@ type InstanceBilling = {
   billingPlan: string;
 };
 
-if (!process.env.NEXT_PUBLIC_BILLING_API_URL) {
-  throw new Error("Missing NEXT_PUBLIC_BILLING_API_URL in .env.local");
-}
-
-const BILLING_API_URL = process.env.NEXT_PUBLIC_BILLING_API_URL;
+const BILLING_API_URL = api.BILLING_API_URL;
 
 const baseQuery = fetchBaseQuery({
   baseUrl: BILLING_API_URL,
@@ -34,7 +34,14 @@ const baseQuery = fetchBaseQuery({
 export const billingAPI = createApi({
   reducerPath: "billingAPI",
   baseQuery,
-  tagTypes: ["PaymentMethods", "Balance", "BillingPlan", "UsageHistory", "AutoRecharge", "Storage"],
+  tagTypes: [
+    "PaymentMethods",
+    "Balance",
+    "BillingPlan",
+    "UsageHistory",
+    "AutoRecharge",
+    "Storage",
+  ],
   endpoints: (builder) => ({
     // payment methods
     getPaymentMethods: builder.query<any, void>({
@@ -91,7 +98,7 @@ export const billingAPI = createApi({
       query: () => "storage/tier-pricing",
       providesTags: ["Storage"],
     }),
-      // monthly spending
+    // monthly spending
     getMonthlySpending: builder.query<MonthlyChangeSummary, void>({
       query: () => "monthly-spending",
       providesTags: ["Balance"],
@@ -154,7 +161,7 @@ export const billingAPI = createApi({
         return `recharge?${queryParams.toString()}`;
       },
       providesTags: ["UsageHistory"],
-    })
+    }),
   }),
 });
 

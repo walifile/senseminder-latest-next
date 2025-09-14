@@ -2,11 +2,9 @@
 
 import { fetchAuthSession } from "aws-amplify/auth";
 
-const IDLE_API_URL = process.env.NEXT_PUBLIC_IDLE_API_URL!;
+import api from "./apiConfig";
 
-if (!IDLE_API_URL) {
-  throw new Error("Missing NEXT_PUBLIC_IDLE_API_URL in .env file");
-}
+const IDLE_API_URL = api.IDLE_API_URL;
 
 // Helper to get ID token
 async function getIdToken() {

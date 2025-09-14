@@ -1,3 +1,5 @@
+import api from "./apiConfig";
+
 export interface ScheduleInfo {
   enabled: boolean;
   autoStartTime?: string;
@@ -29,11 +31,7 @@ export interface InstanceDetail {
   specs?: InstanceSpecs;
   error?: string;
 }
-const INSTANCE_DETAILS_URL = process.env.NEXT_PUBLIC_INSTANCE_DETAILS_URL!;
-
-if (!INSTANCE_DETAILS_URL) {
-  throw new Error("Missing NEXT_PUBLIC_INSTANCE_DETAILS_URL in .env file");
-}
+const INSTANCE_DETAILS_URL = api.INSTANCE_DETAILS_URL;
 
 export async function fetchInstanceDetails(
   userId: string,

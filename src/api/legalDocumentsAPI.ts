@@ -1,12 +1,10 @@
 // src/store/api/legalDocumentsAPI.ts
 import { createApi } from "@reduxjs/toolkit/query/react";
+
+import api from "./apiConfig";
 import { baseQueryWithReauth } from "./apiUtils";
 
-const BASE_URL = process.env.NEXT_PUBLIC_LEGAL_DOCUMENTS_URL!;
-
-if (!BASE_URL) {
-  throw new Error("Missing NEXT_PUBLIC_LEGAL_DOCUMENTS_URL in .env file");
-}
+const BASE_URL = api.LEGAL_DOCUMENTS_URL;
 
 export const legalDocumentsAPI = createApi({
   reducerPath: "legalDocumentsAPI",

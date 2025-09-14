@@ -1,9 +1,10 @@
-import { createApi } from "@reduxjs/toolkit/query/react";
 import api from "@/api/apiConfig";
+
+import { createApi } from "@reduxjs/toolkit/query/react";
+
 import { baseQueryWithReauth } from "./apiUtils";
 
 const BASE_URL = api?.SUPPORT_API_BASE;
-if (!BASE_URL) throw new Error("Missing SUPPORT_API_BASE in apiConfig");
 
 export type Ticket = {
   id: string;
@@ -16,7 +17,7 @@ export type Ticket = {
 
 export const ticketsAPI = createApi({
   reducerPath: "ticketsAPI",
-  baseQuery: baseQueryWithReauth(false), 
+  baseQuery: baseQueryWithReauth(false),
   refetchOnMountOrArgChange: true,
   tagTypes: ["Tickets", "Ticket", "Messages"],
   endpoints: (builder) => ({
@@ -48,7 +49,7 @@ export const ticketsAPI = createApi({
         },
         body,
       }),
-      invalidatesTags: ["Messages",],
+      invalidatesTags: ["Messages"],
     }),
 
     getTicketById: builder.query({
@@ -111,17 +112,16 @@ export const ticketsAPI = createApi({
     }),
 
     presignTicketUpload: builder.mutation({
-    query: ({ userId, ticketId, body }) => ({
-      url: `${BASE_URL}/ticket/${ticketId}/presign-upload`,
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-user-id": userId,
-      },
-      body,
+      query: ({ userId, ticketId, body }) => ({
+        url: `${BASE_URL}/ticket/${ticketId}/presign-upload`,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": userId,
+        },
+        body,
+      }),
     }),
-  }),
-
 
     presignTicketUpload2: builder.mutation({
       query: ({ userId, body }) => ({

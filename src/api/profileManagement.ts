@@ -2,11 +2,9 @@
 
 import { fetchAuthSession } from "aws-amplify/auth";
 
-const PROFILE_API_URL = process.env.NEXT_PUBLIC_PROFILE_API_URL!;
+import api from "./apiConfig";
 
-if (!PROFILE_API_URL) {
-  throw new Error("Missing NEXT_PUBLIC_PROFILE_API_URL in .env file");
-}
+const PROFILE_API_URL = api.PROFILE_API_URL;
 
 async function getIdToken() {
   const session = await fetchAuthSession();

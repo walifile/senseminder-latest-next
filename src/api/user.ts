@@ -1,11 +1,9 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+
+import api from "./apiConfig";
 import { getIdToken } from "../lib/utils";
 
-const USER_API_URL = process.env.NEXT_PUBLIC_USER_MANAGEMENT_API!;
-
-if (!USER_API_URL) {
-  throw new Error("Missing NEXT_PUBLIC_USER_MANAGEMENT_API in .env file");
-}
+const USER_API_URL = api.USER_MANAGEMENT_API;
 
 const baseQuery = fetchBaseQuery({
   baseUrl: USER_API_URL,

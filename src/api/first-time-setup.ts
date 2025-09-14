@@ -1,10 +1,8 @@
 import { fetchAuthSession } from "aws-amplify/auth";
 
-const API_URL = process.env.NEXT_PUBLIC_FIRST_TIME_TOKEN_URL!;
+import api from "./apiConfig";
 
-if (!API_URL) {
-  throw new Error("Missing NEXT_PUBLIC_FIRST_TIME_TOKEN_URL in .env file");
-}
+const API_URL = api.FIRST_TIME_TOKEN_URL;
 
 async function getIdToken(): Promise<string> {
   const session = await fetchAuthSession();

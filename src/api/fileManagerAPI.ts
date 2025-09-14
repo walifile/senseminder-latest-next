@@ -1,37 +1,18 @@
-import { createApi } from "@reduxjs/toolkit/query/react";
-import { baseQueryWithReauth } from "./apiUtils";
-
 import { fetchAuthSession } from "aws-amplify/auth";
 
-const requiredEnv = {
-  NEXT_PUBLIC_ESTIMATION_URL: process.env.NEXT_PUBLIC_ESTIMATION_URL,
-  NEXT_PUBLIC_FETCH_PC_URL: process.env.NEXT_PUBLIC_FETCH_PC_URL,
-  NEXT_PUBLIC_VM_MANAGEMENT_URL: process.env.NEXT_PUBLIC_VM_MANAGEMENT_URL,
-  NEXT_PUBLIC_VM_SESSION_URL: process.env.NEXT_PUBLIC_VM_SESSION_URL,
-  NEXT_PUBLIC_VM_VALIDATE_SESSION_URL:
-    process.env.NEXT_PUBLIC_VM_VALIDATE_SESSION_URL,
-  NEXT_PUBLIC_VM_STOP_SESSION_URL: process.env.NEXT_PUBLIC_VM_STOP_SESSION_URL,
-  NEXT_PUBLIC_VM_EXTEND_SESSION_URL:
-    process.env.NEXT_PUBLIC_VM_EXTEND_SESSION_URL,
-  NEXT_PUBLIC_VM_SCHEDULES_URL: process.env.NEXT_PUBLIC_VM_SCHEDULES_URL,
-};
+import { createApi } from "@reduxjs/toolkit/query/react";
 
-for (const [key, value] of Object.entries(requiredEnv)) {
-  if (!value) {
-    throw new Error(`Missing ${key} in .env file`);
-  }
-}
+import api from "./apiConfig";
+import { baseQueryWithReauth } from "./apiUtils";
 
-export const ESTIMATION_URL = requiredEnv.NEXT_PUBLIC_ESTIMATION_URL!;
-export const FETCH_PC_URL = requiredEnv.NEXT_PUBLIC_FETCH_PC_URL!;
-export const VM_MANAGEMENT_URL = requiredEnv.NEXT_PUBLIC_VM_MANAGEMENT_URL!;
-export const VM_SESSION_URL = requiredEnv.NEXT_PUBLIC_VM_SESSION_URL!;
-export const VM_VALIDATE_SESSION_URL =
-  requiredEnv.NEXT_PUBLIC_VM_VALIDATE_SESSION_URL!;
-export const VM_STOP_SESSION_URL = requiredEnv.NEXT_PUBLIC_VM_STOP_SESSION_URL!;
-export const VM_EXTEND_SESSION_URL =
-  requiredEnv.NEXT_PUBLIC_VM_EXTEND_SESSION_URL!;
-export const VM_SCHEDULES_URL = requiredEnv.NEXT_PUBLIC_VM_SCHEDULES_URL!;
+export const ESTIMATION_URL = api.ESTIMATION_URL;
+export const FETCH_PC_URL = api.FETCH_PC_URL;
+export const VM_MANAGEMENT_URL = api.VM_MANAGEMENT_URL;
+export const VM_SESSION_URL = api.VM_SESSION_URL;
+export const VM_VALIDATE_SESSION_URL = api.VM_VALIDATE_SESSION_URL;
+export const VM_STOP_SESSION_URL = api.VM_STOP_SESSION_URL;
+export const VM_EXTEND_SESSION_URL = api.VM_EXTEND_SESSION_URL;
+export const VM_SCHEDULES_URL = api.VM_SCHEDULES_URL;
 
 export const fileManagerAPI = createApi({
   reducerPath: "fileManagerAPI",
@@ -39,20 +20,18 @@ export const fileManagerAPI = createApi({
   tagTypes: ["Files", "VM", "Hierarchy"],
   endpoints: (builder) => ({
     getEstimate: builder.mutation({
-      query: ({ configId, storageSize, region }) => {
-        return {
-          url: ESTIMATION_URL,
-          method: "POST",
-          body: {
-            configId,
-            storageSize: parseInt(storageSize),
-            region,
-          },
-          headers: {
-            "Content-Type": "application/json",
-          },
-        };
-      },
+      query: ({ configId, storageSize, region }) => ({
+        url: ESTIMATION_URL,
+        method: "POST",
+        body: {
+          configId,
+          storageSize: parseInt(storageSize),
+          region,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
     }),
 
     listRemoteDesktop: builder.query({

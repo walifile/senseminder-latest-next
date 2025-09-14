@@ -1,10 +1,8 @@
 import { fetchAuthSession } from "aws-amplify/auth";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SAVE_VM_SCHEDULE_URL!;
+import api from "./apiConfig";
 
-if (!BASE_URL) {
-  throw new Error("Missing NEXT_PUBLIC_SAVE_VM_SCHEDULE_URL in .env file");
-}
+const BASE_URL = api.SAVE_VM_SCHEDULE_URL;
 
 export type Schedule = {
   instanceId: string;

@@ -1,5 +1,8 @@
 import { fetchAuthSession } from "aws-amplify/auth";
+
 import { UAParser } from "ua-parser-js";
+
+import api from "./apiConfig";
 
 export interface SmartPCSession {
   sessionId: string;
@@ -16,16 +19,8 @@ export interface SmartPCSession {
   locationDisplay?: string;
 }
 
-const IPIFY_URL = process.env.NEXT_PUBLIC_IPIFY_URL!;
-const CLIENT_SESSION_API = process.env.NEXT_PUBLIC_CLIENT_SESSION_API;
-
-if (!IPIFY_URL) {
-  throw new Error("Missing NEXT_PUBLIC_IPIFY_URL in .env file");
-}
-
-if (!CLIENT_SESSION_API) {
-  throw new Error("Missing NEXT_PUBLIC_CLIENT_SESSION_API in .env file");
-}
+const IPIFY_URL = api.IPIFY_URL;
+const CLIENT_SESSION_API = api.CLIENT_SESSION_API;
 
 export const updateSessionHeartbeat = async () => {
   try {

@@ -1,11 +1,8 @@
 "use client";
 
-const MFA_API_URL = process.env.NEXT_PUBLIC_MFA_API_URL!;
+import api from "./apiConfig";
 
-if (!MFA_API_URL) {
-  throw new Error("Missing NEXT_PUBLIC_MFA_API_URL in .env file");
-}
-
+const MFA_API_URL = api.MFA_API_URL;
 
 export async function checkMfaStatus(email: string) {
   const url = new URL(MFA_API_URL);
@@ -40,7 +37,6 @@ export async function sendRecoveryEmail(email: string) {
 
   return response.json();
 }
-
 
 export async function sendTotpRecovery(email: string) {
   const response = await fetch(MFA_API_URL, {

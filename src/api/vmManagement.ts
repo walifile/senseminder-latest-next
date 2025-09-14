@@ -1,11 +1,9 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
+
+import api from "./apiConfig";
 import { baseQueryWithReauth } from "./apiUtils"; // Ensure it handles authentication if needed
 
-const VM_MANAGEMENT_URL = process.env.NEXT_PUBLIC_VM_MANAGEMENT_URL!;
-
-if (!VM_MANAGEMENT_URL) {
-  throw new Error("Missing NEXT_PUBLIC_VM_MANAGEMENT_URL in .env file");
-}
+const VM_MANAGEMENT_URL = api.VM_MANAGEMENT_URL;
 
 export const vmManagementAPI = createApi({
   reducerPath: "vmManagementAPI",

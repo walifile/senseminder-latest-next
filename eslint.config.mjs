@@ -318,6 +318,7 @@ export default [
   // Specific rules for API files to enforce centralized environment variable usage
   {
     files: ["src/api/**/*.{ts,tsx}"],
+    ignores: ["src/api/apiConfig.ts"],
     rules: {
       "no-restricted-syntax": [
         2,
