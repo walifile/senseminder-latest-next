@@ -22,7 +22,7 @@ export async function middleware(request: NextRequest) {
   );
   let hasAuthState = false;
   if (authStateCookie) {
-    let authState: any = null;
+    let authState = null;
 
     try {
       authState = JSON.parse(authStateCookie.value);

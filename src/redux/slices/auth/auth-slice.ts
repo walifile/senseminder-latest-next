@@ -18,12 +18,20 @@ interface User {
   // cellPhone: string;
 }
 
+interface TempUser {
+  isSignedIn: boolean;
+  nextStep: {
+    signInStep: string;
+    missingAttributes: string[];
+  };
+}
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
   token: string | null;
-  tempUser: any | null; // <-- Add tempUser for NEW_PASSWORD_REQUIRED flow
+  tempUser: TempUser | null; // <-- Add tempUser for NEW_PASSWORD_REQUIRED flow
 }
 
 const initialState: AuthState = {
@@ -62,7 +70,8 @@ export const authSlice = createSlice({
       state.tempUser = null;
       syncAuthState(false, null);
     },
-    setTempUser: (state, action: PayloadAction<any | null>) => {
+    setTempUser: (state, action: PayloadAction<TempUser | null>) => {
+      console.log("setTempUser", action.payload);
       state.tempUser = action.payload;
     },
     clearTempUser: (state) => {

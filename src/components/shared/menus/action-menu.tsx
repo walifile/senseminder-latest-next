@@ -1,3 +1,5 @@
+import type { LucideIcon } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +13,7 @@ import { MoreHorizontal } from "lucide-react";
 
 type ActionItem = {
   label: string;
-  icon?: any;
+  icon?: LucideIcon;
   isDestructive?: boolean;
   onClick: () => void;
 };
@@ -21,6 +23,7 @@ interface MoreActionsMenuProps {
 }
 
 export default function ActionsMenu({ actions }: MoreActionsMenuProps) {
+  console.log(actions);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
