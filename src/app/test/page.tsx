@@ -5,11 +5,26 @@ import { useRouter } from "next/navigation";
 
 import { signOut, fetchAuthSession } from "aws-amplify/auth";
 
+type CognitoIdTokenPayload = {
+  sub: string;
+  email?: string;
+  email_verified?: boolean;
+};
+
+type CognitoAccessTokenPayload = {
+  sub: string;
+  username?: string;
+  scope?: string;
+};
+
 export default function Dashboard() {
   const [idToken, setIdToken] = useState<string | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [idPayload, setIdPayload] = useState<any>(null);
-  const [accessPayload, setAccessPayload] = useState<any>(null);
+  const [idPayload, setIdPayload] = useState<CognitoIdTokenPayload | null>(
+    null
+  );
+  const [accessPayload, setAccessPayload] =
+    useState<CognitoAccessTokenPayload | null>(null);
   const router = useRouter();
 
   useEffect(() => {

@@ -20,7 +20,7 @@ export interface RFHRatingProps {
   label?: string;
   description?: string; // label description
   helperText?: string;
-  tooltipText?: any; // optional tooltip content
+  tooltipText?: string; // optional tooltip content
   max?: number;
   disabled?: boolean;
   required?: boolean;

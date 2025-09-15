@@ -23,7 +23,6 @@ interface MoreActionsMenuProps {
 }
 
 export default function ActionsMenu({ actions }: MoreActionsMenuProps) {
-  console.log(actions);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

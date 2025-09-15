@@ -102,11 +102,11 @@ const FeedbackDialog = ({ open, onClose }: Props) => {
         description: "We appreciate you taking the time to help us improve.",
       });
       closeDialog();
-    } catch (e: any) {
+    } catch {
       toast({
         title: "Failed to submit feedback",
         variant: "destructive",
-        description: (e && e.message) || "Please try again later.",
+        description: "Please try again later.",
       });
     }
   });

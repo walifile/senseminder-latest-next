@@ -34,7 +34,7 @@ export interface RHFSelectProps {
   description?: string; // label description
   placeholder?: string;
   helperText?: string;
-  tooltipText?: any; // optional tooltip content
+  tooltipText?: string; // optional tooltip content
   options: SelectOption[] | string[];
   icon?: ElementType; // icon component, e.g. MonitorPlay
   disabled?: boolean;

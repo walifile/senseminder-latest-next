@@ -1,22 +1,22 @@
-import type { UseFormReturn } from "react-hook-form";
+import type { FieldValues, UseFormReturn } from "react-hook-form";
 
 import { FormProvider as RHFForm } from "react-hook-form";
 
 // ----------------------------------------------------------------------
 
-export type FormProps = {
+export type FormProps<T extends FieldValues> = {
   onSubmit?: () => void;
   children: React.ReactNode;
-  methods: UseFormReturn<any>;
+  methods: UseFormReturn<T>;
   className?: string;
 };
 
-export function Form({
+export function Form<T extends FieldValues>({
   children,
   onSubmit,
   methods,
   className = "",
-}: FormProps) {
+}: FormProps<T>) {
   return (
     <RHFForm {...methods}>
       <form

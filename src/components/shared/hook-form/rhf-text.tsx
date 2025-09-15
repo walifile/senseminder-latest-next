@@ -23,7 +23,7 @@ export interface RHFTextProps {
   description?: string; // label description
   placeholder?: string;
   helperText?: string;
-  tooltipText?: any; // optional tooltip content
+  tooltipText?: string; // optional tooltip content
   type?: "text" | "email" | "password" | "number" | "tel" | "url";
   icon?: ElementType; // icon component
   multiline?: boolean;
