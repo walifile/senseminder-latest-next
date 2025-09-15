@@ -16,9 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { toast } from "@/hooks/use-toast";
 
-import { Form, Field } from "@/components/shared/hook-form";
-
-import { schemaHelper } from "../../../components/shared/hook-form/schema-helper";
+import { Form, Field, schemaHelper } from "@/components/shared/hook-form";
 
 function getFeedbackContent(context: string) {
   switch (context) {

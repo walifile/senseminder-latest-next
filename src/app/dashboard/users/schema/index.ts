@@ -1,6 +1,5 @@
+import { schemaHelper } from "@/components/shared/hook-form";
 import { z } from "zod";
-
-import { schemaHelper } from "@/components/shared/hook-form/schema-helper";
 
 export const formSchema = z.object({
   name: schemaHelper.input("Name", { required: true }),
