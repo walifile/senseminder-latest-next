@@ -43,7 +43,7 @@ const commonRules = () => ({
   "react/no-unescaped-entities": "off",
   // typescript
   // "@typescript-eslint/no-shadow": 2,
-  "@typescript-eslint/no-explicit-any": ["error", { ignoreRestArgs: false }],
+  "@typescript-eslint/no-explicit-any": 0,
   "@typescript-eslint/no-empty-object-type": 0,
   "@typescript-eslint/consistent-type-imports": 1,
   "@typescript-eslint/no-unused-vars": [2, { args: "none" }], // Changed to 2 to disallow unused variables

@@ -1,6 +1,9 @@
+"use client";
+
 import "../styles/globals.css";
 
 import AuthGuard from "@/guards/auth-guard";
+import { usePathname } from "next/navigation";
 import { ReduxProvider } from "@/redux/provider";
 import { AmplifyProvider } from "@/providers/AmplifyProvider";
 import { WebSocketProvider } from "@/providers/WebSocketProvider";
@@ -9,15 +12,25 @@ import Navbar from "@/components/shared/layout/navbar";
 import Footer from "@/components/shared/layout/footer";
 import { ThemeWrapper } from "@/components/shared/layout/theme-wrapper";
 
-import { metadata } from "./metadata";
+// import { metadata } from "./metadata";
 
-export { metadata };
+// export { metadata };
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
+  if (pathname === "/") {
+    return (
+      <html lang="en">
+        <body suppressHydrationWarning>{children}</body>
+      </html>
+    );
+  }
+
   return (
     <html lang="en">
       <body suppressHydrationWarning>
