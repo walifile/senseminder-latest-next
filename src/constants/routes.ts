@@ -30,6 +30,7 @@ export const publicRoutes: string[] = [
   routes.callback,
   routes.buildPc,
   routes.changePassword,
+  "/home",
   "/login",
   "/index",
   "/shared-folder-viewer",
