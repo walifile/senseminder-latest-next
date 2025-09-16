@@ -1,10 +1,11 @@
+import appConfig from "@/config/app-config";
+
 // newsletterAPI.js
 import { createApi } from "@reduxjs/toolkit/query/react";
 
-import api from "./apiConfig";
 import { baseQueryWithReauth } from "./apiUtils";
 
-const BASE_URL = api.NEWSLETTER_API_URL;
+const { NEWSLETTER_API_URL } = appConfig;
 
 export const newsletterAPI = createApi({
   reducerPath: "newsletterAPI",
@@ -13,13 +14,13 @@ export const newsletterAPI = createApi({
   endpoints: (builder) => ({
     unsubscribeFromNewsletter: builder.mutation({
       query: ({ email, token }) => ({
-        url: `${BASE_URL}/unsubscribe?email=${email}&token=${token}`,
+        url: `${NEWSLETTER_API_URL}/unsubscribe?email=${email}&token=${token}`,
         method: "GET",
       }),
     }),
     subscribeToNewsletter: builder.mutation({
       query: ({ email, location, signup }) => ({
-        url: `${BASE_URL}/subscribe`,
+        url: `${NEWSLETTER_API_URL}/subscribe`,
         method: "POST",
         body: {
           email,

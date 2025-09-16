@@ -5,9 +5,11 @@ import type {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 
+import appConfig from "@/config/app-config";
+
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import { BASE_URL } from "./apiConfig";
+const { BASE_URL } = appConfig;
 
 // setCredentials, logOut
 const baseQuery = fetchBaseQuery({

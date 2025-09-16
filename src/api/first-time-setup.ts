@@ -1,8 +1,8 @@
+import appConfig from "@/config/app-config";
+
 import { fetchAuthSession } from "aws-amplify/auth";
 
-import api from "./apiConfig";
-
-const API_URL = api.FIRST_TIME_TOKEN_URL;
+const { FIRST_TIME_TOKEN_URL } = appConfig;
 
 async function getIdToken(): Promise<string> {
   const session = await fetchAuthSession();
@@ -14,7 +14,7 @@ async function getIdToken(): Promise<string> {
 export async function checkFirstLogin() {
   const idToken = await getIdToken();
 
-  const response = await fetch(API_URL, {
+  const response = await fetch(FIRST_TIME_TOKEN_URL, {
     method: "GET",
     headers: {
       Authorization: idToken,

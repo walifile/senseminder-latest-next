@@ -1,10 +1,10 @@
 "use client";
 
+import appConfig from "@/config/app-config";
+
 import { fetchAuthSession } from "aws-amplify/auth";
 
-import api from "./apiConfig";
-
-const PROFILE_API_URL = api.PROFILE_API_URL;
+const { PROFILE_API_URL } = appConfig;
 
 async function getIdToken() {
   const session = await fetchAuthSession();

@@ -2,7 +2,7 @@
 
 import type { Notification } from "@/types/notification";
 
-import api from "./apiConfig";
+import appConfig from "@/config/app-config";
 
 let socket: WebSocket | null = null;
 
@@ -13,7 +13,7 @@ export function connectWebSocket(
   if (socket) return socket;
 
   const role = "customer";
-  const baseWsUrl = api.WEBSOCKET_URL;
+  const baseWsUrl = appConfig.WEBSOCKET_URL;
 
   const wsUrl = `${baseWsUrl}?userId=${userId}&role=${role}`;
   socket = new WebSocket(wsUrl);

@@ -1,10 +1,10 @@
 "use client";
 
+import appConfig from "@/config/app-config";
+
 import { fetchAuthSession } from "aws-amplify/auth";
 
-import api from "./apiConfig";
-
-const IDLE_API_URL = api.IDLE_API_URL;
+const { IDLE_API_URL } = appConfig;
 
 // Helper to get ID token
 async function getIdToken() {

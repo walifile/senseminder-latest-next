@@ -1,4 +1,4 @@
-import api from "./apiConfig";
+import appConfig from "@/config/app-config";
 
 export interface ScheduleInfo {
   enabled: boolean;
@@ -31,7 +31,7 @@ export interface InstanceDetail {
   specs?: InstanceSpecs;
   error?: string;
 }
-const INSTANCE_DETAILS_URL = api.INSTANCE_DETAILS_URL;
+const { INSTANCE_DETAILS_URL } = appConfig;
 
 export async function fetchInstanceDetails(
   userId: string,

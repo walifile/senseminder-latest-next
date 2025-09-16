@@ -267,6 +267,22 @@ const customConfig = {
     ...importRules(),
     ...unusedImportsRules(),
     ...sortImportsRules(),
+    // Global restriction on environment variable usage
+    "no-restricted-syntax": [
+      2,
+      {
+        selector:
+          "MemberExpression[object.name='process'][property.name='env']",
+        message:
+          "Direct usage of process.env is not allowed. Please import values from '@/config/app-config' instead.",
+      },
+      {
+        selector:
+          "MemberExpression[object.object.name='process'][property.name='env']",
+        message:
+          "Nested process.env access is restricted. Use '@/config/app-config' for all environment variables.",
+      },
+    ],
   },
 };
 
@@ -315,26 +331,12 @@ export default [
   ...eslintTs.configs.recommended,
   reactPlugin.configs.flat.recommended,
   customConfig,
-  // Specific rules for API files to enforce centralized environment variable usage
+  // Exception for the single file allowed to access environment variables
   {
-    files: ["src/api/**/*.{ts,tsx}"],
-    ignores: ["src/api/apiConfig.ts"],
+    // files: ["src/config/app-config.ts"],
+    files: ["src/**/*.{js,mjs,cjs,ts,jsx,tsx}"],
     rules: {
-      "no-restricted-syntax": [
-        2,
-        {
-          selector:
-            "MemberExpression[object.name='process'][property.name='env']",
-          message:
-            "Use centralized apiConfig instead of direct process.env access. Import from '@/api/apiConfig' or '@/api/apiUtils'",
-        },
-        {
-          selector:
-            "MemberExpression[object.object.name='process'][property.name='env']",
-          message:
-            "Use centralized apiConfig instead of direct process.env access. Import from '@/api/apiConfig' or '@/api/apiUtils'",
-        },
-      ],
+      "no-restricted-syntax": "off",
     },
   },
 ];

@@ -1,18 +1,21 @@
+import appConfig from "@/config/app-config";
+
 import { fetchAuthSession } from "aws-amplify/auth";
 
 import { createApi } from "@reduxjs/toolkit/query/react";
 
-import api from "./apiConfig";
 import { baseQueryWithReauth } from "./apiUtils";
 
-export const ESTIMATION_URL = api.ESTIMATION_URL;
-export const FETCH_PC_URL = api.FETCH_PC_URL;
-export const VM_MANAGEMENT_URL = api.VM_MANAGEMENT_URL;
-export const VM_SESSION_URL = api.VM_SESSION_URL;
-export const VM_VALIDATE_SESSION_URL = api.VM_VALIDATE_SESSION_URL;
-export const VM_STOP_SESSION_URL = api.VM_STOP_SESSION_URL;
-export const VM_EXTEND_SESSION_URL = api.VM_EXTEND_SESSION_URL;
-export const VM_SCHEDULES_URL = api.VM_SCHEDULES_URL;
+const {
+  ESTIMATION_URL,
+  FETCH_PC_URL,
+  VM_MANAGEMENT_URL,
+  VM_SESSION_URL,
+  VM_VALIDATE_SESSION_URL,
+  VM_STOP_SESSION_URL,
+  VM_EXTEND_SESSION_URL,
+  VM_SCHEDULES_URL,
+} = appConfig;
 
 export const fileManagerAPI = createApi({
   reducerPath: "fileManagerAPI",

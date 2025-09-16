@@ -1,12 +1,13 @@
+import appConfig from "@/config/app-config";
+
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import api from "./apiConfig";
 import { getIdToken } from "../lib/utils";
 
-const USER_API_URL = api.USER_MANAGEMENT_API;
+const { USER_MANAGEMENT_API } = appConfig;
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: USER_API_URL,
+  baseUrl: USER_MANAGEMENT_API,
   prepareHeaders: async (headers) => {
     try {
       const idToken = await getIdToken();

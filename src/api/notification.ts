@@ -1,10 +1,10 @@
 import type { Notification } from "@/types/notification"; // ✅ NOT local declaration
 
+import appConfig from "@/config/app-config";
+
 import { fetchAuthSession } from "aws-amplify/auth";
 
-import api from "./apiConfig";
-
-const API_BASE = api.NOTIFICATION_API;
+const { NOTIFICATION_API } = appConfig;
 
 /** Returns a valid Cognito ID token for the current user */
 async function getIdToken(): Promise<string> {
@@ -20,7 +20,7 @@ async function getIdToken(): Promise<string> {
 export async function getNotifications(): Promise<Notification[]> {
   const idToken = await getIdToken();
 
-  const res = await fetch(API_BASE, {
+  const res = await fetch(NOTIFICATION_API, {
     method: "GET",
     headers: {
       Authorization: idToken,
@@ -49,7 +49,7 @@ export async function markNotificationsAsRead(
 
   const body = Array.isArray(ts) ? { timestamps: ts } : { timestamp: ts };
 
-  const res = await fetch(API_BASE, {
+  const res = await fetch(NOTIFICATION_API, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",

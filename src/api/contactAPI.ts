@@ -1,9 +1,10 @@
+import appConfig from "@/config/app-config";
+
 import { createApi } from "@reduxjs/toolkit/query/react";
 
-import api from "./apiConfig";
 import { baseQueryWithReauth } from "./apiUtils";
 
-const BASE_URL = api.CONTACT_URL;
+const { CONTACT_URL } = appConfig;
 
 export const contactAPI = createApi({
   reducerPath: "contactAPI",
@@ -12,7 +13,7 @@ export const contactAPI = createApi({
   endpoints: (builder) => ({
     sendContactMessage: builder.mutation({
       query: ({ name, email, subject, message }) => ({
-        url: `${BASE_URL}/contact`,
+        url: `${CONTACT_URL}/contact`,
         method: "POST",
         body: {
           name,

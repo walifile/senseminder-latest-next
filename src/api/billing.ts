@@ -3,11 +3,12 @@ import type {
   MonthlyChangeSummary,
 } from "@/app/dashboard/billing/types";
 
+import appConfig from "@/config/app-config";
+
 import { formatAsYYYYMMDD } from "@/lib/utils/format-time";
 
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import api from "./apiConfig";
 import { getIdToken } from "../lib/utils";
 
 type InstanceBilling = {
@@ -15,7 +16,7 @@ type InstanceBilling = {
   billingPlan: string;
 };
 
-const BILLING_API_URL = api.BILLING_API_URL;
+const { BILLING_API_URL } = appConfig;
 
 const baseQuery = fetchBaseQuery({
   baseUrl: BILLING_API_URL,

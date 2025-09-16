@@ -1,10 +1,10 @@
 "use client";
 
+import appConfig from "@/config/app-config";
+
 import { fetchAuthSession } from "aws-amplify/auth";
 
-import api from "./apiConfig";
-
-const SECURITY_QUESTION_API = api.SECURITY_QUESTION_API;
+const { SECURITY_QUESTION_API } = appConfig;
 
 async function getIdToken(): Promise<string> {
   const session = await fetchAuthSession();

@@ -1,8 +1,8 @@
+import appConfig from "@/config/app-config";
+
 import { fetchAuthSession } from "aws-amplify/auth";
 
 import { UAParser } from "ua-parser-js";
-
-import api from "./apiConfig";
 
 export interface SmartPCSession {
   sessionId: string;
@@ -19,8 +19,7 @@ export interface SmartPCSession {
   locationDisplay?: string;
 }
 
-const IPIFY_URL = api.IPIFY_URL;
-const CLIENT_SESSION_API = api.CLIENT_SESSION_API;
+const { IPIFY_URL, CLIENT_SESSION_API } = appConfig;
 
 export const updateSessionHeartbeat = async () => {
   try {

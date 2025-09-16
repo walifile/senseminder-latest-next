@@ -1,8 +1,8 @@
 "use client";
 
-import api from "./apiConfig";
+import appConfig from "@/config/app-config";
 
-const MFA_API_URL = api.MFA_API_URL;
+const { MFA_API_URL } = appConfig;
 
 export async function checkMfaStatus(email: string) {
   const url = new URL(MFA_API_URL);

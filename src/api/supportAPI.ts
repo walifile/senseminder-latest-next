@@ -1,10 +1,10 @@
-import api from "@/api/apiConfig";
+import appConfig from "@/config/app-config";
 
 import { createApi } from "@reduxjs/toolkit/query/react";
 
 import { baseQueryWithReauth } from "./apiUtils";
 
-const BASE_URL = api?.SUPPORT_API_BASE;
+const BASE_URL = appConfig.SUPPORT_API_BASE;
 
 export type Ticket = {
   id: string;

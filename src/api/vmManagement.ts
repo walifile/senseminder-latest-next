@@ -1,9 +1,10 @@
+import appConfig from "@/config/app-config";
+
 import { createApi } from "@reduxjs/toolkit/query/react";
 
-import api from "./apiConfig";
 import { baseQueryWithReauth } from "./apiUtils"; // Ensure it handles authentication if needed
 
-const VM_MANAGEMENT_URL = api.VM_MANAGEMENT_URL;
+const { VM_MANAGEMENT_URL } = appConfig;
 
 export const vmManagementAPI = createApi({
   reducerPath: "vmManagementAPI",

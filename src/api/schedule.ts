@@ -1,8 +1,8 @@
+import appConfig from "@/config/app-config";
+
 import { fetchAuthSession } from "aws-amplify/auth";
 
-import api from "./apiConfig";
-
-const BASE_URL = api.SAVE_VM_SCHEDULE_URL;
+const { SAVE_VM_SCHEDULE_URL } = appConfig;
 
 export type Schedule = {
   instanceId: string;
@@ -25,7 +25,7 @@ async function getIdToken(): Promise<string> {
 
 export async function saveSchedule(data: Schedule): Promise<Schedule> {
   const idToken = await getIdToken();
-  const res = await fetch(BASE_URL, {
+  const res = await fetch(SAVE_VM_SCHEDULE_URL, {
     method: "POST",
     headers: {
       Authorization: idToken,
@@ -47,7 +47,9 @@ export async function getSchedule(
   instanceId: string
 ): Promise<Schedule | null> {
   const idToken = await getIdToken();
-  const url = `${BASE_URL}?instanceId=${encodeURIComponent(instanceId)}`;
+  const url = `${SAVE_VM_SCHEDULE_URL}?instanceId=${encodeURIComponent(
+    instanceId
+  )}`;
 
   const res = await fetch(url, {
     method: "GET",
@@ -69,7 +71,7 @@ export async function getSchedule(
 
 export async function deleteSchedule(instanceId: string): Promise<void> {
   const idToken = await getIdToken();
-  const res = await fetch(BASE_URL, {
+  const res = await fetch(SAVE_VM_SCHEDULE_URL, {
     method: "DELETE",
     headers: {
       Authorization: idToken,
