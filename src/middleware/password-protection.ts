@@ -22,7 +22,7 @@ export async function passwordProtectionMiddleware(request: NextRequest) {
   }
 
   const passwordCookie = request.cookies.get("passwordHash");
-  const staticPassword = process.env.NEXT_STATIC_PASSWORD || "Sense@123";
+  const staticPassword = "Sense@123";
   const expectedHash = await hashPassword(staticPassword);
 
   if (

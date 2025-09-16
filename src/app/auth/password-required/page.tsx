@@ -10,8 +10,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 import { toast } from "@/hooks/use-toast";
 
-const staticPassword = process.env.NEXT_PUBLIC_STATIC_PASSWORD || "Sense@123";
-
+const staticPassword = "Sense@123";
 export default function PasswordRequiredPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
