@@ -2,6 +2,8 @@ import type { NextRequest } from "next/server";
 
 import { NextResponse } from "next/server";
 
+const isDev = process.env.NEXT_CURRENT_ENVIRONMENT === "develop";
+
 async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(password);
@@ -18,6 +20,13 @@ export async function passwordProtectionMiddleware(request: NextRequest) {
     pathname.startsWith("/_next/") ||
     pathname.includes(".")
   ) {
+    return null;
+  }
+
+  if (isDev) {
+    if (pathname === "/auth/password-required") {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
     return null;
   }
 
