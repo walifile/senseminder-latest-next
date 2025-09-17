@@ -11,6 +11,7 @@ import { WebSocketProvider } from "@/providers/WebSocketProvider";
 import Navbar from "@/components/shared/layout/navbar";
 import Footer from "@/components/shared/layout/footer";
 import { ThemeWrapper } from "@/components/shared/layout/theme-wrapper";
+import { isDev } from "@/constants/initial-values";
 
 // import { metadata } from "./metadata";
 
@@ -24,7 +25,7 @@ export default function RootLayout({
   const pathname = usePathname();
   // test
 
-  if (pathname === "/") {
+  if (pathname === "/" && !isDev) {
     return (
       <html lang="en">
         <head>

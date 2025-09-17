@@ -1,8 +1,7 @@
+import { isDev } from "@/constants/initial-values";
 import type { NextRequest } from "next/server";
 
 import { NextResponse } from "next/server";
-
-const isDev = process.env.NEXT_PUBLIC_CURRENT_ENVIRONMENT === "develop";
 
 async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder();
