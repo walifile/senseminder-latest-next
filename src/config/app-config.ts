@@ -71,10 +71,11 @@ const ENV_VARS = {
 
 const appConfig = Object.fromEntries(
   Object.entries(ENV_VARS).map(([key, value]) => [
-    requireEnvVar(value, `NEXT_PUBLIC_${key}`),
+    key,
+    requireEnvVar(value, key),
   ])
 ) as {
-  [K in keyof typeof ENV_VARS as K]: string;
+  [K in keyof typeof ENV_VARS]: string;
 };
 
 export default appConfig;
