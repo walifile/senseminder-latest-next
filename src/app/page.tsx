@@ -1,7 +1,9 @@
 "use client";
 
 import { isDev } from "@/constants/initial-values";
+
 import Home from "../app/home/_components/main-page";
+
 export default function HomePage() {
   return (
     <>
