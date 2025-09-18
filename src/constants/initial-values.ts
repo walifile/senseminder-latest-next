@@ -1,6 +1,6 @@
 import appConfig from "@/config/app-config";
 
-const { CURRENT_ENVIRONMENT } = appConfig;
+const { NODE_ENV } = appConfig;
 
 export const signupFormInitialvalues = {
   firstName: "",
@@ -30,4 +30,4 @@ export const signinInitialvalues = {
   rememberMe: [],
 };
 
-export const isDev = CURRENT_ENVIRONMENT === "develop";
+export const isDev = NODE_ENV === "development";
