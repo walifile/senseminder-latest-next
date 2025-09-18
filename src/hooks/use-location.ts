@@ -1,3 +1,4 @@
+import appConfig from "@/config/app-config";
 import { useState, useEffect } from "react";
 
 interface UserLocation {
@@ -5,7 +6,7 @@ interface UserLocation {
   country: string;
   city: string;
 }
-const IPINFO_URL = process.env.NEXT_PUBLIC_IPINFO_URL!;
+const { IPINFO_URL } = appConfig;
 
 const useLocation = () => {
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);

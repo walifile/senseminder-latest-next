@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
+import appConfig from "@/config/app-config";
 import { checkFirstLogin } from "@/api/first-time-setup";
 
 import { fetchAuthSession } from "aws-amplify/auth";
@@ -20,11 +21,7 @@ import CostCalculator from "./cost-calculator";
 import ProblemSolution from "./problem-solution";
 import TutorialSection from "./tutorial-section";
 
-const FIRST_TIME_SETUP_API = process.env.NEXT_PUBLIC_FIRST_TIME_TOKEN_URL!;
-
-if (!FIRST_TIME_SETUP_API) {
-  throw new Error("Missing NEXT_PUBLIC_FIRST_TIME_TOKEN_URL in .env file");
-}
+const { FIRST_TIME_TOKEN_URL } = appConfig;
 
 export default function HomePage() {
   const router = useRouter();
@@ -55,7 +52,7 @@ export default function HomePage() {
 
   const handleContinue = async () => {
     try {
-      await fetch(FIRST_TIME_SETUP_API, {
+      await fetch(FIRST_TIME_TOKEN_URL, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -75,7 +72,7 @@ export default function HomePage() {
     if (!confirmed || !idToken) return;
 
     try {
-      const response = await fetch(FIRST_TIME_SETUP_API, {
+      const response = await fetch(FIRST_TIME_TOKEN_URL, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

@@ -2,11 +2,13 @@ import type { MetadataRoute } from "next";
 
 import fs from "fs";
 import path from "path";
+import appConfig from "@/config/app-config";
 
 export const revalidate = 3600;
 
-const baseUrl =
-  process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL || "https://sensepc.com/";
+const { AUTH_REDIRECT_URL } = appConfig;
+
+const baseUrl = AUTH_REDIRECT_URL;
 const baseDir = "src/app";
 const excludeDirs = ["api", "fonts"];
 

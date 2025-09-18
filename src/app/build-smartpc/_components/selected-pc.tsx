@@ -4,6 +4,7 @@
 
 import type { RootState } from "@/redux/store";
 
+import appConfig from "@/config/app-config";
 import React, { useState, useEffect } from "react";
 import { useAddBillingPlanMutation } from "@/api/billing";
 
@@ -34,11 +35,7 @@ import { BillingPlanDialog } from "./billing-dialog";
 
 import type { PC, SelectedPcProps } from "../types";
 
-const INSTANCE_DETAILS_API = process.env.NEXT_PUBLIC_INSTANCE_DETAILS_URL;
-
-if (!INSTANCE_DETAILS_API) {
-  throw new Error("Missing NEXT_PUBLIC_INSTANCE_DETAILS_API in .env file");
-}
+const { INSTANCE_DETAILS_URL } = appConfig;
 
 const SelectedPc: React.FC<SelectedPcProps> = ({
   selectedPCs,
@@ -59,7 +56,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
       if (!currentPC?.userId || !currentPC?.systemName) return;
 
       try {
-        const res = await fetch(INSTANCE_DETAILS_API, {
+        const res = await fetch(INSTANCE_DETAILS_URL, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

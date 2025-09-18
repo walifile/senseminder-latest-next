@@ -1,45 +1,57 @@
 import { Amplify } from "aws-amplify";
 import { CookieStorage } from "aws-amplify/utils";
 import { cognitoUserPoolsTokenProvider } from "aws-amplify/auth/cognito";
+
+import appConfig from "./app-config";
+
+const {
+  USER_POOL_ID,
+  USER_POOL_CLIENT_ID,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  AUTH_REDIRECT_URL,
+  APPLE_CLIENT_ID,
+  APPLE_PRIVATE_KEY,
+  OAUTH_DOMAIN,
+} = appConfig;
+
 // test commit
 export function configureAmplify() {
-  const poolId = process.env.NEXT_PUBLIC_USER_POOL_ID;
+  const poolId = USER_POOL_ID;
   console.log("poolId: " + poolId);
-  const clientPoolId = process.env.NEXT_PUBLIC_USER_POOL_CLIENT_ID;
+  const clientPoolId = USER_POOL_CLIENT_ID;
   console.log("clientPoolId: " + clientPoolId);
   Amplify.configure({
     Auth: {
       Cognito: {
-        userPoolId: process.env.NEXT_PUBLIC_USER_POOL_ID || "",
-        userPoolClientId: process.env.NEXT_PUBLIC_USER_POOL_CLIENT_ID || "",
+        userPoolId: USER_POOL_ID || "",
+        userPoolClientId: USER_POOL_CLIENT_ID || "",
         loginWith: {
           email: true,
           // @ts-expect-error @ts-ignore
           externalProviders: {
             google: {
-              clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-              clientSecret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET,
+              clientId: GOOGLE_CLIENT_ID,
+              clientSecret: GOOGLE_CLIENT_SECRET,
               scopes: ["email", "openid", "profile"],
             },
-            callbackUrls: [process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL],
-            logoutUrls: [process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL],
+            callbackUrls: [AUTH_REDIRECT_URL],
+            logoutUrls: [AUTH_REDIRECT_URL],
             signInWithApple: {
-              clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID,
+              clientId: APPLE_CLIENT_ID,
               keyId: "Z96G67TY56",
-              privateKey: process.env.NEXT_PUBLIC_APPLE_PRIVATE_KEY,
+              privateKey: APPLE_PRIVATE_KEY,
               teamId: "DCW353BKVA",
             },
           },
 
           oauth: {
-            domain: process.env.NEXT_PUBLIC_OAUTH_DOMAIN || "",
+            domain: OAUTH_DOMAIN || "",
             scopes: ["email", "openid", "aws.cognito.signin.user.admin"],
             redirectSignIn: [
-              process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL
-                ? `${process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL}auth/callback`
-                : "",
+              AUTH_REDIRECT_URL ? `${AUTH_REDIRECT_URL}auth/callback` : "",
             ],
-            redirectSignOut: [process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL || ""],
+            redirectSignOut: [AUTH_REDIRECT_URL || ""],
             responseType: "code",
             providers: ["Google", "Apple"],
           },

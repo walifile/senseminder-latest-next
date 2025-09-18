@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
+import appConfig from "@/config/app-config";
 import React, { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,8 @@ import {
 import { motion } from "framer-motion";
 import { Clock, Cloud, Shield, Share2, Server } from "lucide-react";
 
+const { PING_API_KEY, STORAGE_PING_URL } = appConfig;
+
 export default function SmartStoragePage() {
   const router = useRouter();
 
@@ -32,15 +35,7 @@ export default function SmartStoragePage() {
   const [latencyMap, setLatencyMap] = useState<Record<string, number>>({});
   const [latencyLoading, setLatencyLoading] = useState(true);
 
-  const API_KEY = process.env.NEXT_PUBLIC_PING_API_KEY || "";
-
   const serverLocations = [{ id: "us-east", name: "US East (N. Virginia)" }];
-
-  const STORAGE_PING_URL = process.env.NEXT_PUBLIC_STORAGE_PING_URL;
-
-  if (!STORAGE_PING_URL) {
-    throw new Error("Missing NEXT_PUBLIC_STORAGE_PING_URL in .env file");
-  }
 
   const PING_ENDPOINTS: Record<string, string> = {
     "us-east": STORAGE_PING_URL,
@@ -59,7 +54,7 @@ export default function SmartStoragePage() {
           const res = await fetch(url, {
             cache: "no-store",
             headers: {
-              "x-api-key": API_KEY,
+              "x-api-key": PING_API_KEY,
             },
           });
           await res.json();

@@ -1,5 +1,6 @@
 "use client";
 
+import appConfig from "@/config/app-config";
 import React, { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,8 @@ import {
 
 import { Info, Server } from "lucide-react";
 
+const { PING_API_KEY, PING_API_URL } = appConfig;
+
 type StoragePlansDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -42,13 +45,10 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
   const [latencyMap, setLatencyMap] = useState<Record<string, number>>({});
   const [latencyLoading, setLatencyLoading] = useState(true);
 
-  const API_KEY = process.env.NEXT_PUBLIC_PING_API_KEY || "";
-  const API_URL = process.env.NEXT_PUBLIC_PING_API_URL || "";
-
   const serverLocations = [{ id: "us-east", name: "US East (N. Virginia)" }];
 
   const PING_ENDPOINTS: Record<string, string> = {
-    "us-east": API_URL,
+    "us-east": PING_API_URL,
   };
 
   const getStorageSizeFromTier = (tier: number) => `${tier * 20} GB`;
@@ -63,7 +63,7 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
       try {
         const res = await fetch(url, {
           cache: "no-store",
-          headers: { "x-api-key": API_KEY },
+          headers: { "x-api-key": PING_API_KEY },
         });
         await res.json();
         const end = performance.now();

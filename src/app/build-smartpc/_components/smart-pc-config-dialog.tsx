@@ -2,6 +2,7 @@
 
 import type { RootState } from "@/redux/store";
 
+import appConfig from "@/config/app-config";
 import { useGetEstimateMutation } from "@/api/fileManagerAPI";
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { clearSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
@@ -37,6 +38,8 @@ import {
 
 import type { FormValues } from "../schema";
 import type { ResizeInitial, DesktopInstance } from "../types";
+
+const { RESIZE_API_URL } = appConfig;
 
 type Props = {
   isResize?: boolean;
@@ -155,17 +158,14 @@ const SmartPCConfigDialog = ({
 
       setLoadingExisting(true);
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_RESIZE_API_URL}/resize`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              userId,
-              computerName: selectedInstance?.systemName,
-            }),
-          }
-        );
+        const res = await fetch(`${RESIZE_API_URL}/resize`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            computerName: selectedInstance?.systemName,
+          }),
+        });
 
         const json = await res.json();
         const src = json?.data ?? json;
@@ -236,14 +236,11 @@ const SmartPCConfigDialog = ({
       const valid = await trigger(["cpu"]);
       if (!valid) return;
 
-      await makeResizeRequest(
-        `${process.env.NEXT_PUBLIC_RESIZE_API_URL}/resize`,
-        {
-          userId,
-          computerName: selectedInstance?.systemName,
-          targetConfigId: cpu,
-        }
-      );
+      await makeResizeRequest(`${RESIZE_API_URL}/resize`, {
+        userId,
+        computerName: selectedInstance?.systemName,
+        targetConfigId: cpu,
+      });
 
       toast({
         title: "Resize submitted",
@@ -280,14 +277,11 @@ const SmartPCConfigDialog = ({
 
       const newVolumeSizeGiB = parseInt(storage, 10);
 
-      await makeResizeRequest(
-        `${process.env.NEXT_PUBLIC_RESIZE_API_URL}/increase-volume`,
-        {
-          userId,
-          computerName: selectedInstance?.systemName,
-          newVolumeSizeGiB,
-        }
-      );
+      await makeResizeRequest(`${RESIZE_API_URL}/increase-volume`, {
+        userId,
+        computerName: selectedInstance?.systemName,
+        newVolumeSizeGiB,
+      });
 
       toast({
         title: "Storage increase submitted",

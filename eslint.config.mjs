@@ -333,8 +333,7 @@ export default [
   customConfig,
   // Exception for the single file allowed to access environment variables
   {
-    // files: ["src/config/app-config.ts"],
-    files: ["src/**/*.{js,mjs,cjs,ts,jsx,tsx}"],
+    files: ["src/config/app-config.ts"],
     rules: {
       "no-restricted-syntax": "off",
     },

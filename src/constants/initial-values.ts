@@ -1,3 +1,7 @@
+import appConfig from "@/config/app-config";
+
+const { CURRENT_ENVIRONMENT } = appConfig;
+
 export const signupFormInitialvalues = {
   firstName: "",
   lastName: "",
@@ -26,4 +30,4 @@ export const signinInitialvalues = {
   rememberMe: [],
 };
 
-export const isDev = process.env.NEXT_PUBLIC_CURRENT_ENVIRONMENT === "develop";
+export const isDev = CURRENT_ENVIRONMENT === "develop";

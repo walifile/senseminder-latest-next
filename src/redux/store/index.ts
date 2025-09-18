@@ -2,6 +2,7 @@ import type { PersistConfig } from "redux-persist";
 
 import { userAPI } from "@/api/user";
 import { billingAPI } from "@/api/billing";
+import appConfig from "@/config/app-config";
 import { ticketsAPI } from "@/api/supportAPI";
 import { newsletterAPI } from "@/api/newsletterAPI";
 import { vmManagementAPI } from "@/api/vmManagement";
@@ -26,6 +27,8 @@ import authReducer from "../slices/auth/auth-slice";
 import feedbackReducer from "../slices/feedback/feedback-slice";
 import startVMReducer from "../slices/dcv/starting-instances-slice";
 import smartPcConfigReducer from "../slices/build-pc/smart-pc-config-slice";
+
+const { NODE_ENV } = appConfig;
 
 interface RootStateType {
   auth: ReturnType<typeof authReducer>;
@@ -67,7 +70,7 @@ const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
   reducer: persistedReducer,
-  devTools: process.env.NODE_ENV !== "production",
+  devTools: NODE_ENV !== "production",
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
