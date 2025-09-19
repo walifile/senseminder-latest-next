@@ -1,4 +1,8 @@
+import type { RootState } from "@/redux/store";
+
+import { usePathname } from "next/navigation";
 import React, { useMemo, useCallback } from "react";
+import { useSubmitFeedbackMutation } from "@/api/feedback";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -10,11 +14,14 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
+import { useSelector } from "react-redux";
+
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { toast } from "@/hooks/use-toast";
+import useLocation from "@/hooks/use-location";
 
 import { Form, Field, schemaHelper } from "@/components/shared/hook-form";
 
@@ -54,7 +61,6 @@ const feedbackSchema = z.object({
   type: schemaHelper.select("Type"),
   rating: schemaHelper.number("Rating", { min: 1, max: 5 }),
   comment: schemaHelper.textarea("Comment", { required: false }),
-  context: schemaHelper.select("Context", { required: false }),
 });
 
 type FeedbackFormValues = z.infer<typeof feedbackSchema>;
@@ -66,6 +72,12 @@ type Props = {
 
 const FeedbackDialog = ({ open, onClose }: Props) => {
   const context: string = "general";
+  const pathname = usePathname();
+  const source = pathname?.split("/")[1] || "unknown";
+  const { userLocation } = useLocation();
+  const { user } = useSelector((state: RootState) => state.auth);
+
+  const [submitFeedback] = useSubmitFeedbackMutation();
 
   const { title, description } = useMemo(
     () => getFeedbackContent(context),
@@ -77,9 +89,8 @@ const FeedbackDialog = ({ open, onClose }: Props) => {
       type: "",
       rating: 0,
       comment: "",
-      context,
     }),
-    [context]
+    []
   );
 
   const methods = useForm<FeedbackFormValues>({
@@ -96,7 +107,17 @@ const FeedbackDialog = ({ open, onClose }: Props) => {
   // Handlers
   const onSubmit = handleSubmit(async (data) => {
     try {
-      console.log("Submitted Feedback:", data);
+      await submitFeedback({
+        ...data,
+        userId: user?.id,
+        metadata: {
+          page: pathname,
+          browser: userLocation?.browser,
+          os: userLocation?.os,
+        },
+        source,
+      }).unwrap();
+
       toast({
         title: "Thank you for your feedback!",
         description: "We appreciate you taking the time to help us improve.",

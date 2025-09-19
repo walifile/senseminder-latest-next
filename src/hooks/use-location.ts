@@ -1,10 +1,14 @@
 import appConfig from "@/config/app-config";
 import { useState, useEffect } from "react";
 
+import { UAParser } from "ua-parser-js";
+
 interface UserLocation {
   ip: string;
   country: string;
   city: string;
+  browser: string;
+  os: string;
 }
 const { IPINFO_URL } = appConfig;
 
@@ -17,7 +21,17 @@ const useLocation = () => {
       const response = await fetch(IPINFO_URL);
       const data = await response.json();
       const { ip, country, city } = data;
-      setUserLocation({ ip, country, city });
+
+      const parser = new UAParser();
+      const result = parser.getResult();
+
+      setUserLocation({
+        ip,
+        country,
+        city,
+        browser: result.browser.name || "Unknown Browser",
+        os: result.os.name || "Unknown OS",
+      });
     } catch (error) {
       console.error("Error fetching user location:", error);
       setError("Failed to fetch location");

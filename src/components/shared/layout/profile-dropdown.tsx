@@ -3,6 +3,7 @@ import type { RootState } from "@/redux/store";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
+import { setIsShow } from "@/redux/slices/feedback/feedback-slice";
 
 import { Button } from "@/components/ui/button";
 import { getAvatarFallback } from "@/lib/utils/index";
@@ -16,7 +17,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { User, LogOut, CreditCard, ChevronDown } from "lucide-react";
 
@@ -27,7 +28,14 @@ import { handleSignOut } from "@/lib/services/auth";
 const ProfileDropdown = () => {
   const router = useRouter();
   const { toast } = useToast();
+  const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
+
+  const handleDropdownOpenChange = (open: boolean) => {
+    if (open) {
+      dispatch(setIsShow(true));
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -58,8 +66,9 @@ const ProfileDropdown = () => {
       });
     }
   };
+
   return (
-    <DropdownMenu>
+    <DropdownMenu onOpenChange={handleDropdownOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
