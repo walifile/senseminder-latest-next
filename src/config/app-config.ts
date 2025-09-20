@@ -7,6 +7,7 @@ function requireEnvVar(value: string | undefined, name: string): string {
 
 const ENV_VARS = {
   NODE_ENV: process.env.NODE_ENV,
+  NEXT_PUBLIC_CURRENT_ENVIRONMENT: process.env.NEXT_PUBLIC_CURRENT_ENVIRONMENT,
 
   // Missing Ones
   RESIZE_API_URL: process.env.NEXT_PUBLIC_RESIZE_API_URL,
