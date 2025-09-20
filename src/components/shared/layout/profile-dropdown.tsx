@@ -19,7 +19,13 @@ import {
 
 import { useDispatch, useSelector } from "react-redux";
 
-import { User, LogOut, CreditCard, ChevronDown } from "lucide-react";
+import {
+  User,
+  LogOut,
+  CreditCard,
+  ChevronDown,
+  MessageSquarePlus,
+} from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
 
@@ -30,12 +36,6 @@ const ProfileDropdown = () => {
   const { toast } = useToast();
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
-
-  const handleDropdownOpenChange = (open: boolean) => {
-    if (open) {
-      dispatch(setIsShow(true));
-    }
-  };
 
   const handleLogout = async () => {
     try {
@@ -68,7 +68,7 @@ const ProfileDropdown = () => {
   };
 
   return (
-    <DropdownMenu onOpenChange={handleDropdownOpenChange}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
@@ -100,6 +100,11 @@ const ProfileDropdown = () => {
             <CreditCard className="mr-2 h-4 w-4" />
             Billing
           </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem onClick={() => dispatch(setIsShow(true))}>
+          <MessageSquarePlus className="mr-2 h-4 w-4" />
+          Product Feedback
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
