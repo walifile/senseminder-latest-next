@@ -153,7 +153,7 @@ const FeedbackDialog = ({ open, onClose }: Props) => {
             placeholder="Select feedback type"
             options={[
               { value: "bug", label: "Bug Report" },
-              { value: "feature-request", label: "Feature Request" },
+              { value: "feature", label: "Feature Request" },
               { value: "general", label: "General Feedback" },
             ]}
           />
