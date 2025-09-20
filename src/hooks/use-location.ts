@@ -32,8 +32,8 @@ const useLocation = () => {
         browser: result.browser.name || "Unknown Browser",
         os: result.os.name || "Unknown OS",
       });
-    } catch (error) {
-      console.error("Error fetching user location:", error);
+    } catch (err) {
+      console.error("Error fetching user location:", err);
       setError("Failed to fetch location");
     }
   };

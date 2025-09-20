@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { isDev } from "@/constants/initial-values";
 
 import Home from "../app/home/_components/main-page";
@@ -127,6 +128,14 @@ export default function HomePage() {
                   >
                     X
                   </a>
+                </div>
+                <div className="mt-4 flex justify-center">
+                  <Link
+                    href="/home"
+                    className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3.5 md:px-4 py-1.5 md:py-2 text-xs md:text-sm ring-1 ring-white/25 backdrop-blur hover:bg-white/25 transition"
+                  >
+                    Early Access
+                  </Link>
                 </div>
                 <p className="mt-5 md:mt-6 text-[10px] sm:text-xs text-white/75">
                   sensepc.com

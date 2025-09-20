@@ -1,5 +1,7 @@
 "use client";
 
+import type { PC } from "@/app/build-smartpc/types";
+
 import { getAssignments } from "@/api/assignpc";
 import React, { useState, useEffect, useCallback } from "react";
 
@@ -40,18 +42,21 @@ const UserTable = ({ loading, filteredUsers }: Props) => {
   const [selectedUser, setSelectedUser] = useState<ApiUser | null>(null);
 
   const [fetchAssignmentsLoading, setFetchAssignmentsLoading] = useState(false);
-  const [assignments, setAssignments] = useState<any>({});
+  const [assignments, setAssignments] = useState<Record<string, PC[]>>({});
 
   const fetchAssignments = useCallback(async () => {
     setFetchAssignmentsLoading(true);
     try {
       const res = await getAssignments();
       setAssignments(res || {});
-    } catch (e: any) {
+    } catch (e: unknown) {
       toast({
         title: "Failed to fetch assignments",
         variant: "destructive",
-        description: (e && e.message) || "Failed to fetch assignments.",
+        description:
+          typeof e === "object" && e !== null && "message" in e
+            ? String((e as { message?: unknown }).message)
+            : "Failed to fetch assignments.",
       });
     } finally {
       setFetchAssignmentsLoading(false);
@@ -125,7 +130,7 @@ const UserTable = ({ loading, filteredUsers }: Props) => {
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
                     {(assignments[user.id] ?? []).length > 0 ? (
-                      assignments[user.id].map((pc: any) => (
+                      assignments[user.id].map((pc: PC) => (
                         <Badge
                           variant="secondary"
                           className="mr-1 mb-1"

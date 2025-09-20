@@ -23,6 +23,8 @@ import TicketConversation from "../../_components/ticket-conversation";
 import { getStatusBadgeClass } from "../../utils/get-status-badge-class";
 import PrioritySelectField from "../../_components/priority-select-field";
 
+import type { Attachment } from "../../types";
+
 const formatLabel = (text: string) =>
   text.charAt(0).toUpperCase() + text.slice(1).replace("-", " ");
 
@@ -57,7 +59,7 @@ const TicketDetailPage = () => {
     const fetchAttachmentPreviews = async () => {
       if (ticket?.attachments?.length && userId) {
         const previews = await Promise.all(
-          ticket.attachments.map(async (att: any) => {
+          ticket.attachments.map(async (att: Attachment) => {
             try {
               const { downloadUrl } = await presignDownload({
                 userId,

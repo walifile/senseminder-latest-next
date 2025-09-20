@@ -35,15 +35,9 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-const formatFileSize = (bytes: number) => {
-  if (bytes === 0) return "0 Bytes";
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return (
-    Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
-  );
-};
+import { formatFileSize } from "../dashboard/storage/utils";
+
+import type { FileItem } from "../dashboard/storage/types";
 
 const formatDate = (dateString: string) =>
   new Date(dateString).toLocaleDateString();
@@ -168,7 +162,7 @@ const StaticStoragePage = () => {
   }, [key]);
 
   // Smart folder navigation that handles both child and sibling navigation
-  const handleFolderClick = (file: any) => {
+  const handleFolderClick = (file: FileItem) => {
     if (file.fileType !== "folder") return;
 
     // Clean the current key (remove trailing slash for consistency)
@@ -329,7 +323,7 @@ const StaticStoragePage = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {files.map((file: any) => (
+                      {files.map((file: FileItem) => (
                         <TableRow
                           key={file.id}
                           className={`hover:bg-muted/50 ${
@@ -356,7 +350,7 @@ const StaticStoragePage = () => {
                           </TableCell>
                           <TableCell className="py-4">
                             <span className="text-sm text-muted-foreground">
-                              {formatFileSize(file.size || 0)}
+                              {formatFileSize(file.size)}
                             </span>
                           </TableCell>
                           <TableCell className="py-4">
