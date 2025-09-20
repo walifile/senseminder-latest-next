@@ -1,3 +1,5 @@
+import type { PC } from "@/app/build-smartpc/types";
+
 export function getRoleBadgeColor(role: string) {
   switch ((role || "").toLowerCase()) {
     case "admin":
@@ -30,26 +32,31 @@ export const getPcButtonConfig = ({
   assignSmartPC,
   unassignSmartPC,
 }: {
-  pc: any;
+  pc: PC;
   selectedUserId: string;
-  assignments: Record<string, any[]>;
+  assignments: Record<string, { instanceId: string }[]>;
   pcAssigningId: string | null;
-  assignSmartPC: (pc: any) => Promise<void>;
-  unassignSmartPC: (pc: any) => Promise<void>;
+  assignSmartPC: (pc: PC) => Promise<void>;
+  unassignSmartPC: (pc: PC) => Promise<void>;
 }) => {
   const assignedToCurrent = (assignments[selectedUserId] ?? []).some(
-    (a: any) => a.instanceId === pc.instanceId
+    (a) => a.instanceId === pc.instanceId
   );
 
   const isAssignedElsewhere = Object.keys(assignments).some(
     (assignment) =>
       assignment !== selectedUserId &&
-      assignments[assignment].some((a: any) => a.instanceId === pc.instanceId)
+      assignments[assignment].some((a) => a.instanceId === pc.instanceId)
   );
 
   const isAssigning = pcAssigningId === pc.instanceId;
 
-  const buttonConfig: any = {
+  const buttonConfig: {
+    text: string;
+    color: string;
+    onClick: (() => Promise<void>) | undefined;
+    disabled: boolean;
+  } = {
     text: isAssigning ? "Assigning..." : "Assign",
     color: "bg-green-500 text-white hover:bg-green-700",
     onClick: async () => {

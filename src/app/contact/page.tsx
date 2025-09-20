@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import { useSendContactMessageMutation } from "@/api/contactAPI";
 
 import { Input } from "@/components/ui/input";
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -68,10 +69,10 @@ const Contact = () => {
       });
 
       form.reset();
-    } catch (err: any) {
+    } catch (err) {
       toast({
         title: "Submission failed",
-        description: err?.data?.error || "Please try again later.",
+        description: getErrorMessage(err, "Please try again later."),
       });
     } finally {
       setIsSubmitting(false);

@@ -1,14 +1,16 @@
+import type { DateRange } from "react-day-picker";
+
 import { Input } from "@/components/ui/input";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 
 import { Search } from "lucide-react";
 
 interface Props {
-  date: any;
-  setDate: any;
+  date: DateRange | undefined;
+  setDate: (range: DateRange | undefined) => void;
   showSearch?: boolean;
   query?: string;
-  setQuery?: any;
+  setQuery?: (value: string) => void;
 }
 
 const HistoryFilters = ({
@@ -27,7 +29,7 @@ const HistoryFilters = ({
           placeholder="Search transactions..."
           className="pl-8"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => setQuery?.(e.target.value)}
         />
       </div>
     )}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { DateRange } from "react-day-picker";
 
 import { useState, useEffect } from "react";
@@ -56,7 +57,7 @@ export function useHistoryData<T>({
       console.error("Failed to fetch history", error);
       const message =
         error && typeof error === "object" && "message" in error
-          ? (error as any).message
+          ? (error as Error).message
           : "Could not fetch history";
       toast({
         title: "Error loading history",

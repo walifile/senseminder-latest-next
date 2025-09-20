@@ -7,6 +7,7 @@ import { useGetEstimateMutation } from "@/api/fileManagerAPI";
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { clearSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
 
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogFooter, DialogContent } from "@/components/ui/dialog";
 
@@ -249,12 +250,15 @@ const SmartPCConfigDialog = ({
 
       onSuccess();
       closeDialog();
-    } catch (error: any) {
+    } catch (error) {
       console.error("CPU resize failed:", error);
+
       toast({
         title: "Resize failed",
-        description:
-          error.message || "Failed to resize this PC. Please try again.",
+        description: getErrorMessage(
+          error,
+          "Failed to resize this PC. Please try again."
+        ),
         variant: "destructive",
       });
     }
@@ -290,12 +294,14 @@ const SmartPCConfigDialog = ({
 
       onSuccess();
       closeDialog();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Storage increase failed:", error);
       toast({
         title: "Storage increase failed",
-        description:
-          error.message || "Failed to increase volume (SSD). Please try again.",
+        description: getErrorMessage(
+          error,
+          "Failed to increase volume (SSD). Please try again."
+        ),
         variant: "destructive",
       });
     }

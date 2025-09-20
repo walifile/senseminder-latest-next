@@ -1,10 +1,13 @@
 "use client";
 
+import type { PC } from "@/app/build-smartpc/types";
+
 import { useGetUsersQuery } from "@/api/user";
 import React, { useState, useEffect, useCallback } from "react";
 import { assignPC, unassignPC, getAssignments } from "@/api/assignpc";
 
 import { Badge } from "@/components/ui/badge";
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,12 +29,6 @@ type ApiUser = {
   status?: string;
 };
 
-type PC = {
-  instanceId: string;
-  systemName?: string;
-  [key: string]: any;
-};
-
 type AssignUserDialogProps = {
   open: boolean;
   onClose: () => void;
@@ -48,7 +45,9 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
   pc,
   onSuccess,
 }) => {
-  const [assignments, setAssignments] = useState<any>({});
+  const [assignments, setAssignments] = useState<
+    Record<string, { instanceId: string }[]>
+  >({});
   const [loadingAssign, setLoadingAssign] = useState(false);
 
   const { data, isLoading } = useGetUsersQuery(undefined, {
@@ -80,7 +79,7 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
       const arr = assignments[uid];
       if (
         Array.isArray(arr) &&
-        arr.some((a: any) => a.instanceId === pc.instanceId)
+        arr.some((a) => a.instanceId === pc.instanceId)
       ) {
         assignedUser = users.find((u) => u.id === uid) || null;
         break;
@@ -126,11 +125,11 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
       });
       onSuccess(); // reload
       closeDialog();
-    } catch (e: any) {
+    } catch (e) {
       toast({
         title: "Failed to assign",
         variant: "destructive",
-        description: e?.message,
+        description: getErrorMessage(e),
       });
     } finally {
       setLoadingAssign(false);
@@ -152,11 +151,11 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
       });
       onSuccess(); // reload
       closeDialog();
-    } catch (e: any) {
+    } catch (e) {
       toast({
         title: "Failed to unassign",
         variant: "destructive",
-        description: e?.message,
+        description: getErrorMessage(e),
       });
     } finally {
       setLoadingAssign(false);

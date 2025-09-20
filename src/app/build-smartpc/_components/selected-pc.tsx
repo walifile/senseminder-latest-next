@@ -8,6 +8,7 @@ import appConfig from "@/config/app-config";
 import React, { useState, useEffect } from "react";
 import { useAddBillingPlanMutation } from "@/api/billing";
 
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { getFriendlyOSName } from "@/lib/utils/format-string";
@@ -344,12 +345,13 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                             });
 
                             setShowBillingDialog(false);
-                          } catch (error: any) {
+                          } catch (error) {
                             toast({
                               title: "Error",
-                              description:
-                                error.message ||
-                                "Failed to update billing plan.",
+                              description: getErrorMessage(
+                                error,
+                                "Failed to update billing plan."
+                              ),
                               variant: "destructive",
                             });
                           }

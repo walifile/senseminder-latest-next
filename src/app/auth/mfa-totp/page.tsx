@@ -102,7 +102,8 @@ export default function MfaTotpPage() {
           variant: "destructive",
         });
       }
-    } catch (err: any) {
+    } catch (error) {
+      const err = error as Error & { name?: string; message?: string };
       // If it’s just a wrong code, don’t sign the user out—let them retry.
       if (
         err?.name === "CodeMismatchException" ||

@@ -1,5 +1,7 @@
 import { formatDateTime } from "@/lib/utils/format-time";
 
+import type { UsageHistory } from "../types";
+
 export const formatInstanceDuration = (
   minutesStr: string,
   billingPlan: string
@@ -25,7 +27,7 @@ export const formatInstanceDuration = (
   }
 };
 
-export const getUsagePeriod = (usage: any) => {
+export const getUsagePeriod = (usage: UsageHistory) => {
   const isInstanceGreater =
     parseFloat(usage.instanceMinutes) > parseFloat(usage.storageMinutes);
 

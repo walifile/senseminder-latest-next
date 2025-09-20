@@ -1,7 +1,10 @@
+import type { PC } from "@/app/build-smartpc/types";
+
 import React, { useState, useCallback } from "react";
 import { assignPC, unassignPC } from "@/api/assignpc";
 import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
 
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,10 +25,10 @@ type Props = {
   open: boolean;
   onClose: () => void;
   selectedUser: ApiUser | null;
-  setSelectedUser: (user: any) => void;
+  setSelectedUser: (user: ApiUser | null) => void;
   globalReload: () => void;
   fetchAssignmentsLoading: boolean;
-  assignments: Record<string, any[]>;
+  assignments: Record<string, { instanceId: string }[]>;
 };
 
 const ManagePcDialog = ({
@@ -49,7 +52,7 @@ const ManagePcDialog = ({
 
   const isLoading = fetchAssignmentsLoading || isSmartPCLoading;
 
-  const assignSmartPC = async (instance: any) => {
+  const assignSmartPC = async (instance: PC) => {
     if (!selectedUser) return;
     setPCAssigningId(instance.instanceId);
     try {
@@ -65,18 +68,18 @@ const ManagePcDialog = ({
         }`,
       });
       setTimeout(globalReload, 300);
-    } catch (e: any) {
+    } catch (e) {
       toast({
         title: "Failed to assign PC",
         variant: "destructive",
-        description: e?.message || "Failed to assign",
+        description: getErrorMessage(e, "Failed to assign"),
       });
     } finally {
       setPCAssigningId(null);
     }
   };
 
-  const unassignSmartPC = async (instance: any) => {
+  const unassignSmartPC = async (instance: PC) => {
     if (!selectedUser) return;
     setPCAssigningId(instance.instanceId);
     try {
@@ -91,11 +94,11 @@ const ManagePcDialog = ({
         }`,
       });
       setTimeout(globalReload, 300);
-    } catch (e: any) {
+    } catch (e) {
       toast({
         title: "Failed to unassign PC",
         variant: "destructive",
-        description: e?.message || "Failed to unassign",
+        description: getErrorMessage(e, "Failed to unassign"),
       });
     } finally {
       setPCAssigningId(null);
@@ -135,7 +138,7 @@ const ManagePcDialog = ({
             <div className="italic">No SmartPCs available to assign.</div>
           ) : (
             <div className="space-y-3">
-              {smartPCs.map((pc: any) => {
+              {smartPCs.map((pc: PC) => {
                 const buttonConfig = getPcButtonConfig({
                   pc,
                   selectedUserId: selectedUser.id,

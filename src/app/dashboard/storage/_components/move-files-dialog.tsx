@@ -161,7 +161,12 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
       });
       setSelectedFiles([]);
       closeDialog();
-    } catch (err: any) {
+    } catch (error) {
+      const err = error as Error & {
+        data?: { message: string };
+        status?: number;
+        originalError?: unknown;
+      };
       console.error(" Move operation failed:", err);
 
       // More detailed error handling

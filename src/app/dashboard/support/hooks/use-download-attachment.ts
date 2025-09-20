@@ -1,5 +1,6 @@
 import { usePresignTicketDownloadMutation } from "@/api/supportAPI";
 
+import { getErrorMessage } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
 
 export const useDownloadAttachment = (userId: string, ticketId: string) => {
@@ -22,10 +23,10 @@ export const useDownloadAttachment = (userId: string, ticketId: string) => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } catch (err: any) {
+    } catch (err) {
       toast({
         title: "Download failed",
-        description: err?.message || "Something went wrong",
+        description: getErrorMessage(err),
         variant: "destructive",
       });
     }

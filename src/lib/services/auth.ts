@@ -20,6 +20,8 @@ import {
   confirmResetPassword,
 } from "aws-amplify/auth";
 
+import { getErrorMessage } from "../utils";
+
 interface SignUpFormData {
   email: string;
   password: string;
@@ -54,10 +56,10 @@ export const handleSignUp = async (formData: SignUpFormData) => {
 
     store.dispatch(setLoading(false));
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     store.dispatch(setLoading(false));
     console.log(error);
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 };
 
@@ -72,9 +74,9 @@ export const handleConfirmSignUp = async (email: string, otp: string) => {
 
     store.dispatch(setLoading(false));
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     store.dispatch(setLoading(false));
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 };
 
@@ -84,9 +86,9 @@ export const handleResendOtp = async (email: string) => {
     await resendSignUpCode({ username: email });
     store.dispatch(setLoading(false));
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     store.dispatch(setLoading(false));
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 };
 
@@ -187,9 +189,14 @@ export const handleSignIn = async (email: string, password: string) => {
       signInResponse.nextStep?.signInStep ===
       "CONTINUE_SIGN_IN_WITH_MFA_SELECTION"
     ) {
-      const step = signInResponse.nextStep as any;
+      const step = signInResponse.nextStep as {
+        preferredMfaSetting?: string | undefined;
+        allowedMFATypes?: string[] | undefined;
+      };
+
+      // Determine preferred MFA method
       const preferredMfa = step.preferredMfaSetting;
-      const availableMfas: string[] = step.allowedMFATypes || [];
+      const availableMfas = step.allowedMFATypes || [];
 
       store.dispatch(setTempUser(signInResponse));
       sessionStorage.setItem("tempUserMFA", JSON.stringify(signInResponse));
@@ -241,10 +248,10 @@ export const handleSignIn = async (email: string, password: string) => {
     }
 
     return await handlePostAuthentication();
-  } catch (error: any) {
-    console.log("sign in error", error.message);
+  } catch (error) {
+    console.log("sign in error", getErrorMessage(error));
     store.dispatch(setLoading(false));
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 };
 
@@ -288,9 +295,9 @@ export const handleAuthRedirect = async () => {
     }
 
     return { success: false, error: "Failed to get user information" };
-  } catch (error: any) {
+  } catch (error) {
     console.log("Auth redirect error:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   } finally {
     store.dispatch(setLoading(false));
   }
@@ -304,9 +311,9 @@ export const handleGoogleSignUp = async () => {
     await signInWithRedirect({ provider: "Google" });
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.log("Google sign up error:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   } finally {
     store.dispatch(setLoading(false));
   }
@@ -326,9 +333,9 @@ export const handleAppleSignUp = async () => {
     }
 
     return { success: false, error: "Failed to get user information" };
-  } catch (error: any) {
+  } catch (error) {
     console.log("Apple sign up error:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   } finally {
     store.dispatch(setLoading(false));
   }
@@ -340,9 +347,9 @@ export const handleSignOut = async () => {
     await signOut();
     store.dispatch(clearAuth());
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     store.dispatch(setLoading(false));
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 };
 
@@ -367,8 +374,9 @@ export const handleResetPassword = async (email: string) => {
     await resetPassword({ username: email });
     store.dispatch(setLoading(false));
     return { success: true };
-  } catch (error: any) {
+  } catch (err) {
     store.dispatch(setLoading(false));
+    const error = err as Error;
 
     console.error("Cognito resetPassword error:", error);
 
@@ -416,10 +424,10 @@ export const handleConfirmResetPassword = async (
     });
     store.dispatch(setLoading(false));
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     store.dispatch(setLoading(false));
     console.log(error);
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 };
 

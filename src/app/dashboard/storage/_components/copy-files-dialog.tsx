@@ -141,7 +141,8 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
 
       setSelectedFiles([]);
       closeDialog();
-    } catch (err: any) {
+    } catch (error) {
+      const err = error as { data?: { message?: string }; message?: string };
       let errorMessage = "Could not copy items. Please try again.";
 
       if (err?.data?.message) errorMessage = err.data.message;

@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from "react";
 
 export const PerformanceMonitor = () => {
   // Replace 'any' with the actual type if known
-  const connRef = useRef<any>(null);
+  const connRef = useRef(null);
 
   const [performanceData, setPerformanceData] = useState({
     cpuUsage: 0,

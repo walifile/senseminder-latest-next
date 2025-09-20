@@ -1,6 +1,7 @@
 import { useInviteUserMutation } from "@/api/user";
 import React, { useMemo, useCallback } from "react";
 
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -60,11 +61,11 @@ const InviteUserDialog = ({ open, onClose }: Props) => {
         description: `An invitation has been sent to ${data.email}`,
       });
       closeDialog();
-    } catch (e: any) {
+    } catch (e) {
       toast({
         title: "Failed to invite user",
         variant: "destructive",
-        description: (e && e.message) || "Failed to invite user.",
+        description: getErrorMessage(e, "Failed to invite user"),
       });
     }
   });

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 import { confirmSignIn, updateMFAPreference } from "aws-amplify/auth";
@@ -71,10 +72,10 @@ export default function MFASelectPage() {
       } else {
         router.push("/dashboard");
       }
-    } catch (err: any) {
+    } catch (err) {
       toast({
         title: "Error",
-        description: err?.message || "Failed to continue MFA flow.",
+        description: getErrorMessage(err, "Failed to continue MFA flow."),
         variant: "destructive",
       });
     } finally {

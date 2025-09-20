@@ -1,5 +1,7 @@
 "use client";
 
+import type { RootState } from "@/redux/store";
+
 import { useSearchParams } from "next/navigation";
 import { useRef, useState, Suspense, useEffect } from "react";
 import DCVViewer from "@/app/pc-viewer/_components/dcv-viewer";
@@ -101,7 +103,7 @@ const PCViewerContent = () => {
     uptime: "0m",
   });
 
-  const launchVMResponse = useSelector((state: any) =>
+  const launchVMResponse = useSelector((state: RootState) =>
     instanceId ? selectLaunchVMResponse(state, instanceId) : null
   );
 

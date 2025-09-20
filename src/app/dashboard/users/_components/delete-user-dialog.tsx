@@ -4,6 +4,7 @@ import { useDeleteUserMutation } from "@/api/user";
 import React, { useState, useCallback } from "react";
 
 import { Input } from "@/components/ui/input";
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,13 +17,23 @@ import {
 
 import { toast } from "@/hooks/use-toast";
 
+import type { ApiUser } from "../types";
+
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  selectedUser: ApiUser | null;
+  setSelectedUser: (user: ApiUser | null) => void;
+  globalReload: () => void;
+};
+
 const DeleteUserDialog = ({
   open,
   onClose,
   selectedUser,
   setSelectedUser,
   globalReload,
-}: any) => {
+}: Props) => {
   const [deleteConfirmInput, setDeleteConfirmInput] = useState("");
 
   const [deleteUser, { isLoading }] = useDeleteUserMutation();
@@ -39,11 +50,11 @@ const DeleteUserDialog = ({
       });
       globalReload();
       closeDialog();
-    } catch (e: any) {
+    } catch (e) {
       toast({
         title: "Failed to delete user",
         variant: "destructive",
-        description: (e && e.message) || "Failed to delete user.",
+        description: getErrorMessage(e, "Failed to delete user."),
       });
     }
   };

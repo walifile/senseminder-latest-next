@@ -60,7 +60,9 @@ const Footer = () => {
       let errorMessage = "Subscription failed. Please try again.";
 
       if ("error" in response) {
-        const err = response.error as any;
+        const err = response.error as Error & {
+          data?: string | { message: string };
+        };
 
         if (err.data && typeof err.data === "object" && "message" in err.data) {
           errorMessage = err.data.message;
@@ -102,7 +104,9 @@ const Footer = () => {
         } else {
           let errorMessage = "Unsubscription failed. Please try again.";
           if ("error" in res) {
-            const err = res.error as any;
+            const err = res.error as Error & {
+              data?: string | { message: string };
+            };
 
             if (
               err.data &&
