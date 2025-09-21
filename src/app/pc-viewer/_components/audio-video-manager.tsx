@@ -93,32 +93,32 @@ interface MediaStats {
   };
 }
 
-// interface DcvConnection {
-//   // Audio methods
-//   setAudioEnabled: (enabled: boolean) => Promise<void>;
-//   setAudioInputDevice: (deviceId: string) => Promise<void>;
-//   setAudioOutputDevice: (deviceId: string) => Promise<void>;
-//   setAudioInputVolume: (volume: number) => Promise<void>;
-//   setAudioOutputVolume: (volume: number) => Promise<void>;
-//   setAudioSettings: (settings: Partial<AudioSettings>) => Promise<void>;
+interface DcvConnection {
+  // Audio methods
+  setAudioEnabled: (enabled: boolean) => Promise<void>;
+  setAudioInputDevice: (deviceId: string) => Promise<void>;
+  setAudioOutputDevice: (deviceId: string) => Promise<void>;
+  setAudioInputVolume: (volume: number) => Promise<void>;
+  setAudioOutputVolume: (volume: number) => Promise<void>;
+  setAudioSettings: (settings: Partial<AudioSettings>) => Promise<void>;
 
-//   // Video methods
-//   setVideoEnabled: (enabled: boolean) => Promise<void>;
-//   setVideoDevice: (deviceId: string) => Promise<void>;
-//   setVideoSettings: (settings: Partial<VideoSettings>) => Promise<void>;
+  // Video methods
+  setVideoEnabled: (enabled: boolean) => Promise<void>;
+  setVideoDevice: (deviceId: string) => Promise<void>;
+  setVideoSettings: (settings: Partial<VideoSettings>) => Promise<void>;
 
-//   // Stats methods
-//   getMediaStats: () => Promise<MediaStats>;
+  // Stats methods
+  getMediaStats: () => Promise<MediaStats>;
 
-//   // Test methods
-//   startAudioTest: () => Promise<void>;
-//   stopAudioTest: () => Promise<void>;
-//   startVideoTest: () => Promise<void>;
-//   stopVideoTest: () => Promise<void>;
-// }
+  // Test methods
+  startAudioTest: () => Promise<void>;
+  stopAudioTest: () => Promise<void>;
+  startVideoTest: () => Promise<void>;
+  stopVideoTest: () => Promise<void>;
+}
 
 interface AudioVideoManagerProps {
-  connection: any | null;
+  connection: DcvConnection | null;
   isConnected: boolean;
 }
 
@@ -297,7 +297,7 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
   // Handle audio setting changes
   const handleAudioSettingChange = async (
     key: keyof AudioSettings,
-    value: any
+    value: AudioSettings[keyof AudioSettings]
   ) => {
     const newSettings = { ...audioSettings, [key]: value };
     setAudioSettings(newSettings);
@@ -314,7 +314,7 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
   // Handle video setting changes
   const handleVideoSettingChange = async (
     key: keyof VideoSettings,
-    value: any
+    value: VideoSettings[keyof VideoSettings]
   ) => {
     const newSettings = { ...videoSettings, [key]: value };
     setVideoSettings(newSettings);

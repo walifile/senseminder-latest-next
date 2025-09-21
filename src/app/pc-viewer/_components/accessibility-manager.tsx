@@ -122,40 +122,40 @@ interface AccessibilityProfile {
   isCustom: boolean;
 }
 
-// interface DcvConnection {
-//   // Visual accessibility
-//   setHighContrast: (enabled: boolean) => Promise<void>;
-//   setMagnification: (level: number) => Promise<void>;
-//   setColorFilter: (type: string, intensity: number) => Promise<void>;
-//   setCursorSettings: (size: number, highlight: boolean) => Promise<void>;
+interface DcvConnection {
+  // Visual accessibility
+  setHighContrast: (enabled: boolean) => Promise<void>;
+  setMagnification: (level: number) => Promise<void>;
+  setColorFilter: (type: string, intensity: number) => Promise<void>;
+  setCursorSettings: (size: number, highlight: boolean) => Promise<void>;
 
-//   // Audio accessibility
-//   enableScreenReader: (enabled: boolean) => Promise<void>;
-//   setSpeechSettings: (
-//     rate: number,
-//     pitch: number,
-//     voice: string
-//   ) => Promise<void>;
-//   enableCaptions: (enabled: boolean) => Promise<void>;
+  // Audio accessibility
+  enableScreenReader: (enabled: boolean) => Promise<void>;
+  setSpeechSettings: (
+    rate: number,
+    pitch: number,
+    voice: string
+  ) => Promise<void>;
+  enableCaptions: (enabled: boolean) => Promise<void>;
 
-//   // Motor accessibility
-//   enableStickyKeys: (enabled: boolean) => Promise<void>;
-//   enableMouseKeys: (enabled: boolean) => Promise<void>;
-//   setDwellClick: (enabled: boolean, time: number) => Promise<void>;
-//   enableVoiceControl: (enabled: boolean) => Promise<void>;
+  // Motor accessibility
+  enableStickyKeys: (enabled: boolean) => Promise<void>;
+  enableMouseKeys: (enabled: boolean) => Promise<void>;
+  setDwellClick: (enabled: boolean, time: number) => Promise<void>;
+  enableVoiceControl: (enabled: boolean) => Promise<void>;
 
-//   // Cognitive accessibility
-//   enableFocusMode: (enabled: boolean) => Promise<void>;
-//   setSessionTimeout: (timeout: number) => Promise<void>;
-//   enableGuidedNavigation: (enabled: boolean) => Promise<void>;
+  // Cognitive accessibility
+  enableFocusMode: (enabled: boolean) => Promise<void>;
+  setSessionTimeout: (timeout: number) => Promise<void>;
+  enableGuidedNavigation: (enabled: boolean) => Promise<void>;
 
-//   // Profile management
-//   saveAccessibilityProfile: (profile: AccessibilityProfile) => Promise<void>;
-//   loadAccessibilityProfile: (profileId: string) => Promise<void>;
-// }
+  // Profile management
+  saveAccessibilityProfile: (profile: AccessibilityProfile) => Promise<void>;
+  loadAccessibilityProfile: (profileId: string) => Promise<void>;
+}
 
 interface AccessibilityManagerProps {
-  connection: any | null;
+  connection: DcvConnection | null;
   isConnected: boolean;
 }
 
@@ -380,7 +380,7 @@ export const AccessibilityManager: React.FC<AccessibilityManagerProps> = ({
   // Handle visual setting changes
   const handleVisualSettingChange = async (
     key: keyof VisualSettings,
-    value: any
+    value: VisualSettings[keyof VisualSettings]
   ) => {
     const newSettings = { ...visualSettings, [key]: value };
     setVisualSettings(newSettings);
@@ -389,10 +389,14 @@ export const AccessibilityManager: React.FC<AccessibilityManagerProps> = ({
       try {
         switch (key) {
           case "highContrast":
-            await connection.setHighContrast(value);
+            if (typeof value === "boolean") {
+              await connection.setHighContrast(value);
+            }
             break;
           case "magnificationLevel":
-            await connection.setMagnification(value);
+            if (typeof value === "number") {
+              await connection.setMagnification(value);
+            }
             break;
           case "cursorSize":
           case "cursorHighlight":
@@ -414,7 +418,7 @@ export const AccessibilityManager: React.FC<AccessibilityManagerProps> = ({
   // Handle audio setting changes
   const handleAudioSettingChange = async (
     key: keyof AudioSettings,
-    value: any
+    value: AudioSettings[keyof AudioSettings]
   ) => {
     const newSettings = { ...audioSettings, [key]: value };
     setAudioSettings(newSettings);
@@ -423,7 +427,9 @@ export const AccessibilityManager: React.FC<AccessibilityManagerProps> = ({
       try {
         switch (key) {
           case "screenReaderEnabled":
-            await connection.enableScreenReader(value);
+            if (typeof value === "boolean") {
+              await connection.enableScreenReader(value);
+            }
             break;
           case "speechRate":
           case "speechPitch":
@@ -435,7 +441,9 @@ export const AccessibilityManager: React.FC<AccessibilityManagerProps> = ({
             );
             break;
           case "captionsEnabled":
-            await connection.enableCaptions(value);
+            if (typeof value === "boolean") {
+              await connection.enableCaptions(value);
+            }
             break;
           default:
             // No action needed for other keys
@@ -450,7 +458,7 @@ export const AccessibilityManager: React.FC<AccessibilityManagerProps> = ({
   // Handle motor setting changes
   const handleMotorSettingChange = async (
     key: keyof MotorSettings,
-    value: any
+    value: MotorSettings[keyof MotorSettings]
   ) => {
     const newSettings = { ...motorSettings, [key]: value };
     setMotorSettings(newSettings);
@@ -459,10 +467,14 @@ export const AccessibilityManager: React.FC<AccessibilityManagerProps> = ({
       try {
         switch (key) {
           case "stickyKeys":
-            await connection.enableStickyKeys(value);
+            if (typeof value === "boolean") {
+              await connection.enableStickyKeys(value);
+            }
             break;
           case "mouseKeys":
-            await connection.enableMouseKeys(value);
+            if (typeof value === "boolean") {
+              await connection.enableMouseKeys(value);
+            }
             break;
           case "dwellClick":
           case "dwellTime":
@@ -472,7 +484,9 @@ export const AccessibilityManager: React.FC<AccessibilityManagerProps> = ({
             );
             break;
           case "voiceControl":
-            await connection.enableVoiceControl(value);
+            if (typeof value === "boolean") {
+              await connection.enableVoiceControl(value);
+            }
             break;
           default:
             // No action needed for other keys
@@ -487,7 +501,7 @@ export const AccessibilityManager: React.FC<AccessibilityManagerProps> = ({
   // Handle cognitive setting changes
   const handleCognitiveSettingChange = async (
     key: keyof CognitiveSettings,
-    value: any
+    value: CognitiveSettings[keyof CognitiveSettings]
   ) => {
     const newSettings = { ...cognitiveSettings, [key]: value };
     setCognitiveSettings(newSettings);
@@ -496,13 +510,19 @@ export const AccessibilityManager: React.FC<AccessibilityManagerProps> = ({
       try {
         switch (key) {
           case "focusMode":
-            await connection.enableFocusMode(value);
+            if (typeof value === "boolean") {
+              await connection.enableFocusMode(value);
+            }
             break;
           case "sessionTimeout":
-            await connection.setSessionTimeout(value);
+            if (typeof value === "number") {
+              await connection.setSessionTimeout(value);
+            }
             break;
           case "guidedNavigation":
-            await connection.enableGuidedNavigation(value);
+            if (typeof value === "boolean") {
+              await connection.enableGuidedNavigation(value);
+            }
             break;
           default:
             // No action needed for other keys
@@ -864,7 +884,7 @@ export const AccessibilityManager: React.FC<AccessibilityManagerProps> = ({
                       onValueChange={(value) =>
                         handleVisualSettingChange("colorFilters", {
                           ...visualSettings.colorFilters,
-                          type: value,
+                          type: value as VisualSettings["colorFilters"]["type"],
                         })
                       }
                     >

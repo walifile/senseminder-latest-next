@@ -38,19 +38,19 @@ import {
 } from "lucide-react";
 
 // Enhanced DCV Types
-// interface DcvConnection {
-//   startFileTransfer: (
-//     options: FileTransferOptions
-//   ) => Promise<FileTransferSession>;
-//   getFileTransferSessions: () => Promise<FileTransferSession[]>;
-//   cancelFileTransfer: (sessionId: string) => Promise<void>;
-//   pauseFileTransfer: (sessionId: string) => Promise<void>;
-//   resumeFileTransfer: (sessionId: string) => Promise<void>;
-//   listRemoteFiles?: (path: string) => Promise<RemoteFileInfo[]>;
-//   createRemoteDirectory?: (path: string) => Promise<void>;
-//   deleteRemoteFile?: (path: string) => Promise<void>;
-//   getRemoteFileInfo?: (path: string) => Promise<RemoteFileInfo>;
-// }
+interface DcvConnection {
+  startFileTransfer: (
+    options: FileTransferOptions
+  ) => Promise<FileTransferSession>;
+  getFileTransferSessions: () => Promise<FileTransferSession[]>;
+  cancelFileTransfer: (sessionId: string) => Promise<void>;
+  pauseFileTransfer: (sessionId: string) => Promise<void>;
+  resumeFileTransfer: (sessionId: string) => Promise<void>;
+  listRemoteFiles?: (path: string) => Promise<RemoteFileInfo[]>;
+  createRemoteDirectory?: (path: string) => Promise<void>;
+  deleteRemoteFile?: (path: string) => Promise<void>;
+  getRemoteFileInfo?: (path: string) => Promise<RemoteFileInfo>;
+}
 
 interface FileTransferOptions {
   direction: "upload" | "download";
@@ -135,7 +135,7 @@ interface FileTransferSettings {
 }
 
 interface FileTransferManagerProps {
-  connection: any | null;
+  connection: DcvConnection | null;
   isConnected: boolean;
 }
 
