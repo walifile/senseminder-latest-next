@@ -1,10 +1,22 @@
 import { Button } from "@/components/ui/button";
 
+type totalType = {
+  pricePerHour?: number;
+  pricePerDay?: number;
+  pricePerMonth?: number;
+};
+
+type estimateDataType = {
+  instance: totalType;
+  storage: totalType;
+  total: totalType;
+};
+
 type Props = {
   isResize: boolean;
   billingPlan: string;
   handleEstimate: () => void;
-  estimateData: any;
+  estimateData: estimateDataType;
   isEstimating: boolean;
 };
 

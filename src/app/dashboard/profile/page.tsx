@@ -36,6 +36,8 @@ import { useToast } from "@/hooks/use-toast";
 import MfaMethodDialog from "../_components/MfaMethodDialog";
 import SecurityQuestionDialog from "../_components/security-question-dialog";
 
+import type { ApiUser } from "../users/types";
+
 const ProfilePage = () => {
   const { toast } = useToast();
   // ===== API-driven Profile State =====
@@ -132,7 +134,7 @@ const ProfilePage = () => {
         const decoded = JSON.parse(atob(idToken.split(".")[1]));
         const isFederated =
           Array.isArray(decoded?.identities) &&
-          decoded.identities.some((id: any) =>
+          decoded.identities.some((id: { providerType: string }) =>
             ["google", "apple"].includes(id.providerType?.toLowerCase())
           );
         setIsFederatedUser(isFederated);
@@ -232,7 +234,7 @@ const ProfilePage = () => {
     setSaving(true);
     const { firstName, lastName } = parseNameForApi(fullName);
 
-    const payload: any = {
+    const payload: Partial<ApiUser> = {
       firstName,
       lastName,
       country: country ?? "",
@@ -241,7 +243,11 @@ const ProfilePage = () => {
       payload.organization = orgInput ?? "";
     }
 
-    Object.keys(payload).forEach((k) => payload[k] === "" && delete payload[k]);
+    Object.keys(payload).forEach(
+      (k) =>
+        (payload as Record<string, unknown>)[k] === "" &&
+        delete (payload as Record<string, unknown>)[k]
+    );
 
     if (Object.keys(payload).length === 0) {
       setSaving(false);
@@ -312,7 +318,7 @@ const ProfilePage = () => {
 
   // ===== Prevent Default Submit =====
 
-  function prevent(e: any) {
+  function prevent(e: React.FormEvent) {
     e.preventDefault();
   }
 

@@ -17,20 +17,26 @@ export async function getIdToken() {
 export function getErrorMessage(
   error: unknown,
   fallback = "Something went wrong"
-) {
+): string {
   if (typeof error === "string") return error;
 
   if (error instanceof Error) return error.message;
 
   if (error && typeof error === "object") {
     const maybeError = error as {
-      data?: { message?: unknown };
+      data?: unknown;
       message?: unknown;
       error?: unknown;
     };
 
-    if (typeof maybeError.data?.message === "string")
-      return maybeError.data.message;
+    if (typeof maybeError.data === "string") return maybeError.data;
+
+    if (
+      typeof (maybeError.data as { message?: unknown })?.message === "string"
+    ) {
+      return (maybeError.data as { message: string }).message;
+    }
+
     if (typeof maybeError.message === "string") return maybeError.message;
     if (typeof maybeError.error === "string") return maybeError.error;
   }

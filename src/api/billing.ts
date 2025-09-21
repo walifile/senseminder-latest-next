@@ -1,6 +1,13 @@
 import type {
+  BalanceResponse,
+  InstanceBilling,
   SearchHistoryParams,
   MonthlyChangeSummary,
+  AutoRechargeResponse,
+  UsageHistoryResponse,
+  PaymentMethodResponse,
+  RechargeHistoryResponse,
+  StoragePricingTierResponse,
 } from "@/app/dashboard/billing/types";
 
 import appConfig from "@/config/app-config";
@@ -10,11 +17,6 @@ import { formatAsYYYYMMDD } from "@/lib/utils/format-time";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import { getIdToken } from "../lib/utils";
-
-type InstanceBilling = {
-  instanceId: string;
-  billingPlan: string;
-};
 
 const { BILLING_API_URL } = appConfig;
 
@@ -45,7 +47,7 @@ export const billingAPI = createApi({
   ],
   endpoints: (builder) => ({
     // payment methods
-    getPaymentMethods: builder.query<any, void>({
+    getPaymentMethods: builder.query<PaymentMethodResponse, void>({
       query: () => "payment-methods",
       providesTags: ["PaymentMethods"],
     }),
@@ -75,13 +77,13 @@ export const billingAPI = createApi({
     }),
 
     // balance
-    getCurrentBalance: builder.query<any, void>({
+    getCurrentBalance: builder.query<BalanceResponse, void>({
       query: () => "balance",
       providesTags: ["Balance"],
     }),
 
     // auto-recharge
-    getAutoRecharge: builder.query<any, void>({
+    getAutoRecharge: builder.query<AutoRechargeResponse, void>({
       query: () => "auto-recharge",
       providesTags: ["AutoRecharge"],
     }),
@@ -95,7 +97,7 @@ export const billingAPI = createApi({
     }),
 
     // storage pricing
-    getStoragePricingTier: builder.query<any, void>({
+    getStoragePricingTier: builder.query<StoragePricingTierResponse, void>({
       query: () => "storage/tier-pricing",
       providesTags: ["Storage"],
     }),
@@ -126,7 +128,10 @@ export const billingAPI = createApi({
     }),
 
     // usage history
-    searchUsageHistory: builder.query<any, SearchHistoryParams>({
+    searchUsageHistory: builder.query<
+      UsageHistoryResponse,
+      SearchHistoryParams
+    >({
       query: ({
         from,
         to,
@@ -149,7 +154,7 @@ export const billingAPI = createApi({
 
     // recharge history
     searchRechargeHistory: builder.query<
-      any,
+      RechargeHistoryResponse,
       Omit<SearchHistoryParams, "isStorageHistory">
     >({
       query: ({ from, to, limit = 5, startingAfter }) => {

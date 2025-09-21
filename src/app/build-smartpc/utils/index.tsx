@@ -1,3 +1,5 @@
+import type { RootState } from "@/redux/store";
+
 import {
   Circle,
   Loader2,
@@ -152,7 +154,15 @@ export function inferLinuxCategoryFromConfigId(
   return undefined;
 }
 
-export function extractStorageGiB(pc: any): number | undefined {
+export function extractStorageGiB(pc: {
+  storageGiB?: number;
+  storage?: number;
+  storageSize?: number;
+  volumeSize?: number;
+  rootVolumeSize?: number;
+  diskSize?: number;
+  ssdSize?: number;
+}): number | undefined {
   const candidates = [
     pc.storageGiB,
     pc.storage,
@@ -166,7 +176,7 @@ export function extractStorageGiB(pc: any): number | undefined {
   return typeof val === "number" ? val : undefined;
 }
 
-export function getApiUserId(u: any) {
+export function getApiUserId(u: RootState["auth"]["user"]) {
   if (!u) return "";
   if (u.role === "member" || u.role === "admin") return u.ownerid;
   return u.id;

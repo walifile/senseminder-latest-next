@@ -4,6 +4,7 @@ import { isBusy } from "@/app/build-smartpc/utils";
 import { useStartVMMutation } from "@/api/fileManagerAPI";
 import { addStartingInstance } from "@/redux/slices/dcv/starting-instances-slice";
 
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 import { useDispatch } from "react-redux";
@@ -40,19 +41,12 @@ const SmartPcStartButton = ({
       });
     } catch (error) {
       console.error("StartVM error:", error);
-      let errorMessage =
-        "Unable to start the Computer. Please wait a few moments and try again.";
-      if (
-        error &&
-        typeof error === "object" &&
-        "data" in error &&
-        typeof (error as any).data === "string"
-      ) {
-        errorMessage = (error as any).data;
-      }
       toast({
         title: "Failed to Start Computer",
-        description: errorMessage,
+        description: getErrorMessage(
+          error,
+          "Unable to start the Computer. Please wait a few moments and try again."
+        ),
         variant: "destructive",
       });
     }

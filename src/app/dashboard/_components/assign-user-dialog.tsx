@@ -1,6 +1,6 @@
 "use client";
 
-import type { PC } from "@/app/build-smartpc/types";
+import type { DesktopInstance } from "@/app/build-smartpc/types";
 
 import { useGetUsersQuery } from "@/api/user";
 import React, { useState, useEffect, useCallback } from "react";
@@ -32,7 +32,7 @@ type ApiUser = {
 type AssignUserDialogProps = {
   open: boolean;
   onClose: () => void;
-  pc: PC | null;
+  pc: DesktopInstance | null;
   onSuccess: () => void;
 };
 

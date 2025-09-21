@@ -29,7 +29,7 @@ import { Lock } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
 
-import type { ExtendedPaymentMethod } from "../types";
+import type { ExtendedPaymentMethod, PaymentMethodResponse } from "../types";
 
 export function PaymentMethodDialog() {
   const { toast } = useToast();
@@ -59,10 +59,10 @@ export function PaymentMethodDialog() {
   }, [data]);
 
   const mapPaymentMethodsFromAPI = (
-    apiResponse: any
+    apiResponse: PaymentMethodResponse
   ): ExtendedPaymentMethod[] => {
     const defaultId = apiResponse.defaultPaymentMethod?.id;
-    return apiResponse.paymentMethods.map((pm: any) => ({
+    return apiResponse.paymentMethods.map((pm) => ({
       id: pm.id,
       type: "card",
       card: {
@@ -72,7 +72,7 @@ export function PaymentMethodDialog() {
         brand: pm.card.brand,
       },
       isDefault: pm.id === defaultId,
-    }));
+    })) as ExtendedPaymentMethod[];
   };
 
   const handleAdd = async () => {

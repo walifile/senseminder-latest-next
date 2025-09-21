@@ -1,3 +1,5 @@
+import type { ApiUser } from "@/app/dashboard/users/types";
+
 import appConfig from "@/config/app-config";
 
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
@@ -5,6 +7,10 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getIdToken } from "../lib/utils";
 
 const { USER_MANAGEMENT_API } = appConfig;
+
+interface GetUsersResponse {
+  users: ApiUser[];
+}
 
 const baseQuery = fetchBaseQuery({
   baseUrl: USER_MANAGEMENT_API,
@@ -25,7 +31,7 @@ export const userAPI = createApi({
   baseQuery,
   tagTypes: ["Users"],
   endpoints: (builder) => ({
-    getUsers: builder.query<any, void>({
+    getUsers: builder.query<GetUsersResponse, void>({
       query: () => "",
       providesTags: ["Users"],
     }),

@@ -1,10 +1,18 @@
-/* eslint-disable perfectionist/sort-imports */
-
 "use client";
 
+import giftAnimation from "@/lottie/gift.json";
 import React, { useState, useEffect } from "react";
-import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
+import { Player } from "@lottiefiles/react-lottie-player";
+import { redeemPromo, getPromoInfo } from "@/api/promocashback";
+import {
+  useGetCurrentBalanceQuery,
+  useGetMonthlySpendingQuery,
+} from "@/api/billing";
+
 import { Button } from "@/components/ui/button";
+import { cn, getErrorMessage } from "@/lib/utils";
+import { fCurrency } from "@/lib/utils/format-number";
+import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogTitle,
@@ -13,21 +21,13 @@ import {
   DialogContent,
   DialogDescription,
 } from "@/components/ui/dialog";
+
+import { toast } from "sonner";
 import { Wallet, TrendingUp, CheckCircle2 } from "lucide-react";
-import { cn, getErrorMessage } from "@/lib/utils";
-import {
-  useGetCurrentBalanceQuery,
-  useGetMonthlySpendingQuery,
-} from "@/api/billing";
+
 import { promotionsAndCashback } from "../data";
 import QuickStatsTooltip from "../_components/quick-stats-tooltip";
 import QuickStatsLoading from "../_components/quick-stats-loading";
-import { fCurrency } from "@/lib/utils/format-number";
-import { redeemPromo, getPromoInfo } from "@/api/promocashback";
-import { toast } from "sonner";
-
-import giftAnimation from "@/lottie/gift.json";
-import { Player } from "@lottiefiles/react-lottie-player";
 
 type PromoInfoType = {
   eligible: boolean;

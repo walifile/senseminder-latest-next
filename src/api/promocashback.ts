@@ -1,5 +1,3 @@
-/* eslint-disable perfectionist/sort-imports */
-
 "use client";
 
 import appConfig from "@/config/app-config";

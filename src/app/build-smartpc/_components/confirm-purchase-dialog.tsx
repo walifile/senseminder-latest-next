@@ -1,11 +1,13 @@
 "use client";
 
 import type { RootState } from "@/redux/store";
+import type { UseFormReturn } from "react-hook-form";
 
 import React, { useState, useCallback } from "react";
 import { useCreateVMMutation } from "@/api/vmManagement";
 import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
 
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,8 +27,14 @@ import type { FormValues } from "../schema";
 type Props = {
   open: boolean;
   onClose: () => void;
-  methods: any;
-  estimateData: any;
+  methods: UseFormReturn<FormValues>;
+  estimateData: {
+    total: {
+      pricePerHour?: number;
+      pricePerDay?: number;
+      pricePerMonth?: number;
+    };
+  };
   isEstimating: boolean;
   onSuccess: () => void;
 };
@@ -80,14 +88,12 @@ const ConfirmPurchaseDialog = ({
       onSuccess();
       closeDialog();
     } catch (err) {
-      const errorData = (err as { data?: any })?.data;
-      const errorMsg =
-        errorData?.message ??
-        "Something went wrong. Please try again or contact support.";
-
       toast({
         title: "Failed to Create Computer",
-        description: errorMsg,
+        description: getErrorMessage(
+          err,
+          "Something went wrong. Please try again or contact support."
+        ),
         variant: "destructive",
       });
     }

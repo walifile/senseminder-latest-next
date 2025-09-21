@@ -1,5 +1,7 @@
 "use client";
 
+import type { UseFormReturn } from "react-hook-form";
+
 import React, { useMemo, useEffect } from "react";
 
 import { cn } from "@/lib/utils";
@@ -21,10 +23,11 @@ import {
   locationOptions,
 } from "../data";
 
+import type { FormValues } from "../schema";
 import type { ResizeInitial } from "../types";
 
 interface Props {
-  methods: any;
+  methods: UseFormReturn<FormValues>;
   isResize: boolean;
   isStorageOnly?: boolean;
   existingCPU?: string;

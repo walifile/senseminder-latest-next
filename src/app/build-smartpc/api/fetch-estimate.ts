@@ -1,9 +1,34 @@
+import type { UseFormReturn } from "react-hook-form";
+
+import type { FormValues } from "../schema";
+
+interface ToastFunction {
+  (options: {
+    title: string;
+    description: string;
+    variant?: "default" | "destructive";
+  }): void;
+}
+
+interface GetEstimateMutation {
+  (params: { configId: string; storageSize: string; region: string }): {
+    unwrap(): Promise<unknown>;
+  };
+}
+
+interface FetchEstimateParams {
+  methods: UseFormReturn<FormValues>;
+  getEstimate: GetEstimateMutation;
+  toast?: ToastFunction;
+  showError?: boolean;
+}
+
 export const fetchEstimate = async ({
   methods,
   getEstimate,
   toast,
   showError = true,
-}: any) => {
+}: FetchEstimateParams) => {
   const { trigger, getValues } = methods;
 
   const isValid = await trigger();

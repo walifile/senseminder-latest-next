@@ -8,7 +8,7 @@ export interface SmartPCSession {
   sessionId: string;
   deviceName?: string;
   ip?: string;
-  lastSeen?: string;
+  lastSeen: string;
   occupied?: boolean;
   location?: {
     city?: string;
@@ -139,7 +139,7 @@ export const fetchActiveSessions = async (): Promise<SmartPCSession[]> => {
 
     const currentId = localStorage.getItem("smartpc-session-id");
 
-    return (raw as any[]).map((s) => {
+    return (raw as SmartPCSession[]).map((s) => {
       const location = s.location || {};
       const locationDisplay =
         location.city || location.region || location.country
