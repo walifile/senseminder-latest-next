@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { FEEDBACK_TRIGGERS } from "@/constants/app-constants";
 import {
   useRechargeMutation,
   useGetAutoRechargeQuery,
@@ -30,11 +31,13 @@ import {
 import { ArrowUpRight } from "lucide-react";
 
 import { useBoolean } from "@/hooks/use-boolean";
+import { useFeedback } from "@/hooks/use-feedback";
 
 import { quickRechargeAmounts } from "../data";
 
 const QuickRecharge = () => {
   const showConfirm = useBoolean();
+  const { triggerFeedback } = useFeedback();
 
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState<number | null>(null);
@@ -70,6 +73,11 @@ const QuickRecharge = () => {
       const refreshed = await refetch().unwrap();
       setAutoRechargeEnabled(refreshed.autoRecharge);
       showConfirm.onFalse();
+
+      void triggerFeedback({
+        trigger: FEEDBACK_TRIGGERS.PAYMENT,
+        delayMinutes: 0,
+      });
     } catch (error: unknown) {
       console.error("Failed to recharge wallet:", error);
       const message =

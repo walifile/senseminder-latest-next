@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
 import React, { useMemo, useEffect } from "react";
 import { useCreateVMMutation } from "@/api/vmManagement";
+import { FEEDBACK_TRIGGERS } from "@/constants/app-constants";
 import {
   useGetEstimateMutation,
   useListRemoteDesktopQuery,
@@ -38,6 +39,7 @@ import { motion } from "framer-motion";
 import { Cpu, Globe, HardDrive, MonitorPlay } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
+import { useFeedback } from "@/hooks/use-feedback";
 
 import { Field } from "@/components/shared/hook-form";
 import Navbar from "@/components/shared/layout/navbar";
@@ -57,6 +59,7 @@ import type { FormValues } from "./schema";
 export default function BuildSmartPCPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { triggerFeedback } = useFeedback();
   const userId = useSelector((state: RootState) => state.auth.user?.id);
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const config = useSelector((state: RootState) => state.smartPcConfig);
@@ -162,6 +165,10 @@ export default function BuildSmartPCPage() {
         if (fetchResult.status === "fulfilled") break;
         await new Promise((res) => setTimeout(res, 2000));
       }
+      void triggerFeedback({
+        trigger: FEEDBACK_TRIGGERS.PC_ACTION,
+        delayMinutes: 0,
+      });
       reset();
       router.push(routes.dashboard);
     } catch (err) {

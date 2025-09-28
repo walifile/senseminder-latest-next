@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import FeedbackDialog from "@/app/dashboard/_components/feedback-dialog";
 import DashboardHeader from "@/app/dashboard/_components/dashboard-header";
 import DashboardSidebar from "@/app/dashboard/_components/dashboard-sidebar";
 import {
@@ -10,6 +9,8 @@ import {
 } from "@/redux/slices/feedback/feedback-slice";
 
 import { useDispatch, useSelector } from "react-redux";
+
+import FeedbackSlider from "./_components/feedback-slider";
 // import DesktopAppDialog from "./storage/_components/desktop-app-dialog";
 
 interface DashboardLayoutProps {
@@ -44,8 +45,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
       {/* Dialog mounted globally in dashboard layout */}
       {/* <DesktopAppDialog /> */}
-      {/* Feedback dialog */}
-      <FeedbackDialog open={isShow} onClose={handleCloseFeedback} />;
+      {/* Feedback */}
+      <FeedbackSlider open={isShow} onClose={handleCloseFeedback} />
     </div>
   );
 }

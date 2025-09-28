@@ -5,6 +5,7 @@ import type { UseFormReturn } from "react-hook-form";
 
 import React, { useState, useCallback } from "react";
 import { useCreateVMMutation } from "@/api/vmManagement";
+import { FEEDBACK_TRIGGERS } from "@/constants/app-constants";
 import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
 
 import { getErrorMessage } from "@/lib/utils";
@@ -21,6 +22,7 @@ import {
 import { useSelector } from "react-redux";
 
 import { useToast } from "@/hooks/use-toast";
+import { useFeedback } from "@/hooks/use-feedback";
 
 import type { FormValues } from "../schema";
 
@@ -48,6 +50,7 @@ const ConfirmPurchaseDialog = ({
   onSuccess,
 }: Props) => {
   const { toast } = useToast();
+  const { triggerFeedback } = useFeedback();
   const userId = useSelector((state: RootState) => state.auth.user?.id);
 
   const [acceptConfirmed, setAcceptConfirmed] = useState(false);
@@ -83,6 +86,11 @@ const ConfirmPurchaseDialog = ({
       toast({
         title: "Sense PC Created",
         description: `${form.pcName} has been successfully created.`,
+      });
+
+      void triggerFeedback({
+        trigger: FEEDBACK_TRIGGERS.PC_ACTION,
+        delayMinutes: 0,
       });
 
       onSuccess();
