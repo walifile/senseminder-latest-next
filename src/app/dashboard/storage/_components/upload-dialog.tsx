@@ -3,6 +3,7 @@
 import type { RootState } from "@/redux/store";
 
 import React, { useRef, useState } from "react";
+import { FEEDBACK_TRIGGERS } from "@/constants/app-constants";
 // import { Progress } from "@/components/ui/progress";
 import {
   useUploadFileMutation,
@@ -28,6 +29,8 @@ import { useSelector } from "react-redux";
 
 import { X, Check, Upload, Trash2, Loader2 } from "lucide-react";
 
+import { useFeedback } from "@/hooks/use-feedback";
+
 interface UploadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -51,6 +54,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   const [uploadFile] = useUploadFileMutation();
   const [uploadToPresignedUrl] = useUploadToPresignedUrlMutation();
   const { user } = useSelector((state: RootState) => state.auth);
+  const { triggerFeedback } = useFeedback();
 
   const handleFileChange = (files: FileList | null) => {
     if (!files) return;
@@ -111,6 +115,10 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
 
           await uploadToPresignedUrl({ uploadUrl, file }).unwrap();
           setUploadStatus((prev) => ({ ...prev, [file.name]: "success" }));
+          void triggerFeedback({
+            trigger: FEEDBACK_TRIGGERS.STORAGE,
+            delayMinutes: 0,
+          });
           closeDialog();
         } catch (err) {
           console.error(err);
