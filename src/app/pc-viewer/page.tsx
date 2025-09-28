@@ -11,22 +11,14 @@ import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
 
 import { useSelector } from "react-redux";
 
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
-  Usb,
   Power,
-  Mouse,
-  Shield,
-  Signal,
-  Volume2,
   Monitor,
-  Glasses,
   Loader2,
   Keyboard,
   Maximize,
@@ -65,14 +57,17 @@ const PCViewerContent = () => {
   const [connectionState, setConnectionState] =
     useState<ConnectionState>("DISCONNECTED");
   const [quality, setQuality] = useState("auto");
-  const [bandwidth, setBandwidth] = useState(75);
-  const [keyboardEnabled, setKeyboardEnabled] = useState(true);
-  const [mouseEnabled, setMouseEnabled] = useState(true);
-  const [audioEnabled, setAudioEnabled] = useState(true);
-  const [encryption, setEncryption] = useState(true);
+  // const [bandwidth, setBandwidth] = useState(75);
+  const [keyboardEnabled] = useState(true);
+  const [mouseEnabled] = useState(true);
+  const [audioEnabled] = useState(true);
+  // const [keyboardEnabled, setKeyboardEnabled] = useState(true);
+  // const [mouseEnabled, setMouseEnabled] = useState(true);
+  // const [audioEnabled, setAudioEnabled] = useState(true);
+  // const [encryption, setEncryption] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [usbEnabled, setUsbEnabled] = useState(true);
-  const [vrEnabled, setVrEnabled] = useState(false);
+  // const [usbEnabled, setUsbEnabled] = useState(true);
+  // const [vrEnabled, setVrEnabled] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
@@ -320,7 +315,7 @@ const PCViewerContent = () => {
         id="remote-desktop"
         className={cn(
           "flex-1 relative overflow-hidden bg-black",
-          isSidebarOpen && !isMobile ? "mr-80" : "mr-0"
+          isSidebarOpen && !isMobile ? "mr-72" : "mr-0"
         )}
       >
         {/* TV On/Off Animation */}
@@ -408,7 +403,7 @@ const PCViewerContent = () => {
 
         {/* Desktop Toolbar - Left Side */}
         <AnimatePresence>
-          {!isMobile && !showQuickActions && !isFullscreen && (
+          {!isMobile && !showQuickActions && (
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -416,14 +411,14 @@ const PCViewerContent = () => {
               className="absolute top-4 right-4 flex flex-col gap-2 z-40"
             >
               {/* Network Button */}
-              <Button
+              {/* <Button
                 variant="outline"
                 size="icon"
                 className="h-10 w-10 bg-white/90 dark:bg-gray-800/90 border-0 hover:bg-white dark:hover:bg-gray-800 backdrop-blur-sm shadow-lg"
                 title="Network Status"
               >
                 <Signal className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              </Button>
+              </Button> */}
 
               {/* New Window Button */}
               <Button
@@ -524,8 +519,8 @@ const PCViewerContent = () => {
             className={cn(
               "bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden z-50",
               isMobile
-                ? "fixed top-0 right-0 h-full w-80 max-w-[85vw]"
-                : "fixed top-0 right-0 h-full w-80"
+                ? "fixed top-0 right-0 h-full w-72 max-w-[85vw]"
+                : "fixed top-0 right-0 h-full w-72"
             )}
           >
             {/* Sidebar Header */}
@@ -647,7 +642,7 @@ const PCViewerContent = () => {
                       </Badge>
                     </div>
                   </div>
-                  <div className="space-y-2">
+                  {/* <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label>Bandwidth Limit</Label>
                       <span className="text-sm text-muted-foreground">
@@ -660,12 +655,12 @@ const PCViewerContent = () => {
                       max={100}
                       step={1}
                     />
-                  </div>
+                  </div> */}
                 </div>
               </div>
 
               {/* Input Settings */}
-              <div>
+              {/* <div>
                 <h3 className="text-lg font-semibold mb-4">Input Settings</h3>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -729,7 +724,7 @@ const PCViewerContent = () => {
                     />
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             {/* Sidebar Footer */}
