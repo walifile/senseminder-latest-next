@@ -401,6 +401,20 @@ const PCViewerContent = () => {
           </div>
         )}
 
+        {isFullscreen && showQuickActions && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute top-20 right-0 z-40"
+            onMouseEnter={() => setShowQuickActions(false)}
+          >
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-lg rounded-l-lg py-2.5 px-1.5 transition-all">
+              <ChevronLeft className="size-4 text-gray-600 dark:text-gray-300" />
+            </div>
+          </motion.div>
+        )}
+
         {/* Desktop Toolbar - Left Side */}
         <AnimatePresence>
           {!isMobile && !showQuickActions && (
@@ -408,6 +422,11 @@ const PCViewerContent = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
+              onMouseLeave={() => {
+                if (isFullscreen) {
+                  setShowQuickActions(true);
+                }
+              }}
               className="absolute top-4 right-4 flex flex-col gap-2 z-40"
             >
               {/* Network Button */}
