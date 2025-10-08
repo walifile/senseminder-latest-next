@@ -69,7 +69,7 @@
     "allure:open": "npx allure open allure-report",
     "allure:serve": "npx allure open allure-results",
     "allure:generate-and-open": "npm run allure:generate && npm run allure:open",
-    "allure:clean": "rm -rf allure-results allure-report && echo 'Allure results cleaned'",
+    "allure:clean": "rm -rf allure-results allure-report && echo Allure results cleaned",
     "allure:clean-and-serve": "npm run allure:clean && npm run allure:serve",
     "test:allure:clean": "npm run allure:clean && npm run test:allure",
     "retry:failed": "node scripts/retry-failed-tests.js reports/cucumber-report.json \"npm run test:allure\"",

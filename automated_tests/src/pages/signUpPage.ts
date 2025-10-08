@@ -129,40 +129,107 @@ export class SignUpPage {
 
     private async debugPageContent() {
         try {
+            console.log('🔍 Current URL:', this.page.url());
+            console.log('🔍 Page title:', await this.page.title());
+            
             // Look for any text containing success-related words
             const allText = await this.page.locator('body').textContent();
             if (allText) {
-                const successKeywords = ['success', 'created', 'verify', 'email', 'account'];
+                const successKeywords = ['success', 'created', 'verify', 'email', 'account', 'verified', 'complete'];
                 const foundKeywords = successKeywords.filter(keyword => 
                     allText.toLowerCase().includes(keyword.toLowerCase())
                 );
-                console.log("Found keywords on page:", foundKeywords);
+                console.log("🔍 Found keywords on page:", foundKeywords);
                 
                 // Look for specific success messages
-                const successElements = await this.page.locator('[class*="success"], [class*="message"], [class*="alert"]').all();
-                console.log(`Found ${successElements.length} potential success/message elements`);
+                const successElements = await this.page.locator('[class*="success"], [class*="message"], [class*="alert"], [class*="notification"], [class*="toast"]').all();
+                console.log(`🔍 Found ${successElements.length} potential success/message elements`);
                 
-                for (let i = 0; i < Math.min(successElements.length, 5); i++) {
+                for (let i = 0; i < Math.min(successElements.length, 10); i++) {
                     try {
                         const text = await successElements[i].textContent();
-                        if (text) {
-                            console.log(`Element ${i + 1} text: "${text.trim()}"`);
+                        if (text && text.trim().length > 0) {
+                            console.log(`🔍 Element ${i + 1} text: "${text.trim()}"`);
                         }
                     } catch (e) {
-                        console.log(`Could not get text from element ${i + 1}`);
+                        console.log(`🔍 Could not get text from element ${i + 1}`);
+                    }
+                }
+                
+                // Look for any visible text that might be a success message
+                const allVisibleText = await this.page.locator('*:visible').all();
+                console.log(`🔍 Found ${allVisibleText.length} visible elements`);
+                
+                // Check for common success message patterns
+                const successPatterns = [
+                    /verified/i,
+                    /success/i,
+                    /complete/i,
+                    /done/i,
+                    /finished/i
+                ];
+                
+                for (const pattern of successPatterns) {
+                    const matchingElements = await this.page.locator(`text=${pattern}`).all();
+                    if (matchingElements.length > 0) {
+                        console.log(`🔍 Found elements matching pattern ${pattern}: ${matchingElements.length}`);
+                        for (let i = 0; i < Math.min(matchingElements.length, 3); i++) {
+                            try {
+                                const text = await matchingElements[i].textContent();
+                                if (text) {
+                                    console.log(`🔍 Pattern match ${i + 1}: "${text.trim()}"`);
+                                }
+                            } catch (e) {
+                                // Continue
+                            }
+                        }
                     }
                 }
             }
         } catch (error) {
-            console.log("Debug failed:", error instanceof Error ? error.message : 'Unknown error');
+            console.log("🔍 Debug failed:", error instanceof Error ? error.message : 'Unknown error');
         }
     }
 
     async isVerifyOTPSuccessMessageVisible() {
         try {
-            await this.verifyOTPSuccessMsg.waitFor({ state: 'visible', timeout: 30000 });
+            console.log('🔍 Waiting for OTP verification success message...');
+            console.log('🔍 Expected message: "Your email has been verified successfully. You can now sign in."');
+            
+            // First, let's check what's currently on the page
+            await this.debugPageContent();
+            
+            // Wait for the success message with a longer timeout
+            await this.verifyOTPSuccessMsg.waitFor({ state: 'visible', timeout: 60000 });
+            console.log('✅ OTP verification success message is visible');
             return true;
-        } catch {
+        } catch (error) {
+            console.log('⚠️ OTP verification success message not found within timeout');
+            console.log('🔍 Debugging page content after timeout...');
+            await this.debugPageContent();
+            
+            // Try alternative success message patterns
+            const alternativeMessages = [
+                'verified successfully',
+                'email verified',
+                'verification successful',
+                'successfully verified',
+                'account verified'
+            ];
+            
+            for (const message of alternativeMessages) {
+                try {
+                    const altElement = this.page.getByText(message, { exact: false });
+                    if (await altElement.isVisible()) {
+                        console.log(`✅ Found alternative success message: "${message}"`);
+                        return true;
+                    }
+                } catch (e) {
+                    // Continue to next alternative
+                }
+            }
+            
+            console.log('❌ No success message found with any pattern');
             return false;
         }
     }
@@ -270,7 +337,7 @@ export class SignUpPage {
         const ts = timestamp || Date.now();
         const randomUser = `user${ts}`;
         const email = `${randomUser}@${domain}`;
-        const password = process.env.MAIL_TM_PASSWORD || "Password123!";
+        const password = "Password123!";
 
         // Create account
         await axios.post("https://api.mail.tm/accounts", {

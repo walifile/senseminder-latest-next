@@ -2,9 +2,45 @@ import { Before, After, BeforeAll, AfterAll } from '@cucumber/cucumber';
 import { CustomWorld } from './world';
 import { SensePCPage } from '../pages/sensePCPage';
 import { apiLogger } from '../utils/apiLogger';
+import { errorHandler } from '../utils/errorHandler';
 
 BeforeAll(async function() {
     console.log('Starting test suite...');
+});
+
+// Global error handler that captures screenshots for any unhandled errors
+process.on('unhandledRejection', async (reason, promise) => {
+    console.log('❌ Unhandled rejection detected - capturing screenshot...');
+    // Try to get the current world instance if available
+    const world = (global as any).currentWorld;
+    if (world && world.page && !world.page.isClosed()) {
+        try {
+            await errorHandler.handleTestFailure(
+                new Error(`Unhandled rejection: ${reason}`),
+                'Unhandled rejection',
+                `Promise: ${promise}`
+            );
+        } catch (error) {
+            console.log('❌ Error capturing screenshot for unhandled rejection:', error);
+        }
+    }
+});
+
+process.on('uncaughtException', async (error) => {
+    console.log('❌ Uncaught exception detected - capturing screenshot...');
+    // Try to get the current world instance if available
+    const world = (global as any).currentWorld;
+    if (world && world.page && !world.page.isClosed()) {
+        try {
+            await errorHandler.handleTestFailure(
+                error,
+                'Uncaught exception',
+                `Error: ${error.message}`
+            );
+        } catch (screenshotError) {
+            console.log('❌ Error capturing screenshot for uncaught exception:', screenshotError);
+        }
+    }
 });
 
 Before({ timeout: 60000 }, async function(this: CustomWorld) {
@@ -46,6 +82,8 @@ Before({ timeout: 60000 }, async function(this: CustomWorld) {
     this.computerName = undefined;
     this.capturedUserId = undefined;
     this.newPassword = undefined;
+    this.createdUsers = undefined;
+    this.userSignupOccurred = false;
     
     // Reset page objects to ensure clean state
     this.loginPage = undefined;
@@ -136,43 +174,111 @@ Before({ timeout: 60000 }, async function(this: CustomWorld) {
     }
 });
 
-After({ timeout: 120000 }, async function(this: CustomWorld, scenario) {
-    console.log('🚀 Main After hook starting...');
+After({ timeout: 300000 }, async function(this: CustomWorld, scenario) {
+    console.log('🚀 Main After hook starting - COMPREHENSIVE CLEANUP SEQUENCE...');
     console.log('🔍 Main After hook: World object available =', !!this);
     console.log('🔍 Main After hook: SensePCPage available =', !!this.sensePCPage);
-    console.log('🔍 Main After hook: Computer name =', this.sensePCPage?.getComputerName());
+    console.log('🔍 Main After hook: Computer name =', this.sensePCPage?.getComputerName(this));
+    console.log('🔍 Main After hook: Created PCs =', this.createdPCs);
+    console.log('🔍 Main After hook: User signup occurred =', this.userSignupOccurred);
+    console.log('📋 CLEANUP SEQUENCE: 1) PC deletion for ALL methods, 2) Admin-side user deletion');
+    console.log('⚠️ IMPORTANT: PC cleanup MUST happen before user deletion to avoid conflicts');
     
     // Log API call summary
     console.log('\n📊 ===== API CALLS SUMMARY FOR THIS TEST =====');
     apiLogger.getApiCallSummary();
     console.log('===============================================\n');
     
-    // Capture screenshot if test failed
+    // Capture screenshot if test failed (fallback only - main screenshots should be captured at failure point)
     if (scenario.result?.status === 'FAILED') {
-        console.log('❌ Test failed - capturing screenshot for debugging...');
-        await this.captureScreenshot(scenario.pickle.name, 'failure');
+        console.log('❌ Test failed - capturing fallback screenshot for debugging...');
+        console.log('ℹ️ Note: Main failure screenshots should have been captured at the actual failure point');
+        await this.captureScreenshot(scenario.pickle.name, 'failure_fallback');
     }
     
     // Add a shorter delay to ensure specific After hooks have time to run
     console.log('⏳ Main After hook - waiting for specific cleanup hooks to complete...');
     await new Promise(resolve => setTimeout(resolve, 5000)); // Reduced to 5 seconds delay
+
+    // STEP 1: CRITICAL - Ensure PC cleanup happens first for ALL test methods
+    console.log('🛡️ Main After hook - ensuring PC cleanup for all methods...');
+    console.log('🔍 Main After hook - checking PC data availability...');
+    console.log('🔍 - computerName:', this.computerName);
+    console.log('🔍 - createdPCs:', this.createdPCs);
+    console.log('🔍 - sensePCPage available:', !!this.sensePCPage);
+    console.log('🔍 - page available:', !!(this.page && !this.page.isClosed()));
+    console.log('🔍 - browser available:', !!this.browser);
     
-    // CRITICAL: Ensure PC cleanup happens regardless of specific hook success
-    console.log('🛡️ Main After hook - ensuring PC cleanup...');
     try {
-        if (this.sensePCPage && this.sensePCPage.getComputerName()) {
-            console.log('🔍 Main After hook - found PC to clean up, attempting guaranteed cleanup...');
-            const mainCleanupSuccess = await this.sensePCPage.guaranteedCleanup();
-            if (mainCleanupSuccess) {
-                console.log('✅ Main After hook - guaranteed cleanup successful');
-            } else {
-                console.log('⚠️ Main After hook - guaranteed cleanup failed, but continuing...');
+        // ALWAYS attempt PC cleanup regardless of data availability - be more aggressive
+        console.log('🔄 Main After hook - attempting PC cleanup regardless of data state...');
+        
+        // First try UI-based cleanup if page context is available
+        if (this.sensePCPage && this.page && !this.page.isClosed()) {
+            console.log('🔄 Attempting UI-based PC cleanup...');
+            try {
+                // Navigate to Sense PC page for cleanup
+                console.log('🔄 Navigating to Sense PC page for cleanup...');
+                await this.page.goto('/dashboard/sense-pc');
+                await this.page.waitForTimeout(3000);
+                
+                console.log('🔄 Calling guaranteedCleanup...');
+                const mainCleanupSuccess = await this.sensePCPage.guaranteedCleanup();
+                if (mainCleanupSuccess) {
+                    console.log('✅ Main After hook - UI-based PC cleanup successful');
+                } else {
+                    console.log('⚠️ Main After hook - UI-based PC cleanup failed, trying API fallback...');
+                    // Fallback to API-based cleanup
+                    await this.cleanupCreatedPCs();
+                    console.log('✅ Main After hook - API-based PC cleanup completed');
+                }
+            } catch (uiCleanupError) {
+                console.log('⚠️ UI-based PC cleanup failed:', uiCleanupError);
+                console.log('🔄 Falling back to API-based PC cleanup...');
+                try {
+                    await this.cleanupCreatedPCs();
+                    console.log('✅ Main After hook - API-based PC cleanup completed');
+                } catch (apiCleanupError) {
+                    console.log('⚠️ API-based PC cleanup also failed:', apiCleanupError);
+                }
             }
         } else {
-            console.log('ℹ️ Main After hook - no PC to clean up');
+            console.log('⚠️ SensePCPage or page context not available for UI cleanup');
+            console.log('🔄 Attempting API-based PC cleanup...');
+            try {
+                await this.cleanupCreatedPCs();
+                console.log('✅ Main After hook - API-based PC cleanup completed');
+            } catch (apiCleanupError) {
+                console.log('⚠️ API-based PC cleanup failed:', apiCleanupError);
+            }
         }
+        
+        // Additional cleanup attempt using the centralized function
+        console.log('🔄 Main After hook - attempting additional cleanup using centralized function...');
+        try {
+            await cleanupCreatedPC(this);
+            console.log('✅ Main After hook - centralized cleanup completed');
+        } catch (centralizedCleanupError) {
+            console.log('⚠️ Centralized cleanup failed:', centralizedCleanupError);
+        }
+        
     } catch (mainCleanupError) {
-        console.log('❌ Main After hook - cleanup error:', mainCleanupError);
+        console.log('❌ Main After hook - PC cleanup error:', mainCleanupError);
+        // Don't throw error to avoid masking test results
+    }
+    
+    // STEP 2: Then attempt user cleanup if user signup occurred
+    console.log('👤 Main After hook - checking for user cleanup...');
+    try {
+        if (this.userSignupOccurred && this.createdUsers && this.createdUsers.length > 0) {
+            console.log('🔍 Main After hook - found users to clean up, attempting API cleanup...');
+            await this.cleanupCreatedUsers();
+            console.log('✅ Main After hook - user cleanup completed');
+        } else {
+            console.log('ℹ️ Main After hook - no users to clean up');
+        }
+    } catch (userCleanupError) {
+        console.log('❌ Main After hook - user cleanup error:', userCleanupError);
         // Don't throw error to avoid masking test results
     }
     
@@ -236,7 +342,7 @@ AfterAll(async function() {
         const world = this as any;
         
         // FINAL SAFETY NET: Try one last PC cleanup if possible
-        if (world && world.sensePCPage && world.sensePCPage.getComputerName()) {
+        if (world && world.sensePCPage && world.sensePCPage.getComputerName(world)) {
             console.log('🚨 Final safety net - attempting last PC cleanup...');
             try {
                 if (world.page && !world.page.isClosed()) {
@@ -268,20 +374,20 @@ AfterAll(async function() {
 
 // After hook specifically for @assign-pc scenarios to clean up created PCs
 After({ tags: '@assign-pc', timeout: 120000 }, async function(this: CustomWorld) {
-    console.log('🧹 @assign-pc After hook triggered - starting cleanup...');
-    console.log('🔍 @assign-pc hook: Computer name =', this.sensePCPage?.getComputerName());
+    console.log('🧹 @assign-pc After hook triggered - starting specific cleanup...');
+    console.log('🔍 @assign-pc hook: Computer name =', this.sensePCPage?.getComputerName(this));
     console.log('🔍 @assign-pc hook: Page context available =', !!(this.page && !this.page.isClosed()));
     
     try {
         if (!this.sensePCPage) {
-            console.log('⚠️ SensePCPage is not initialized, skipping cleanup');
+            console.log('⚠️ SensePCPage is not initialized, skipping specific cleanup');
             return;
         }
         
-        console.log('🧹 Starting PC cleanup after assign-pc scenario...');
+        console.log('🧹 Starting specific PC cleanup after assign-pc scenario...');
         
         // Click on more button for that PC
-        await this.sensePCPage.clickMoreButton();
+        await this.sensePCPage.clickMoreButton(this);
         console.log('✅ Clicked more button for PC');
         
         // Verify delete button is visible
@@ -290,7 +396,7 @@ After({ tags: '@assign-pc', timeout: 120000 }, async function(this: CustomWorld)
             console.log('✅ Delete PC button is visible');
             
             // Click delete button
-            await this.sensePCPage.clickDeleteButton();
+            await this.sensePCPage.clickDeleteButton(this);
             console.log('✅ Clicked delete button for PC');
             
             // Confirm delete PC
@@ -316,10 +422,10 @@ After({ tags: '@assign-pc', timeout: 120000 }, async function(this: CustomWorld)
             console.log('⚠️ Delete PC button is not visible - PC may already be deleted');
         }
         
-        console.log('✅ PC cleanup completed');
+        console.log('✅ @assign-pc specific cleanup completed - main cleanup will follow');
     } catch (error) {
-        console.log('⚠️ Error during PC cleanup:', error);
-        // Continue execution even if cleanup fails
+        console.log('⚠️ Error during @assign-pc specific cleanup:', error);
+        // Continue execution even if cleanup fails - main cleanup will handle it
     }
 });
 
@@ -373,18 +479,26 @@ After({ tags: '@profileAndSecurity', timeout: 120000 }, async function(this: Cus
 // After hook specifically for @createANewPC scenarios to clean up created PCs
 // This will run regardless of test outcome (pass/fail) and BEFORE browser closes
 After({ tags: '@createANewPC', timeout: 120000 }, async function(this: CustomWorld) {
-    console.log('🧹 @createANewPC After hook triggered - starting cleanup...');
-    console.log('🔍 @createANewPC hook: Computer name =', this.sensePCPage?.getComputerName());
+    console.log('🧹 @createANewPC After hook triggered - starting specific cleanup...');
+    console.log('🔍 @createANewPC hook: Computer name =', this.sensePCPage?.getComputerName(this));
     console.log('🔍 @createANewPC hook: Page context available =', !!(this.page && !this.page.isClosed()));
     console.log('🔍 @createANewPC hook: Browser context available =', !!(this.browser && this.browser.contexts().length > 0));
+    console.log('🔍 @createANewPC hook: computerName =', this.computerName);
+    console.log('🔍 @createANewPC hook: createdPCs =', this.createdPCs);
     
     // Direct cleanup without Promise.race to avoid complexity
     try {
-        console.log('🔄 Starting @createANewPC cleanup process...');
-        await cleanupCreatedPC(this);
-        console.log('✅ @createANewPC cleanup completed successfully');
+        console.log('🔄 Starting @createANewPC specific cleanup process...');
+        const cleanupResult = await cleanupCreatedPC(this);
+        console.log('✅ @createANewPC specific cleanup completed successfully, result:', cleanupResult);
     } catch (error) {
-        console.log('❌ @createANewPC cleanup failed:', error);
+        console.log('❌ @createANewPC specific cleanup failed:', error);
+        if (error instanceof Error) {
+            console.log('❌ Error details:', error.message);
+            console.log('❌ Error stack:', error.stack);
+        } else {
+            console.log('❌ Error details:', String(error));
+        }
         // Take a screenshot for debugging
         try {
             if (this.page && !this.page.isClosed()) {
@@ -398,7 +512,7 @@ After({ tags: '@createANewPC', timeout: 120000 }, async function(this: CustomWor
     
     // Add a longer delay to ensure cleanup completes
     await new Promise(resolve => setTimeout(resolve, 10000)); // Increased to 10 seconds delay
-    console.log('⏳ @createANewPC cleanup delay completed');
+    console.log('⏳ @createANewPC specific cleanup delay completed - main cleanup will follow');
 });
 
 // Before hook specifically for @profileAndSecurity scenarios to ensure clean state
@@ -533,15 +647,15 @@ async function cleanupCreatedPC(world: CustomWorld) {
         // Check if we have the necessary components for cleanup
         if (!world.sensePCPage) {
             console.log('⚠️ No sensePCPage available for cleanup - skipping');
-            return;
+            return false; // Return failure - cleanup not possible
         }
         
-        const computerName = world.sensePCPage.getComputerName();
+        const computerName = world.sensePCPage.getComputerName(world);
         console.log('🔍 Cleanup: Computer name =', computerName);
         
         if (!computerName) {
             console.log('⚠️ No computer name available for cleanup - skipping');
-            return;
+            return false; // Return failure - no computer name to clean up
         }
         
         // Ensure we have a valid page context
@@ -562,7 +676,7 @@ async function cleanupCreatedPC(world: CustomWorld) {
         
         if (!world.page || world.page.isClosed()) {
             console.log('❌ No valid page context available for cleanup');
-            return;
+            return false; // Return failure - no page context available
         }
         
         // CRITICAL: Switch back to original tab if we're on the connected tab
@@ -589,8 +703,8 @@ async function cleanupCreatedPC(world: CustomWorld) {
         }
         
         // Check if we have a sensePCPage and computer name to clean up
-        if (world.sensePCPage && world.sensePCPage.getComputerName()) {
-            const computerName = world.sensePCPage.getComputerName();
+        if (world.sensePCPage && world.sensePCPage.getComputerName(world)) {
+            const computerName = world.sensePCPage.getComputerName(world);
             console.log(`🔍 Looking for PC to clean up: ${computerName}`);
             
             // Ensure we have a valid page context
@@ -757,9 +871,11 @@ async function cleanupCreatedPC(world: CustomWorld) {
             }
         } else {
             console.log('ℹ️ No PC to clean up (sensePCPage not initialized or no computer name)');
+            return true; // Return success - no cleanup needed
         }
         
         console.log('🧹 Cleanup for @createANewPC scenario completed');
+        return true; // Return success
         
     } catch (error) {
         console.log('❌ Error during @createANewPC cleanup:', error);
@@ -775,6 +891,7 @@ async function cleanupCreatedPC(world: CustomWorld) {
         } catch (screenshotError) {
             console.log('📸 Could not take screenshot for cleanup error');
         }
+        return false; // Return failure
     }
 }
 
@@ -786,5 +903,185 @@ After({ tags: '@api' }, async function(this: CustomWorld) {
         await this.cleanupCreatedPCs();
     } else {
         console.log('🧹 No created PCs found in API After hook');
+    }
+});
+
+// Global After hook - FINAL CLEANUP STEP for all scenarios
+// This runs after all specific after hooks and main after hook
+// NOTE: PC cleanup is handled in the main After hook to ensure proper order
+After({ timeout: 300000 }, async function(this: CustomWorld) {
+    console.log('🧹 Global After hook - FINAL CLEANUP STEP starting...');
+    console.log('🔍 Global cleanup hook: Created users =', this.createdUsers);
+    console.log('🔍 Global cleanup hook: User signup occurred =', this.userSignupOccurred);
+    console.log('📋 FINAL CLEANUP SEQUENCE: User deletion only (PC cleanup handled in main After hook)');
+    
+    try {
+        // Only handle user cleanup here - PC cleanup is handled in main After hook
+        if (!this.userSignupOccurred) {
+            console.log('ℹ️ No user signup occurred during this test - skipping user cleanup');
+            return;
+        }
+        
+        if (!this.createdUsers || this.createdUsers.length === 0) {
+            console.log('ℹ️ No users to clean up');
+            return;
+        }
+        
+        console.log(`🧹 Starting user cleanup for ${this.createdUsers.length} users via UI...`);
+        
+        // Import required modules
+        const { authenticator } = await import('otplib');
+        const { config } = await import('../config/environment');
+        const { expect } = await import('@playwright/test');
+        
+        // Get MFA secret from environment
+        const MFA_SECRET = config.MFA_SECRET;
+        if (!MFA_SECRET) {
+            console.error('❌ MFA_SECRET not found in environment variables. Cannot perform UI-based user deletion.');
+            console.log('🔄 Falling back to API-based user cleanup...');
+            await this.cleanupCreatedUsers();
+            return;
+        }
+        
+        // Get admin credentials from environment
+        const adminEmail = config.ADMIN_USERNAME;
+        const adminPassword = config.ADMIN_PASSWORD;
+        
+        if (!adminEmail || !adminPassword) {
+            console.error('❌ Admin credentials not found in environment variables. Cannot perform UI-based user deletion.');
+            console.log('🔄 Falling back to API-based user cleanup...');
+            await this.cleanupCreatedUsers();
+            return;
+        }
+        
+        // Ensure we have a valid page context, create new one if needed
+        if (!this.page || this.page.isClosed()) {
+            console.log('⚠️ Page context not available, creating new context for UI-based user deletion...');
+            try {
+                // Create a new page context for UI cleanup
+                if (this.browser) {
+                    const newContext = await this.browser.newContext({
+                        viewport: { width: 1280, height: 720 },
+                        ignoreHTTPSErrors: true,
+                        acceptDownloads: true,
+                        baseURL: 'https://sms.smartpc.cloud',
+                        httpCredentials: {
+                            username: process.env.ADMIN_USERNAME || '',
+                            password: process.env.ADMIN_PASSWORD || ''
+                        },
+                        permissions: ['clipboard-read', 'clipboard-write']
+                    });
+                    this.page = await newContext.newPage();
+                    this.page.setDefaultTimeout(30000);
+                    this.page.setDefaultNavigationTimeout(30000);
+                    console.log('✅ New page context created for UI cleanup');
+                } else {
+                    console.error('❌ Browser not available for creating new page context.');
+                    console.log('🔄 Falling back to API-based user cleanup...');
+                    await this.cleanupCreatedUsers();
+                    return;
+                }
+            } catch (contextError) {
+                console.error('❌ Failed to create new page context:', contextError);
+                console.log('🔄 Falling back to API-based user cleanup...');
+                await this.cleanupCreatedUsers();
+                return;
+            }
+        }
+        
+        try {
+            // Go to login page
+            console.log('🔄 Navigating to login page...');
+            await this.page.goto('https://sms.smartpc.cloud/login');
+            await this.page.waitForTimeout(2000);
+            
+            // Enter admin username & password
+            console.log('🔄 Entering admin credentials...');
+            await this.page.fill('#email', adminEmail);
+            await this.page.fill('#password', adminPassword);
+            await this.page.click('button[type="submit"]');
+            
+            // Wait for MFA screen
+            console.log('🔄 Waiting for MFA screen...');
+            await this.page.waitForTimeout(3000);
+            
+            // Generate current OTP
+            console.log('🔄 Generating OTP...');
+            const otp = authenticator.generate(MFA_SECRET);
+            console.log('Generated OTP:', otp);
+            
+            // Click on authenticator app option
+            console.log('🔄 Clicking on authenticator app option...');
+            await this.page.click('button:has-text("Use Authenticator App (TOTP)")');
+            await this.page.waitForTimeout(1000);
+            
+            // Enter OTP on MFA screen
+            console.log('🔄 Entering OTP...');
+            await this.page.fill('input[placeholder="Enter MFA code"]', otp);
+            await this.page.click('button:has-text("Verify Code")');
+            
+            // Verify login success
+            console.log('🔄 Verifying login success...');
+            await expect(this.page).toHaveURL(/dashboard/);
+            console.log('✅ Admin login successful');
+            
+            // Delete each created user
+            for (const userEmail of this.createdUsers) {
+                try {
+                    console.log(`🔄 Deleting user: ${userEmail}`);
+                    
+                    // Visit specific user management page
+                    await this.page.goto(`https://sms.smartpc.cloud/sensepc-user-manage/${userEmail}`);
+                    await this.page.waitForTimeout(1000);
+                    
+                    // Check if delete user button is available
+                    const deleteButton = this.page.locator('button:has-text("Delete User")');
+                    const isDeleteButtonVisible = await deleteButton.isVisible();
+                    
+                    if (isDeleteButtonVisible) {
+                        // Click delete user button
+                        console.log('🔄 Clicking delete user button...');
+                        await this.page.click('button:has-text("Delete User")');
+                        
+                        // Wait for confirmation dialog and confirm
+                        await this.page.waitForTimeout(500);
+                        console.log('🔄 Confirming user deletion...');
+                        
+                        // Look for confirmation button (could be "Confirm", "Yes", "Delete", etc.)
+                        const confirmButton = this.page.locator('button:has-text("Confirm Delete")').first();
+                        if (await confirmButton.isVisible()) {
+                            await confirmButton.click();
+                        }
+                        
+                        // Wait for deletion to complete
+                        await this.page.waitForTimeout(1000);
+                        console.log(`✅ User ${userEmail} deleted successfully`);
+                    } else {
+                        console.log(`⚠️ Delete button not available for user ${userEmail} - user may already be deleted or not have delete permissions`);
+                        console.log(`ℹ️ Continuing without failing the test for user ${userEmail}`);
+                    }
+                    
+                } catch (userDeletionError) {
+                    console.log(`⚠️ Error deleting user ${userEmail}:`, userDeletionError);
+                    // Continue with next user
+                }
+            }
+            
+            console.log('✅ UI-based user cleanup completed');
+            
+        } catch (uiCleanupError) {
+            console.log('⚠️ UI-based user cleanup failed:', uiCleanupError);
+            console.log('🔄 Falling back to API-based user cleanup...');
+            try {
+                await this.cleanupCreatedUsers();
+            } catch (apiCleanupError) {
+                console.log('⚠️ API-based user cleanup also failed:', apiCleanupError);
+                console.log('ℹ️ User cleanup failed but this will not cause test failure - continuing...');
+            }
+        }
+        
+    } catch (error) {
+        console.log('⚠️ Error during user cleanup:', error);
+        // Continue execution even if cleanup fails
     }
 }); 

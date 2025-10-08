@@ -13,18 +13,14 @@ import Navbar from "@/components/shared/layout/navbar";
 import Footer from "@/components/shared/layout/footer";
 import { ThemeWrapper } from "@/components/shared/layout/theme-wrapper";
 
-// import { metadata } from "./metadata";
-
-// export { metadata };
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  // test
 
+  // Special case: root landing page in prod
   if (pathname === "/" && !isDev) {
     return (
       <html lang="en">
@@ -40,6 +36,8 @@ export default function RootLayout({
     );
   }
 
+  const hideChrome = pathname.startsWith("/welcome");
+
   return (
     <html lang="en">
       <head>
@@ -53,11 +51,15 @@ export default function RootLayout({
             <WebSocketProvider>
               <ThemeWrapper>
                 <AuthGuard>
-                  <div className="flex min-h-screen flex-col overflow-x-hidden">
-                    <Navbar />
-                    {children}
-                    <Footer />
-                  </div>
+                  {hideChrome ? (
+                    <div className="min-h-screen">{children}</div>
+                  ) : (
+                    <div className="flex min-h-screen flex-col overflow-x-hidden">
+                      <Navbar />
+                      {children}
+                      <Footer />
+                    </div>
+                  )}
                 </AuthGuard>
               </ThemeWrapper>
             </WebSocketProvider>
@@ -67,6 +69,7 @@ export default function RootLayout({
     </html>
   );
 }
+
 
 // import "../styles/globals.css";
 

@@ -116,7 +116,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
           await uploadToPresignedUrl({ uploadUrl, file }).unwrap();
           setUploadStatus((prev) => ({ ...prev, [file.name]: "success" }));
           void triggerFeedback({
-            trigger: FEEDBACK_TRIGGERS.STORAGE,
+            trigger: FEEDBACK_TRIGGERS.PC_ACTION,
             delayMinutes: 0,
           });
           closeDialog();

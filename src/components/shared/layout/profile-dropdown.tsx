@@ -1,4 +1,8 @@
+/* eslint perfectionist/sort-imports: "off" */
+
 import type { RootState } from "@/redux/store";
+import { useEffect, useState } from "react";
+import { checkOnboarded } from "@/lib/utils/checkOnboarded";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -37,6 +41,18 @@ const ProfileDropdown = () => {
   const { toast } = useToast();
   const { user } = useSelector((state: RootState) => state.auth);
 
+
+  const [isOnboarded, setIsOnboarded] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const fetchOnboarded = async () => {
+      const onboarded = await checkOnboarded();
+      setIsOnboarded(onboarded);
+    };
+    fetchOnboarded();
+  }, []);
+
+
   const feedbackDialog = useBoolean();
 
   const handleLogout = async () => {
@@ -70,6 +86,8 @@ const ProfileDropdown = () => {
   };
 
   return (
+
+     isOnboarded && (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -124,6 +142,7 @@ const ProfileDropdown = () => {
         onClose={feedbackDialog.onFalse}
       />
     </>
+      )
   );
 };
 

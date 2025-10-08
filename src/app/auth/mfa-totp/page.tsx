@@ -1,24 +1,20 @@
+/* eslint perfectionist/sort-imports: "off" */
+
 "use client";
 
 import type { RootState } from "@/redux/store";
+import Image from "next/image";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { routes } from "@/constants/routes";
 import React, { useState, useEffect } from "react";
 import { sendTotpRecovery } from "@/api/mfa-recovery";
 import { setLoading, setTempUser } from "@/redux/slices/auth/auth-slice";
-
-import { Input } from "@/components/ui/input";
 import { maskEmail } from "@/lib/utils/index";
 import { Button } from "@/components/ui/button";
 import { getSessionItemSafe } from "@/lib/utils/browser";
-import {
-  Card,
-  CardTitle,
-  CardHeader,
-  CardContent,
-  CardDescription,
-} from "@/components/ui/card";
+
 import {
   Dialog,
   DialogTitle,
@@ -27,14 +23,16 @@ import {
   DialogContent,
   DialogDescription,
 } from "@/components/ui/dialog";
-
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { confirmSignIn } from "aws-amplify/auth";
-
 import { useDispatch, useSelector } from "react-redux";
-
 import { useToast } from "@/hooks/use-toast";
-
 import { handleSignOut, handlePostAuthentication } from "@/lib/services/auth";
+
 
 export default function MfaTotpPage() {
   const [code, setCode] = useState("");
@@ -104,7 +102,6 @@ export default function MfaTotpPage() {
       }
     } catch (error) {
       const err = error as Error & { name?: string; message?: string };
-      // If it’s just a wrong code, don’t sign the user out—let them retry.
       if (
         err?.name === "CodeMismatchException" ||
         err?.message?.toLowerCase?.().includes("invalid code")
@@ -163,90 +160,106 @@ export default function MfaTotpPage() {
     }
   };
 
-  return (
-    <>
-      <div className="min-h-screen flex items-center justify-center px-4 bg-background">
-        <Card className="w-full max-w-md border border-border/50 shadow-xl rounded-2xl overflow-hidden">
-          <div className="h-1 w-full bg-gradient-to-r from-blue-500 to-indigo-500" />
-          <CardHeader className="text-center space-y-1">
-            <CardTitle className="text-2xl font-semibold tracking-tight">
-              Multi-Factor Authentication
-            </CardTitle>
-            <CardDescription>
-              Enter the 6-digit code from your authenticator app
-            </CardDescription>
-          </CardHeader>
+return (
+  <div className="space-y-6">
+    <div className="h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-blue-600 -mx-8 -mt-8 mb-4 rounded-t-2xl" />
+    <div className="flex justify-center mb-2">
+      <Image
+        src="/sensepc-logo.png"
+        alt="SensePC Logo"
+        width={160}
+        height={40}
+        priority
+        className="h-12 w-auto"
+      />
+    </div>
+    <div className="space-y-2 text-center">
+      <h1 className="text-2xl font-semibold tracking-tight">
+        MFA Authenticator Verification
+      </h1>
+      <p className="text-sm text-muted-foreground">
+        Enter the 6-digit code from your authenticator app
+      </p>
+    </div>
 
-          <CardContent className="space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Input
-                type="text"
-                placeholder="6-digit code"
-                maxLength={6}
-                inputMode="numeric"
-                pattern="\d{6}"
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                disabled={submitting}
-                className="text-center tracking-widest text-lg font-medium"
-                required
-              />
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={submitting || code.length !== 6}
-              >
-                {submitting ? "Verifying..." : "Confirm Code"}
-              </Button>
-            </form>
-
-            <p className="text-xs text-muted-foreground text-center">
-              This step helps secure your account.
-            </p>
-
-            <div className="text-center text-sm">
-              <button
-                onClick={() => setRecoveryDialogOpen(true)}
-                className="text-blue-600 hover:underline"
-                disabled={submitting}
-              >
-                Lost access to your Authenticator App? Request recovery
-              </button>
-            </div>
-          </CardContent>
-        </Card>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="flex justify-center">
+        <InputOTP
+          maxLength={6}
+          value={code}
+          onChange={(val) => setCode(val)}
+          disabled={submitting}
+        >
+          <InputOTPGroup>
+            {[...Array(6)].map((_, i) => (
+              <InputOTPSlot key={i} index={i} />
+            ))}
+          </InputOTPGroup>
+        </InputOTP>
       </div>
 
-      <Dialog open={recoveryDialogOpen} onOpenChange={setRecoveryDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Recover Authenticator Access</DialogTitle>
-            <DialogDescription>
-              We’ll send a link to disable your Authenticator App to:
-              <br />
-              <span className="font-medium">
-                {loginEmail ? loginEmail : "—"}
-              </span>
-            </DialogDescription>
-          </DialogHeader>
+      <Button
+        type="submit"
+        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white dark:from-[#0EA5E9] dark:to-[#6366F1] dark:hover:from-[#0284C7] dark:hover:to-[#4F46E5] disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        {submitting ? "Verifying..." : "Continue"}
+      </Button>
+    </form>
 
-          <DialogFooter className="pt-4">
-            <Button
-              variant="ghost"
-              onClick={() => setRecoveryDialogOpen(false)}
-              disabled={recoverySending}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleTotpRecoveryRequest}
-              disabled={recoverySending || !loginEmail}
-            >
-              {recoverySending ? "Sending..." : "Send Recovery Email"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
+    <div className="text-center text-sm text-muted-foreground">
+      Lost access to your Authenticator App?{" "}
+      <button
+        onClick={() => setRecoveryDialogOpen(true)}
+        className="text-blue-600 hover:underline"
+      >
+        Request recovery
+      </button>
+    </div>
+    <p className="text-center text-sm text-muted-foreground">
+      <a href="/auth" className="text-blue-600 hover:underline">
+        Back to Sign in
+      </a>
+    </p>
+
+    <Dialog open={recoveryDialogOpen} onOpenChange={setRecoveryDialogOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Recover Authenticator Access</DialogTitle>
+          <DialogDescription>
+            We'll send a link to disable your Authenticator App to:
+            <br />
+            <span className="font-medium">
+              {loginEmail ? loginEmail : "—"}
+            </span>
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="pt-4">
+          <Button
+            variant="ghost"
+            onClick={() => setRecoveryDialogOpen(false)}
+            disabled={recoverySending}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleTotpRecoveryRequest}
+            disabled={recoverySending || !loginEmail}
+          >
+            {recoverySending ? "Sending..." : "Send Recovery Email"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+        <div className="text-center text-xs text-muted-foreground space-x-2">
+      <Link href={routes.terms} className="hover:underline">
+        Terms of Use
+      </Link>
+      <span>|</span>
+      <Link href={routes.privacy} className="hover:underline">
+        Privacy Policy
+      </Link>
+    </div>
+  </div>
+);
+
 }

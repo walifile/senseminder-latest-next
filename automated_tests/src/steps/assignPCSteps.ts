@@ -62,7 +62,8 @@ When('I click on the newly created PC name', { timeout: 30000 }, async function(
         throw new Error('SensePCPage is not initialized');
     }
     
-    const computerName = this.sensePCPage.getComputerName();
+    const computerName = this.sensePCPage.getComputerName(this);
+    console.log("COMPUTER NAME IS: "+computerName)
     if (!computerName) {
         throw new Error('Computer name is not available. Make sure PC was created first.');
     }

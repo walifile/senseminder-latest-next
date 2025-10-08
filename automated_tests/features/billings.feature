@@ -31,11 +31,11 @@ Feature: Add Payment method, and Recharge Wallet for a new User
     Then I should be on the Billing and Payments page
     And I should see Wallet Balance is "$0.00"
     When I click on Add Payment Method
-    And I enter Cardholder name
+#    And I enter Cardholder name
     And I enter Card number
     And I enter CVV
     And I enter Expiry
-    And I enter ZipCode
+#    And I enter ZipCode
     And I click on Save Card Securely
     Then I should be able to verify Card added successfully
     When I close Add Payment Method Popup

@@ -1,30 +1,50 @@
+/* eslint perfectionist/sort-imports: "off" */
 import appConfig from "@/config/app-config";
-
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { fetchAuthSession } from "aws-amplify/auth";
 
 const { FIRST_TIME_TOKEN_URL } = appConfig;
 
-async function getIdToken(): Promise<string> {
-  const session = await fetchAuthSession();
-  const idToken = session.tokens?.idToken?.toString();
-  if (!idToken) throw new Error("User is not authenticated.");
-  return idToken;
-}
+const baseQuery = fetchBaseQuery({
+  baseUrl: FIRST_TIME_TOKEN_URL,
+  prepareHeaders: async (headers) => {
+    try {
+      const session = await fetchAuthSession();
+      const idToken = session.tokens?.idToken?.toString();
+      if (!idToken) throw new Error("User is not authenticated.");
+      headers.set("Authorization", idToken);
+      headers.set("Content-Type", "application/json");
+    } catch (err) {
+      console.error("Failed to attach auth headers:", err);
+    }
+    return headers;
+  },
+});
 
-export async function checkFirstLogin() {
-  const idToken = await getIdToken();
+export const firstTimeSetupAPI = createApi({
+  reducerPath: "firstTimeSetupAPI",
+  baseQuery,
+  endpoints: (builder) => ({
+    checkFirstLogin: builder.query<{ firstLogin: boolean; federatedUser: boolean }, void>({
+      query: () => ({
+        url: "",
+        method: "GET",
+      }),
+    }),
+    completeFirstLogin: builder.mutation<
+      { message: string },
+      { name: string; organization?: string }
+    >({
+      query: (body) => ({
+        url: "",
+        method: "PATCH",
+        body,
+      }),
+    }),
+  }),
+});
 
-  const response = await fetch(FIRST_TIME_TOKEN_URL, {
-    method: "GET",
-    headers: {
-      Authorization: idToken,
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to check first login.");
-  }
-
-  return response.json(); // expects { firstLogin: boolean, federatedUser: boolean }
-}
+export const {
+  useCheckFirstLoginQuery,
+  useCompleteFirstLoginMutation,
+} = firstTimeSetupAPI;

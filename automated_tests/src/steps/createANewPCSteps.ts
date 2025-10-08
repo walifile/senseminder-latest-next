@@ -6,21 +6,25 @@ import { LoginPage } from '../pages/loginPage';
 import { HomePage } from '../pages/homePage';
 import { SensePCPage } from '../pages/sensePCPage';
 import { BillingPage } from '../pages/billingPage';
+import { customExpect } from '../utils/customAssertions';
+import { errorHandler } from '../utils/errorHandler';
 
 Given('I am on the dashboard', async function(this: CustomWorld) {
     if (!this.loginPage) {
-        throw new Error('Login page is not initialized');
+        await errorHandler.handleTestFailure(new Error('Login page is not initialized'), 'I am on the dashboard');
+        return;
     }
     const isDashboardVisible = await this.loginPage.isDashboardVisible();
-    expect(isDashboardVisible).toBeTruthy();
+    await customExpect.toBeTruthy(isDashboardVisible, 'I am on the dashboard');
 });
 
 Then('I should be on the Billing and Payments page', async function(this: CustomWorld) {
     if (!this.billingPage) {
-        throw new Error('Billing page is not initialized');
+        await errorHandler.handleTestFailure(new Error('Billing page is not initialized'), 'I should be on the Billing and Payments page');
+        return;
     }
     const isBillingPageVisible = await this.billingPage.isBillingPageVisible();
-    expect(isBillingPageVisible).toBeTruthy();
+    await customExpect.toBeTruthy(isBillingPageVisible, 'I should be on the Billing and Payments page');
 });
 
 When('I click on Wallet Balance on Top', async function(this: CustomWorld) {
@@ -32,10 +36,11 @@ When('I click on Wallet Balance on Top', async function(this: CustomWorld) {
 
 Then('I should see Wallet Balance is {string}', async function(this: CustomWorld, expectedBalance: string) {
     if (!this.billingPage) {
-        throw new Error('Billing page is not initialized');
+        await errorHandler.handleTestFailure(new Error('Billing page is not initialized'), 'I should see Wallet Balance is');
+        return;
     }
     const walletBalance = await this.billingPage.getWalletBalance();
-    expect(walletBalance).toBe(expectedBalance);
+    await customExpect.toBe(walletBalance, expectedBalance, 'I should see Wallet Balance is');
 });
 
 When('I click on Add Payment Method', async function(this: CustomWorld) {
@@ -144,6 +149,14 @@ Then('I should be on the Sense PCs page', async function(this: CustomWorld) {
     expect(isSensePCPageVisible).toBeTruthy();
 });
 
+Then('I should be on the Sense PCs page for an existing user', async function(this: CustomWorld) {
+    if (!this.sensePCPage) {
+        throw new Error('SensePC page is not initialized');
+    }
+    const isSensePCPageVisible = await this.sensePCPage.isSensePCPageVisible();
+    expect(isSensePCPageVisible).toBeTruthy();
+});
+
 When('I click on Build Sense PC button', async function(this: CustomWorld) {
     if (!this.sensePCPage) {
         throw new Error('SensePC page is not initialized');
@@ -155,9 +168,9 @@ When('I enter Name of the computer', async function(this: CustomWorld) {
     if (!this.sensePCPage) {
         throw new Error('SensePC page is not initialized');
     }
-    await this.sensePCPage.enterComputerName("Test_Computer");
-    const computerName = this.sensePCPage.getComputerName();
-    console.log(`🔧 Computer name set to: ${computerName}`);
+    await this.sensePCPage.enterComputerName("Test_Computer", this);
+    // const computerName = this.sensePCPage.getComputerName();
+    // console.log(`🔧 Computer name set to: ${computerName}`);
 });
 
 When('I click on Estimate button', async function(this: CustomWorld) {
@@ -217,6 +230,10 @@ When('I Click on Confirm & Pay button', async function(this: CustomWorld) {
     if (!this.sensePCPage) {
         throw new Error('SensePC page is not initialized');
     }
+    if (this.page) {
+        this.sensePCPage = new SensePCPage(this.page);
+        await this.sensePCPage.isNewlyCreatedPC();
+    }
     await this.sensePCPage.clickConfirmAndPayButton();
 });
 
@@ -224,10 +241,30 @@ Then('I should be able to verify Newly create PC Name Record on list', async fun
     if (!this.sensePCPage) {
         throw new Error('SensePC page is not initialized');
     }
-    const computerName = this.sensePCPage.getComputerName();
+
+    // Get the computer name from world context
+    const computerName = this.sensePCPage.getComputerName(this);
     console.log(`🔍 Looking for PC with name: ${computerName}`);
-    const isPCCreated = await this.sensePCPage.isNewPCCreated();
-    expect(isPCCreated).toBeTruthy();
+
+    // Verify the PC is displayed on the page
+    const isPCDisplayed = await this.sensePCPage.isCreatedPCDisplayed(this);
+    expect(isPCDisplayed).toBeTruthy();
+});
+
+Then('I should be able to verify Newly create PC Name Record on list for an existing user', async function(this: CustomWorld) {
+    if (!this.sensePCPage) {
+        throw new Error('SensePC page is not initialized');
+    }
+    //await this.sensePCPage.handleSkipButtonIfPresent();
+
+    // Get the computer name from world context
+    const computerName = this.sensePCPage.getComputerName(this);
+    console.log(`🔍 Looking for PC with name: ${computerName}`);
+
+    // Verify the PC is displayed on the page
+    const isPCDisplayed = await this.sensePCPage.isCreatedPCDisplayed(this);
+    expect(isPCDisplayed).toBeTruthy();
+
 });
 
 Then('I should be able to verify wallet deduction toast with amount {string}', async function(this: CustomWorld, expectedAmount: string) {
@@ -294,32 +331,33 @@ Then('I should be able to verify I am able to connect to Newly create PC', { tim
 
 Then('I should be able to see newly created PC and its status as {string}', { timeout: 360000 }, async function(this: CustomWorld, status: string) {
     if (!this.sensePCPage) {
-        throw new Error('SensePC page is not initialized');
+        await errorHandler.handleTestFailure(new Error('SensePC page is not initialized'), 'I should be able to see newly created PC and its status as');
+        return;
     }
-    const isCreatedPCDisplayed = await this.sensePCPage.isCreatedPCDisplayed();
-    expect(isCreatedPCDisplayed).toBeTruthy();
+    const isCreatedPCDisplayed = await this.sensePCPage.isCreatedPCDisplayed(this);
+    await customExpect.toBeTruthy(isCreatedPCDisplayed, 'I should be able to see newly created PC and its status as');
     
     // For CONNECTED status, be more flexible since connection might not work as expected
     if (status === 'CONNECTED') {
         console.log('🔍 Checking for CONNECTED status with flexible approach...');
-        const isPCStatusVisible = await this.sensePCPage.verifyPCStatus(status);
+        const isPCStatusVisible = await this.sensePCPage.verifyPCStatus(status, this);
         if (!isPCStatusVisible) {
             console.log('⚠️ CONNECTED status not found, checking for alternative states...');
             // Check if PC is still in Running state (which might be acceptable)
-            const isRunning = await this.sensePCPage.verifyPCStatus('Running');
+            const isRunning = await this.sensePCPage.verifyPCStatus('Running', this);
             if (isRunning) {
                 console.log('✅ PC is in Running state - this might be acceptable if connection is not working');
                 return; // Don't fail the test
             }
         }
-        expect(isPCStatusVisible).toBeTruthy();
+        await customExpect.toBeTruthy(isPCStatusVisible, 'I should be able to see newly created PC and its status as CONNECTED');
     } else if (status === 'Stopped') {
         console.log('🔍 Checking for STOPPED status with extended timeout...');
-        const isPCStatusVisible = await this.sensePCPage.verifyPCStatus(status);
-        expect(isPCStatusVisible).toBeTruthy();
+        const isPCStatusVisible = await this.sensePCPage.verifyPCStatus(status, this);
+        await customExpect.toBeTruthy(isPCStatusVisible, 'I should be able to see newly created PC and its status as Stopped');
     } else {
-        const isPCStatusVisible = await this.sensePCPage.verifyPCStatus(status);
-        expect(isPCStatusVisible).toBeTruthy();
+        const isPCStatusVisible = await this.sensePCPage.verifyPCStatus(status, this);
+        await customExpect.toBeTruthy(isPCStatusVisible, `I should be able to see newly created PC and its status as ${status}`);
     }
 });
 
@@ -341,7 +379,7 @@ When('I click on stop button for that PC', { timeout: 30000 }, async function(th
     if (!this.sensePCPage) {
         throw new Error('SensePC page is not initialized');
     }
-    await this.sensePCPage.clickStopPC();
+    await this.sensePCPage.clickStopPC(this);
 });
 
 When('I click on Yes, Stop button', { timeout: 15000 }, async function(this: CustomWorld) {
@@ -355,7 +393,7 @@ When('I click on resize button for that PC', { timeout: 30000 }, async function(
     if (!this.sensePCPage) {
         throw new Error('SensePC page is not initialized');
     }
-    await this.sensePCPage.clickResizePC();
+    await this.sensePCPage.clickResizePC(this);
 });
 
 When('I select new CPU and Memory configuration', { timeout: 30000 }, async function(this: CustomWorld) {
@@ -384,7 +422,7 @@ When('I click on more button for that PC', async function(this: CustomWorld) {
     if (!this.sensePCPage) {
         throw new Error('SensePC page is not initialized');
     }
-    await this.sensePCPage.clickMoreButton();
+    await this.sensePCPage.clickMoreButton(this);
 });
 
 When('I switch back to original tab for PC deletion', async function(this: CustomWorld) {
@@ -501,7 +539,7 @@ When('I click on delete button for that PC', async function(this: CustomWorld) {
     if (!this.sensePCPage) {
         throw new Error('SensePC page is not initialized');
     }
-    await this.sensePCPage.clickDeleteButton();
+    await this.sensePCPage.clickDeleteButton(this);
 });
 
 When('I confirm delete PC', { timeout: 30000 }, async function(this: CustomWorld) {

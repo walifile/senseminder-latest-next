@@ -1,7 +1,7 @@
 {
   "application": {
     "baseURL": "https://smartpc.cloud/",
-    "timeout": 60000
+    "timeout": 120000
   },
   "browser": {
     "headless": true,

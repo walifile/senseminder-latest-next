@@ -2,6 +2,7 @@
 
 import type { SmartPCSession } from "@/api/session";
 
+import { routes } from "@/constants/routes";
 import { useSearchParams } from "next/navigation";
 import { fetchActiveSessions } from "@/api/session";
 import React, { useRef, useState, useEffect } from "react";
@@ -26,6 +27,7 @@ import {
   updatePassword,
   fetchAuthSession,
   fetchMFAPreference,
+  signOut,
   updateMFAPreference,
 } from "aws-amplify/auth";
 
@@ -84,6 +86,16 @@ const ProfilePage = () => {
   const [showSecurityDialog, setShowSecurityDialog] = useState(false);
   const [isEmailMFAEnabled, setIsEmailMFAEnabled] = useState(false);
 
+
+
+async function handleGlobalSignOut() {
+  try {
+    await signOut({ global: true });
+    window.location.href = routes.auth;
+  } catch (err) {
+    console.error("Global sign-out failed:", err);
+  }
+}
   // ===== Profile & Org Data Fetch/Sync =====
   useEffect(() => {
     const fetchProfile = async () => {
@@ -813,14 +825,12 @@ const ProfilePage = () => {
                 </div>
               ))}
             </CardContent>
-
             <CardFooter className="justify-end">
-              <form action="/api/auth/global-signout" method="POST">
-                <Button type="submit" variant="destructive" size="sm">
-                  Sign Out from All Devices
-                </Button>
-              </form>
-            </CardFooter>
+            <Button variant="destructive" size="sm" onClick={handleGlobalSignOut}>
+              Sign Out from All Devices
+            </Button>
+          </CardFooter>
+
           </Card>
         </TabsContent>
       </Tabs>

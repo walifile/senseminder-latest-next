@@ -15,6 +15,7 @@ import { SenseStoragePage } from '../pages/senseStoragePage';
 import { UserManagementPage } from '../pages/userManagementPage';
 import { SupportPage } from '../pages/supportPage';
 import { LandingPage } from '../pages/landingPage';
+import { errorHandler } from '../utils/errorHandler';
 
 export interface CustomWorld extends World {
     browser?: Browser;
@@ -59,10 +60,14 @@ export interface CustomWorld extends World {
     multipleApiResponses?: any[];
     multipleApiErrors?: any[];
     createdPCs?: string[]; // Track instance IDs of created PCs for cleanup
+    createdUsers?: string[]; // Track emails of created users for cleanup
     testInstanceId?: string; // For testing with specific instance IDs
+    userSignupOccurred?: boolean; // Track if user signup actually occurred during test
     addCreatedPC(instanceId: string): void; // Method to add PC to cleanup list
     cleanupCreatedPCs(): Promise<void>; // Method to clean up created PCs
-    captureScreenshot(scenarioName: string, type?: 'failure' | 'debug' | 'error'): Promise<string | null>; // Method to capture screenshots
+    addCreatedUser(email: string): void; // Method to add user to cleanup list
+    cleanupCreatedUsers(): Promise<void>; // Method to clean up created users
+    captureScreenshot(scenarioName: string, type?: 'failure' | 'debug' | 'error' | 'failure_fallback'): Promise<string | null>; // Method to capture screenshots
     captureDebugArtifacts(scenarioName: string, type?: 'failure' | 'debug' | 'error'): Promise<void>; // Method to capture debug artifacts
     email?: string;
     mailPassword?: string;
@@ -127,7 +132,9 @@ export class CustomWorldClass extends World implements CustomWorld {
     multipleApiResponses?: any[];
     multipleApiErrors?: any[];
     createdPCs?: string[]; // Track instance IDs of created PCs for cleanup
+    createdUsers?: string[]; // Track emails of created users for cleanup
     testInstanceId?: string; // For testing with specific instance IDs
+    userSignupOccurred?: boolean; // Track if user signup actually occurred during test
     secretCode?: string;
     capturedAccessToken?: string;
     capturedIdToken?: string;
@@ -146,6 +153,13 @@ export class CustomWorldClass extends World implements CustomWorld {
         try {
             console.log('🔄 Getting test data...');
             const testData = getTestData();
+            
+            // Initialize error handler with this world instance
+            errorHandler.setWorld(this);
+            console.log('✅ Error handler initialized');
+            
+            // Store world instance globally for error handlers
+            (global as any).currentWorld = this;
             
             console.log('🔄 Launching browser...');
             // Force headless mode in CI or when explicitly configured
@@ -218,7 +232,10 @@ export class CustomWorldClass extends World implements CustomWorld {
 
     async cleanup() {
         try {
-            // Clean up created PCs via API first
+            // Clean up created users via API first
+            await this.cleanupCreatedUsers();
+            
+            // Clean up created PCs via API
             await this.cleanupCreatedPCs();
             
             // Close all pages first
@@ -272,6 +289,7 @@ export class CustomWorldClass extends World implements CustomWorld {
             this.multipleApiResponses = undefined;
             this.multipleApiErrors = undefined;
             this.createdPCs = undefined;
+            this.createdUsers = undefined;
             this.testInstanceId = undefined;
             this.capturedUserId = undefined;
             
@@ -314,9 +332,66 @@ export class CustomWorldClass extends World implements CustomWorld {
     }
 
     /**
+     * Add a created user email to the cleanup list
+     */
+    addCreatedUser(email: string) {
+        if (!this.createdUsers) {
+            this.createdUsers = [];
+        }
+        this.createdUsers.push(email);
+        this.userSignupOccurred = true; // Mark that user signup occurred
+        console.log(`📝 Added user to cleanup list: ${email}`);
+    }
+
+    /**
+     * Clean up created users via API
+     */
+    async cleanupCreatedUsers() {
+        if (!this.createdUsers || this.createdUsers.length === 0) {
+            console.log('🧹 No created users to clean up');
+            return;
+        }
+
+        console.log(`🧹 Cleaning up ${this.createdUsers.length} created users...`);
+        
+        try {
+            const { userDeletionAPI } = await import('../utils/userDeletionAPI');
+            
+            // Validate token before attempting deletion
+            const isTokenValid = await userDeletionAPI.validateToken();
+            if (!isTokenValid) {
+                console.error('❌ Admin token is invalid or expired. Skipping user cleanup.');
+                console.error('💡 Please update your ADMIN_TOKEN in the .env file');
+                return;
+            }
+            
+            const deleteResponses = await userDeletionAPI.deleteMultipleUsers(this.createdUsers);
+            
+            const successCount = deleteResponses.filter(r => r.success).length;
+            const failureCount = deleteResponses.filter(r => !r.success).length;
+            
+            console.log(`✅ User cleanup completed: ${successCount} successful, ${failureCount} failed`);
+            
+            // Log any failures for debugging, but don't fail the test
+            deleteResponses.forEach((response, index) => {
+                if (!response.success) {
+                    console.log(`⚠️ Could not delete user ${this.createdUsers![index]}: ${response.error || response.message}`);
+                    console.log(`ℹ️ This is not a test failure - continuing with cleanup`);
+                }
+            });
+            
+        } catch (error) {
+            console.log('⚠️ Error during user cleanup:', error);
+        }
+        
+        // Clear the created users list
+        this.createdUsers = [];
+    }
+
+    /**
      * Capture screenshot with timestamp and scenario name
      */
-    async captureScreenshot(scenarioName: string, type: 'failure' | 'debug' | 'error' = 'debug'): Promise<string | null> {
+    async captureScreenshot(scenarioName: string, type: 'failure' | 'debug' | 'error' | 'failure_fallback' = 'debug'): Promise<string | null> {
         try {
             if (!this.page || this.page.isClosed()) {
                 console.log('⚠️ Page context not available for screenshot capture');

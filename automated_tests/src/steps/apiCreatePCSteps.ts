@@ -2,6 +2,8 @@ import { Given, When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
 import { CustomWorld } from '../support/world';
 import { config, getTestData } from '../config/environment';
+import { customExpect } from '../utils/customAssertions';
+import { errorHandler } from '../utils/errorHandler';
 import { ApiCreatePCPage, CreatePCRequest, CheckPCStatusRequest, StartPCRequest, StopPCRequest, ResizePCRequest, CognitoGetUserRequest } from '../pages/apiCreatePCPage';
 
 // Background steps
@@ -128,36 +130,75 @@ Then('I should receive successful response with status code {int}', async functi
     // Check if we have a successful response
     if (this.lastApiResponse) {
         const actualStatusCode = this.apiCreatePCPage!.getResponseStatusCode();
-        expect(actualStatusCode).toBe(expectedStatusCode);
+        if (actualStatusCode === null) {
+            await errorHandler.handleApiFailure(
+                new Error('No status code available in response'),
+                'I should receive successful response with status code',
+                'API endpoint',
+                undefined,
+                this.lastApiResponse
+            );
+        }
+        await customExpect.toHaveStatusCode(actualStatusCode, expectedStatusCode, 'I should receive successful response with status code');
         
         const isSuccessful = this.apiCreatePCPage!.isLastResponseSuccessful();
-        expect(isSuccessful).toBeTruthy();
+        await customExpect.toBeSuccessful(isSuccessful, 'I should receive successful response with status code');
         
         console.log(`✅ Received successful response with status code: ${actualStatusCode}`);
     } else if (this.lastApiError && this.lastApiError.response && this.lastApiError.response.status === 404) {
         // This is a 404 error but not after a stop operation
-        throw new Error(`Expected status code ${expectedStatusCode} but got 404 and this is not after a stop operation`);
+        await errorHandler.handleApiFailure(
+            new Error(`Expected status code ${expectedStatusCode} but got 404 and this is not after a stop operation`),
+            'I should receive successful response with status code',
+            'API endpoint',
+            undefined,
+            this.lastApiError.response.data
+        );
     } else {
-        throw new Error('No valid response or error available for status code verification');
+        await errorHandler.handleApiFailure(
+            new Error('No valid response or error available for status code verification'),
+            'I should receive successful response with status code',
+            'API endpoint',
+            undefined,
+            this.lastApiError
+        );
     }
 });
 
 Then('I should receive error response with status code {int}', async function(this: CustomWorld, expectedStatusCode: number) {
     const actualStatusCode = this.apiCreatePCPage!.getResponseStatusCode();
-    expect(actualStatusCode).toBe(expectedStatusCode);
+    if (actualStatusCode === null) {
+        await errorHandler.handleApiFailure(
+            new Error('No status code available in response'),
+            'I should receive error response with status code',
+            'API endpoint',
+            undefined,
+            this.lastApiResponse || this.lastApiError
+        );
+    }
+    await customExpect.toHaveStatusCode(actualStatusCode, expectedStatusCode, 'I should receive error response with status code');
     
     const isSuccessful = this.apiCreatePCPage!.isLastResponseSuccessful();
-    expect(isSuccessful).toBeFalsy();
+    await customExpect.toBeFalsy(isSuccessful, 'I should receive error response with status code');
     
     console.log(`✅ Received error response with status code: ${actualStatusCode}`);
 });
 
 Then('I should receive unauthorized response with status code {int}', async function(this: CustomWorld, expectedStatusCode: number) {
     const actualStatusCode = this.apiCreatePCPage!.getResponseStatusCode();
-    expect(actualStatusCode).toBe(expectedStatusCode);
+    if (actualStatusCode === null) {
+        await errorHandler.handleApiFailure(
+            new Error('No status code available in response'),
+            'I should receive unauthorized response with status code',
+            'API endpoint',
+            undefined,
+            this.lastApiResponse || this.lastApiError
+        );
+    }
+    await customExpect.toHaveStatusCode(actualStatusCode, expectedStatusCode, 'I should receive unauthorized response with status code');
     
     const isSuccessful = this.apiCreatePCPage!.isLastResponseSuccessful();
-    expect(isSuccessful).toBeFalsy();
+    await customExpect.toBeFalsy(isSuccessful, 'I should receive unauthorized response with status code');
     
     console.log(`✅ Received unauthorized response with status code: ${actualStatusCode}`);
 });
@@ -854,6 +895,10 @@ Then('I should verify PC stop operation completed', async function(this: CustomW
         hasSuccessMessage: this.apiCreatePCPage!.hasStopSuccessMessage(),
         hasInstanceId: this.apiCreatePCPage!.hasInstanceId()
     });
+    
+    if (statusCode === null) {
+        console.log('⚠️ Warning: Status code is null - this may indicate an issue with the API response');
+    }
     
     // If we have a successful status code, consider it a success even if message format is unexpected
     if (statusCode && statusCode >= 200 && statusCode < 300) {

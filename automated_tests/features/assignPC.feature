@@ -16,7 +16,7 @@ Feature: Assign PC Functionality
  Scenario: Assign user to PC
     Given I am on the dashboard
     When I click on Sense PC from side navigation bar
-    Then I should be on the Sense PCs page
+    Then I should be on the Sense PCs page for an existing user
     When I click on Build Sense PC button
     And I enter Name of the computer
     And I click on Estimate button
@@ -24,7 +24,7 @@ Feature: Assign PC Functionality
     Then I should be able to verify Estimated total: "$1.109 /hour"
     When I check I acknowledge and accept above statement
     And I Click on Confirm & Pay button
-    Then I should be able to verify Newly create PC Name Record on list
+    Then I should be able to verify Newly create PC Name Record on list for an existing user
     When I wait for the PC to complete building and start running
     And I click on stop button for that PC
     And I click on Yes, Stop button

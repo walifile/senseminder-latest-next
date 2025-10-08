@@ -8,6 +8,7 @@ import { ticketsAPI } from "@/api/supportAPI";
 import { newsletterAPI } from "@/api/newsletterAPI";
 import { vmManagementAPI } from "@/api/vmManagement";
 import { fileManagerAPI } from "@/api/fileManagerAPI";
+import { firstTimeSetupAPI } from "@/api/first-time-setup";
 import { legalDocumentsAPI } from "@/api/legalDocumentsAPI";
 
 import storage from "redux-persist/lib/storage";
@@ -45,6 +46,7 @@ interface RootStateType {
   [billingAPI.reducerPath]: ReturnType<typeof billingAPI.reducer>;
   [userAPI.reducerPath]: ReturnType<typeof userAPI.reducer>;
   [feedbackAPI.reducerPath]: ReturnType<typeof feedbackAPI.reducer>;
+  [firstTimeSetupAPI.reducerPath]: ReturnType<typeof firstTimeSetupAPI.reducer>;
 }
 
 const persistConfig: PersistConfig<RootStateType> = {
@@ -67,6 +69,7 @@ const rootReducer = combineReducers({
   [billingAPI.reducerPath]: billingAPI.reducer,
   [userAPI.reducerPath]: userAPI.reducer,
   [feedbackAPI.reducerPath]: feedbackAPI.reducer,
+  [firstTimeSetupAPI.reducerPath]: firstTimeSetupAPI.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -87,7 +90,8 @@ export const store = configureStore({
       ticketsAPI.middleware,
       billingAPI.middleware,
       userAPI.middleware,
-      feedbackAPI.middleware
+      feedbackAPI.middleware,
+      firstTimeSetupAPI.middleware
     ),
 });
 

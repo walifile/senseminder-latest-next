@@ -3,7 +3,8 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { routes, publicRoutes } from "./constants/routes";
-import { passwordProtectionMiddleware } from "./middleware/password-protection";
+import { firstLoginGuard } from "./middleware/firstLoginGuard";
+import {passwordProtectionMiddleware } from "./middleware/password-protection";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -41,7 +42,11 @@ export async function middleware(request: NextRequest) {
     loginUrl.searchParams.set("from", pathname);
     return NextResponse.redirect(loginUrl);
   }
-
+  const firstLoginResponse = await firstLoginGuard(request);
+  if (firstLoginResponse) {
+    return firstLoginResponse;
+  }
+  
   const passwordProtectionResponse = passwordProtectionMiddleware(request);
   if (passwordProtectionResponse) {
     return passwordProtectionResponse;
@@ -51,5 +56,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.).*)"],
+  matcher: [
+    "/",
+    "/dashboard/:path*", // ensures all dashboard routes are captured
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.).*)", // catch-all fallback
+  ],
 };

@@ -78,18 +78,18 @@ Given('I prepare get recharges request for current user', async function(this: C
 });
 
 Given('I prepare recharge request for current user', async function(this: CustomWorld) {
-    const amount = Math.floor(Math.random() * 50 + 10);
+    // const amount = Math.floor(Math.random() * 50 + 10);
     const autoRecharge = false;
-    this.currentBillingRequest = this.apiBillingPage!.createRechargeConfig(amount, autoRecharge);
+    this.currentBillingRequest = this.apiBillingPage!.createRechargeConfig(20, autoRecharge);
 });
 
 Given('I prepare refund request for current user', async function(this: CustomWorld) {
     const userId = this.capturedUserId || config.testData.api?.billing?.testUserId;
-    const amount = (Math.random() * 50 + 5).toFixed(2);
+    // const amount = (Math.random() * 50 + 5).toFixed(2);
     const paymentIntentId = `pi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const reasons = ['Paid by mistake', 'Service not needed', 'Duplicate payment', 'Wrong amount', 'Technical issue'];
     const reason = reasons[Math.floor(Math.random() * reasons.length)];
-    this.currentBillingRequest = this.apiBillingPage!.createRefundRequestConfig(userId!, amount, paymentIntentId, reason);
+    this.currentBillingRequest = this.apiBillingPage!.createRefundRequestConfig(userId!, '20', paymentIntentId, reason);
 });
 
 Given('I prepare process refunds request with dynamic tickets', async function(this: CustomWorld) {

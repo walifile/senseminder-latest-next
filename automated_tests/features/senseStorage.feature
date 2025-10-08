@@ -24,12 +24,13 @@ Feature: Sense Storage
      Then I should be logged in successfully
      And I capture the access token from login
      And I should see the dashboard
-     And I navigate to the Sense Storage page
 
   Scenario: Upload a single file successfully and View file in file viewer
-    Given I click on the Upload button
-    When I upload a file "test-document.pdf" with size less than 10MB
+    Given  I navigate to the Sense Storage page
+    When I click on the Upload button
+    And I upload a file "test-document.pdf" with size less than 10MB
     Then I should be able to see the file in the file list
+    And I dismiss any feedback popup
     When I click on menu of the file "test-document.pdf" in the file list
     And I click on view button in the menu
     Then The file viewer should open with title containing "Preview: test-document.pdf"
@@ -37,9 +38,11 @@ Feature: Sense Storage
     And I should be able to close the file viewer for "test-document.pdf"
 
   Scenario: Upload multiple files in bulk and delete multiple files in bulk
-    Given I click on the Upload button
-    When I upload multiple files "test-document.pdf, test-document.docx, image.png" with total size less than 10MB
+    Given  I navigate to the Sense Storage page
+    When I click on the Upload button
+    And I upload multiple files "test-document.pdf, test-document.docx, image.png" with total size less than 10MB
     Then All files should appear in the file list
+    And I dismiss any feedback popup
     When I select the uploaded files "test-document.pdf, test-document.docx, image.png"
     And I click on the menu at the top right corner
     And I click on deleted selected button
@@ -47,9 +50,11 @@ Feature: Sense Storage
     Then The selected files "test-document.pdf, test-document.docx, image.png" should not appear in the file list
 
   Scenario: Share file with another account
-    Given I click on the Upload button
-    When I upload a file "test-document.pdf" with size less than 10MB
+    Given  I navigate to the Sense Storage page
+    When I click on the Upload button
+    And I upload a file "test-document.pdf" with size less than 10MB
     Then I should be able to see the file in the file list
+    And I dismiss any feedback popup
     When I click on menu of the file "test-document.pdf" in the file list
     And I click on the share button for file "test-document.pdf"
     Then The share modal should open with title containing "Share test-document.pdf"

@@ -34,3 +34,7 @@ export interface Message {
     fileKey: string;
   }[];
 }
+
+export type QA = { q: string; a: React.ReactNode };
+
+export type Category = { title: string; items: QA[] };

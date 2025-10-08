@@ -57,30 +57,32 @@ export class BillingPage {
     }
 
     async clickOnAddPaymentMethod() {
+        await this.page.waitForTimeout(3000);
         await this.addPaymentMethodButton.click()
     }
 
     async enterCardholderName(cardholderName: string) {
         await this.cardholderNameInput.fill(cardholderName);
+        console.log('Enter card holder name', cardholderName);
     }
 
     async enterCardNumber(cardNumber: string) {
-        await this.cardNumberInput.click();
+        // await this.cardNumberInput.click();
         await this.cardNumberInput.fill(cardNumber);
     }
 
     async enterExpiry(expiryDate: string) {
-        await this.expiryInput.click();
+        // await this.expiryInput.click();
         await this.expiryInput.fill(expiryDate);
     }
 
     async enterCVV(cvv: string) {
-        await this.cvvInput.click();
+        // await this.cvvInput.click();
         await this.cvvInput.fill(cvv);
     }
 
     async enterZIP(zip: string) {
-        await this.zipInput.click();
+        // await this.zipInput.click();
         await this.zipInput.fill(zip);
     }
 

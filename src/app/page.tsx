@@ -1,12 +1,36 @@
+
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { routes } from "@/constants/routes";
 import { isDev } from "@/constants/initial-values";
+
+import { checkOnboarded } from "@/lib/utils/checkOnboarded";
 
 import Home from "../app/home/_components/main-page";
 
 export default function HomePage() {
+  const router = useRouter();
+
+    useEffect(() => {
+      async function handleRedirect() {
+        try {
+          const onboarded = await checkOnboarded();
+          if (onboarded === false) {
+            router.replace(routes.welcome);
+          }
+        } catch (err) {
+          console.error("Onboarding check failed:", err);
+        }
+      }
+
+      handleRedirect();
+    }, [router]);
+
   return (
+    
     <>
       {isDev ? (
         <Home />

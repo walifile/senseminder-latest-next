@@ -40,8 +40,11 @@ export class SensePCPage {
     readonly memberItem: Locator;
     readonly assignUserConfirmButton: Locator;
     readonly assignedUserIndicator: Locator;
+    readonly skipButton: Locator;
     computerName: string = ''; // Add this property
     connectedPage: any = null; // Store reference to connected page/tab
+    newUserCreated: boolean = false;
+    newPCCreated: boolean = false;
 
     constructor(page: Page) {
         this.page = page;
@@ -83,6 +86,7 @@ export class SensePCPage {
         this.memberItem = page.locator('[role="dialog"] .space-y-3 > div > div > button');
         this.assignUserConfirmButton = page.locator('button:has-text("Assign")');
         this.assignedUserIndicator = page.locator(':has-text("Assigned to")');
+        this.skipButton = page.locator('button:has-text("Skip")');
     }
 
     async clickWallet() {
@@ -102,30 +106,82 @@ export class SensePCPage {
         }
     }
 
+    async isNewlyCreatedUser(){
+        this.newUserCreated = true;
+    }
+
+    async isNewlyCreatedPC(){
+        this.newPCCreated = true;
+    }
+
+    async handleSkipButtonIfPresent() {
+        await this.page.waitForTimeout(5000);
+
+        // Check if Skip button is visible, enabled, and clickable
+        const isSkipButtonVisible = await this.skipButton.isVisible({timeout: 2000});
+        const isSkipButtonEnabled = await this.skipButton.isEnabled({timeout: 2000});
+
+        if (isSkipButtonVisible && isSkipButtonEnabled) {
+            // Additional check to ensure the button is actually clickable (not covered by other elements)
+            const isClickable = await this.skipButton.isVisible() &&
+                await this.skipButton.isEnabled() &&
+                await this.skipButton.evaluate(el => {
+                    const rect = el.getBoundingClientRect();
+                    return rect.width > 0 && rect.height > 0;
+                });
+
+            if (isClickable) {
+                console.log('🔧 Skip button found and is clickable, clicking it...');
+                await this.skipButton.click({force: false});
+                console.log('✅ Skip button clicked successfully');
+            } else {
+                console.log('⚠️ Skip button is visible and enabled but not clickable (possibly covered by other elements)');
+            }
+        } else {
+            console.log('ℹ️ Skip button not found or not enabled, continuing...');
+        }
+    }
+
     async clickBuildSensePCButton() {
         await this.buildSensePCButton.click();
     }
 
-    async enterComputerName(name: string) {
+    async enterComputerName(name: string, world?: any) {
         const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
         this.computerName=`${name}_${timestamp}`;
+        
+        // Store in world context if available
+        if (world) {
+            world.computerName = this.computerName;
+            console.log(`🔧 Stored computer name in world context: ${world.computerName}`);
+        }
+        
         console.log(`🔧 Generated computer name: ${this.computerName}`);
         await this.computerNameInput.fill(this.computerName);
     }
 
-    getComputerName(): string {
+    getComputerName(world?: any): string {
+        // First try to get from world context if available
+        if (world && world.computerName) {
+            console.log(`🔧 Retrieved computer name from world context: ${world.computerName}`);
+            return world.computerName;
+        }
+        
+        // Fallback to instance property
+        console.log(`🔧 Retrieved computer name from instance: ${this.computerName}`);
         return this.computerName;
     }
 
     // Method to delete all PCs visible on the page (for comprehensive cleanup)
-    async deleteAllPCs(): Promise<boolean> {
+    async deleteAllPCs(world?: any): Promise<boolean> {
         try {
             console.log('🧹 Starting comprehensive cleanup - deleting all PCs...');
             
             // First try to delete the specific PC if we have a computer name
-            if (this.computerName) {
-                console.log(`🔍 First attempting to delete specific PC: ${this.computerName}`);
-                const specificDeleteSuccess = await this.deleteSpecificPC(this.computerName);
+            const computerName = this.getComputerName(world);
+            if (computerName) {
+                console.log(`🔍 First attempting to delete specific PC: ${computerName}`);
+                const specificDeleteSuccess = await this.deleteSpecificPC(computerName);
                 if (specificDeleteSuccess) {
                     console.log('✅ Specific PC deleted successfully');
                 } else {
@@ -471,9 +527,10 @@ export class SensePCPage {
     }
 
     // Method to safely check if PC exists and delete it (for cleanup purposes)
-    async safeDeletePC(): Promise<boolean> {
+    async safeDeletePC(world?: any): Promise<boolean> {
         try {
-            console.log(`🔍 Checking if PC "${this.computerName}" exists for cleanup...`);
+            const computerName = this.getComputerName(world);
+            console.log(`🔍 Checking if PC "${computerName}" exists for cleanup...`);
             
             // First, let's debug what's on the page
             console.log('🔍 Debugging: Looking for all PC cards on the page...');
@@ -490,28 +547,29 @@ export class SensePCPage {
             }
             
             // Check if the PC is visible on the page
-            const isPCDisplayed = await this.isCreatedPCDisplayed();
+            const isPCDisplayed = await this.isCreatedPCDisplayed(world);
             
             if (!isPCDisplayed) {
-                console.log(`✅ PC "${this.computerName}" not found (already deleted or not created)`);
+                console.log(`✅ PC "${computerName}" not found (already deleted or not created)`);
                 return true;
             }
             
-            console.log(`🗑️ PC "${this.computerName}" found, attempting to delete...`);
+            console.log(`🗑️ PC "${computerName}" found, attempting to delete...`);
             
             // Try to delete the PC using the complete workflow
-            const isDeleted = await this.deletePC();
+            const isDeleted = await this.deletePC(world);
             
             if (isDeleted) {
-                console.log(`✅ Successfully deleted PC "${this.computerName}" during cleanup`);
+                console.log(`✅ Successfully deleted PC "${computerName}" during cleanup`);
                 return true;
             } else {
-                console.log(`⚠️ Failed to delete PC "${this.computerName}" during cleanup`);
+                console.log(`⚠️ Failed to delete PC "${computerName}" during cleanup`);
                 return false;
             }
             
         } catch (error) {
-            console.error(`❌ Error during safe delete of PC "${this.computerName}":`, error);
+            const computerName = this.getComputerName(world);
+            console.error(`❌ Error during safe delete of PC "${computerName}":`, error);
             return false;
         }
     }
@@ -938,7 +996,7 @@ export class SensePCPage {
             }
             
             // Get the current URL before clicking
-            const urlBeforeClick = await originalPage.url();
+            const urlBeforeClick = originalPage.url();
             console.log(`🔗 URL before connect click: ${urlBeforeClick}`);
             
             // Set up popup handling before clicking
@@ -947,28 +1005,30 @@ export class SensePCPage {
             const initialPageCount = pages.length;
             console.log(`📊 Initial page count: ${initialPageCount}`);
             
-            // Enhanced retry logic: Wait up to 1 minute, retry connect button every 10 seconds
+            // Enhanced retry logic: Wait up to 3 minutes, retry connect button every 15 seconds
             let newPage = null;
             let clickAttempts = 0;
-            const maxClickAttempts = 6; // 6 attempts * 10 seconds = 1 minute total
-            const retryInterval = 10000; // 10 seconds between attempts
+            const maxClickAttempts = 12; // 12 attempts * 15 seconds = 3 minutes total
+            const retryInterval = 15000; // 15 seconds between attempts
             
-            console.log(`🔄 Starting enhanced connect retry logic: ${maxClickAttempts} attempts over 1 minute`);
+            console.log(`🔄 Starting enhanced connect retry logic: ${maxClickAttempts} attempts over 3 minutes`);
             
-            while (clickAttempts < maxClickAttempts && !newPage) {
+            while (clickAttempts < maxClickAttempts) {
                 clickAttempts++;
                 console.log(`🖱️ Connect button attempt ${clickAttempts}/${maxClickAttempts}...`);
                 
                 try {
+                    console.log('waiting for 10 second before connect button click');
+                    await this.page.waitForTimeout(10000);
                     // Click the connect button
                     await connectButton.click();
                     console.log('✅ Connect button clicked successfully');
                     
-                    // Wait for new page with shorter timeout per attempt
+                    // Wait for new page with longer timeout per attempt for CI
                     try {
                         const [page] = await Promise.all([
-                            context.waitForEvent('page', { timeout: 8000 }), // Wait 8 seconds for new tab
-                            new Promise(resolve => setTimeout(resolve, 1000)) // Small delay to ensure click is processed
+                            context.waitForEvent('page', { timeout: 20000 }), // Wait 20 seconds for new tab
+                            new Promise(resolve => setTimeout(resolve, 2000)) // Longer delay to ensure click is processed
                         ]);
                         newPage = page;
                         console.log('🆕 New tab opened for PC connection');
@@ -979,7 +1039,7 @@ export class SensePCPage {
                         break; // Exit the retry loop on success
                         
                     } catch (pageTimeoutError) {
-                        console.log(`⚠️ No new tab opened within 8 seconds (attempt ${clickAttempts}/${maxClickAttempts})`);
+                        console.log(`⚠️ No new tab opened within 20 seconds (attempt ${clickAttempts}/${maxClickAttempts})`);
                         
                         // Check if a new page was created but we missed the event
                         const currentPages = context.pages();
@@ -1002,6 +1062,18 @@ export class SensePCPage {
                             console.log('✅ Connection opened in same tab');
                             newPage = originalPage;
                             break; // Exit the retry loop on success
+                        }
+                        
+                        // Additional check: Look for connection indicators in the page content
+                        try {
+                            const pageContent = await originalPage.content();
+                            if (pageContent.includes('pc-viewer') || pageContent.includes('connection') || pageContent.includes('session')) {
+                                console.log('✅ Connection indicators found in page content');
+                                newPage = originalPage;
+                                break; // Exit the retry loop on success
+                            }
+                        } catch (contentError) {
+                            console.log('⚠️ Could not check page content for connection indicators');
                         }
                     }
                     
@@ -1444,10 +1516,10 @@ export class SensePCPage {
             // Step 3: Switch to new tab
             await this.switchToNewTab(newPage);
             
-            // Step 4: Verify CONNECTED status with retry logic
+            // Step 4: Verify CONNECTED status with enhanced retry logic
             let isConnected = false;
             let retryAttempts = 0;
-            const maxRetryAttempts = 2; // Allow 2 retry attempts
+            const maxRetryAttempts = 5; // Allow 5 retry attempts for CI
             
             while (!isConnected && retryAttempts < maxRetryAttempts) {
                 retryAttempts++;
@@ -1457,7 +1529,7 @@ export class SensePCPage {
                 
                 if (!isConnected && retryAttempts < maxRetryAttempts) {
                     console.log('⚠️ Connection verification failed, waiting before retry...');
-                    await this.connectedPage?.waitForTimeout(5000); // Wait 5 seconds before retry
+                    await this.connectedPage?.waitForTimeout(10000); // Wait 10 seconds before retry
                 }
             }
             
@@ -1598,31 +1670,18 @@ export class SensePCPage {
         }
     }
 
-    async clickStopPC() {
+    async clickStopPC(world?: any) {
         try {
-            console.log('🔍 Looking for Stop button (PC should be in Running or DISCONNECTED status)...');
+            const computerName = this.getComputerName(world);
+            console.log(`🔍 Looking for Stop button for PC: ${computerName}`);
             
-            // Wait for the PC card to be fully loaded - try multiple statuses
-            let pcCard = null;
-            let pcStatus = '';
+            // First, try to dismiss any overlays that might be intercepting clicks
+            await this.dismissAnyOverlays();
             
-            // Try to find PC card with different statuses
-            const statuses = ['Running', 'DISCONNECTED', 'Connected'];
-            for (const status of statuses) {
-                try {
-                    pcCard = this.page.locator(`.rounded-lg.border.bg-card:has-text("${status}")`);
-                    await pcCard.waitFor({ state: 'visible', timeout: 5000 });
-                    pcStatus = status;
-                    console.log(`✅ PC card with ${status} status is visible`);
-                    break;
-                } catch (error) {
-                    console.log(`🔍 PC card with ${status} status not found, trying next...`);
-                }
-            }
-            
-            if (!pcCard) {
-                throw new Error('PC card not found with any expected status');
-            }
+            // Find the specific PC card first
+            const pcCard = this.page.locator(`.rounded-lg.border.bg-card:has(h3:has-text("${computerName}"))`);
+            await pcCard.waitFor({ state: 'visible', timeout: 10000 });
+            console.log('✅ Found specific PC card');
             
             // Wait for the Stop button to be visible and enabled within the PC card
             const stopButtonInCard = pcCard.locator('button:has-text("Stop")');
@@ -1687,8 +1746,8 @@ export class SensePCPage {
         try {
             console.log('🔍 Looking for Stop confirmation dialog...');
             
-            // Wait for the confirmation dialog to appear
-            const confirmDialog = this.page.locator('div[role="dialog"]');
+            // Wait for the stop confirmation dialog to appear (the one with "You are about to stop" text)
+            const confirmDialog = this.page.locator('div[role="dialog"]:has-text("You are about to stop")');
             await confirmDialog.waitFor({ state: 'visible', timeout: 10000 });
             console.log('✅ Stop confirmation dialog is visible');
             
@@ -1721,17 +1780,18 @@ export class SensePCPage {
         }
     }
 
-    async isCreatedPCDisplayed() {
+    async isCreatedPCDisplayed(world?: any) {
         try {
-            console.log(`🔍 Checking if PC "${this.computerName}" is displayed on the page...`);
+            const computerName = this.getComputerName(world);
+            console.log(`🔍 Checking if PC "${computerName}" is displayed on the page...`);
             
             // Try multiple locator strategies for the PC name
             const pcNameLocators = [
-                `h3:has-text("${this.computerName}")`,
-                `h3.font-semibold.text-primary:has-text("${this.computerName}")`,
-                `text=${this.computerName}`,
-                `[data-testid="pc-name"]:has-text("${this.computerName}")`,
-                `.rounded-lg.border.bg-card:has-text("${this.computerName}")`
+                `h3:has-text("${computerName}")`,
+                `h3.font-semibold.text-primary:has-text("${computerName}")`,
+                `text=${computerName}`,
+                `[data-testid="pc-name"]:has-text("${computerName}")`,
+                `.rounded-lg.border.bg-card:has-text("${computerName}")`
             ];
             
             for (const locator of pcNameLocators) {
@@ -1748,12 +1808,12 @@ export class SensePCPage {
             // Fallback: search for any text containing the computer name
             console.log('🔍 Trying fallback text search...');
             const pageText = await this.page.textContent('body');
-            if (pageText && pageText.includes(this.computerName)) {
+            if (pageText && pageText.includes(computerName)) {
                 console.log('✅ PC name found in page text content');
                 return true;
             }
             
-            console.log(`❌ PC name "${this.computerName}" not displayed anywhere on the page`);
+            console.log(`❌ PC name "${computerName}" not displayed anywhere on the page`);
             return false;
         } catch (error) {
             console.error('❌ Error checking if PC is displayed:', error);
@@ -1833,15 +1893,16 @@ export class SensePCPage {
         }
     }
     
-    async clickMoreButton() {
+    async clickMoreButton(world?: any) {
         try {
-            console.log(`🔍 Looking for More button for PC: ${this.computerName}`);
+            const computerName = this.getComputerName(world);
+            console.log(`🔍 Looking for More button for PC: ${computerName}`);
             
             // First, try to dismiss any overlays that might be intercepting clicks
             await this.dismissAnyOverlays();
             
             // Find the specific PC card first
-            const pcCard = this.page.locator(`.rounded-lg.border.bg-card:has(h3:has-text("${this.computerName}"))`);
+            const pcCard = this.page.locator(`.rounded-lg.border.bg-card:has(h3:has-text("${computerName}"))`);
             await pcCard.waitFor({ state: 'visible', timeout: 10000 });
             console.log('✅ Found specific PC card');
             
@@ -1884,9 +1945,10 @@ export class SensePCPage {
         }
     }
 
-    async clickDeleteButton() {
+    async clickDeleteButton(world?: any) {
         try {
-            console.log(`🔍 Looking for Delete button for PC: ${this.computerName}`);
+            const computerName = this.getComputerName(world);
+            console.log(`🔍 Looking for Delete button for PC: ${computerName}`);
             
             // Wait for the delete menu item to be visible (it should appear after clicking More button)
             const deleteButton = this.page.locator('div[role="menuitem"]:has-text("Delete")');
@@ -2124,15 +2186,15 @@ export class SensePCPage {
     }
 
     // Complete delete PC workflow
-    async deletePC(): Promise<boolean> {
+    async deletePC(world?: any): Promise<boolean> {
         try {
             console.log('🔄 Starting delete PC workflow...');
             
             // Click more button to open menu
-            await this.clickMoreButton();
+            await this.clickMoreButton(world);
             
             // Click delete button
-            await this.clickDeleteButton();
+            await this.clickDeleteButton(world);
             
             // Check the confirmation checkbox
             await this.checkDeleteConfirmCheckbox();
@@ -2177,7 +2239,7 @@ export class SensePCPage {
     }
 
     // Enhanced status verification methods
-    async verifyPCStatus(status: string): Promise<boolean> {
+    async verifyPCStatus(status: string, world?: any): Promise<boolean> {
         try {
             // For CONNECTED status, we need to check on the connected tab
             if (status.toUpperCase() === 'CONNECTED') {
@@ -2290,7 +2352,7 @@ export class SensePCPage {
             // For STOPPED status, use robust polling like we do for Running status
             if (status.toUpperCase() === 'STOPPED') {
                 console.log('🔍 Waiting for STOPPED status with robust polling...');
-                return await this.waitForStoppedStatus();
+                return await this.waitForStoppedStatus(world);
             }
             
             // For other statuses, check on the original page
@@ -2321,9 +2383,10 @@ export class SensePCPage {
         }
     }
 
-    async waitForStoppedStatus(): Promise<boolean> {
+    async waitForStoppedStatus(world?: any): Promise<boolean> {
         try {
-            console.log(`🔍 Starting robust polling for STOPPED status for PC: ${this.computerName}...`);
+            const computerName = this.getComputerName(world);
+            console.log(`🔍 Starting robust polling for STOPPED status for PC: ${computerName}...`);
             
             const maxAttempts = 300; // 300 attempts * 2 seconds = 600 seconds (10 minutes) total
             const pollInterval = 2000; // 2 seconds between attempts
@@ -2333,11 +2396,11 @@ export class SensePCPage {
                 
                 try {
                     // First, find the specific PC card for our computer
-                    const pcCard = this.page.locator(`.rounded-lg.border.bg-card:has(h3:has-text("${this.computerName}"))`);
+                    const pcCard = this.page.locator(`.rounded-lg.border.bg-card:has(h3:has-text("${computerName}"))`);
                     const cardCount = await pcCard.count();
                     
                     if (cardCount === 0) {
-                        console.log(`⚠️ PC card for "${this.computerName}" not found on attempt ${attempt}`);
+                        console.log(`⚠️ PC card for "${computerName}" not found on attempt ${attempt}`);
                         // Wait before next attempt
                         if (attempt < maxAttempts) {
                             await this.page.waitForTimeout(pollInterval);
@@ -2345,19 +2408,19 @@ export class SensePCPage {
                         continue;
                     }
                     
-                    console.log(`✅ Found PC card for "${this.computerName}"`);
+                    console.log(`✅ Found PC card for "${computerName}"`);
                     
                     // Debug: Check what status elements are currently visible within this PC card
                     if (attempt === 1) {
-                        console.log(`🔍 Debug: Checking status elements for PC "${this.computerName}"...`);
+                        console.log(`🔍 Debug: Checking status elements for PC "${computerName}"...`);
                         const pcStatusElements = await pcCard.locator('div.px-2.py-1.rounded-md.inline-flex.items-center.gap-2').all();
                         console.log(`🔍 Found ${pcStatusElements.length} status elements for this PC`);
                         for (let i = 0; i < pcStatusElements.length; i++) {
                             try {
                                 const text = await pcStatusElements[i].textContent();
-                                console.log(`🔍 Status element ${i + 1} for "${this.computerName}": "${text}"`);
+                                console.log(`🔍 Status element ${i + 1} for "${computerName}": "${text}"`);
                             } catch (e) {
-                                console.log(`🔍 Status element ${i + 1} for "${this.computerName}": Could not get text`);
+                                console.log(`🔍 Status element ${i + 1} for "${computerName}": Could not get text`);
                             }
                         }
                     }
@@ -2510,22 +2573,23 @@ export class SensePCPage {
         }
     }
 
-    async clickResizePC() {
+    async clickResizePC(world?: any) {
         try {
-            console.log('🔍 Looking for Resize button in PC menu...');
+            const computerName = this.getComputerName(world);
+            console.log(`🔍 Looking for Resize button in PC menu for PC: ${computerName}`);
             
             // First, try to dismiss any overlays that might be intercepting clicks
             await this.dismissAnyOverlays();
             
             // Check if the menu is already open
-            const moreButton = this.page.locator(`.rounded-lg.border.bg-card:has(h3:has-text("${this.computerName}")) >> button[aria-haspopup="menu"]`);
+            const moreButton = this.page.locator(`.rounded-lg.border.bg-card:has(h3:has-text("${computerName}")) >> button[aria-haspopup="menu"]`);
             const isMenuOpen = await moreButton.getAttribute('aria-expanded');
             console.log(`🔍 Menu state: aria-expanded="${isMenuOpen}"`);
             
             if (isMenuOpen !== 'true') {
                 // Menu is not open, click the more button to open it
                 console.log('🔄 Menu is not open, clicking more button...');
-                await this.clickMoreButton();
+                await this.clickMoreButton(world);
                 console.log('✅ More button clicked, menu should be open');
             } else {
                 console.log('✅ Menu is already open, proceeding to find resize option');

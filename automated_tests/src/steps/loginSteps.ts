@@ -4,6 +4,8 @@ import { LoginPage } from '../pages/loginPage';
 import { CustomWorld } from '../support/world';
 import { config, getTestData } from '../config/environment';
 import { HomePage } from '../pages/homePage';
+import { customExpect } from '../utils/customAssertions';
+import { errorHandler } from '../utils/errorHandler';
 
 Given('I am on the homepage', { timeout: 30000 }, async function(this: CustomWorld) {
     if (!this.page) {
@@ -24,11 +26,12 @@ When('I click the Sign in link', async function(this: CustomWorld) {
 
 Then('I should be on the login page', async function(this: CustomWorld) {
     if (!this.page) {
-        throw new Error('Page is not initialized');
+        await errorHandler.handleTestFailure(new Error('Page is not initialized'), 'I should be on the login page');
+        return;
     }
     this.loginPage = new LoginPage(this.page);
     const isOnLoginPage = await this.loginPage.isOnLoginPage();
-    expect(isOnLoginPage).toBeTruthy();
+    await customExpect.toBeTruthy(isOnLoginPage, 'I should be on the login page');
 });
 
 When('I setup API interception for login', async function(this: CustomWorld) {
@@ -214,7 +217,8 @@ Then('I capture the access token from login', async function(this: CustomWorld) 
 
 Then('I should see the dashboard', { timeout: 30000 }, async function(this: CustomWorld) {
     if (!this.loginPage) {
-        throw new Error('Login page is not initialized');
+        await errorHandler.handleTestFailure(new Error('Login page is not initialized'), 'I should see the dashboard');
+        return;
     }
     
     console.log('🔍 Checking dashboard visibility...');
@@ -245,22 +249,25 @@ Then('I should see the dashboard', { timeout: 30000 }, async function(this: Cust
                 if (errorElement && await errorElement.isVisible()) {
                     const errorText = await errorElement.textContent();
                     console.log(`❌ Error message found: ${errorText}`);
-                    throw new Error(`Authentication failed: ${errorText}`);
+                    await errorHandler.handleTestFailure(
+                        new Error(`Authentication failed: ${errorText}`), 
+                        'I should see the dashboard',
+                        `Error message: ${errorText}`
+                    );
                 }
             } catch (e) {
                 // Continue checking other selectors
             }
         }
         
-        // Take a screenshot for debugging
-        try {
-            await this.page?.screenshot({ path: `dashboard-error-${Date.now()}.png`, fullPage: true });
-            console.log('📸 Screenshot saved for dashboard error debugging');
-        } catch (screenshotError) {
-            console.log('📸 Could not take screenshot for dashboard error');
-        }
+        // If no specific error message found, handle the general failure
+        await errorHandler.handleTestFailure(
+            new Error('Dashboard not visible and no specific error message found'), 
+            'I should see the dashboard',
+            'Dashboard visibility check failed'
+        );
     }
     
-    expect(isDashboardVisible).toBeTruthy();
+    await customExpect.toBeTruthy(isDashboardVisible, 'I should see the dashboard');
     console.log('✅ Dashboard is visible');
 });

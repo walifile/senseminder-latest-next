@@ -18,6 +18,9 @@ export const routes = {
   support: "/dashboard/support",
   tutorials: "/dashboard/tutorials",
   profileSecurity: "/dashboard/profile?tab=security",
+  welcome:"/welcome",
+  terms:"/terms",
+  privacy:"/privacy",
 };
 
 export const publicRoutes: string[] = [
@@ -30,6 +33,8 @@ export const publicRoutes: string[] = [
   routes.callback,
   routes.buildPc,
   routes.changePassword,
+  routes.terms,
+  routes.privacy,
   "/home",
   "/login",
   "/index",

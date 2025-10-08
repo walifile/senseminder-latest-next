@@ -2,9 +2,9 @@ image: mcr.microsoft.com/playwright:v1.49.0-noble
 
 pipelines:
   pull-requests:
-    'feature/*':
+    '**':
       - step:
-          name: Smoke Tests - Feature to Dev
+          name: Smoke Tests - PR to Develop
           caches:
             - node
           script:
@@ -60,7 +60,10 @@ pipelines:
             - export NEXT_PUBLIC_VM_EXTEND_SESSION_URL=${NEXT_PUBLIC_VM_EXTEND_SESSION_URL}
             - export NEXT_PUBLIC_VM_SCHEDULES_URL=${NEXT_PUBLIC_VM_SCHEDULES_URL}
             - export NEXT_PUBLIC_SUPPORT_API_BASE=${NEXT_PUBLIC_SUPPORT_API_BASE}
-            
+            - export NEXT_PUBLIC_FEEDBACK_API_URL=${NEXT_PUBLIC_FEEDBACK_API_URL}
+            - export NEXT_PUBLIC_PROMO_API_URL=${NEXT_PUBLIC_PROMO_API_URL}
+            - export NEXT_PUBLIC_CURRENT_ENVIRONMENT=${NEXT_PUBLIC_CURRENT_ENVIRONMENT}
+
             # Install Java for Allure
             - apt-get update && apt-get install -y openjdk-11-jdk
             - export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
@@ -87,68 +90,6 @@ pipelines:
     'develop':
       - step:
           name: Regression Tests - Dev to Master
-          caches:
-            - node
-          script:
-            # Set environment variables
-            - export HTTP_USERNAME=${HTTP_USERNAME}
-            - export HTTP_PASSWORD=${HTTP_PASSWORD}
-            - export VALID_USERNAME=${VALID_USERNAME}
-            - export VALID_PASSWORD=${VALID_PASSWORD}
-            - export SHARED_USER_EMAIL=${SHARED_USER_EMAIL}
-            - export SHARED_USERNAME=${SHARED_USERNAME}
-            - export NODE_ENV=production
-            - export BASE_URL=https://smartpc.cloud/
-            
-            # Install Java for Allure
-            - apt-get update && apt-get install -y openjdk-11-jdk
-            - export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-            
-            # Install dependencies and run tests
-            - cd automated_tests
-            - npm ci
-            - npx playwright install --with-deps
-            - npm install -g allure-commandline
-            - npm run test:regression:allure:ci
-          artifacts:
-            - automated_tests/allure-results/**
-            - automated_tests/allure-report/**
-
-  branches:
-    master:
-      - step:
-          name: Regression Tests - Master Branch
-          caches:
-            - node
-          script:
-            # Set environment variables
-            - export HTTP_USERNAME=${HTTP_USERNAME}
-            - export HTTP_PASSWORD=${HTTP_PASSWORD}
-            - export VALID_USERNAME=${VALID_USERNAME}
-            - export VALID_PASSWORD=${VALID_PASSWORD}
-            - export SHARED_USER_EMAIL=${SHARED_USER_EMAIL}
-            - export SHARED_USERNAME=${SHARED_USERNAME}
-            - export NODE_ENV=production
-            - export BASE_URL=https://smartpc.cloud/
-            
-            # Install Java for Allure
-            - apt-get update && apt-get install -y openjdk-11-jdk
-            - export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-            
-            # Install dependencies and run tests
-            - cd automated_tests
-            - npm ci
-            - npx playwright install --with-deps
-            - npm install -g allure-commandline
-            - npm run test:regression:allure:ci
-          artifacts:
-            - automated_tests/allure-results/**
-            - automated_tests/allure-report/**
-
-  schedules:
-    daily-regression:
-      - step:
-          name: Daily Regression Tests - 1AM EST
           caches:
             - node
           script:

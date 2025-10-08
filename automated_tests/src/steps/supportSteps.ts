@@ -10,7 +10,10 @@ Given('I navigate to the support page', { timeout: 30000 }, async function(this:
     if (!this.supportPage) {
         this.supportPage = new (await import('../pages/supportPage')).SupportPage(this.page);
     }
-    
+
+    // const sensePCPage = new SensePCPage(this.page);
+    // await sensePCPage.handleSkipButtonIfPresent();
+
     await this.supportPage.clickSupportFromSidebar();
     await this.page!.waitForLoadState('networkidle');
 });

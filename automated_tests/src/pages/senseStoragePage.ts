@@ -57,7 +57,7 @@ export class SenseStoragePage {
         this.bulkDeleteConfirm = page.locator('button:has-text("Confirm Delete"), button:has-text("Yes, Delete")');
         
         // File sharing elements
-        this.shareButton = page.locator('div[role="menuitem"]:has-text("Share")');;
+        this.shareButton = page.locator('div[role="menuitem"]:has-text("Share")');
         this.shareModal = page.locator('[role="dialog"]');
         this.shareConfirmButton = this.page.locator('div[role="dialog"] button:has-text("Share")');
         this.shareCloseButton = page.locator('button:has-text("Close")');
@@ -297,14 +297,163 @@ export class SenseStoragePage {
     }
 
     async clickShareButton(fileName: string): Promise<void> {
-        await this.shareButton.click();
+        console.log(`🔍 Clicking share button for file: ${fileName}`);
+        
+        try {
+            // First, dismiss any feedback popup that might be present
+            //await this.dismissFeedbackPopup();
+            
+            // Additional check - try to dismiss any overlapping elements
+            // await this.dismissOverlappingElements();
+            
+            // Wait a moment for any UI to settle
+            await this.page.waitForTimeout(1000);
+            
+            // First, ensure the file menu is open
+            console.log('🔍 Ensuring file menu is open...');
+            const fileMenu = this.page.locator(`tr:has-text("${fileName}") button:has(svg.lucide-ellipsis)`);
+            
+            // Try to find the file menu with multiple attempts
+            let menuFound = false;
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                try {
+                    console.log(`🔍 Looking for file menu, attempt ${attempt}/3...`);
+                    await fileMenu.waitFor({ state: 'visible', timeout: 3000 });
+                    menuFound = true;
+                    break;
+                } catch (e) {
+                    console.log(`⚠️ File menu not found on attempt ${attempt}, retrying...`);
+                    await this.page.waitForTimeout(1000);
+                }
+            }
+            
+            if (!menuFound) {
+                throw new Error('File menu not found after multiple attempts');
+            }
+            
+            // Check if menu is already open, if not click it
+            const menuDropdown = this.page.locator('[role="menu"]');
+            const isMenuOpen = await menuDropdown.isVisible();
+            if (!isMenuOpen) {
+                console.log('🔍 File menu not open, clicking to open...');
+                await fileMenu.click();
+                await this.page.waitForTimeout(1000); // Wait for menu to open
+            }
+            
+            // Now look for the share button specifically in the menu
+            console.log('🔍 Looking for share button in menu...');
+            const shareMenuItem = this.page.locator('[role="menu"] div[role="menuitem"]:has-text("Share")');
+            await shareMenuItem.waitFor({ state: 'visible', timeout: 5000 });
+            console.log('✅ Share button is visible in menu');
+            
+            // Click the share button
+            await shareMenuItem.click();
+            console.log('✅ Share button clicked');
+            
+            // Wait a moment for the modal to appear
+            await this.page.waitForTimeout(1000);
+            
+        } catch (error) {
+            console.log('❌ Error clicking share button:', error);
+            
+            // Debug: Check what menu items are available
+            console.log('🔍 Debugging available menu items...');
+            const menuItems = await this.page.locator('[role="menu"] [role="menuitem"]').all();
+            console.log(`🔍 Found ${menuItems.length} menu items`);
+            
+            for (let i = 0; i < menuItems.length; i++) {
+                try {
+                    const text = await menuItems[i].textContent();
+                    if (text) {
+                        console.log(`🔍 Menu item ${i + 1}: "${text.trim()}"`);
+                    }
+                } catch (e) {
+                    console.log(`🔍 Could not get text from menu item ${i + 1}`);
+                }
+            }
+            
+            // Also check if there are any buttons with "share" text
+            const shareButtons = await this.page.locator('button:has-text("Share"), [role="menuitem"]:has-text("Share")').all();
+            console.log(`🔍 Found ${shareButtons.length} share-related elements`);
+            
+            for (let i = 0; i < shareButtons.length; i++) {
+                try {
+                    const text = await shareButtons[i].textContent();
+                    const role = await shareButtons[i].getAttribute('role');
+                    console.log(`🔍 Share element ${i + 1} (role: ${role}): "${text?.trim()}"`);
+                } catch (e) {
+                    console.log(`🔍 Could not get details from share element ${i + 1}`);
+                }
+            }
+            
+            throw error;
+        }
     }
 
     async isShareModalVisible(): Promise<boolean> {
         try {
-            await this.shareModal.waitFor({ state: 'visible', timeout: 5000 });
-            return true;
-        } catch {
+            console.log('🔍 Checking if share modal is visible...');
+            
+            // Wait a bit for the modal to appear
+            await this.page.waitForTimeout(1000);
+            
+            // Try multiple selectors for the share modal
+            const modalSelectors = [
+                '[role="dialog"]',
+                '[data-testid="share-modal"]',
+                '.modal',
+                '[class*="modal"]',
+                '[class*="dialog"]',
+                '[class*="share"]'
+            ];
+            
+            for (const selector of modalSelectors) {
+                try {
+                    const modal = this.page.locator(selector);
+                    if (await modal.isVisible()) {
+                        console.log(`✅ Share modal found with selector: ${selector}`);
+                        return true;
+                    }
+                } catch (e) {
+                    // Continue to next selector
+                }
+            }
+            
+            // Debug: Check what's currently on the page
+            console.log('🔍 Debugging page content for share modal...');
+            const allDialogs = await this.page.locator('[role="dialog"]').all();
+            console.log(`🔍 Found ${allDialogs.length} dialogs on page`);
+            
+            for (let i = 0; i < allDialogs.length; i++) {
+                try {
+                    const text = await allDialogs[i].textContent();
+                    if (text) {
+                        console.log(`🔍 Dialog ${i + 1} content: "${text.trim().substring(0, 100)}..."`);
+                    }
+                } catch (e) {
+                    console.log(`🔍 Could not get text from dialog ${i + 1}`);
+                }
+            }
+            
+            // Check for any visible modals or overlays
+            const allModals = await this.page.locator('[class*="modal"], [class*="overlay"], [class*="backdrop"]').all();
+            console.log(`🔍 Found ${allModals.length} potential modal/overlay elements`);
+            
+            for (let i = 0; i < Math.min(allModals.length, 5); i++) {
+                try {
+                    const text = await allModals[i].textContent();
+                    if (text && text.trim().length > 0) {
+                        console.log(`🔍 Modal/Overlay ${i + 1} content: "${text.trim().substring(0, 100)}..."`);
+                    }
+                } catch (e) {
+                    console.log(`🔍 Could not get text from modal/overlay ${i + 1}`);
+                }
+            }
+            
+            console.log('❌ Share modal not found with any selector');
+            return false;
+        } catch (error) {
+            console.log('❌ Error checking share modal visibility:', error);
             return false;
         }
     }
@@ -345,5 +494,121 @@ export class SenseStoragePage {
         catch{
             return false;
             }
+    }
+
+    // Navigation methods
+    async navigateToStoragePage(): Promise<void> {
+        await this.page.goto('/dashboard/storage');
+        await this.page.waitForLoadState('networkidle');
+    }
+
+    // File upload with validation methods
+    async uploadFileWithValidation(fileName: string, sizeInMB: number = 1): Promise<void> {
+        const filePath = await this.createTestFile(fileName, sizeInMB);
+        await this.uploadSingleFile(filePath);
+    }
+
+    async uploadMultipleFilesWithValidation(fileNames: string[], sizeInMB: number = 1): Promise<void> {
+        const filePaths: string[] = [];
+        
+        for (const fileName of fileNames) {
+            const filePath = await this.createTestFile(fileName, sizeInMB);
+            filePaths.push(filePath);
+        }
+        
+        await this.uploadMultipleFiles(filePaths);
+    }
+
+    // Share modal validation methods
+    async validateShareModalWithTitle(expectedTitle: string, captureScreenshot?: (name: string, type?: "failure" | "debug" | "error" | "failure_fallback") => Promise<string | null>): Promise<boolean> {
+        console.log(`🔍 Checking if share modal opens with title containing: "${expectedTitle}"`);
+        
+        const isModalVisible = await this.isShareModalVisible();
+        
+        if (!isModalVisible) {
+            console.log('❌ Share modal is not visible');
+            if (captureScreenshot) {
+                console.log('🔍 Taking screenshot for debugging...');
+                await captureScreenshot('share-modal-not-visible', 'error');
+            }
+            throw new Error('Share modal did not open. Check screenshot for debugging.');
+        }
+        
+        console.log('✅ Share modal is visible');
+        
+        // Check if the modal title contains the expected text
+        try {
+            const modalTitle = await this.page.locator('[role="dialog"] h1, [role="dialog"] h2, [role="dialog"] [data-testid="modal-title"]').nth(1).textContent();
+            console.log(`🔍 Modal title found: "${modalTitle}"`);
+            
+            if (!modalTitle || !modalTitle.includes(expectedTitle)) {
+                console.log(`❌ Modal title does not contain expected text. Expected: "${expectedTitle}", Found: "${modalTitle}"`);
+                if (captureScreenshot) {
+                    console.log('🔍 Taking screenshot for debugging...');
+                    await captureScreenshot('share-modal-wrong-title', 'error');
+                }
+                throw new Error(`Modal title does not contain expected text. Expected: "${expectedTitle}", Found: "${modalTitle}"`);
+            }
+            
+            console.log(`✅ Modal title contains expected text: "${expectedTitle}"`);
+            return true;
+        } catch (error) {
+            console.log('❌ Error checking modal title:', error);
+            if (captureScreenshot) {
+                console.log('🔍 Taking screenshot for debugging...');
+                await captureScreenshot('share-modal-title-error', 'error');
+            }
+            throw error;
+        }
+    }
+
+    // Success message validation methods
+    async validateSuccessMessage(expectedMessage: string): Promise<boolean> {
+        await this.waitForUploadComplete();
+        const isSuccessVisible = await this.isSuccessMessageVisible();
+        
+        if (!isSuccessVisible) {
+            return false;
+        }
+        
+        const actualMessage = await this.getSuccessMessage();
+        return actualMessage.includes(expectedMessage);
+    }
+
+    // File list validation methods
+    async validateFileListNotEmpty(): Promise<boolean> {
+        await this.waitForUploadComplete();
+        const fileList = await this.getFileList();
+        return fileList.length > 0;
+    }
+
+    async validateFilesNotInList(fileNames: string[]): Promise<boolean> {
+        await this.page.waitForTimeout(2000);
+        return await this.isFilesDeleted(fileNames);
+    }
+
+    // File viewer validation methods
+    async validateFileContentDisplayed(fileName: string): Promise<boolean> {
+        return await this.isFileContentVisible(fileName);
+    }
+
+    async validateFileViewerClosed(fileName: string): Promise<boolean> {
+        await this.closeFileViewer();
+        return await this.isFileViewerClosed(fileName);
+    }
+
+    async validateFileViewerOpenWithTitle(expectedTitle: string): Promise<boolean> {
+        return await this.isFileViewerOpenWithTitle(expectedTitle);
+    }
+
+    // File status validation methods
+    async validateFileStatus(fileName: string, status: string): Promise<boolean> {
+        return await this.isFileStatus(fileName, status);
+    }
+
+    // Upload button validation methods
+    async validateUploadButtonClick(): Promise<boolean> {
+        await this.clickUploadButton();
+        return await this.isUploadModalVisible();
     }
 }

@@ -27,30 +27,57 @@ export default function Dashboard() {
     useState<CognitoAccessTokenPayload | null>(null);
   const router = useRouter();
 
+  // useEffect(() => {
+  //   const loadTokens = async () => {
+  //     try {
+  //       const session = await fetchAuthSession();
+  //       const id = session.tokens?.idToken?.toString();
+  //       const access = session.tokens?.accessToken?.toString();
+
+  //       if (!id || !access) throw new Error("Token(s) missing");
+
+  //       const decodedIdPayload = JSON.parse(atob(id.split(".")[1]));
+  //       const decodedAccessPayload = JSON.parse(atob(access.split(".")[1]));
+
+  //       setIdToken(id);
+  //       setAccessToken(access);
+  //       setIdPayload(decodedIdPayload);
+  //       setAccessPayload(decodedAccessPayload);
+  //     } catch (err) {
+  //       console.error("Error loading tokens:", err);
+  //       router.push("/login");
+  //     }
+  //   };
+
+  //   loadTokens();
+  // }, []);
+
+
   useEffect(() => {
-    const loadTokens = async () => {
-      try {
-        const session = await fetchAuthSession();
-        const id = session.tokens?.idToken?.toString();
-        const access = session.tokens?.accessToken?.toString();
+  const loadTokens = async () => {
+    try {
+      // ✅ force refresh so tokens always come from Cognito, not cache
+      const session = await fetchAuthSession({ forceRefresh: true });
+      const id = session.tokens?.idToken?.toString();
+      const access = session.tokens?.accessToken?.toString();
 
-        if (!id || !access) throw new Error("Token(s) missing");
+      if (!id || !access) throw new Error("Token(s) missing");
 
-        const decodedIdPayload = JSON.parse(atob(id.split(".")[1]));
-        const decodedAccessPayload = JSON.parse(atob(access.split(".")[1]));
+      const decodedIdPayload = JSON.parse(atob(id.split(".")[1]));
+      const decodedAccessPayload = JSON.parse(atob(access.split(".")[1]));
 
-        setIdToken(id);
-        setAccessToken(access);
-        setIdPayload(decodedIdPayload);
-        setAccessPayload(decodedAccessPayload);
-      } catch (err) {
-        console.error("Error loading tokens:", err);
-        router.push("/login");
-      }
-    };
+      setIdToken(id);
+      setAccessToken(access);
+      setIdPayload(decodedIdPayload);
+      setAccessPayload(decodedAccessPayload);
+    } catch (err) {
+      console.error("Error loading tokens:", err);
+      router.push("/login");
+    }
+  };
 
-    loadTokens();
-  }, []);
+  loadTokens();
+}, []);
 
   const handleCopy = (token: string | null, label: string) => {
     if (token) {

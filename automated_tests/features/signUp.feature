@@ -4,7 +4,7 @@ Feature: Login Functionality
   I want to be able to sign up to the application
   So that I can create my account
 
-  @smoke @critical
+  @smoke @critical @signup-test
   Scenario: I want to be able to sign up to the application
     Given I am on the homepage
     When I click the Sign in link
