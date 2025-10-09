@@ -2,16 +2,27 @@
 import Link from "next/link";
 import Image from "next/image";
 
+import { useTheme } from "./theme-provider";
+
 export function Logo() {
+  const { resolvedTheme } = useTheme();
+
+  const logoSrc =
+    resolvedTheme === "dark"
+      ? "/sensepc-logo-dark.png"
+      : "/sensepc-logo-light.png";
+
   return (
     <Link href="/" className="flex items-center space-x-2">
-      <Image
-        src="/sensepc-logo.png"
-        alt="Sense PC Logo"
-        width={112} // w-28 = 112px
-        height={32} // h-8 = 32px
-        priority
-      />
+      <div className="relative w-[55px] h-[40px] md:w-[82px] md:h-[60px]">
+        <Image
+          src={logoSrc}
+          alt="Sense PC Logo"
+          fill
+          priority
+          sizes="(max-width: 768px) 55px, 82px"
+        />
+      </div>
     </Link>
   );
 }

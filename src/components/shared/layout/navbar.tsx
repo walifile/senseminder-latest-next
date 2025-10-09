@@ -3,15 +3,15 @@
 import type { RootState } from "@/redux/store";
 
 import Link from "next/link";
+import React, { useState } from "react";
 import { routes } from "@/constants/routes";
 import { usePathname } from "next/navigation";
-import React, { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 
 import { useSelector } from "react-redux";
 
-import { X, Menu } from "lucide-react";
+import { X, Menu, CircleUserRound } from "lucide-react";
 
 import { Logo } from "@/components/shared/layout/Logo";
 import { ThemeToggle } from "@/components/shared/layout/theme-toggle";
@@ -23,20 +23,6 @@ const Navbar = () => {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
@@ -50,44 +36,39 @@ const Navbar = () => {
   }
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "glass-effect shadow-lg" : "bg-transparent"
-      }`}
-    >
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="flex items-center justify-between h-16">
+    <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 glass-effect">
+      <div className="container mx-auto py-2.5 md:py-4">
+        <div className="flex items-center justify-between gap-2">
           <Logo />
 
-          <div className="hidden md:flex items-center space-x-2">
-            {isAuthenticated && (
-              <Button variant="ghost" className="text-sm" asChild>
-                <Link href={routes?.dashboard}>Home</Link>
-              </Button>
-            )}
-            <Button variant="ghost" className="text-sm" asChild>
-              <Link
-                href={isAuthenticated ? routes.storage : routes.smartStorage}
-              >
-                Sense Storage
-              </Link>
-            </Button>
-            <Button variant="ghost" className="text-sm" asChild>
-              <Link href={routes.buildPc}>Build Sense PC</Link>
-            </Button>
+          <div className="hidden md:flex items-center space-x-8">
             <ThemeToggle />
+            <Link
+              href={isAuthenticated ? routes.storage : routes.smartStorage}
+              className="text-lg font-medium"
+            >
+              Sense Storage
+            </Link>
+            <Link href={routes.buildPc} className="text-lg font-medium">
+              Build Sense PC
+            </Link>
             {isAuthenticated ? (
               <ProfileDropdown />
             ) : (
-              <Button variant="ghost" className="text-sm" asChild>
-                <Link href="/auth">Sign in</Link>
+              <Button asChild>
+                <Link href="/auth" className="space-x-1.5">
+                  <CircleUserRound />
+                  Login
+                </Link>
               </Button>
             )}
           </div>
 
-          <div className="md:hidden">
-            <button
-              className="inline-flex items-center justify-center p-2 rounded-md text-muted-foreground hover:text-foreground focus:outline-none"
+          <div className="flex items-center space-x-4 md:hidden">
+            <ThemeToggle />
+            <Button
+              size="icon"
+              className="rounded-full"
               onClick={toggleMobileMenu}
             >
               {mobileMenuOpen ? (
@@ -95,7 +76,7 @@ const Navbar = () => {
               ) : (
                 <Menu className="h-6 w-6" />
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -118,9 +99,6 @@ const Navbar = () => {
             >
               <Link href={routes.buildPc}>Build Sense PC</Link>
             </Button>
-            <div className="px-3 py-1">
-              <ThemeToggle />
-            </div>
             {isAuthenticated ? (
               <ProfileDropdown />
             ) : (

@@ -1,7 +1,7 @@
 /* eslint perfectionist/sort-imports: "off" */
 
 import type { RootState } from "@/redux/store";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { checkOnboarded } from "@/lib/utils/checkOnboarded";
 
 import Link from "next/link";
@@ -41,7 +41,6 @@ const ProfileDropdown = () => {
   const { toast } = useToast();
   const { user } = useSelector((state: RootState) => state.auth);
 
-
   const [isOnboarded, setIsOnboarded] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -51,7 +50,6 @@ const ProfileDropdown = () => {
     };
     fetchOnboarded();
   }, []);
-
 
   const feedbackDialog = useBoolean();
 
@@ -86,63 +84,62 @@ const ProfileDropdown = () => {
   };
 
   return (
+    isOnboarded && (
+      <>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="flex items-center gap-2 px-3">
+              <Avatar className="size-10">
+                <AvatarFallback>{getAvatarFallback(user ?? {})}</AvatarFallback>
+              </Avatar>
+              <div className="hidden md:block text-left">
+                <p className="text-base font-medium">
+                  {user?.firstName} {user?.lastName}
+                </p>
+                <p className="text-sm text-muted-foreground">{user?.email}</p>
+              </div>
+              <ChevronDown className="h-4 w-4 hidden md:block" />
+            </Button>
+          </DropdownMenuTrigger>
 
-     isOnboarded && (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="flex items-center gap-2">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback>{getAvatarFallback(user ?? {})}</AvatarFallback>
-            </Avatar>
-            <div className="hidden md:block text-left">
-              <p className="text-sm font-medium">
-                {user?.firstName} {user?.lastName}
-              </p>
-              <p className="text-xs text-muted-foreground">{user?.email}</p>
-            </div>
-            <ChevronDown className="h-4 w-4 hidden md:block" />
-          </Button>
-        </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
 
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/profile">
+                <User className="mr-2 h-4 w-4" />
+                Profile
+              </Link>
+            </DropdownMenuItem>
 
-          <DropdownMenuItem asChild>
-            <Link href="/dashboard/profile">
-              <User className="mr-2 h-4 w-4" />
-              Profile
-            </Link>
-          </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/billing">
+                <CreditCard className="mr-2 h-4 w-4" />
+                Billing
+              </Link>
+            </DropdownMenuItem>
 
-          <DropdownMenuItem asChild>
-            <Link href="/dashboard/billing">
-              <CreditCard className="mr-2 h-4 w-4" />
-              Billing
-            </Link>
-          </DropdownMenuItem>
+            <DropdownMenuItem onClick={feedbackDialog.onTrue}>
+              <MessageSquarePlus className="mr-2 h-4 w-4" />
+              Product Feedback
+            </DropdownMenuItem>
 
-          <DropdownMenuItem onClick={feedbackDialog.onTrue}>
-            <MessageSquarePlus className="mr-2 h-4 w-4" />
-            Product Feedback
-          </DropdownMenuItem>
+            <DropdownMenuSeparator />
 
-          <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-          <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <FeedbackDialog
-        open={feedbackDialog.value}
-        onClose={feedbackDialog.onFalse}
-      />
-    </>
-      )
+        <FeedbackDialog
+          open={feedbackDialog.value}
+          onClose={feedbackDialog.onFalse}
+        />
+      </>
+    )
   );
 };
 
