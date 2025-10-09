@@ -46,6 +46,7 @@ import Navbar from "@/components/shared/layout/navbar";
 
 import { formSchema } from "./schema";
 import { fetchEstimate } from "./api/fetch-estimate";
+import CostSummary from "./_components/cost-summary";
 import {
   osOptions,
   cpuOptions,
@@ -99,6 +100,7 @@ export default function BuildSmartPCPage() {
     cpu,
     region,
     storage,
+    billingPlan,
   } = values;
 
   const isLinuxOS = selectedOS === "Linux";
@@ -132,14 +134,12 @@ export default function BuildSmartPCPage() {
     });
   }, [cpu, storage, region]);
 
-  // onSubmit
-  // const handleEstimate = async () =>
-  //   await fetchEstimate({
-  //     methods,
-  //     getEstimate,
-  //     toast,
-  //     showError: true,
-  //   });
+  const handleEstimate = async () =>
+    await fetchEstimate({
+      methods,
+      getEstimate,
+      toast,
+    });
 
   const onSubmit = handleSubmit(async (data: FormValues) => {
     if (!isAuthenticated) {
@@ -388,6 +388,16 @@ export default function BuildSmartPCPage() {
                       )}
                     </CardContent>
                   </Card>
+
+                  <div>
+                    <CostSummary
+                      isResize={false}
+                      billingPlan={billingPlan}
+                      handleEstimate={handleEstimate}
+                      estimateData={data}
+                      isEstimating={isLoading}
+                    />
+                  </div>
                 </form>
               </Form>
             </motion.div>
