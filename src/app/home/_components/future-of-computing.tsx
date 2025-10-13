@@ -26,7 +26,7 @@ const benefitCards = [
 ];
 
 const FutureOfComputing = () => (
-  <div className="container py-20 space-y-6 md:space-y-12">
+  <div className="container my-12 md:my-20 space-y-6 md:space-y-12">
     <div className="space-y-2.5 text-center">
       <p className="font-space-grotesk font-bold text-2xl md:text-5xl">
         The Future of Computing{" "}
