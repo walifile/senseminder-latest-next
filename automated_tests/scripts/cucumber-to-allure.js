@@ -12,16 +12,39 @@ function convertCucumberToAllure(cucumberJsonPath, outputDir) {
             fs.mkdirSync(outputDir, { recursive: true });
         }
         
+        console.log(`📊 Processing ${cucumberData.length} features...`);
+        
         // Convert each scenario to Allure format
         cucumberData.forEach((feature, featureIndex) => {
+            console.log(`📋 Processing feature: ${feature.name}`);
             feature.elements.forEach((scenario, scenarioIndex) => {
+                // Determine overall scenario status
+                const hasFailedSteps = scenario.steps.some(step => step.result.status === 'failed');
+                const hasSkippedSteps = scenario.steps.some(step => step.result.status === 'skipped');
+                const hasUndefinedSteps = scenario.steps.some(step => step.result.status === 'undefined');
+                
+                let scenarioStatus = 'passed';
+                if (hasFailedSteps) {
+                    scenarioStatus = 'failed';
+                } else if (hasSkippedSteps || hasUndefinedSteps) {
+                    scenarioStatus = 'broken';
+                }
+                
+                // Find the first failed step for error details
+                const failedStep = scenario.steps.find(step => step.result.status === 'failed');
+                const errorMessage = failedStep?.result.error_message || '';
+                const errorTrace = failedStep?.result.error_message || '';
+                
                 const allureResult = {
                     name: scenario.name,
                     fullName: `${feature.name} - ${scenario.name}`,
-                    status: scenario.steps.every(step => step.result.status === 'passed') ? 'passed' : 'failed',
+                    status: scenarioStatus,
                     statusDetails: {
-                        message: scenario.steps.find(step => step.result.status === 'failed')?.result.error_message || '',
-                        trace: scenario.steps.find(step => step.result.status === 'failed')?.result.error_message || ''
+                        message: errorMessage,
+                        trace: errorTrace,
+                        flaky: false,
+                        known: false,
+                        muted: false
                     },
                     start: Date.now(),
                     stop: Date.now(),
@@ -40,17 +63,36 @@ function convertCucumberToAllure(cucumberJsonPath, outputDir) {
                         {
                             name: 'suite',
                             value: feature.name
+                        },
+                        {
+                            name: 'package',
+                            value: feature.name
                         }
                     ],
                     links: [],
                     parameters: [],
-                    steps: scenario.steps.map((step, stepIndex) => ({
-                        name: step.name,
-                        status: step.result.status === 'passed' ? 'passed' : 'failed',
-                        start: Date.now(),
-                        stop: Date.now(),
-                        attachments: []
-                    }))
+                    steps: scenario.steps.map((step, stepIndex) => {
+                        let stepStatus = 'passed';
+                        if (step.result.status === 'failed') {
+                            stepStatus = 'failed';
+                        } else if (step.result.status === 'skipped') {
+                            stepStatus = 'skipped';
+                        } else if (step.result.status === 'undefined') {
+                            stepStatus = 'broken';
+                        }
+                        
+                        return {
+                            name: step.name,
+                            status: stepStatus,
+                            start: Date.now(),
+                            stop: Date.now(),
+                            attachments: [],
+                            statusDetails: step.result.status === 'failed' ? {
+                                message: step.result.error_message || '',
+                                trace: step.result.error_message || ''
+                            } : undefined
+                        };
+                    })
                 };
                 
                 // Write individual Allure result file
@@ -59,7 +101,7 @@ function convertCucumberToAllure(cucumberJsonPath, outputDir) {
             });
         });
         
-        console.log(`✅ Successfully converted Cucumber JSON to Allure format in ${outputDir}`);
+        console.log(`✅ Successfully converted ${cucumberData.length} features to Allure format in ${outputDir}`);
         return true;
         
     } catch (error) {

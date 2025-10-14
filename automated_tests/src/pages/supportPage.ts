@@ -52,8 +52,8 @@ export class SupportPage {
         this.ticketId = page.locator('td, .ticket-id, [class*="id"]');
         this.replyTextarea = page.locator('textarea[placeholder*="reply"], textarea[placeholder*="Type your reply"]');
         this.sendReplyButton = page.locator('button:has-text("Send Reply")');
-        this.markAsResolvedButton = page.locator('button:has-text("Mark as Resolved")');
-        this.backToSupportButton = page.locator('button:has-text("Back"), a:has-text("Back")');
+        this.markAsResolvedButton = page.locator('button:has-text("Mark as Resolved")').first();
+        this.backToSupportButton = page.locator('button:has-text("Back"), a:has-text("Back")').first();
         this.successMessage = page.locator('.success, .alert-success, [class*="success"]');
         this.ticketTitle = page.locator('h1, h2, .ticket-title');
         this.ticketInfo = page.locator('.ticket-info, [class*="ticket-info"]');

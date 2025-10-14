@@ -87,7 +87,7 @@ Feature: Create a new PC Functionality
    Then I should be able to verify Estimated total: "$1.109 /hour"
    When I check I acknowledge and accept above statement
    And I Click on Confirm & Pay button
-#   Then I should be able to verify "$1.109" amount deducted notification
+  # Then I should be able to verify "$1.109" amount deducted notification
    Then I should be able to verify Newly create PC Name Record on list
    When I wait for the PC to complete building and start running
    And I click on connect button when it is ready and clickable

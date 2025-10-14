@@ -1,5 +1,6 @@
-"use client";
+/* eslint perfectionist/sort-imports: "off" */
 
+"use client";
 
 import FAQ from "./faq";
 import Hero from "./hero";
@@ -10,10 +11,7 @@ import CostCalculator from "./cost-calculator";
 import ProblemSolution from "./problem-solution";
 import TutorialSection from "./tutorial-section";
 
-
 export default function HomePage() {
- 
-
   return (
     <MainLayout>
       <Hero />

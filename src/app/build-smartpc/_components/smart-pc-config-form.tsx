@@ -1,3 +1,5 @@
+/* eslint perfectionist/sort-imports: "off" */
+
 "use client";
 
 import type { UseFormReturn } from "react-hook-form";
@@ -15,13 +17,9 @@ import { AlertCircle } from "lucide-react";
 import { Form, Field } from "@/components/shared/hook-form";
 
 import FieldChangePreview from "./field-change-preview";
-import {
-  osOptions,
-  cpuOptions,
-  cpuCategories,
-  storageOptions,
-  locationOptions,
-} from "../data";
+import { osOptions, storageOptions, locationOptions } from "../data";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useGetSmartPcConfigQuery } from "@/api/smartPCConfigAPI";
 
 import type { FormValues } from "../schema";
 import type { ResizeInitial } from "../types";
@@ -42,10 +40,8 @@ const SmartPcConfigForm = ({
   isStorageOnly,
   existingCPU,
   existingStorage,
-  existingData,
   loadingExisting,
 }: Props) => {
-  console.log("existingData", existingData);
   const locked = new Set([
     "pcName",
     "operatingSystem",
@@ -72,34 +68,58 @@ const SmartPcConfigForm = ({
   /* ----- dynamic form logic ----- */
   const isLinuxOS = selectedOS === "Linux";
 
+  // Fetch API cpuOptions via RTK Query
+  const {
+    data: apiConfig,
+    isLoading: isConfigLoading,
+    isFetching: isConfigFetching,
+  } = useGetSmartPcConfigQuery();
+  const apiCpuOptions = (apiConfig?.cpuOptions || {}) as Record<
+    string,
+    { value: string; label: string }[]
+  >;
+  const apiCpuCategories = (apiConfig?.cpuCategories || {}) as Record<
+    string,
+    Record<string, { value: string; label: string }[]>
+  >;
+  const configLoading = isConfigLoading || isConfigFetching;
+
   const linuxCategoryCpuOptions = useMemo(
-    () => cpuCategories.Linux[`${selectedLinuxCategory}`] || [],
-    [selectedLinuxCategory]
+    () => apiCpuCategories?.Linux?.[`${selectedLinuxCategory}`] || [],
+    [selectedLinuxCategory, apiCpuCategories]
   );
 
   const cpuOptionsForOS = isLinuxOS
     ? linuxCategoryCpuOptions
-    : cpuOptions[selectedOS] || [];
+    : apiCpuOptions[selectedOS] || [];
 
   // auto cpu selection
   useEffect(() => {
-    if (!isResize && selectedOS) {
+    if (!isResize && selectedOS && !configLoading) {
       setValue("linuxCategory", "Ubuntu_24.04_LTS_X64", {
         shouldValidate: true,
       });
-      setValue("cpu", cpuOptions[selectedOS][0].value, {
-        shouldValidate: true,
-      });
+      const opts = apiCpuOptions?.[selectedOS];
+      if (opts && opts.length > 0) {
+        setValue("cpu", opts[0].value, {
+          shouldValidate: true,
+        });
+      }
     }
-  }, [isResize, selectedOS, setValue]);
+  }, [isResize, selectedOS, setValue, apiCpuOptions, configLoading]);
 
   useEffect(() => {
-    if (!isResize && isLinuxOS && linuxCategoryCpuOptions.length > 0) {
+    if (
+      !isResize &&
+      isLinuxOS &&
+      !configLoading &&
+      linuxCategoryCpuOptions.length > 0
+    ) {
       setValue("cpu", linuxCategoryCpuOptions[0].value, {
         shouldValidate: true,
       });
     }
-  }, [isResize, isLinuxOS, linuxCategoryCpuOptions, setValue]);
+  }, [isResize, isLinuxOS, linuxCategoryCpuOptions, setValue, configLoading]);
 
   /* ----- locked fields ----- */
   function isLocked(
@@ -190,15 +210,23 @@ const SmartPcConfigForm = ({
           </h4>
 
           {/* Linux category */}
-          {isLinuxOS && (
-            <Field.Select
-              name="linuxCategory"
-              label="Category"
-              placeholder="Select Linux category"
-              options={Object.keys(cpuCategories.Linux)}
-              disabled={isResize || loadingExisting}
-            />
-          )}
+          {isLinuxOS &&
+            (configLoading ? (
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <Skeleton className="h-11 w-full" />
+              </div>
+            ) : (
+              <Field.Select
+                name="linuxCategory"
+                label="Category"
+                placeholder="Select Linux category"
+                options={Object.keys(
+                  (apiCpuCategories?.Linux || {}) as Record<string, unknown>
+                )}
+                disabled={isResize || loadingExisting}
+              />
+            ))}
 
           {/* CPU */}
           <div className="space-y-2">
@@ -213,17 +241,25 @@ const SmartPcConfigForm = ({
               )}
             </div>
 
-            <Field.Select
-              name="cpu"
-              placeholder="Select CPU size"
-              options={cpuOptionsForOS}
-              disabled={loadingExisting || (isResize && isStorageOnly)}
-              onValueChange={(value) => {
-                if (value) {
-                  setValue("cpu", value, { shouldValidate: true });
+            {configLoading ? (
+              <Skeleton className="h-11 w-full" />
+            ) : (
+              <Field.Select
+                name="cpu"
+                placeholder="Select CPU size"
+                options={cpuOptionsForOS}
+                disabled={
+                  loadingExisting ||
+                  (isResize && isStorageOnly) ||
+                  configLoading
                 }
-              }}
-            />
+                onValueChange={(value) => {
+                  if (value) {
+                    setValue("cpu", value, { shouldValidate: true });
+                  }
+                }}
+              />
+            )}
           </div>
 
           {/* Storage */}

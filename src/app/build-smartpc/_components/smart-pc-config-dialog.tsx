@@ -1,3 +1,5 @@
+/* eslint perfectionist/sort-imports: "off" */
+
 "use client";
 
 import type { RootState } from "@/redux/store";
@@ -25,12 +27,8 @@ import { fetchEstimate } from "../api/fetch-estimate";
 import SmartPcConfigForm from "./smart-pc-config-form";
 import ConfirmPurchaseDialog from "./confirm-purchase-dialog";
 import SmartPcConfigDialogHeader from "./smart-pc-config-dialog-header";
-import {
-  osOptions,
-  cpuOptions,
-  storageOptions,
-  locationOptions,
-} from "../data";
+import { osOptions, storageOptions, locationOptions } from "../data";
+// import { useGetSmartPcConfigQuery } from "@/api/smartPCConfigAPI";
 import {
   makeResizeRequest,
   validateStorageIncrease,
@@ -95,7 +93,7 @@ const SmartPCConfigDialog = ({
     () => ({
       pcName: "",
       operatingSystem: config.operatingSystem || osOptions[0].value || "",
-      cpu: config.cpu || cpuOptions[osOptions[0].value][0].value || "",
+      cpu: config.cpu || "",
       storage: config.storage || storageOptions[0].value || "",
       region: config.region || locationOptions[0].value || "",
       billingPlan: "hourly",
@@ -114,6 +112,10 @@ const SmartPCConfigDialog = ({
 
   const values = watch();
   const { billingPlan, cpu, region, storage } = values;
+
+  // Fetch API cpuOptions via RTK Query (ensures options populate dynamically)
+  // const { data: apiConfig } = useGetSmartPcConfigQuery();
+  // const apiCpuOptions = apiConfig?.cpuOptions || {};
 
   // Disable STORAGE-only submit when no change
   const isNoStorageChange = useMemo(
@@ -349,7 +351,6 @@ const SmartPCConfigDialog = ({
               isStorageOnly={isStorageOnly}
               existingCPU={existingCPU}
               existingStorage={existingStorage}
-              existingData={existingData}
               loadingExisting={loadingExisting}
             />
 

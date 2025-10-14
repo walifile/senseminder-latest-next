@@ -1,3 +1,5 @@
+/* eslint perfectionist/sort-imports: "off" */
+
 "use client";
 
 import type { RootState } from "@/redux/store";
@@ -11,11 +13,10 @@ import { useGetEstimateMutation } from "@/api/fileManagerAPI";
 import { setSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
 import {
   osOptions,
-  cpuOptions,
-  cpuCategories,
   storageOptions,
   locationOptions,
 } from "@/app/build-smartpc/data";
+import { useGetSmartPcConfigQuery } from "@/api/smartPCConfigAPI";
 
 import { Button } from "@/components/ui/button";
 
@@ -96,12 +97,25 @@ const CostCalculator = () => {
   const selectedLinuxCategory = watch("linuxCategory");
 
   const isLinuxOS = selectedOS === "Linux";
+
+  // Fetch API cpuOptions via RTK Query
+  const { data: apiConfig } = useGetSmartPcConfigQuery();
+  const apiCpuOptions = apiConfig?.cpuOptions || {};
+  const apiCpuCategories = apiConfig?.cpuCategories || {};
+
   const linuxCategoryCpuOptions =
-    cpuCategories.Linux[`${selectedLinuxCategory}`] || [];
+    (
+      apiCpuCategories as Record<
+        string,
+        Record<string, { value: string; label: string }[]>
+      >
+    )?.Linux?.[`${selectedLinuxCategory}`] || [];
 
   const cpuOptionsForOS = isLinuxOS
     ? linuxCategoryCpuOptions
-    : cpuOptions[selectedOS] || [];
+    : (apiCpuOptions as Record<string, { value: string; label: string }[]>)[
+        selectedOS
+      ] || [];
 
   useEffect(() => {
     setValue("cpu", "");
@@ -270,7 +284,14 @@ const CostCalculator = () => {
                       {...(values.linuxCategory
                         ? { tooltipText: values.linuxCategory }
                         : {})}
-                      options={Object.keys(cpuCategories.Linux)}
+                      options={Object.keys(
+                        (
+                          apiCpuCategories as Record<
+                            string,
+                            Record<string, unknown>
+                          >
+                        )?.Linux || {}
+                      )}
                       className="gap-4"
                     />
                   )}
@@ -370,9 +391,15 @@ const CostCalculator = () => {
                             CPU & Memory
                           </div>
                           <div className="font-medium text-sm mt-0.5">
-                            {cpuOptions[watch("operatingSystem")]?.find(
-                              (cpu) => cpu.value === watch("cpu")
-                            )?.label || (
+                            {(
+                              (
+                                apiCpuOptions as Record<
+                                  string,
+                                  { value: string; label: string }[]
+                                >
+                              )[watch("operatingSystem")] || []
+                            ).find((cpu) => cpu.value === watch("cpu"))
+                              ?.label || (
                               <span className="text-muted-foreground">
                                 Not selected
                               </span>

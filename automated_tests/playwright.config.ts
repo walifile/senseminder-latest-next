@@ -7,7 +7,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: isCI() ? 2 : 0,
-  workers: isCI() ? 1 : undefined,
+  workers: isCI() ? 1 : 1,
   reporter: [
     ['html', { outputFolder: testData.reporting.path + '/html' }],
     ['json', { outputFile: testData.reporting.path + '/results.json' }],
@@ -27,6 +27,7 @@ export default defineConfig({
     headless: testData.browser.headless,
   },
   projects: [
+    // Desktop browsers
     {
       name: 'chromium',
       use: { 
@@ -110,6 +111,47 @@ export default defineConfig({
       name: 'webkit',
       use: { 
         ...devices['Desktop Safari'],
+        headless: testData.browser.headless,
+        launchOptions: {
+          slowMo: testData.browser.slowMo,
+        }
+      },
+    },
+    // Mobile/Responsive browsers
+    {
+      name: 'Mobile Chrome',
+      use: { 
+        ...devices['Pixel 5'],
+        headless: testData.browser.headless,
+        launchOptions: {
+          slowMo: testData.browser.slowMo,
+        }
+      },
+    },
+    {
+      name: 'Mobile Safari',
+      use: { 
+        ...devices['iPhone 12'],
+        headless: testData.browser.headless,
+        launchOptions: {
+          slowMo: testData.browser.slowMo,
+        }
+      },
+    },
+    {
+      name: 'Tablet Chrome',
+      use: { 
+        ...devices['iPad Pro'],
+        headless: testData.browser.headless,
+        launchOptions: {
+          slowMo: testData.browser.slowMo,
+        }
+      },
+    },
+    {
+      name: 'Tablet Safari',
+      use: { 
+        ...devices['iPad Pro'],
         headless: testData.browser.headless,
         launchOptions: {
           slowMo: testData.browser.slowMo,
