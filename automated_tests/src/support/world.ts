@@ -63,6 +63,7 @@ export interface CustomWorld extends World {
     createdUsers?: string[]; // Track emails of created users for cleanup
     testInstanceId?: string; // For testing with specific instance IDs
     userSignupOccurred?: boolean; // Track if user signup actually occurred during test
+    device?: string; // Device type for responsive testing
     addCreatedPC(instanceId: string): void; // Method to add PC to cleanup list
     cleanupCreatedPCs(): Promise<void>; // Method to clean up created PCs
     addCreatedUser(email: string): void; // Method to add user to cleanup list
@@ -144,9 +145,12 @@ export class CustomWorldClass extends World implements CustomWorld {
     mfaBackupCodes?: string[];
     mfaQrCode?: string;
     isPostStopStatusCheck?: boolean;
+    device?: string;
 
     constructor(options: IWorldOptions) {
         super(options);
+        // Extract device parameter from world parameters
+        this.device = (options.parameters as any)?.device || 'desktop';
     }
 
     async init() {
@@ -169,6 +173,7 @@ export class CustomWorldClass extends World implements CustomWorld {
             console.log(`🔄 Environment check - CI: ${isCI()}, NODE_ENV: ${process.env.NODE_ENV}, CI env var: ${process.env.CI}`);
             console.log(`🔄 Additional CI checks - GITHUB_ACTIONS: ${process.env.GITHUB_ACTIONS}, BITBUCKET_BUILD_NUMBER: ${process.env.BITBUCKET_BUILD_NUMBER}`);
             console.log(`🔄 TestData headless: ${testData.browser.headless}, Final headless: ${shouldRunHeadless}`);
+            console.log(`🔄 Device type: ${this.device}`);
             console.log(`🔄 Running in ${shouldRunHeadless ? 'headless' : 'headed'} mode`);
             
             this.browser = await chromium.launch({ 
@@ -189,11 +194,32 @@ export class CustomWorldClass extends World implements CustomWorld {
             console.log('✅ Browser launched successfully');
             
             console.log('🔄 Creating browser context...');
+            
+            // Device-specific viewport configuration
+            let viewportConfig: { width: number; height: number };
+            switch (this.device) {
+                case 'mobile':
+                    viewportConfig = { width: 375, height: 667 }; // iPhone SE size
+                    break;
+                case 'tablet':
+                    viewportConfig = { width: 768, height: 1024 }; // iPad size
+                    break;
+                case 'responsive':
+                    viewportConfig = { width: 1280, height: 720 }; // Small desktop
+                    break;
+                default:
+                    viewportConfig = { width: 1920, height: 1080 }; // Desktop
+                    break;
+            }
+            
+            console.log(`🔄 Viewport set to: ${viewportConfig.width}x${viewportConfig.height} for device: ${this.device}`);
+            
             // Create context with HTTP credentials for basic authentication
             this.context = await this.browser.newContext({
                 // This will inherit the baseURL from playwright.config.ts when running with Playwright
                 // For Cucumber standalone, we'll set it manually
                 baseURL: testData.application.baseURL,
+                viewport: viewportConfig,
                 httpCredentials: {
                     username: config.HTTP_USERNAME,
                     password: config.HTTP_PASSWORD

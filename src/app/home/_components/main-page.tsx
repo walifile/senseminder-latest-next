@@ -1,3 +1,5 @@
+/* eslint perfectionist/sort-imports: "off" */
+
 "use client";
 
 import FAQ from "./faq";

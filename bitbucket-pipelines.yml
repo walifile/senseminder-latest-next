@@ -100,7 +100,7 @@ pipelines:
             - export VALID_PASSWORD=${VALID_PASSWORD}
             - export SHARED_USER_EMAIL=${SHARED_USER_EMAIL}
             - export SHARED_USERNAME=${SHARED_USERNAME}
-            - export NODE_ENV=production
+            - export NODE_ENV=development
             - export BASE_URL=https://smartpc.cloud/
             
             # Install Java for Allure

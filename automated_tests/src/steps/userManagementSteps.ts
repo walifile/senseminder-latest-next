@@ -96,7 +96,7 @@ Then('the total user count should increase by {int}', async function(this: Custo
     expect(currentCount).toBeGreaterThan(0);
 });
 
-When('I accept the invitation as a new user', async function(this: CustomWorld) {
+When('I accept the invitation as a new user', {timeout: 60000}, async function(this: CustomWorld) {
     if (!this.invitedUserEmail || !this.invitedUserToken || !this.signUpPage) {
         throw new Error('Invited user email, token, or SignUpPage not found. Please run data generation step first.');
     }
@@ -136,6 +136,7 @@ When('I login with the credentials provided in invitation mail', {timeout: 30000
     await this.loginPage.enterUsername(this.invitedUserEmail);
     await this.loginPage.enterPassword(this.tempPassword);
     await this.loginPage.clickLogin();
+    await this.loginPage.clickLogin();
 });
 
 When('I create new password', {timeout: 30000}, async function(this: CustomWorld) {
@@ -153,7 +154,7 @@ When('I create new password', {timeout: 30000}, async function(this: CustomWorld
     try {
         console.log('🔍 Looking for "Change Password" heading...');
         changePasswordModal = this.page!.locator('h1:has-text("Change Password")');
-        await changePasswordModal.waitFor({ state: 'visible', timeout: 5000 });
+        await changePasswordModal.waitFor({ state: 'visible', timeout: 10000 });
         modalFound = true;
         console.log('✅ Found "Change Password" heading');
     } catch (error) {

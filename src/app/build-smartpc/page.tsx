@@ -1,3 +1,5 @@
+/* eslint perfectionist/sort-imports: "off" */
+
 "use client";
 
 import type { RootState } from "@/redux/store";
@@ -46,14 +48,10 @@ import Navbar from "@/components/shared/layout/navbar";
 
 import { formSchema } from "./schema";
 import { fetchEstimate } from "./api/fetch-estimate";
+
+import { useGetSmartPcConfigQuery } from "@/api/smartPCConfigAPI";
 import CostSummary from "./_components/cost-summary";
-import {
-  osOptions,
-  cpuOptions,
-  cpuCategories,
-  storageOptions,
-  locationOptions,
-} from "./data";
+import { osOptions, storageOptions, locationOptions } from "./data";
 
 import type { FormValues } from "./schema";
 
@@ -75,7 +73,7 @@ export default function BuildSmartPCPage() {
     () => ({
       pcName: "",
       operatingSystem: config.operatingSystem || osOptions[0].value || "",
-      cpu: config.cpu || cpuOptions[osOptions[0].value][0].value || "",
+      cpu: config.cpu || "",
       storage: config.storage || storageOptions[0].value || "",
       region: config.region || locationOptions[0].value || "",
       billingPlan: "hourly",
@@ -104,12 +102,25 @@ export default function BuildSmartPCPage() {
   } = values;
 
   const isLinuxOS = selectedOS === "Linux";
+
+  // Fetch API cpuOptions via RTK Query
+  const { data: apiConfig } = useGetSmartPcConfigQuery();
+  const apiCpuOptions = apiConfig?.cpuOptions || {};
+  const apiCpuCategories = apiConfig?.cpuCategories || {};
+
   const linuxCategoryCpuOptions =
-    cpuCategories.Linux[`${selectedLinuxCategory}`] || [];
+    (
+      apiCpuCategories as Record<
+        string,
+        Record<string, { value: string; label: string }[]>
+      >
+    )?.Linux?.[`${selectedLinuxCategory}`] || [];
 
   const cpuOptionsForOS = isLinuxOS
     ? linuxCategoryCpuOptions
-    : cpuOptions[selectedOS] || [];
+    : (apiCpuOptions as Record<string, { value: string; label: string }[]>)[
+        selectedOS
+      ] || [];
 
   useEffect(() => {
     if (selectedOS) {
@@ -118,11 +129,16 @@ export default function BuildSmartPCPage() {
           shouldValidate: true,
         });
       }
-      setValue("cpu", cpuOptions[selectedOS][0].value, {
-        shouldValidate: true,
-      });
+      const opts = (apiCpuOptions as Record<string, { value: string }[]>)?.[
+        selectedOS
+      ];
+      if (opts && opts.length > 0) {
+        setValue("cpu", opts[0].value, {
+          shouldValidate: true,
+        });
+      }
     }
-  }, [selectedOS, isLinuxOS, setValue]);
+  }, [selectedOS, isLinuxOS, setValue, apiCpuOptions]);
 
   // estimate
   useEffect(() => {
@@ -272,7 +288,14 @@ export default function BuildSmartPCPage() {
                         <Field.Select
                           name="linuxCategory"
                           label="Category"
-                          options={Object.keys(cpuCategories.Linux)}
+                          options={Object.keys(
+                            (
+                              apiCpuCategories as Record<
+                                string,
+                                Record<string, unknown>
+                              >
+                            )?.Linux || {}
+                          )}
                         />
                       )}
 

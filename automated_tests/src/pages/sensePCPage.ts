@@ -115,30 +115,40 @@ export class SensePCPage {
     }
 
     async handleSkipButtonIfPresent() {
-        await this.page.waitForTimeout(5000);
+        try {
+            // Reduced initial wait time
+            await this.page.waitForTimeout(2000);
 
-        // Check if Skip button is visible, enabled, and clickable
-        const isSkipButtonVisible = await this.skipButton.isVisible({timeout: 2000});
-        const isSkipButtonEnabled = await this.skipButton.isEnabled({timeout: 2000});
+            // Check if Skip button is visible with a shorter timeout
+            const isSkipButtonVisible = await this.skipButton.isVisible({timeout: 1000});
+            
+            if (isSkipButtonVisible) {
+                // Check if enabled with shorter timeout
+                const isSkipButtonEnabled = await this.skipButton.isEnabled({timeout: 1000});
+                
+                if (isSkipButtonEnabled) {
+                    // Quick clickability check
+                    const isClickable = await this.skipButton.evaluate(el => {
+                        const rect = el.getBoundingClientRect();
+                        return rect.width > 0 && rect.height > 0;
+                    });
 
-        if (isSkipButtonVisible && isSkipButtonEnabled) {
-            // Additional check to ensure the button is actually clickable (not covered by other elements)
-            const isClickable = await this.skipButton.isVisible() &&
-                await this.skipButton.isEnabled() &&
-                await this.skipButton.evaluate(el => {
-                    const rect = el.getBoundingClientRect();
-                    return rect.width > 0 && rect.height > 0;
-                });
-
-            if (isClickable) {
-                console.log('🔧 Skip button found and is clickable, clicking it...');
-                await this.skipButton.click({force: false});
-                console.log('✅ Skip button clicked successfully');
+                    if (isClickable) {
+                        console.log('🔧 Skip button found and is clickable, clicking it...');
+                        await this.skipButton.click({timeout: 5000, force: false});
+                        console.log('✅ Skip button clicked successfully');
+                    } else {
+                        console.log('⚠️ Skip button is visible and enabled but not clickable');
+                    }
+                } else {
+                    console.log('ℹ️ Skip button found but not enabled');
+                }
             } else {
-                console.log('⚠️ Skip button is visible and enabled but not clickable (possibly covered by other elements)');
+                console.log('ℹ️ Skip button not found, continuing...');
             }
-        } else {
-            console.log('ℹ️ Skip button not found or not enabled, continuing...');
+        } catch (error) {
+            console.log('⚠️ Error handling skip button:', error);
+            // Don't throw error, just log and continue
         }
     }
 
