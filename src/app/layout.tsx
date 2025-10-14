@@ -27,7 +27,11 @@ export default function RootLayout({
         <head>
           <title>SmartPC</title>
           <meta name="description" content="SmartPC Application" />
-          <link rel="icon" href="/favicon.ico" />
+          <link rel="icon" href="/favicon.ico" />{" "}
+          <link
+            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap"
+            rel="stylesheet"
+          />
         </head>
         <body suppressHydrationWarning className="overflow-hidden">
           {children}
@@ -43,7 +47,11 @@ export default function RootLayout({
       <head>
         <title>SmartPC</title>
         <meta name="description" content="SmartPC Application" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.ico" />{" "}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap"
+          rel="stylesheet"
+        />
       </head>
       <body suppressHydrationWarning>
         <ReduxProvider>
@@ -69,7 +77,6 @@ export default function RootLayout({
     </html>
   );
 }
-
 
 // import "../styles/globals.css";
 
