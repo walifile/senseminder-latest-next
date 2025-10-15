@@ -1,10 +1,16 @@
-import React, { useState } from "react";
+"use client";
+
+import React from "react";
+import Image from "next/image";
 
 import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, HelpCircle, ChevronDown } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { motion } from "framer-motion";
 
 const faqItems = [
   {
@@ -28,11 +34,6 @@ const faqItems = [
       "Yes! Your Sense PC works just like a regular Windows PC. You have full administrator rights to install, configure, and run any Windows-compatible software you need.",
   },
   {
-    question: "Is my data secure in the cloud?",
-    answer:
-      "Absolutely. Sense PC employs bank-level encryption for all data in transit and at rest. Our infrastructure is compliant with major security standards including SOC 2, GDPR, and HIPAA requirements. Your data remains private and protected at all times.",
-  },
-  {
     question: "What happens if I lose internet connection?",
     answer:
       "Your Sense PC session remains active for a short period if you disconnect, allowing you to resume exactly where you left off once your connection is restored. Your data is always safely stored in the cloud.",
@@ -49,145 +50,92 @@ const faqItems = [
   },
 ];
 
-const FAQ = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  const filteredItems = faqItems.filter(
-    (item) =>
-      item.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.answer.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+export default function FAQ() {
+  const [value, setValue] = React.useState<string | undefined>("item-2");
 
   return (
-    <section id="faq" className="py-6 relative">
-      {" "}
-      {/* Much smaller top/bottom padding */}
-      {/* Background Effects */}
-      <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl" />
-      <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/5 dark:bg-secondary/10 rounded-full blur-3xl" />
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center mb-4">
-          {" "}
-          {/* Reduced spacing */}
-          <div className="inline-flex items-center bg-primary/10 dark:bg-primary/20 rounded-full mb-1 px-3 py-0.5">
-            <span className="text-xs font-medium text-primary">FAQ</span>
+    <section id="faq" className="py-16 md:py-24 relative">
+      <div className="container">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+          {/* Left: Heading + Illustration */}
+          <div className="relative">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="space-y-3 md:space-y-4"
+            >
+              <p className="text-sm font-medium text-primary">Frequently Asked Questions</p>
+              <h2 className="text-3xl md:text-4xl font-bold leading-tight">
+                Everything you need to know about Sense PC
+              </h2>
+              <p className="text-paragraph max-w-[50ch]">
+                Quick answers to common questions. Explore details on
+                performance, setup, connectivity, and getting started.
+              </p>
+            </motion.div>
+
+            {/* Illustration with gradient */}
+            <div className="relative mt-8 md:mt-12">
+              <Image
+                src="/assets/svg/faq-gradient.svg"
+                alt="FAQ background gradient"
+                width={640}
+                height={480}
+                priority
+                className="absolute -inset-x-6 -top-6 md:-inset-x-10 -z-10 select-none pointer-events-none"
+              />
+              <Image
+                src="/assets/svg/faq.svg"
+                alt="FAQ Illustration"
+                width={520}
+                height={400}
+                className="w-full h-auto drop-shadow-xl"
+                priority
+              />
+            </div>
           </div>
-          <motion.h2
-            initial={{ opacity: 0, y: 6 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.3 }}
-            className="text-xl font-semibold mb-1 dark:text-white text-gray-900"
-          >
-            Frequently Asked <span className="gradient-text">Questions</span>
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 6 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.3, delay: 0.05 }}
-            className="text-sm text-gray-600 dark:text-gray-400 max-w-xl mx-auto"
-          >
-            Everything you need to know about Sense PC
-          </motion.p>
-        </div>
 
-        <div className="max-w-2xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.3 }}
-            className="relative mb-3"
-          >
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 dark:text-primary/60" />
-            <Input
-              type="text"
-              placeholder="Search..."
-              className={cn(
-                "pl-9 py-1.5 text-xs rounded-md",
-                "dark:bg-card/50 dark:border-border dark:focus:border-primary dark:bg-gray-800/30 dark:backdrop-blur-md",
-                "bg-white/90 border-gray-200 focus:border-primary shadow-sm"
-              )}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </motion.div>
-
-          <div className="space-y-2">
-            <AnimatePresence mode="wait">
-              {filteredItems.length > 0 ? (
-                filteredItems.map((item, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 6 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.2, delay: index * 0.03 }}
-                    className={cn(
-                      "overflow-hidden group rounded-md transition-all duration-200",
-                      "dark:glass-card dark:border-white/10 dark:bg-gray-900/30 dark:hover:border-primary/30 dark:shadow-sm",
-                      "bg-white border border-gray-200 shadow hover:border-primary/20"
-                    )}
-                  >
-                    <button
-                      onClick={() =>
-                        setOpenIndex(openIndex === index ? null : index)
-                      }
+          {/* Right: Accordion */}
+          <div className="w-full">
+            <Accordion type="single" collapsible value={value} onValueChange={setValue} className="space-y-3">
+              {faqItems.map((item, idx) => {
+                const id = `item-${idx + 1}`;
+                const open = value === id;
+                return (
+                  <AccordionItem key={id} value={id} className="border-0">
+                    <div
                       className={cn(
-                        "w-full px-3 py-2 flex items-center justify-between text-left text-sm",
-                        "hover:bg-gray-50 dark:hover:bg-white/5"
+                        "rounded-xl border transition-colors",
+                        "bg-white/90 border-gray-200 dark:bg-gray-900/40 dark:border-white/10",
+                        open && "ring-1 ring-primary/40 bg-primary/5 dark:bg-white/5"
                       )}
                     >
-                      <div className="flex items-center gap-2">
-                        <HelpCircle className="h-4 w-4 text-primary" />
-                        <span className="font-medium dark:text-white text-gray-900 group-hover:text-primary">
+                      <AccordionTrigger
+                        className={cn(
+                          "px-4 md:px-5 py-4 text-left gap-3 no-underline",
+                          open && "text-foreground"
+                        )}
+                      >
+                        <span className="text-xs font-semibold text-primary tabular-nums w-8">
+                          {String(idx + 1).padStart(2, "0")}
+                        </span>
+                        <span className="text-sm md:text-base font-medium">
                           {item.question}
                         </span>
-                      </div>
-                      <ChevronDown
-                        className={cn(
-                          "h-4 w-4 transition-transform",
-                          openIndex === index ? "rotate-180" : "",
-                          "text-gray-500 dark:text-gray-400"
-                        )}
-                      />
-                    </button>
-                    <AnimatePresence>
-                      {openIndex === index && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="px-3 pb-2 text-xs text-gray-600 dark:text-gray-300">
-                            {item.answer}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                ))
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-center p-4 text-sm rounded-md bg-white dark:bg-gray-900/30 border border-gray-200 dark:border-white/10"
-                >
-                  <p className="text-gray-600 dark:text-gray-300">
-                    No matching questions found.
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 md:px-5 text-sm text-muted-foreground">
+                        {item.answer}
+                      </AccordionContent>
+                    </div>
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
           </div>
         </div>
       </div>
     </section>
   );
-};
-
-export default FAQ;
+}

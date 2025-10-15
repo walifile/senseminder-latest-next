@@ -9,6 +9,7 @@ import HowItWorks from "./how-it-works";
 import FutureVision from "./future-vision";
 import WayWeCompute from "./way-we-compute";
 import CostCalculator from "./cost-calculator";
+import SensePCCost from "./sensepc-cost";
 import ProblemSolution from "./problem-solution";
 import TutorialSection from "./tutorial-section";
 import FutureOfComputing from "./future-of-computing";
@@ -28,6 +29,7 @@ export default function HomePage() {
       {/* <Testimonials /> */}
       {/* <Pricing /> */}
       <CostCalculator />
+      <SensePCCost />
       <FAQ />
     </MainLayout>
   );

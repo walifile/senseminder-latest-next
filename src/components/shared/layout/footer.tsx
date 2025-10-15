@@ -1,133 +1,17 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
-import {
-  useSubscribeToNewsletterMutation,
-  useUnsubscribeFromNewsletterMutation,
-} from "@/api/newsletterAPI";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-
 import { Mail, Phone, MapPin, ChevronRight } from "lucide-react";
 
-import { useToast } from "@/hooks/use-toast";
-import useLocation from "@/hooks/use-location";
-
-import { Logo } from "./Logo";
 
 const Footer = () => {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const { toast } = useToast();
-  const { userLocation } = useLocation();
   const currentYear = new Date().getFullYear();
-
-  const [email, setEmail] = useState("");
-
-  const [subscribe, { isLoading: isSubscribing }] =
-    useSubscribeToNewsletterMutation();
-  const [unsubscribe] = useUnsubscribeFromNewsletterMutation();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-
-    const location = userLocation || {
-      country: "unknown",
-      city: "unknown",
-      ip: "unknown",
-    };
-
-    const response = await subscribe({
-      email,
-      location,
-      signup: false,
-    });
-
-    if (!("error" in response)) {
-      toast({
-        title: "Subscribed!",
-        description: "You've successfully subscribed to the newsletter.",
-      });
-      setEmail("");
-    } else {
-      console.log({ else: "Ddffdfdfff" });
-
-      let errorMessage = "Subscription failed. Please try again.";
-
-      if ("error" in response) {
-        const err = response.error as Error & {
-          data?: string | { message: string };
-        };
-
-        if (err.data && typeof err.data === "object" && "message" in err.data) {
-          errorMessage = err.data.message;
-        } else if ("message" in err) {
-          errorMessage = err.message;
-        }
-      }
-
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    }
-  };
-
-  useEffect(() => {
-    const email = searchParams.get("email");
-    const token = searchParams.get("token");
-
-    if (email && token) {
-      unsubscribe({ email, token }).then((res) => {
-        if (!("error" in res)) {
-          toast({
-            title: "Unsubscribed",
-            description:
-              "You have been successfully unsubscribed from the newsletter.",
-          });
-
-          // Remove query params from URL
-          const url = new URL(window.location.href);
-          url.searchParams.delete("email");
-          url.searchParams.delete("token");
-          window.history.replaceState(
-            {},
-            document.title,
-            url.pathname + url.search
-          );
-        } else {
-          let errorMessage = "Unsubscription failed. Please try again.";
-          if ("error" in res) {
-            const err = res.error as Error & {
-              data?: string | { message: string };
-            };
-
-            if (
-              err.data &&
-              typeof err.data === "object" &&
-              "message" in err.data
-            ) {
-              errorMessage = err.data.message;
-            } else if ("message" in err) {
-              errorMessage = err.message;
-            }
-          }
-
-          toast({
-            title: "Error",
-            description: errorMessage,
-            variant: "destructive",
-          });
-        }
-      });
-    }
-  }, [searchParams, unsubscribe, toast]);
 
   if (
     pathname?.startsWith("/auth") ||
@@ -136,23 +20,36 @@ const Footer = () => {
   ) {
     return null;
   }
+
   return (
     <footer
       className={cn(
-        "pt-20 pb-10 relative overflow-hidden",
-        "bg-muted/20 dark:bg-muted/20",
-        "border-t border-border dark:border-white/10"
+        "pt-14 md:pt-16 pb-6",
+        // Lock a clean dark surface for both themes
+        "bg-[#0B1220] text-gray-300"
       )}
+      aria-label="Site footer"
     >
       <div className="container mx-auto px-4 md:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          {/* Brand + blurb + socials */}
           <div className="space-y-6">
-            <Logo />
-            <p className="dark:text-gray-400 text-gray-600 max-w-xs">
+            <div className="relative w-[180px] h-[40px] select-none">
+              <Image
+                src="/sensepc-logo-light.png"
+                alt="SensePC logo"
+                fill
+                sizes="180px"
+                priority
+                className="object-contain"
+              />
+            </div>
+            <p className="text-gray-300/90 max-w-xs">
               Access your powerful PC from anywhere, with low latency and
               enterprise-grade security.
             </p>
-            <div className="flex space-x-4">
+
+            <div className="flex items-center gap-4">
               {[
                 {
                   href: "#",
@@ -204,18 +101,10 @@ const Footer = () => {
                 <a
                   key={index}
                   href={social.href}
-                  className={cn(
-                    "p-2 rounded-full transition-colors",
-                    "bg-gray-100 dark:glass-card",
-                    "hover:bg-gray-200 dark:hover:bg-white/10"
-                  )}
+                  className="text-gray-400 hover:text-white transition-colors"
+                  aria-label="Social link"
                 >
-                  <svg
-                    className="h-5 w-5 dark:text-gray-400 text-gray-600"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
+                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     {social.icon}
                   </svg>
                 </a>
@@ -223,8 +112,9 @@ const Footer = () => {
             </div>
           </div>
 
+          {/* Quick Links */}
           <div>
-            <h3 className="font-semibold text-lg mb-4 dark:text-white text-gray-900">
+            <h3 className="font-semibold text-lg mb-4 text-white">
               Quick Links
             </h3>
             <ul className="space-y-3">
@@ -239,8 +129,7 @@ const Footer = () => {
                     href={link.href}
                     className={cn(
                       "flex items-center",
-                      "dark:text-gray-400 text-gray-600",
-                      "hover:text-primary dark:hover:text-primary"
+                      "text-gray-400 hover:text-white"
                     )}
                   >
                     <ChevronRight className="h-4 w-4 mr-2" />
@@ -251,69 +140,40 @@ const Footer = () => {
             </ul>
           </div>
 
+          {/* Contact */}
           <div>
-            <h3 className="font-semibold text-lg mb-4 dark:text-white text-gray-900">
+            <h3 className="font-semibold text-lg mb-4 text-white">
               Contact Us
             </h3>
             <ul className="space-y-3">
               <li className="flex items-start">
                 <MapPin className="h-5 w-5 text-primary mr-3 mt-0.5" />
-                <span className="dark:text-gray-400 text-gray-600">
+                <span className="text-gray-300/90">
                   Elan Satellite Place, 3100 Commerce Avenue NW, Duluth, GA
                   30096, USA
                 </span>
               </li>
               <li className="flex items-center">
                 <Phone className="h-5 w-5 text-primary mr-3" />
-                <a
-                  href="tel:+15555551234"
-                  className="dark:text-gray-400 text-gray-600 hover:text-primary dark:hover:text-primary"
-                >
+                <a href="tel:+16462265995" className="text-gray-300/90 hover:text-white">
                   +1 (646) 226-5995
                 </a>
               </li>
               <li className="flex items-center">
                 <Mail className="h-5 w-5 text-primary mr-3" />
-                <a
-                  href="mailto:info@sensepc.com"
-                  className="dark:text-gray-400 text-gray-600 hover:text-primary dark:hover:text-primary"
-                >
+                <a href="mailto:info@sensepc.com" className="text-gray-300/90 hover:text-white">
                   info@sensepc.com
                 </a>
               </li>
             </ul>
           </div>
-
-          <div>
-            <h3 className="font-semibold text-lg mb-4 dark:text-white text-gray-900">
-              Newsletter
-            </h3>
-            <p className="dark:text-gray-400 text-gray-600 mb-4">
-              Subscribe to our newsletter to get the latest updates.
-            </p>
-            <form onSubmit={handleSubmit} className="space-y-2">
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Your email address"
-                className={cn(
-                  "bg-white dark:bg-card",
-                  "border-gray-200 dark:border-border",
-                  "focus:border-primary dark:focus:border-primary"
-                )}
-              />
-              <Button type="submit" className="w-full" disabled={isSubscribing}>
-                {isSubscribing ? "Subscribing..." : "Subscribe"}
-              </Button>
-            </form>
-          </div>
         </div>
 
-        <div className="mt-16 pt-6 border-t dark:border-white/10 border-gray-200">
+        {/* Bottom bar */}
+        <div className="mt-12 md:mt-16 pt-6 border-t border-white/10">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="dark:text-gray-400 text-gray-600 text-sm">
-              © {currentYear} Sense PC. All rights reserved.
+            <p className="text-gray-400 text-sm">
+              © {currentYear} SensePC. All rights reserved.
             </p>
             <div className="flex space-x-4 mt-4 md:mt-0">
               {[
@@ -323,11 +183,7 @@ const Footer = () => {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={cn(
-                    "text-sm",
-                    "dark:text-gray-400 text-gray-600",
-                    "hover:text-primary dark:hover:text-primary"
-                  )}
+                  className={cn("text-sm", "text-gray-400 hover:text-white")}
                 >
                   {link.text}
                 </Link>
