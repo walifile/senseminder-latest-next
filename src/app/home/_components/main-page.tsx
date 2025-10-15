@@ -13,6 +13,7 @@ import SensePCCost from "./sensepc-cost";
 import ProblemSolution from "./problem-solution";
 import TutorialSection from "./tutorial-section";
 import FutureOfComputing from "./future-of-computing";
+import GetStartedCTA from "./get-started-cta";
 
 export default function HomePage() {
   return (
@@ -29,6 +30,7 @@ export default function HomePage() {
       {/* <Testimonials /> */}
       {/* <Pricing /> */}
       <CostCalculator />
+      <GetStartedCTA />
       <SensePCCost />
       <FAQ />
     </MainLayout>

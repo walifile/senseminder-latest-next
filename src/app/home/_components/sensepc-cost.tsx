@@ -33,16 +33,21 @@ const CPU_PRESETS: Record<CpuKey, { label: string; hourly: number }> = {
 const STORAGE_OPTIONS = ["300 GB", "500 GB", "1 TB"] as const;
 
 function currency(n: number) {
-  return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return n.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }
 
 export default function SensePCCost() {
   const [os, setOs] = React.useState("Windows 10");
   const [cpu, setCpu] = React.useState<CpuKey>("4c8g");
   const [region, setRegion] = React.useState("US East (N. Virginia)");
-  const [storage, setStorage] = React.useState<(typeof STORAGE_OPTIONS)[number]>("300 GB");
+  const [storage, setStorage] = React.useState<(typeof STORAGE_OPTIONS)[number]>(
+    "300 GB"
+  );
 
-  const hourly = CPU_PRESETS[cpu].hourly; // simple model
+  const hourly = CPU_PRESETS[cpu].hourly;
   const daily = hourly * 24;
   const monthly = hourly * 24 * 30;
 
@@ -59,33 +64,55 @@ export default function SensePCCost() {
           </p>
 
           {/* Tabs (visual only) */}
-          <div className="mt-6 inline-flex rounded-full p-1 bg-[#1F1149]/30 dark:bg-[#1F1149]/50">
-            <button className="px-5 py-2 rounded-full text-white bg-[linear-gradient(90deg,#7B2CF5_0%,#4C6CFD_100%)] shadow">
+          <div className="mt-6 inline-flex rounded-full p-1 bg-muted/60 dark:bg-white/10">
+            <button className="px-5 py-2 rounded-full text-white bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)] shadow">
               Sense PC
             </button>
-            <button className="px-5 py-2 rounded-full text-white/70">Storage</button>
+            <button className="px-5 py-2 rounded-full text-foreground/70 dark:text-white/70">
+              Storage
+            </button>
           </div>
         </div>
 
         {/* Feature tiles */}
         <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {[
-            { icon: <Clock3 className="h-5 w-5" />, t: "Hourly Plan", s: "Pay‑as‑you‑go. Billed per hour. SSD billed continuously." },
-            { icon: <CalendarDays className="h-5 w-5" />, t: "Daily Plan", s: "Flat daily rate. Billed every 24 hrs regardless of usage." },
-            { icon: <CreditCard className="h-5 w-5" />, t: "Monthly Plan", s: "Fixed fee. Auto‑renews. Great for always‑on PCs." },
-            { icon: <Database className="h-5 w-5" />, t: "SmartStorage", s: "First 20GB free. Charges by peak usage tier monthly." },
-            { icon: <SquareStack className="h-5 w-5" />, t: "Billing Units", s: "Costs deducted from wallet at each billing cycle." },
+            {
+              icon: <Clock3 className="h-5 w-5" />,
+              t: "Hourly Plan",
+              s: "Pay-as-you-go. Billed per hour. SSD billed continuously.",
+            },
+            {
+              icon: <CalendarDays className="h-5 w-5" />,
+              t: "Daily Plan",
+              s: "Flat daily rate. Billed every 24 hrs regardless of usage.",
+            },
+            {
+              icon: <CreditCard className="h-5 w-5" />,
+              t: "Monthly Plan",
+              s: "Fixed fee. Auto-renews. Great for always-on PCs.",
+            },
+            {
+              icon: <Database className="h-5 w-5" />,
+              t: "SmartStorage",
+              s: "First 20GB free. Charges by peak usage tier monthly.",
+            },
+            {
+              icon: <SquareStack className="h-5 w-5" />,
+              t: "Billing Units",
+              s: "Costs deducted from wallet at each billing cycle.",
+            },
           ].map((f, i) => (
             <div
               key={i}
               className={cn(
                 "rounded-2xl p-4",
-                "bg-white shadow-sm border border-[#E6E0FF]",
-                "dark:bg-[#151835] dark:border-[#2A2F5F]"
+                "bg-card border border-border shadow-sm",
+                "dark:bg-white/5 dark:border-white/10"
               )}
             >
               <div className="flex items-center gap-3">
-                <div className="grid place-items-center h-8 w-8 rounded-lg text-[#7B2CF5] bg-[#7B2CF5]/10">
+                <div className="grid place-items-center h-8 w-8 rounded-lg text-primary bg-primary/10">
                   {f.icon}
                 </div>
                 <p className="font-medium">{f.t}</p>
@@ -98,11 +125,13 @@ export default function SensePCCost() {
         {/* Config + Summary */}
         <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left card */}
-          <div className={cn(
-            "rounded-2xl p-6",
-            "bg-white border border-[#E6E0FF]",
-            "dark:bg-[#171A3A] dark:border-[#2B2D55]"
-          )}>
+          <div
+            className={cn(
+              "rounded-2xl p-6",
+              "bg-card border border-border",
+              "dark:bg-white/5 dark:border-white/10"
+            )}
+          >
             <h3 className="text-lg font-semibold">Choose Configurations</h3>
 
             <div className="mt-6 space-y-5">
@@ -112,13 +141,15 @@ export default function SensePCCost() {
                   <p className="font-medium text-foreground">Hourly Plan</p>
                   <Info className="h-4 w-4 opacity-70" />
                 </div>
-                <p className="text-xs text-paragraph">Pay‑as‑you‑go. Billed per hour. SSD billed continuously.</p>
+                <p className="text-xs text-paragraph">
+                  Pay-as-you-go. Billed per hour. SSD billed continuously.
+                </p>
               </div>
 
               <div>
                 <label className="text-sm text-paragraph">Operating System</label>
                 <Select value={os} onValueChange={setOs}>
-                  <SelectTrigger className="mt-2 h-11 rounded-md bg-[#F3F0FF] dark:bg-transparent dark:border-[#363B76] dark:hover:border-[#7B2CF5]/60">
+                  <SelectTrigger className="mt-2 h-11 rounded-md bg-background dark:bg-transparent border-input dark:border-white/15">
                     <SelectValue placeholder="Select OS" />
                   </SelectTrigger>
                   <SelectContent>
@@ -135,7 +166,7 @@ export default function SensePCCost() {
                   <Info className="h-4 w-4 opacity-70" />
                 </div>
                 <Select value={cpu} onValueChange={(v: CpuKey) => setCpu(v)}>
-                  <SelectTrigger className="mt-2 h-11 rounded-md bg-[#F3F0FF] dark:bg-transparent dark:border-[#363B76] dark:hover:border-[#7B2CF5]/60">
+                  <SelectTrigger className="mt-2 h-11 rounded-md bg-background dark:bg-transparent border-input dark:border-white/15">
                     <SelectValue placeholder="Select CPU" />
                   </SelectTrigger>
                   <SelectContent>
@@ -155,11 +186,13 @@ export default function SensePCCost() {
                   <Info className="h-4 w-4 opacity-70" />
                 </div>
                 <Select value={region} onValueChange={setRegion}>
-                  <SelectTrigger className="mt-2 h-11 rounded-md bg-[#F3F0FF] dark:bg-transparent dark:border-[#363B76] dark:hover:border-[#7B2CF5]/60">
+                  <SelectTrigger className="mt-2 h-11 rounded-md bg-background dark:bg-transparent border-input dark:border-white/15">
                     <SelectValue placeholder="Select Region" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="US East (N. Virginia)">US East (N. Virginia)</SelectItem>
+                    <SelectItem value="US East (N. Virginia)">
+                      US East (N. Virginia)
+                    </SelectItem>
                     <SelectItem value="US West (Oregon)">US West (Oregon)</SelectItem>
                   </SelectContent>
                 </Select>
@@ -172,7 +205,7 @@ export default function SensePCCost() {
                   <Info className="h-4 w-4 opacity-70" />
                 </div>
                 <Select value={storage} onValueChange={(v) => setStorage(v as any)}>
-                  <SelectTrigger className="mt-2 h-11 rounded-md bg-[#F3F0FF] dark:bg-transparent dark:border-[#363B76] dark:hover:border-[#7B2CF5]/60">
+                  <SelectTrigger className="mt-2 h-11 rounded-md bg-background dark:bg-transparent border-input dark:border-white/15">
                     <SelectValue placeholder="Select Storage" />
                   </SelectTrigger>
                   <SelectContent>
@@ -192,16 +225,26 @@ export default function SensePCCost() {
           </div>
 
           {/* Right card */}
-          <div className={cn(
-            "rounded-2xl p-6",
-            "bg-white border border-[#E6E0FF]",
-            "dark:bg-[#171A3A] dark:border-[#2B2D55]"
-          )}>
+          <div
+            className={cn(
+              "rounded-2xl p-6",
+              "bg-card border border-border",
+              "dark:bg-white/5 dark:border-white/10"
+            )}
+          >
             <h3 className="text-lg font-semibold">Your Configuration</h3>
 
             <div className="mt-6 space-y-3">
-              {[{ l: "Operating System", v: os }, { l: "CPU & Memory", v: CPU_PRESETS[cpu].label }, { l: "Region", v: region }, { l: "Storage", v: storage }].map((row, i) => (
-                <div key={i} className="rounded-lg border border-[#7266D8]/30 bg-[#F3F0FF] text-sm px-4 py-3 dark:bg-transparent dark:border-[#363B76]">
+              {[
+                { l: "Operating System", v: os },
+                { l: "CPU & Memory", v: CPU_PRESETS[cpu].label },
+                { l: "Region", v: region },
+                { l: "Storage", v: storage },
+              ].map((row, i) => (
+                <div
+                  key={i}
+                  className="rounded-lg border text-sm px-4 py-3 bg-muted/60 border-border dark:bg-white/5 dark:border-white/10"
+                >
                   <p className="text-xs text-paragraph">{row.l}</p>
                   <p className="font-medium mt-0.5">{row.v}</p>
                 </div>
@@ -210,8 +253,15 @@ export default function SensePCCost() {
 
             {/* Prices */}
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {[{ l: "Est. Monthly*", v: `$${currency(monthly)}/month` }, { l: "Est. Daily*", v: `$${currency(daily)}/day` }, { l: "Est. Hourly*", v: `$${hourly.toFixed(4)}/hr` }].map((p, i) => (
-                <div key={i} className="rounded-lg border border-[#2B2D55]/40 bg-[#101436]/20 px-4 py-3 text-sm dark:bg-[#101436]/40">
+              {[
+                { l: "Est. Monthly*", v: `$${currency(monthly)}/month` },
+                { l: "Est. Daily*", v: `$${currency(daily)}/day` },
+                { l: "Est. Hourly*", v: `$${hourly.toFixed(4)}/hr` },
+              ].map((p, i) => (
+                <div
+                  key={i}
+                  className="rounded-lg border px-4 py-3 text-sm bg-muted/60 border-border dark:bg-white/5 dark:border-white/10"
+                >
                   <p className="text-xs text-paragraph">{p.l}</p>
                   <p className="font-semibold mt-0.5">{p.v}</p>
                 </div>
@@ -220,10 +270,8 @@ export default function SensePCCost() {
 
             {/* Actions */}
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              <Button className="h-11 flex-1 rounded-full text-white bg-[linear-gradient(90deg,#7B2CF5_0%,#4C6CFD_100%)] hover:opacity-90">
-                View Estimate
-              </Button>
-              <Button variant="outline" className="h-11 flex-1 rounded-full border-[#7B2CF5] text-white bg-transparent hover:bg-[#7B2CF5]/10">
+              <Button className="h-11 flex-1 rounded-full">View Estimate</Button>
+              <Button variant="outline" className="h-11 flex-1 rounded-full">
                 Build PC
               </Button>
             </div>
@@ -238,7 +286,7 @@ export default function SensePCCost() {
                 "24/7 support",
               ].map((b, i) => (
                 <div key={i} className="flex items-center gap-2 text-paragraph">
-                  <Check className="h-4 w-4 text-[#7B2CF5]" />
+                  <Check className="h-4 w-4 text-primary" />
                   <span>{b}</span>
                 </div>
               ))}
