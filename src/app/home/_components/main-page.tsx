@@ -1,19 +1,18 @@
-/* eslint perfectionist/sort-imports: "off" */
-
 "use client";
 
 import FAQ from "./faq";
 import Hero from "./hero";
 import { MainLayout } from "./layout";
 import HowItWorks from "./how-it-works";
+import SensePCCost from "./sensepc-cost";
 import FutureVision from "./future-vision";
 import WayWeCompute from "./way-we-compute";
+import GetStartedCTA from "./get-started-cta";
 import CostCalculator from "./cost-calculator";
-import SensePCCost from "./sensepc-cost";
 import ProblemSolution from "./problem-solution";
 import TutorialSection from "./tutorial-section";
+import ProductHighlights from "./product-highlights";
 import FutureOfComputing from "./future-of-computing";
-import GetStartedCTA from "./get-started-cta";
 
 export default function HomePage() {
   return (
@@ -21,6 +20,7 @@ export default function HomePage() {
       <Hero />
       <FutureOfComputing />
       <WayWeCompute />
+      <ProductHighlights />
       <TutorialSection />
       {/* <WhySettle /> */}
       <ProblemSolution />
