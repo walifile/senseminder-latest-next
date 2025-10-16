@@ -32,7 +32,7 @@ const WayWeCompute = () => (
       </div>
 
       <Image
-        src="/assets/images/way-we-compute-bg.png"
+        src="/assets/svg/way-we-compute-bg.svg"
         alt="Way We Compute"
         width={600}
         height={400}

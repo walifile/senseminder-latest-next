@@ -45,8 +45,8 @@ const FutureOfComputing = () => (
         <Card
           className={cn(
             "px-4 py-8 md:px-10 md:py-24 rounded-2xl border border-cyan-400/30 bg-cover bg-center bg-no-repeat",
-            "bg-[url('/assets/images/future-of-computing-card-bg.png')]",
-            "dark:bg-[url('/assets/images/future-of-computing-card-bg-dark.png')]",
+            "bg-[url('/assets/svg/future-of-computing-card-bg.svg')]",
+            "dark:bg-[url('/assets/svg/future-of-computing-card-bg-dark.svg')]",
             "dark:bg-[#010526] dark:shadow-[0px_17px_44px_rgba(2,97,206,0.32)]",
             index !== 1 ? "md:mt-10" : "md:mb-10"
           )}
