@@ -6,10 +6,11 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import {
   Accordion,
-  AccordionContent,
   AccordionItem,
+  AccordionContent,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+
 import { motion } from "framer-motion";
 
 const faqItems = [
@@ -54,86 +55,78 @@ export default function FAQ() {
   const [value, setValue] = React.useState<string | undefined>("item-2");
 
   return (
-    <section id="faq" className="py-16 md:py-24 relative">
-      <div className="container">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
-          {/* Left: Heading + Illustration */}
-          <div className="relative">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4 }}
-              className="space-y-3 md:space-y-4"
-            >
-              <p className="text-sm font-medium text-primary">Frequently Asked Questions</p>
-              <h2 className="text-3xl md:text-4xl font-bold leading-tight">
-                Everything you need to know about Sense PC
-              </h2>
-              <p className="text-paragraph max-w-[50ch]">
-                Quick answers to common questions. Explore details on
-                performance, setup, connectivity, and getting started.
-              </p>
-            </motion.div>
+    <section id="faq" className="container relative my-12 md:my-20">
+      <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-24">
+        {/* Left: Heading + Illustration */}
+        <div className="relative lg:col-span-2 space-y-8 md:space-y-28">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4 }}
+            className="space-y-2.5"
+          >
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-5xl">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-paragraph text-2xl">
+              Everything you need to know about Sense PC
+            </p>
+          </motion.div>
 
-            {/* Illustration with gradient */}
-            <div className="relative mt-8 md:mt-12">
-              <Image
-                src="/assets/svg/faq-gradient.svg"
-                alt="FAQ background gradient"
-                width={640}
-                height={480}
-                priority
-                className="absolute -inset-x-6 -top-6 md:-inset-x-10 -z-10 select-none pointer-events-none"
-              />
-              <Image
-                src="/assets/svg/faq.svg"
-                alt="FAQ Illustration"
-                width={520}
-                height={400}
-                className="w-full h-auto drop-shadow-xl"
-                priority
-              />
-            </div>
-          </div>
+          <Image
+            src="/assets/svg/faq.svg"
+            alt="FAQ Illustration"
+            width={420}
+            height={300}
+            className="w-full h-auto"
+            priority
+          />
+        </div>
 
-          {/* Right: Accordion */}
-          <div className="w-full">
-            <Accordion type="single" collapsible value={value} onValueChange={setValue} className="space-y-3">
-              {faqItems.map((item, idx) => {
-                const id = `item-${idx + 1}`;
-                const open = value === id;
-                return (
-                  <AccordionItem key={id} value={id} className="border-0">
-                    <div
-                      className={cn(
-                        "rounded-xl border transition-colors",
-                        "bg-white/90 border-gray-200 dark:bg-gray-900/40 dark:border-white/10",
-                        open && "ring-1 ring-primary/40 bg-primary/5 dark:bg-white/5"
-                      )}
-                    >
-                      <AccordionTrigger
-                        className={cn(
-                          "px-4 md:px-5 py-4 text-left gap-3 no-underline",
-                          open && "text-foreground"
-                        )}
-                      >
-                        <span className="text-xs font-semibold text-primary tabular-nums w-8">
+        {/* Right: Accordion */}
+        <div className="lg:col-span-3">
+          <Accordion
+            type="single"
+            collapsible
+            value={value}
+            onValueChange={setValue}
+            className="space-y-4 md:space-y-5"
+          >
+            {faqItems.map((item, idx) => {
+              const id = `item-${idx + 1}`;
+              const open = value === id;
+              return (
+                <AccordionItem key={id} value={id} className="border-0">
+                  <div
+                    className={cn(
+                      "rounded-lg transition-colors p-4 md:p-6",
+                      "space-y-2 md:space-y-3",
+                      "bg-white shadow-[0px_12px_24px_0px_#2530F014] border border-[#2530F033] dark:shadow-none dark:border-none dark:bg-[#000332]",
+                      open &&
+                        "text-white shadow-[0px_10px_50px_0px_#00000017] bg-[linear-gradient(320deg,rgba(116,0,158,0.37)_5%,#060866_100%)]"
+                    )}
+                  >
+                    <AccordionTrigger className="py-0 text-start hover:no-underline">
+                      <div className="flex gap-3">
+                        <span className="text-2xl font-bold text-paragraph">
                           {String(idx + 1).padStart(2, "0")}
                         </span>
-                        <span className="text-sm md:text-base font-medium">
+
+                        <span className="mt-1 font-space-grotesk font-bold text-lg md:text-xl">
                           {item.question}
                         </span>
-                      </AccordionTrigger>
-                      <AccordionContent className="px-4 md:px-5 text-sm text-muted-foreground">
-                        {item.answer}
-                      </AccordionContent>
-                    </div>
-                  </AccordionItem>
-                );
-              })}
-            </Accordion>
-          </div>
+                      </div>
+                    </AccordionTrigger>
+
+                    <AccordionContent className="text-base md:text-lg">
+                      {item.answer}
+                    </AccordionContent>
+                  </div>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
         </div>
       </div>
     </section>
