@@ -134,6 +134,10 @@
     text-wrap: balance;
   }
 
+  .text-link {
+    @apply text-base text-[#B9C2D5] dark:text-paragraph hover:text-white;
+  }
+
   .text-gradient {
     @apply text-gradient-clip text-transparent bg-gradient-to-r from-primary to-primary-foreground;
   }
