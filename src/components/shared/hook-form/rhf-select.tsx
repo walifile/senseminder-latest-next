@@ -1,5 +1,6 @@
 import type { ElementType } from "react";
 
+import Image from "next/image";
 import { forwardRef } from "react";
 
 import { cn } from "@/lib/utils";
@@ -19,8 +20,6 @@ import {
 } from "@/components/ui/select";
 
 import { Controller, useFormContext } from "react-hook-form";
-
-import { Info } from "lucide-react";
 
 export interface SelectOption {
   value: string;
@@ -79,14 +78,15 @@ export const RHFSelect = forwardRef<HTMLButtonElement, RHFSelectProps>(
           const hasError = !!error;
 
           return (
-            <div className={cn("flex flex-col gap-2", className)}>
+            <div className={cn("flex flex-col gap-4", className)}>
               {(label || description) && (
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <div>
                     {label && (
                       <Label
                         htmlFor={name}
                         className={cn(
+                          "text-base font-semibold",
                           hasError && "text-red-500",
                           labelClassName
                         )}
@@ -98,9 +98,7 @@ export const RHFSelect = forwardRef<HTMLButtonElement, RHFSelectProps>(
                       </Label>
                     )}
                     {description && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {description}
-                      </p>
+                      <p className="text-sm text-paragraph">{description}</p>
                     )}
                   </div>
 
@@ -108,7 +106,14 @@ export const RHFSelect = forwardRef<HTMLButtonElement, RHFSelectProps>(
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                          <Image
+                            src="/assets/svg/info.svg"
+                            alt="info"
+                            width={24}
+                            height={24}
+                            unoptimized
+                            className="cursor-pointer"
+                          />
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>{tooltipText}</p>
@@ -134,7 +139,6 @@ export const RHFSelect = forwardRef<HTMLButtonElement, RHFSelectProps>(
                   ref={ref}
                   id={name}
                   className={cn(
-                    "h-11 w-full",
                     hasError && "border-red-500 focus:border-red-500",
                     triggerClassName
                   )}
@@ -146,10 +150,10 @@ export const RHFSelect = forwardRef<HTMLButtonElement, RHFSelectProps>(
                   {normalizedOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       <div className="flex items-center gap-2">
-                        {Icon && <Icon className="h-4 w-4 mr-2" />}
+                        {Icon && <Icon className="size-6" />}
                         <span>{option.label}</span>
                         {option.description && (
-                          <span className="text-xs text-muted-foreground block">
+                          <span className="text-xs text-paragraph block">
                             {option.description}
                           </span>
                         )}
@@ -163,7 +167,7 @@ export const RHFSelect = forwardRef<HTMLButtonElement, RHFSelectProps>(
                 <p
                   className={cn(
                     "text-sm",
-                    error?.message ? "text-red-500" : "text-gray-500"
+                    error?.message ? "text-red-500" : "text-paragraph"
                   )}
                 >
                   {error?.message || helperText}
