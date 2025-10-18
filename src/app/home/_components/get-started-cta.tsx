@@ -22,7 +22,7 @@ export default function GetStartedCTA() {
             Switch to Sense PC!
           </h3>
 
-          <Button className="w-full md:w-fit">
+          <Button size="lg" className="w-full md:w-fit">
             Get Started Now
             <ArrowUpRight />
           </Button>

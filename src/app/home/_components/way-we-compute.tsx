@@ -25,7 +25,7 @@ const WayWeCompute = () => (
           </p>
         </div>
 
-        <Button className="w-full md:w-fit">
+        <Button size="lg" className="w-full md:w-fit">
           Learn More
           <ArrowUpRight />
         </Button>
