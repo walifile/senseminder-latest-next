@@ -13,6 +13,7 @@ import ProblemSolution from "./problem-solution";
 import TutorialSection from "./tutorial-section";
 import ProductHighlights from "./product-highlights";
 import FutureOfComputing from "./future-of-computing";
+import RentSmarter from "@/app/home/_components/RentSmarter";
 
 export default function HomePage() {
   return (
@@ -22,8 +23,9 @@ export default function HomePage() {
       <WayWeCompute />
       <ProductHighlights />
       <TutorialSection />
+      <RentSmarter />
       {/* <WhySettle /> */}
-      <ProblemSolution />
+      {/*<ProblemSolution />*/}
       <HowItWorks />
       <FutureVision />
       {/* <WhyChooseUs /> */}
