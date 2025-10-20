@@ -71,7 +71,7 @@
 
   /* Glass Effects */
   .glass-effect {
-    @apply bg-white/[.04] border border-white/10 backdrop-blur-md rounded-none;
+    @apply bg-white/[.04] border-b border-white/10 backdrop-blur-md rounded-none;
   }
 
   .glass-card {
