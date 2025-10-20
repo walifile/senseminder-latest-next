@@ -1,17 +1,18 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
 import React from "react";
 import Image from "next/image";
+
+import { Card, CardContent } from "@/components/ui/card";
+
 import { motion } from "framer-motion";
 
-const RentSmarter: React.FC = () => {
-    return (
-        <section className="container bg-background/50 dark:bg-background/80 text-foreground flex flex-col md:flex-row items-center justify-center gap-10 p-10 backdrop-blur-sm rounded-3xl">
+const RentSmarter: React.FC = () => (
+        <section className="container text-foreground flex flex-col md:flex-row items-stretch justify-center gap-2 p-4 md:p-10 [@media(max-height:768px)_and_(min-height:460px)]:flex-col">
             {/* Left Illustration */}
-            <div className="md:w-1/2 flex justify-center">
+            <div className="md:w-1/2 flex justify-center items-center [@media(max-height:768px)_and_(min-height:460px)]:w-full">
                 <div
-                    className="-mt-[80px] rounded-2xl p-6 transition-colors
+                    className="rounded-2xl p-6 transition-colors
                      bg-[#F4F1FF] dark:bg-transparent"
                 >
                     <Image
@@ -19,19 +20,19 @@ const RentSmarter: React.FC = () => {
                         alt="Cloud computing illustration"
                         width={400}
                         height={400}
-                        className="rounded-2xl drop-shadow-2xl"
+                        className="rounded-2xl drop-shadow-2xl -mt-[80px]"
                         priority
                     />
                 </div>
             </div>
 
-            <div className="md:w-1/2 max-w-md space-y-6">
+            <div className="md:w-1/2 space-y-6 flex flex-col justify-center [@media(max-height:768px)_and_(min-height:460px)]:w-full [@media(max-height:768px)_and_(min-height:460px)]:max-w-full [@media(max-height:768px)_and_(min-height:460px)]:items-center">
                 <motion.h2
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5 }}
-                    className="text-3xl md:text-3xl font-bold mb-4 leading-tight"
+                    className="text-3xl md:text-3xl font-bold leading-tight"
                 >
                     <span>Why Buy</span> <br /> Expensive Hardware When You Can{" "}
                     Rent Smarter?
@@ -83,6 +84,6 @@ const RentSmarter: React.FC = () => {
             </div>
         </section>
     );
-};
 
 export default RentSmarter;
+

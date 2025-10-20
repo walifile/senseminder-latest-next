@@ -2,6 +2,8 @@
 
 import React from "react";
 
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -9,17 +11,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 import {
   CalendarDays,
-  Clock3,
-  Database,
-  CreditCard,
-  SquareStack,
-  Info,
   Check,
+  Clock3,
+  CreditCard,
+  Database,
+  Info,
+  SquareStack,
 } from "lucide-react";
 
 type CpuKey = "4c8g" | "8c16g" | "16c32g";
@@ -204,7 +204,7 @@ export default function SensePCCost() {
                   <label className="text-sm text-paragraph">Storage</label>
                   <Info className="h-4 w-4 opacity-70" />
                 </div>
-                <Select value={storage} onValueChange={(v) => setStorage(v as any)}>
+                <Select value={storage} onValueChange={(v) => setStorage(v as (typeof STORAGE_OPTIONS)[number])}>
                   <SelectTrigger className="mt-2 h-11 rounded-md bg-background dark:bg-transparent border-input dark:border-white/15">
                     <SelectValue placeholder="Select Storage" />
                   </SelectTrigger>

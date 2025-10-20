@@ -1,13 +1,16 @@
+import Image from "next/image";
 import React, { useRef, useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogTitle,
-  DialogHeader,
   DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
+
 import { motion } from "framer-motion";
-import { Play, Youtube, ChevronLeft, ChevronRight } from "lucide-react";
+import { Play, Youtube } from "lucide-react";
 
 const tutorials = [
   {
@@ -15,7 +18,7 @@ const tutorials = [
     title: "Getting Started With Sense PC",
     duration: "5:30",
     description: "Learn the basics of setting up your Sense PC environment",
-    image: "/gettingStartedWithSensePc.png",
+    image: "/gettingStartedWithSensePc.png", // Place your images in public/images/
     videoUrl: "/videos/getting-started.mp4",
     youtubeUrl: "https://youtube.com/watch?v=example1",
   },
@@ -50,7 +53,32 @@ const tutorials = [
 
 const TutorialSection = () => {
   const [selectedVideo, setSelectedVideo] = useState<(typeof tutorials)[0] | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScrollButtons = () => {
+    if (carouselRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  React.useEffect(() => {
+    checkScrollButtons();
+    const carousel = carouselRef.current;
+    if (carousel) {
+      carousel.addEventListener("scroll", checkScrollButtons);
+      window.addEventListener("resize", checkScrollButtons);
+      return () => {
+        carousel.removeEventListener("scroll", checkScrollButtons);
+        window.removeEventListener("resize", checkScrollButtons);
+      };
+    }
+    return undefined;
+  }, []);
 
   const scroll = (direction: "left" | "right") => {
     if (carouselRef.current) {
@@ -59,51 +87,148 @@ const TutorialSection = () => {
         left: direction === "left" ? -scrollAmount : scrollAmount,
         behavior: "smooth",
       });
+      setTimeout(checkScrollButtons, 300);
     }
   };
 
   return (
-      <section className="relative py-16 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
-        <div className="container mx-auto px-6">
+      <section className="relative py-16">
+        <div className="container mx-auto px-6 overflow-hidden">
           {/* Header Section */}
           <div className="flex items-center justify-between mb-8">
             <div className="max-w-xl">
-              <h2 className="text-3xl md:text-4xl font-bold mb-3 text-left">
+              <h2 className="text-3xl md:text-4xl font-bold mb-3 text-left text-foreground">
                 Learn How to{" "}
-                <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[#D971FF] via-[#4C55F8] to-[#8086F3] bg-clip-text text-transparent"
+                      style={{
+                        backgroundImage: 'linear-gradient(90deg,  #4C55F8 46%)'
+                      }}>
                 Get Started
-              </span>
+                </span>
               </h2>
               <p className="text-muted-foreground text-left text-lg">
                 Watch our tutorial series to master your Sense PC experience
               </p>
             </div>
 
-            {/* Navigation Buttons */}
-            <div className="flex items-center gap-2">
-              <Button
-                  variant="outline"
-                  size="icon"
+            {/* Navigation Buttons - Only show on desktop */}
+            <div className="hidden lg:flex items-center gap-2">
+              <button
                   onClick={() => scroll("left")}
-                  className="rounded-full"
+                  disabled={!canScrollLeft}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                      canScrollLeft
+                          ? "hover:opacity-90 cursor-pointer"
+                          : "cursor-not-allowed bg-black"
+                  }`}
+                  style={canScrollLeft ? {
+                    backgroundImage: 'linear-gradient(90deg, #D971FF 5%, #4C55F8 46%, #8086F3 100%)'
+                  } : undefined}
               >
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-              <Button
-                  variant="outline"
-                  size="icon"
+                <Image
+                    src="/arrow-narrow-left.svg"
+                    alt="Scroll left"
+                    width={20}
+                    height={20}
+                    className={canScrollLeft ? "brightness-0 invert" : "dark:invert"}
+                />
+              </button>
+              <button
                   onClick={() => scroll("right")}
-                  className="rounded-full"
+                  disabled={!canScrollRight}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                      canScrollRight
+                          ? "hover:opacity-90 cursor-pointer"
+                          : "cursor-not-allowed bg-black"
+                  }`}
+                  style={canScrollRight ? {
+                    backgroundImage: 'linear-gradient(90deg, #D971FF 5%, #4C55F8 46%, #8086F3 100%)'
+                  } : undefined}
               >
-                <ChevronRight className="h-5 w-5" />
-              </Button>
+                <Image
+                    src="/arrow-right.svg"
+                    alt="Scroll right"
+                    width={20}
+                    height={20}
+                    className={canScrollRight ? "brightness-0 invert" : "dark:invert"}
+                />
+              </button>
             </div>
           </div>
 
-          {/* Carousel Section */}
+          {/* Mobile Layout - One card at a time */}
+          <div className="lg:hidden">
+            <div className="relative">
+              {/* Single Featured Card */}
+              <motion.div
+                  key={currentIndex}
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.3 }}
+                  onClick={() => setSelectedVideo(tutorials[currentIndex])}
+                  className="relative group cursor-pointer rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 h-[70vh] max-h-[500px] w-full bg-card"
+              >
+                <Image
+                    src={tutorials[currentIndex].image}
+                    alt={tutorials[currentIndex].title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 1024px) 100vw, 48vw"
+                    priority={currentIndex === 0}
+                />
+
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                <div
+                    className="absolute top-4 right-4 text-white text-sm font-medium rounded-full px-4 py-2 shadow-lg"
+                    style={{
+                      background: 'rgba(0, 0, 0, 0.3)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid',
+                      borderColor: 'transparent',
+                      borderImage: 'radial-gradient(ellipse at top left, white 30%, transparent 30%) 1, radial-gradient(ellipse at bottom right, white 30%, transparent 30%) 1',
+                      borderRadius: '9999px'
+                    }}>
+                  {tutorials[currentIndex].duration}
+                </div>
+
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="relative">
+                    <div className="bg-white/20 backdrop-blur-md rounded-full p-6 group-hover:scale-110 transition-transform">
+                      <Play className="text-white h-8 w-8" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-center text-white z-10">
+                  <h3 className="text-2xl font-bold mb-2">{tutorials[currentIndex].title}</h3>
+                  <p className="text-base text-gray-200 max-w-md mx-auto">{tutorials[currentIndex].description}</p>
+                </div>
+              </motion.div>
+
+              {/* Mobile Dots Indicator */}
+              <div className="flex justify-center gap-2 mt-6">
+                {tutorials.map((_, index) => (
+                    <button
+                        key={index}
+                        onClick={() => setCurrentIndex(index)}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                            index === currentIndex
+                                ? "bg-gradient-to-r from-blue-500 to-purple-500"
+                                : "bg-muted-foreground/40 dark:bg-gray-400"
+                        }`}
+                    />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Layout - Horizontal Carousel */}
           <div
               ref={carouselRef}
-              className="flex gap-6 overflow-x-auto no-scrollbar scroll-smooth pb-4"
+              className="hidden lg:flex gap-6 overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {tutorials.map((tutorial, index) => (
                 <motion.div
@@ -113,27 +238,41 @@ const TutorialSection = () => {
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                     onClick={() => setSelectedVideo(tutorial)}
-                    className={`relative group cursor-pointer shrink-0 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300
-  ${index === 0
-                        ? "w-[400px] md:w-[600px] lg:w-[700px]"   // first card = full size
-                        : "w-[200px] md:w-[300px] lg:w-[350px]"   // others = half width
-                    } aspect-[4/3]`}
+                    className={`relative group cursor-pointer shrink-0 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 h-[400px] bg-card
+                ${index === 0
+                        ? "w-[48%] min-w-[450px]"
+                        : "w-[24%] min-w-[250px]"
+                    }`}
                 >
-                  <img
+                  <Image
                       src={tutorial.image}
                       alt={tutorial.title}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes={index === 0 ? "(max-width: 1024px) 100vw, 48vw" : "(max-width: 1024px) 100vw, 24vw"}
+                      priority={index <= 1}
                   />
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-                  <div className="absolute top-2 right-2 bg-black/70 text-white text-xs rounded-md px-2 py-1">
+                  <div
+                      className="absolute top-2 right-2 text-white text-xs font-medium rounded-full px-3 py-1.5 shadow-lg"
+                      style={{
+                        background: 'rgba(0, 0, 0, 0.3)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid',
+                        borderColor: 'transparent',
+                        borderImage: 'radial-gradient(ellipse at top left, white 30%, transparent 30%) 1, radial-gradient(ellipse at bottom right, white 30%, transparent 30%) 1',
+                        borderRadius: '9999px'
+                      }}>
                     {tutorial.duration}
                   </div>
 
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-white/20 backdrop-blur-md rounded-full p-4 group-hover:scale-110 transition-transform">
-                      <Play className="text-white h-6 w-6" />
+                    <div className="relative">
+                      <div className="bg-white/20 backdrop-blur-md rounded-full p-4 group-hover:scale-110 transition-transform">
+                        <Play className="text-white h-6 w-6" />
+                      </div>
                     </div>
                   </div>
 
@@ -148,9 +287,9 @@ const TutorialSection = () => {
 
           {/* Dialog for video playback */}
           <Dialog open={!!selectedVideo} onOpenChange={() => setSelectedVideo(null)}>
-            <DialogContent className="max-w-4xl">
+            <DialogContent className="max-w-4xl bg-background border-border">
               <DialogHeader>
-                <DialogTitle>{selectedVideo?.title}</DialogTitle>
+                <DialogTitle className="text-foreground">{selectedVideo?.title}</DialogTitle>
               </DialogHeader>
               {selectedVideo && (
                   <div className="space-y-4">
@@ -167,7 +306,7 @@ const TutorialSection = () => {
                       <Button
                           variant="outline"
                           onClick={() => window.open(selectedVideo.youtubeUrl, "_blank")}
-                          className="flex items-center gap-2"
+                          className="flex items-center gap-2 bg-background border-border text-foreground hover:bg-accent"
                       >
                         <Youtube className="h-4 w-4" /> Watch on YouTube
                       </Button>
@@ -176,6 +315,8 @@ const TutorialSection = () => {
               )}
             </DialogContent>
           </Dialog>
+
+          {/* Background gradient effects for the section */}
         </div>
       </section>
   );
