@@ -25,14 +25,14 @@ const WayWeCompute = () => (
           </p>
         </div>
 
-        <Button className="w-full md:w-fit">
+        <Button size="lg" className="w-full md:w-fit">
           Learn More
           <ArrowUpRight />
         </Button>
       </div>
 
       <Image
-        src="/assets/svg/way-we-compute-bg.svg"
+        src="/assets/svg/way-we-compute-icon.svg"
         alt="Way We Compute"
         width={600}
         height={400}

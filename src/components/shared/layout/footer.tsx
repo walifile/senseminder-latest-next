@@ -64,10 +64,17 @@ const Footer = () => {
 
   return (
     <footer
-      className="bg-[#020817] dark:bg-[#0208176E] text-white"
+      className="relative text-white overflow-visible"
       aria-label="Site footer"
     >
-      <div className="container pt-14 pb-6 space-y-8 md:pt-24 md:pb-5 md:space-y-12">
+      {/* Glow background layers */}
+      <div className="z-0 absolute -top-10 left-1/2 -translate-x-1/2 md:-top-16 md:left-[10%] blur-[160px] md:blur-[200px] size-1/2 opacity-40 bg-[#4027E5]" />
+      <div className="z-0 absolute -top-10 left-1/2 -translate-x-1/2 md:-top-20 md:right-[10%] blur-[160px] md:blur-[200px] size-1/2 opacity-40 bg-[#9C05BF]" />
+
+      {/* Background layer */}
+      <div className="absolute inset-0 bg-[#020817] dark:bg-[#0208176E]" />
+
+      <div className="relative container pt-14 pb-6 space-y-8 md:pt-24 md:pb-5 md:space-y-12">
         <div className="grid lg:grid-cols-2 items-center gap-10 md:gap-24">
           <div className="space-y-4">
             <div className="space-y-5">

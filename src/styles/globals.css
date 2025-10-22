@@ -71,7 +71,7 @@
 
   /* Glass Effects */
   .glass-effect {
-    @apply bg-white/[.04] border border-white/10 backdrop-blur-md rounded-none;
+    @apply bg-white/[.04] border-b border-white/10 backdrop-blur-md rounded-none;
   }
 
   .glass-card {
@@ -286,4 +286,5 @@
   background: linear-gradient(45deg, #2701ff, #8f00be);
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   mask-composite: exclude;
+  pointer-events: none;
 }

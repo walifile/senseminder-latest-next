@@ -6,12 +6,23 @@ import AuthGuard from "@/guards/auth-guard";
 import { usePathname } from "next/navigation";
 import { ReduxProvider } from "@/redux/provider";
 import { isDev } from "@/constants/initial-values";
+import { Inter, Space_Grotesk } from "next/font/google";
 import { AmplifyProvider } from "@/providers/AmplifyProvider";
 import { WebSocketProvider } from "@/providers/WebSocketProvider";
 
 import Navbar from "@/components/shared/layout/navbar";
 import Footer from "@/components/shared/layout/footer";
 import { ThemeWrapper } from "@/components/shared/layout/theme-wrapper";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
+});
 
 export default function RootLayout({
   children,
@@ -23,17 +34,13 @@ export default function RootLayout({
   // Special case: root landing page in prod
   if (pathname === "/" && !isDev) {
     return (
-      <html lang="en">
+      <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
         <head>
           <title>SmartPC</title>
           <meta name="description" content="SmartPC Application" />
           <link rel="icon" href="/favicon.ico" />{" "}
-          <link
-            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap"
-            rel="stylesheet"
-          />
         </head>
-        <body suppressHydrationWarning className="overflow-hidden">
+        <body suppressHydrationWarning className="font-inter overflow-hidden">
           {children}
         </body>
       </html>
@@ -43,17 +50,13 @@ export default function RootLayout({
   const hideChrome = pathname.startsWith("/welcome");
 
   return (
-    <html lang="en">
+    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
       <head>
         <title>SmartPC</title>
         <meta name="description" content="SmartPC Application" />
         <link rel="icon" href="/favicon.ico" />{" "}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap"
-          rel="stylesheet"
-        />
       </head>
-      <body suppressHydrationWarning>
+      <body suppressHydrationWarning className="font-inter">
         <ReduxProvider>
           <AmplifyProvider>
             <WebSocketProvider>
