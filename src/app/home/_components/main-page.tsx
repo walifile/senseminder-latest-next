@@ -14,6 +14,7 @@ import CostCalculator from "./cost-calculator";
 import TutorialSection from "./tutorial-section";
 import ProductHighlights from "./product-highlights";
 import FutureOfComputing from "./future-of-computing";
+import RentSmarterProcess from "@/app/home/_components/RentSmarterProcess";
 
 export default function HomePage() {
   return (
@@ -24,9 +25,10 @@ export default function HomePage() {
       <ProductHighlights />
       <TutorialSection />
       <RentSmarter />
+        <RentSmarterProcess />
       {/* <WhySettle /> */}
       {/*<ProblemSolution />*/}
-      <HowItWorks />
+      {/*<HowItWorks />*/}
       <FutureVision />
       {/* <WhyChooseUs /> */}
       {/* <Testimonials /> */}

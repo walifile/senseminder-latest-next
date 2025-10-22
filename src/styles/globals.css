@@ -210,6 +210,35 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* Navigation Button States */
+  .nav-btn-enabled {
+    background-image: linear-gradient(90deg, #D971FF 5%, #4C55F8 46%, #8086F3 100%);
+  }
+
+  .nav-btn-disabled {
+    position: relative;
+    background: linear-gradient(90deg, #D971FF 5%, #4C55F8 46%, #8086F3 100%);
+  }
+
+  .nav-btn-disabled-bg {
+    position: absolute;
+    inset: 2px;
+    border-radius: 9999px;
+    background-color: hsl(var(--background));
+  }
+
+  .nav-arrow-enabled {
+    filter: brightness(0) invert(1);
+  }
+
+  .nav-arrow-disabled {
+    filter: brightness(0) invert(0);
+  }
+
+  .dark .nav-arrow-disabled {
+    filter: brightness(1) invert(1);
+  }
 }
 
 /* Animations */
