@@ -57,7 +57,7 @@ const RentSmarterProcess: React.FC = () => {
                         <motion.button
                             whileHover={{scale: 1.05}}
                             whileTap={{scale: 0.95}}
-                            className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 outline-border text-sm h-10 rounded-full px-4 text-white"
+                            className="inline-flex w-full md:w-auto text-center md:text-left items-center justify-center gap-1.5 whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 outline-border text-sm h-10 rounded-full px-4 text-white"
                             style={{
                                 background: 'linear-gradient(to left, #A801BA 0%, #2530F0 100%)',
                                 boxShadow: '0 10px 25px rgba(168, 1, 186, 0.25)'
@@ -124,34 +124,42 @@ const RentSmarterProcess: React.FC = () => {
                             STEP-1
                         </div>
 
-                        <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white font-semibold px-6 py-2 rounded-full shadow-lg whitespace-nowrap"
+                        <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-semibold px-6 py-2 rounded-full shadow-lg whitespace-nowrap text-black dark:text-white border-2 border-transparent"
                              style={{
                                  top: 'calc(50% - 16px)',
                                  fontSize: '20px',
-                                 background: 'transparent',
-                                 border: '2px solid transparent',
-                                 backgroundImage: 'linear-gradient(rgba(26, 11, 46, 0.8), rgba(26, 11, 46, 0.8)), linear-gradient(to left, #A801BA 0%, #2530F0 100%)',
+                                 backgroundImage: 'linear-gradient(white, white), linear-gradient(to left, #A801BA 0%, #2530F0 100%)',
                                  backgroundOrigin: 'border-box',
                                  backgroundClip: 'padding-box, border-box'
                              }}>
-                            STEP-2
+                            <div className="absolute inset-0 rounded-full hidden dark:block border-2 border-transparent"
+                                 style={{
+                                     backgroundImage: 'linear-gradient(rgba(26, 11, 46, 0.8), rgba(26, 11, 46, 0.8)), linear-gradient(to left, #A801BA 0%, #2530F0 100%)',
+                                     backgroundOrigin: 'border-box',
+                                     backgroundClip: 'padding-box, border-box'
+                                 }} />
+                            <span className="relative z-10">STEP-2</span>
                         </div>
 
-                        <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white font-semibold px-6 py-2 rounded-full shadow-lg whitespace-nowrap"
+                        <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-semibold px-6 py-2 rounded-full shadow-lg whitespace-nowrap text-black dark:text-white border-2 border-transparent"
                              style={{
                                  top: 'calc(100% - 96px)',
                                  fontSize: '20px',
-                                 background: 'transparent',
-                                 border: '2px solid transparent',
-                                 backgroundImage: 'linear-gradient(rgba(26, 11, 46, 0.8), rgba(26, 11, 46, 0.8)), linear-gradient(to left, #A801BA 0%, #2530F0 100%)',
+                                 backgroundImage: 'linear-gradient(white, white), linear-gradient(to left, #A801BA 0%, #2530F0 100%)',
                                  backgroundOrigin: 'border-box',
                                  backgroundClip: 'padding-box, border-box'
                              }}>
-                            STEP-3
+                            <div className="absolute inset-0 rounded-full hidden dark:block border-2 border-transparent"
+                                 style={{
+                                     backgroundImage: 'linear-gradient(rgba(26, 11, 46, 0.8), rgba(26, 11, 46, 0.8)), linear-gradient(to left, #A801BA 0%, #2530F0 100%)',
+                                     backgroundOrigin: 'border-box',
+                                     backgroundClip: 'padding-box, border-box'
+                                 }} />
+                            <span className="relative z-10">STEP-3</span>
                         </div>
                     </div>
 
-                    <div className="flex-1 space-y-8">
+                    <div className="flex-1 space-y-8 ms-2">
                         {steps.map((step, index) => (
                             <motion.div
                                 key={index}
@@ -161,8 +169,12 @@ const RentSmarterProcess: React.FC = () => {
                                 transition={{ duration: 0.6, delay: index * 0.2 }}
                                 className="relative"
                             >
-                                <Card className="relative border p-10 border-white/10 rounded-2xl hover:opacity-90 transition-all duration-300 group" style={{ background: 'linear-gradient(to right, rgba(128, 134, 243, 1) 0%, rgba(3, 10, 135, 0.5) 33%, rgba(186, 37, 240, 1) 95%)' }}>
-                                    <CardContent className="p-0">
+                                <Card className="relative border p-10 border-white/10 rounded-2xl hover:opacity-90 transition-all duration-300 group bg-[#F4F1FF] dark:bg-transparent">
+                                    <div className="absolute inset-0 rounded-2xl hidden dark:block"
+                                         style={{
+                                             background: 'linear-gradient(to right, #310E68 0%, #0C0A40 33%'
+                                         }} />
+                                    <CardContent className="p-0 relative z-10">
                                         <div className="flex items-center gap-4">
                                             <Image
                                                 src={step.icon}
@@ -173,10 +185,10 @@ const RentSmarterProcess: React.FC = () => {
 
                                             {/* Content */}
                                             <div className="flex-1">
-                                                <h3 className="text-xl font-semibold text-white mb-2">
+                                                <h3 className="text-xl font-semibold text-black dark:text-white mb-2">
                                                     {step.title}
                                                 </h3>
-                                                <p className="text-gray-300 text-sm leading-relaxed">
+                                                <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
                                                     {step.description}
                                                 </p>
                                             </div>
@@ -190,28 +202,32 @@ const RentSmarterProcess: React.FC = () => {
 
                 <div className="w-full lg:hidden relative flex flex-col items-center">
                     {steps.map((step, index) => (
-                        <div key={index} className="relative w-full max-w-md flex flex-col items-center">
+                        <div key={index} className="relative w-full flex flex-col items-center">
                             {/* For Step 2 and 3: equal spacing before and after badge */}
                             {index > 0 && (
                                 <>
                                     <div className="w-0.5 opacity-60"
                                          style={{
                                              height: '32px',
-                                             background: 'repeating-linear-gradient(to bottom, #8b5cf6 0px, #8b5cf6 8px, transparent 8px, transparent 16px)'
+                                             background: 'repeating-linear-gradient(to botmake tom, #8b5cf6 0px, #8b5cf6 8px, transparent 8px, transparent 16px)'
                                          }} />
 
                                     {/* Step badge */}
                                     <div className="flex justify-center relative z-10">
-                                        <div className="text-white font-semibold px-6 py-2 rounded-full shadow-lg whitespace-nowrap"
+                                        <div className="font-semibold px-6 py-2 rounded-full shadow-lg whitespace-nowrap text-black dark:text-white relative border-2 border-transparent"
                                              style={{
                                                  fontSize: '20px',
-                                                 background: 'transparent',
-                                                 border: '2px solid transparent',
-                                                 backgroundImage: 'linear-gradient(rgba(26, 11, 46, 0.8), rgba(26, 11, 46, 0.8)), linear-gradient(to left, #A801BA 0%, #2530F0 100%)',
+                                                 backgroundImage: 'linear-gradient(white, white), linear-gradient(to left, #A801BA 0%, #2530F0 100%)',
                                                  backgroundOrigin: 'border-box',
                                                  backgroundClip: 'padding-box, border-box'
                                              }}>
-                                            {step.step}
+                                            <div className="absolute inset-0 rounded-full hidden dark:block border-2 border-transparent"
+                                                 style={{
+                                                     backgroundImage: 'linear-gradient(rgba(26, 11, 46, 0.8), rgba(26, 11, 46, 0.8)), linear-gradient(to left, #A801BA 0%, #2530F0 100%)',
+                                                     backgroundOrigin: 'border-box',
+                                                     backgroundClip: 'padding-box, border-box'
+                                                 }} />
+                                            <span className="relative z-10">{step.step}</span>
                                         </div>
                                     </div>
 
@@ -251,8 +267,13 @@ const RentSmarterProcess: React.FC = () => {
                                 transition={{ duration: 0.6, delay: index * 0.2 }}
                                 className="relative w-full"
                             >
-                                <Card className="relative border border-white/10 rounded-2xl p-6 hover:opacity-90 transition-all duration-300" style={{ background: 'linear-gradient(to right, rgba(128, 134, 243, 1) 0%, rgba(3, 10, 135, 0.5) 33%, rgba(186, 37, 240, 1) 95%)' }}>
-                                    <CardContent className="p-0">
+                                <Card className="relative border border-white/10 rounded-2xl p-6 hover:opacity-90 transition-all duration-300 bg-[#F4F1FF] dark:bg-transparent">
+                                    <div className="absolute inset-0 rounded-2xl hidden dark:block"
+                                         style={{
+
+                                             background: 'linear-gradient(to right, #310E68 0%, #0C0A40 33%'
+                                         }} />
+                                    <CardContent className="p-0 relative z-10">
                                         <div className="flex flex-col gap-4">
                                             {/* Icon Row */}
                                             <div className="flex justify-start">
@@ -266,10 +287,10 @@ const RentSmarterProcess: React.FC = () => {
 
                                             {/* Content Row */}
                                             <div className="flex-1 text-left">
-                                                <h3 className="text-xl font-semibold text-white mb-2">
+                                                <h3 className="text-xl font-semibold text-black dark:text-white mb-2">
                                                     {step.title}
                                                 </h3>
-                                                <p className="text-gray-300 text-sm leading-relaxed">
+                                                <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
                                                     {step.description}
                                                 </p>
                                             </div>
