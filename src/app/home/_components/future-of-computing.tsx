@@ -34,7 +34,7 @@ const FutureOfComputing = () => (
         <p className="font-space-grotesk font-bold text-2xl md:text-5xl">
           The Future of Computing{" "}
           <span className="bg-[linear-gradient(270deg,_#BA25F0_4.8%,_#2530F0_46.15%,_#8086F3_100%)] bg-clip-text text-transparent">
-            is HereNo Hardware Required
+            No Hardware Required
           </span>
         </p>
         <p className="text-paragraph text-base md:text-2xl">

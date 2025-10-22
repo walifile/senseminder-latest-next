@@ -23,7 +23,7 @@ const Hero = () => (
       <div className="container flex flex-col-reverse md:grid md:grid-cols-2 gap-4 md:items-center py-10 md:py-32">
         <div className="flex flex-col gap-6 md:gap-12">
           <div className="flex flex-col gap-2.5 md:gap-3">
-            <p className="font-space-grotesk font-bold text-3xl md:text-7xl leading-none tracking-tight">
+            <p className="font-space-grotesk font-bold text-3xl md:text-7xl">
               <span className="text-transparent bg-clip-text bg-[linear-gradient(270deg,_#BA25F0_4.8%,_#2530F0_46.15%,_#8086F3_100%)]">
                 The Future of
               </span>{" "}

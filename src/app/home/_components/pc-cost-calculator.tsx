@@ -198,7 +198,7 @@ export default function PCCostCalculator() {
                 Choose Configurations
               </h3>
 
-              <Separator className="bg-white/20" />
+              <Separator className="bg-[#02081633] dark:bg-[#FFFFFF33]" />
 
               <div className="space-y-6">
                 {/* Operating System */}
