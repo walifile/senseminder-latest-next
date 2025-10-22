@@ -20,7 +20,7 @@ const tutorials = [
     title: "Getting Started With Sense PC",
     duration: "5:30",
     description: "Learn the basics of setting up your Sense PC environment",
-    image: "/gettingStartedWithSensePc.png", // Place your images in public/images/
+    image: "/gettingStartedWithSensePc.png",
     videoUrl: "/videos/getting-started.mp4",
     youtubeUrl: "https://youtube.com/watch?v=example1",
   },
@@ -60,7 +60,6 @@ const TutorialSection = () => {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [isDark, setIsDark] = useState(() => {
-    // Initialize with the current theme on mount
     if (typeof window !== 'undefined') {
       return document.documentElement.classList.contains('dark');
     }
@@ -69,16 +68,13 @@ const TutorialSection = () => {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
-  // Detect theme changes
   React.useEffect(() => {
     const checkTheme = () => {
       setIsDark(document.documentElement.classList.contains('dark'));
     };
 
-    // Double-check on mount
     checkTheme();
 
-    // Watch for theme changes
     const observer = new MutationObserver(checkTheme);
     observer.observe(document.documentElement, {
       attributes: true,
@@ -121,7 +117,6 @@ const TutorialSection = () => {
     }
   };
 
-  // Handle touch swipe for mobile
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientX);
   };
@@ -145,7 +140,6 @@ const TutorialSection = () => {
       setCurrentIndex(currentIndex - 1);
     }
 
-    // Reset
     setTouchStart(0);
     setTouchEnd(0);
   };
@@ -192,10 +186,10 @@ const TutorialSection = () => {
                     className="relative z-10"
                     style={{
                       filter: canScrollLeft
-                        ? 'none' // Enabled: keep white arrow on gradient
-                        : isDark
-                          ? 'none' // Dark mode disabled: keep white arrow on black bg
-                          : 'brightness(0)' // Light mode disabled: make arrow black on white bg
+                          ? 'none'
+                          : isDark
+                              ? 'none'
+                              : 'brightness(0)'
                     }}
                 />
               </button>
@@ -219,10 +213,10 @@ const TutorialSection = () => {
                     className="relative z-10"
                     style={{
                       filter: canScrollRight
-                        ? 'none' // Enabled: keep white arrow on gradient
-                        : isDark
-                          ? 'none' // Dark mode disabled: keep white arrow on black bg
-                          : 'brightness(0)' // Light mode disabled: make arrow black on white bg
+                          ? 'none'
+                          : isDark
+                              ? 'none'
+                              : 'brightness(0)'
                     }}
                 />
               </button>
@@ -376,13 +370,14 @@ const TutorialSection = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent dark:bg-none" />
 
                   <div
-                      className="absolute top-2 right-2 text-white text-xs font-medium shadow-lg inline-flex items-center justify-center"
+                      className="absolute top-3 right-3 text-white text-xs font-medium shadow-lg inline-flex items-center justify-center"
                       style={{
                         background: 'rgba(0, 0, 0, 0.2)',
                         backdropFilter: 'blur(10px)',
                         borderRadius: '9999px',
-                        padding: '0.375rem 0.75rem',
-                        minWidth: 'fit-content'
+                        padding: '0.25rem 0.625rem',
+                        minWidth: '52px',
+                        width: '52px'
                       }}>
                     <span style={{
                       position: 'absolute',
@@ -406,7 +401,7 @@ const TutorialSection = () => {
                       borderBottomRightRadius: '9999px',
                       pointerEvents: 'none'
                     }}/>
-                    <span style={{position: 'relative', zIndex: 1, whiteSpace: 'nowrap'}}>{tutorial.duration}</span>
+                    <span style={{position: 'relative', zIndex: 1, whiteSpace: 'nowrap', fontSize: '0.75rem'}}>{tutorial.duration}</span>
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div
@@ -417,7 +412,6 @@ const TutorialSection = () => {
                           alt="play-button"
                           width={22}
                           height={25}
-                          // className="invert"
                       />
                     </div>
                   </div>
@@ -462,8 +456,6 @@ const TutorialSection = () => {
               )}
             </DialogContent>
           </Dialog>
-
-          {/* Background gradient effects for the section */}
         </div>
       </section>
   );
