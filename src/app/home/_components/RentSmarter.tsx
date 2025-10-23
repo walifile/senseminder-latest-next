@@ -21,7 +21,8 @@ const RentSmarter: React.FC = () => (
 
       <div className="space-y-4 md:space-y-12">
         <h4 className="font-space-grotesk font-bold text-2xl md:text-5xl">
-          Why Buy Expensive Hardware When You Can Rent Smarter?
+          Why Buy
+          <br /> Expensive Hardware When You Can Rent Smarter?
         </h4>
 
         <div className="space-y-4 md:space-y-5">

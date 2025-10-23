@@ -22,7 +22,6 @@ export default function HomePage() {
       <ProductHighlights />
       <TutorialSection />
       <RentSmarter />
-      <RentSmarterProcess />
       {/* <TutorialSection /> */}
       {/* <WhySettle /> */}
       {/* <ProblemSolution />
@@ -36,6 +35,7 @@ export default function HomePage() {
       {/* <Pricing /> */}
       {/* <CostCalculator /> */}
       <GetStartedCTA />
+      <RentSmarterProcess />
       <SensePCCost />
       <FAQ />
     </MainLayout>
