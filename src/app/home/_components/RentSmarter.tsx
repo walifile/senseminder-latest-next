@@ -3,91 +3,76 @@
 import React from "react";
 import Image from "next/image";
 
-import { Card, CardContent } from "@/components/ui/card";
-
-import { motion } from "framer-motion";
-
 const RentSmarter: React.FC = () => (
-        <section className="container text-foreground flex flex-col md:flex-row items-stretch justify-center gap-12 px-8 md:p-8 [@media(max-height:768px)_and_(min-height:460px)]:flex-col">
-            {/* Left Illustration */}
-            <div className="md:w-1/2 flex justify-center items-center [@media(max-height:768px)_and_(min-height:460px)]:w-full">
-                <div
-                    className="rounded-2xl  transition-colors w-full h-full flex items-center justify-center
-                     bg-[#F4F1FF] dark:bg-transparent"
-                >
-                    <div className="relative w-full max-w-[400px] aspect-square">
+  <section className="relative">
+    <div className="z-0 absolute -top-60 -right-40 blur-[160px] md:blur-[200px] w-60 md:w-[400px] h-full opacity-20 dark:opacity-40 bg-[#9C05BF]" />
+    <div className="z-0 absolute top-20 -right-60 blur-[160px] md:blur-[200px] w-60 md:w-[400px] h-full opacity-20 dark:opacity-40 bg-[#4027E5]" />
 
-                        {/* Dark mode image - hidden by default, visible in dark mode */}
-                        <Image
-                            src="/rent-smarter.png"
-                            alt="Cloud computing illustration"
-                            fill
-                            className="rounded-2xl object-contain "
-                            priority
-                            style={{ background: 'transparent' }}
-                        />
-                    </div>
-                </div>
+    <div className="container my-12 md:my-20 relative grid md:grid-cols-2 gap-8 md:gap-24">
+      {/* Left Illustration */}
+      <Image
+        src="/assets/svg/rent-smarter.svg"
+        alt="Rent Smarter"
+        width={640}
+        height={578}
+        className="w-full h-auto"
+        priority
+      />
+
+      <div className="space-y-4 md:space-y-12">
+        <h4 className="font-space-grotesk font-bold text-2xl md:text-5xl">
+          Why Buy Expensive Hardware When You Can Rent Smarter?
+        </h4>
+
+        <div className="space-y-4 md:space-y-5">
+          <div className="space-y-3 rounded-xl p-4 md:p-8 bg-[#F4F1FF] dark:bg-transparent dark:bg-[linear-gradient(90deg,rgba(55,0,70,0.55)_0%,rgba(7,20,50,1)_100%)]">
+            <div className="flex items-center gap-2.5 md:gap-4">
+              <Image
+                src="/assets/svg/question_mark.svg"
+                alt="Problem Icon"
+                width={30}
+                height={30}
+                unoptimized
+              />
+
+              <h5 className="font-space-grotesk font-bold text-2xl md:text-3xl">
+                Problem
+              </h5>
             </div>
 
-            <div className="md:w-1/2 space-y-6 flex flex-col justify-center [@media(max-height:768px)_and_(min-height:460px)]:w-full [@media(max-height:768px)_and_(min-height:460px)]:max-w-full [@media(max-height:768px)_and_(min-height:460px)]:items-center">
-                <motion.h4
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5 }}
-                    className="text-xl md:text-3xl font-bold leading-tight"
-                >
-                    <span>Why Buy</span> <br /> Expensive Hardware When You Can{" "}
-                    Rent Smarter?
-                </motion.h4>
+            <p className="text-paragraph text-base md:text-lg">
+              Physical computers are expensive, inflexible, and hard to upgrade.
+            </p>
+          </div>
 
-                <Card
-                    className="border-0 rounded-2xl shadow-lg text-foreground
-                     bg-[#F4F1FF] dark:bg-[linear-gradient(135deg,#370046_0%,#071432_100%)]"
-                >
-                    <CardContent className="p-5 space-y-2">
-                        <div className="flex items-center gap-3">
-                            <Image
-                                src="/question_mark.svg"
-                                alt="Problem Icon"
-                                width={20}
-                                height={20}
-                                className="drop-shadow-2xl"
-                            />
-                            <h2 className="font-semibold text-lg">Problem</h2>
-                        </div>
-                        <p className="text-sm opacity-90 text-[#B9C2D5]">
-                            Physical computers are expensive, inflexible, and hard to upgrade.
-                        </p>
-                    </CardContent>
-                </Card>
+          <div className="relative overflow-hidden space-y-3 rounded-xl p-4 md:p-8 bg-[#FFFFFF] dark:bg-transparent dark:bg-[linear-gradient(291.67deg,#D971FF_-83.89%,#000333_85.78%)]">
+            <div className="dark:hidden absolute -top-96 -left-96 w-[1069.99px] h-[472.71px] -rotate-[11.32deg] opacity-20 bg-[linear-gradient(270deg,#BA25F0_4.8%,#2530F0_46.15%,#8086F3_100%)] blur-[50px] md:blur-[150px]" />
 
-                {/* Solution Card */}
-                <Card
-                    className="border-0 rounded-2xl shadow-lg text-foreground
-                     bg-[#F4F1FF] dark:bg-[linear-gradient(270deg,#D971FF_5%,#512C80_64%,#000333_100%)]"
-                >
-                    <CardContent className="p-5 space-y-2">
-                        <div className="flex items-center gap-3">
-                            <Image
-                                src="/tick-mark.svg"
-                                alt="Solution Icon"
-                                width={20}
-                                height={20}
-                                className="drop-shadow-2xl"
-                            />
-                            <h2 className="font-semibold text-lg">Solution</h2>
-                        </div>
-                        <p className="text-sm opacity-90 text-[#B9C2D5]">
-                            Sense PC offers flexible, cost-effective cloud computing that
-                            scales with your needs.
-                        </p>
-                    </CardContent>
-                </Card>
+            <div className="dark:hidden absolute -bottom-32 md:-bottom-10 -right-60 md:-right-32 w-[287.53px] h-[178.04px] -rotate-[11.32deg] opacity-25 bg-[linear-gradient(270deg,#BA25F0_4.8%,#2530F0_46.15%,#8086F3_100%)] blur-[50px] md:blur-[150px]" />
+
+            <div className="flex items-center gap-2.5 md:gap-4">
+              <Image
+                src="/assets/svg/tick-mark.svg"
+                alt="Problem Icon"
+                width={30}
+                height={30}
+                unoptimized
+              />
+
+              <h5 className="font-space-grotesk font-bold text-2xl md:text-3xl">
+                Solution
+              </h5>
             </div>
-        </section>
-    );
+
+            <p className="text-paragraph text-base md:text-lg">
+              Sense PC offers flexible, cost-effective cloud computing that
+              scales with your needs.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+);
 
 export default RentSmarter;
-

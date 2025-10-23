@@ -1,6 +1,7 @@
 "use client";
 
 import RentSmarter from "@/app/home/_components/RentSmarter";
+import RentSmarterProcess from "@/app/home/_components/RentSmarterProcess";
 
 import FAQ from "./faq";
 import Hero from "./hero";
@@ -8,11 +9,9 @@ import { MainLayout } from "./layout";
 import SensePCCost from "./sensepc-cost";
 import WayWeCompute from "./way-we-compute";
 import GetStartedCTA from "./get-started-cta";
-import CostCalculator from "./cost-calculator";
 import TutorialSection from "./tutorial-section";
 import ProductHighlights from "./product-highlights";
 import FutureOfComputing from "./future-of-computing";
-import RentSmarterProcess from "@/app/home/_components/RentSmarterProcess";
 
 export default function HomePage() {
   return (
@@ -23,7 +22,7 @@ export default function HomePage() {
       <ProductHighlights />
       <TutorialSection />
       <RentSmarter />
-        <RentSmarterProcess />
+      <RentSmarterProcess />
       {/* <TutorialSection /> */}
       {/* <WhySettle /> */}
       {/* <ProblemSolution />
