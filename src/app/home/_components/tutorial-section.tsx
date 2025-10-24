@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import React, { useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -11,8 +10,9 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 
-import { motion } from "framer-motion";
 import { Youtube, ArrowLeft, ArrowRight } from "lucide-react";
+
+import { TutorialCard } from "./tutorial-card";
 
 const tutorials = [
   {
@@ -126,10 +126,13 @@ const TutorialSection = () => {
 
   return (
     <section className="relative">
-      <div className="container my-12 md:my-20 space-y-12 overflow-hidden">
+      <div className="hidden dark:md:block z-0 absolute -top-10 -right-20 w-[195px] h-[357px] opacity-40 bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)] blur-[100px]" />
+      <div className="hidden dark:md:block z-0 absolute -bottom-10 left-32 w-[195px] h-[357px] opacity-40 bg-[#9C05BF] blur-[100px]" />
+
+      <div className="container my-12 md:my-20 space-y-8 md:space-y-12 overflow-hidden">
         {/* Header Section */}
         <div className="flex items-center justify-between gap-2">
-          <div className="space-y-2.5">
+          <div className="max-md:w-full space-y-3 md:space-y-2.5">
             <h4 className="font-space-grotesk font-bold text-2xl md:text-5xl text-center md:text-left">
               Learn How to{" "}
               <span className="text-transparent bg-clip-text bg-[linear-gradient(290.5deg,#D971FF_-70.94%,#4C55F8_10.02%,#8086F3_115.42%)]">
@@ -137,7 +140,7 @@ const TutorialSection = () => {
               </span>
             </h4>
 
-            <p className="text-paragraph text-center md:text-left text-2xl">
+            <p className="text-paragraph text-center md:text-left text-base md:text-2xl">
               Watch our tutorial series to master your Sense PC experience
             </p>
           </div>
@@ -173,118 +176,25 @@ const TutorialSection = () => {
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {tutorials.map((tutorial, index) => (
-            <motion.div
+            <TutorialCard
               key={tutorial.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+              tutorial={tutorial}
+              index={index}
               onClick={() => setSelectedVideo(tutorial)}
-              className={`relative group cursor-pointer shrink-0 rounded-t-2xl overflow-hidden transition-all duration-300 h-[500px]
-                ${
-                  index === 0
-                    ? "w-[48%] min-w-[200px]"
-                    : "w-[24%] min-w-[150px]"
-                }`}
-            >
-              <Image
-                src={tutorial.image}
-                alt={tutorial.title}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                sizes={
-                  index === 0
-                    ? "(max-width: 1024px) 100vw, 48vw"
-                    : "(max-width: 1024px) 100vw, 24vw"
-                }
-                priority={index <= 1}
-              />
-
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent dark:bg-none" />
-
-              <div
-                className="absolute top-3 right-3 text-white text-xs font-medium shadow-lg inline-flex items-center justify-center"
-                style={{
-                  background: "rgba(0, 0, 0, 0.2)",
-                  backdropFilter: "blur(10px)",
-                  borderRadius: "9999px",
-                  padding: "0.25rem 0.625rem",
-                  minWidth: "52px",
-                  width: "52px",
-                }}
-              >
-                <span
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "60%",
-                    height: "40%",
-                    borderTop: "1px solid white",
-                    borderLeft: "1px solid white",
-                    borderTopLeftRadius: "9999px",
-                    pointerEvents: "none",
-                  }}
-                />
-                <span
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    right: 0,
-                    width: "60%",
-                    height: "40%",
-                    borderBottom: "1px solid white",
-                    borderRight: "1px solid white",
-                    borderBottomRightRadius: "9999px",
-                    pointerEvents: "none",
-                  }}
-                />
-                <span
-                  style={{
-                    position: "relative",
-                    zIndex: 1,
-                    whiteSpace: "nowrap",
-                    fontSize: "0.75rem",
-                  }}
-                >
-                  {tutorial.duration}
-                </span>
-              </div>
-
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="flex items-center justify-center w-20 h-20 rounded-full bg-white/20 backdrop-blur-md shadow-lg border border-white/30 transition-transform duration-300 group-hover:scale-110">
-                  <Image
-                    src="/Play.svg"
-                    alt="play-button"
-                    width={22}
-                    height={25}
-                  />
-                </div>
-              </div>
-
-              {/* Text Overlay (bottom-left) */}
-              <div className="absolute bottom-0 left-0 p-5 text-white z-10 space-y-2">
-                <h3 className="font-space-grotesk font-bold text-xl md:text-2xl">
-                  {tutorial.title}
-                </h3>
-                <p className="text-paragraph text-base md:text-lg">
-                  {tutorial.description}
-                </p>
-              </div>
-            </motion.div>
+            />
           ))}
         </div>
 
         {/* Mobile Layout - Carousel with peek view */}
         <div
-          className="md:hidden relative overflow-visible"
+          className="space-y-8 md:hidden relative overflow-visible"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
           {/* Carousel container with peek */}
           <div
-            className="flex gap-2 transition-transform duration-300 ease-out"
+            className="flex gap-4 transition-transform duration-300 ease-out"
             style={{
               transform: `translateX(calc(-${currentIndex * 96}% - ${
                 currentIndex * 0.5
@@ -292,11 +202,10 @@ const TutorialSection = () => {
             }}
           >
             {tutorials.map((tutorial, index) => (
-              <motion.div
+              <TutorialCard
                 key={tutorial.id}
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3 }}
+                tutorial={tutorial}
+                index={index}
                 onClick={() => {
                   if (index === currentIndex) {
                     setSelectedVideo(tutorial);
@@ -304,107 +213,20 @@ const TutorialSection = () => {
                     setCurrentIndex(index);
                   }
                 }}
-                className={`relative group cursor-pointer rounded-2xl overflow-hidden shadow-lg transition-all duration-300 h-[70vh] max-h-[500px] flex-shrink-0 bg-card ${
-                  index === currentIndex
-                    ? "w-[96%] opacity-100"
-                    : "w-[96%] opacity-50 scale-95"
-                }`}
-              >
-                <Image
-                  src={tutorial.image}
-                  alt={tutorial.title}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  sizes="(max-width: 1024px) 100vw, 48vw"
-                  priority={index === 0}
-                />
-
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-                {index === currentIndex && (
-                  <>
-                    <div
-                      className="absolute top-4 right-4 text-white text-sm font-medium shadow-lg inline-flex items-center justify-center"
-                      style={{
-                        background: "rgba(0, 0, 0, 0.3)",
-                        backdropFilter: "blur(10px)",
-                        borderRadius: "9999px",
-                        padding: "0.5rem 1rem",
-                        minWidth: "fit-content",
-                      }}
-                    >
-                      <span
-                        style={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          width: "60%",
-                          height: "40%",
-                          borderTop: "1px solid white",
-                          borderLeft: "1px solid white",
-                          borderTopLeftRadius: "9999px",
-                          pointerEvents: "none",
-                        }}
-                      />
-                      <span
-                        style={{
-                          position: "absolute",
-                          bottom: 0,
-                          right: 0,
-                          width: "60%",
-                          height: "40%",
-                          borderBottom: "1px solid white",
-                          borderRight: "1px solid white",
-                          borderBottomRightRadius: "9999px",
-                          pointerEvents: "none",
-                        }}
-                      />
-                      <span
-                        style={{
-                          position: "relative",
-                          zIndex: 1,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {tutorial.duration}
-                      </span>
-                    </div>
-
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-white/20 backdrop-blur-md rounded-full p-6 group-hover:scale-110 transition-transform">
-                        <Image
-                          src="/Play.svg"
-                          alt="play-button"
-                          width={27}
-                          height={27}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="absolute bottom-0 left-0 right-0 p-6 text-left text-white z-10">
-                      <h3 className="text-2xl font-bold mb-2">
-                        {tutorial.title}
-                      </h3>
-                      <p className="text-base text-gray-200 max-w-md mx-auto">
-                        {tutorial.description}
-                      </p>
-                    </div>
-                  </>
-                )}
-              </motion.div>
+              />
             ))}
           </div>
 
           {/* Mobile Dots Indicator */}
-          <div className="flex justify-center gap-2 mt-6">
+          <div className="flex justify-center gap-4">
             {tutorials.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`w-4 h-4 rounded-full transition-all ${
+                className={`size-4 rounded-full transition-all ${
                   index === currentIndex
-                    ? "bg-gradient-to-r from-blue-500 to-purple-500"
-                    : "bg-muted-foreground/40 dark:bg-white"
+                    ? "bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)]"
+                    : "bg-[#454545] dark:bg-white"
                 }`}
               />
             ))}
