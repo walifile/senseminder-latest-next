@@ -49,7 +49,7 @@ export const TutorialCard = ({
     {tutorial.duration && (
       <div
         className={cn(
-          "absolute top-4 right-4 bg-[#00000030] px-4 py-1 rounded-full",
+          "absolute top-4 right-4 bg-[#00000030] text-white px-4 py-1 rounded-full",
           "backdrop-blur-lg bg-white/[0.03] before:content-[''] before:absolute before:inset-0 before:rounded-full before:p-[1px] before:bg-gradient-to-br before:from-white/20 before:via-transparent before:to-white/20 before:[mask:linear-gradient(#000_0_0)_content-box,linear-gradient(#000_0_0)] before:[mask-composite:exclude] before:pointer-events-none"
         )}
       >
