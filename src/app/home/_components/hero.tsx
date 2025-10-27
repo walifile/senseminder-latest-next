@@ -29,7 +29,7 @@ const Hero = () => (
               </span>{" "}
               Computing is Here
             </p>
-            <p className="text-paragraph text-base">
+            <p className="text-paragraph text-base md:text-2xl">
               Build, manage, and optimize your computer in minutes
             </p>
           </div>

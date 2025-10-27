@@ -6,8 +6,8 @@ import AuthGuard from "@/guards/auth-guard";
 import { usePathname } from "next/navigation";
 import { ReduxProvider } from "@/redux/provider";
 import { isDev } from "@/constants/initial-values";
-import { Inter, Space_Grotesk } from "next/font/google";
 import { AmplifyProvider } from "@/providers/AmplifyProvider";
+import { Inter, Poppins, Space_Grotesk } from "next/font/google";
 import { WebSocketProvider } from "@/providers/WebSocketProvider";
 
 import Navbar from "@/components/shared/layout/navbar";
@@ -24,6 +24,12 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
 });
 
+const poppins = Poppins({
+  subsets: ["latin"],
+  variable: "--font-poppins",
+  weight: ["400", "500", "600", "700"],
+});
+
 export default function RootLayout({
   children,
 }: {
@@ -34,7 +40,10 @@ export default function RootLayout({
   // Special case: root landing page in prod
   if (pathname === "/" && !isDev) {
     return (
-      <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
+      <html
+        lang="en"
+        className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable}`}
+      >
         <head>
           <title>SmartPC</title>
           <meta name="description" content="SmartPC Application" />
@@ -50,7 +59,10 @@ export default function RootLayout({
   const hideChrome = pathname.startsWith("/welcome");
 
   return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable}`}
+    >
       <head>
         <title>SmartPC</title>
         <meta name="description" content="SmartPC Application" />
