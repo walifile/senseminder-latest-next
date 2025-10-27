@@ -19,7 +19,7 @@ export function ThemeToggle() {
         <Button
           variant="ghost"
           size="icon"
-          className="bg-[#E9E9E9] dark:bg-white/[.04] rounded-full size-10 p-2.5"
+          className="bg-[#E9E9E9] hover:bg-[#d9d9d9] dark:bg-white/[.04] dark:hover:bg-white/[.08] rounded-full size-10 p-2.5"
         >
           <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute fill-white size-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
