@@ -7,6 +7,7 @@ import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 
+import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 
 const Hero = () => (
@@ -21,7 +22,12 @@ const Hero = () => (
 
     <div className="z-10 relative mt-[60px] md:mt-[92px]">
       <div className="container flex flex-col-reverse md:grid md:grid-cols-2 gap-4 md:items-center py-10 md:py-32">
-        <div className="flex flex-col gap-6 md:gap-12">
+        <motion.div
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="flex flex-col gap-6 md:gap-12"
+        >
           <div className="flex flex-col gap-2.5 md:gap-3">
             <p className="font-space-grotesk font-bold text-3xl md:text-7xl">
               <span className="text-transparent bg-clip-text bg-[linear-gradient(270deg,_#BA25F0_4.8%,_#2530F0_46.15%,_#8086F3_100%)]">
@@ -42,16 +48,22 @@ const Hero = () => (
               <ArrowUpRight />
             </Button>
           </div>
-        </div>
+        </motion.div>
 
-        <Image
-          src="/assets/svg/hero.svg"
-          alt="Hero"
-          width={600}
-          height={400}
-          className="size-full"
-          priority
-        />
+        <motion.div
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
+        >
+          <Image
+            src="/assets/svg/hero.svg"
+            alt="Hero"
+            width={600}
+            height={400}
+            className="size-full"
+            priority
+          />
+        </motion.div>
       </div>
     </div>
   </section>

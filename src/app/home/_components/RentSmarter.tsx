@@ -3,6 +3,8 @@
 import React from "react";
 import Image from "next/image";
 
+import { motion } from "framer-motion";
+
 const RentSmarter: React.FC = () => (
   <section className="relative">
     <div className="z-0 absolute -top-60 -right-40 blur-[160px] md:blur-[200px] w-60 md:w-[400px] h-full opacity-20 dark:opacity-40 bg-[#9C05BF]" />
@@ -10,16 +12,29 @@ const RentSmarter: React.FC = () => (
 
     <div className="container my-12 md:my-20 relative grid md:grid-cols-2 gap-8 md:gap-24">
       {/* Left Illustration */}
-      <Image
-        src="/assets/svg/rent-smarter.svg"
-        alt="Rent Smarter"
-        width={640}
-        height={578}
-        className="w-full h-auto"
-        priority
-      />
+      <motion.div
+        initial={{ opacity: 0, x: -50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6 }}
+      >
+        <Image
+          src="/assets/svg/rent-smarter.svg"
+          alt="Rent Smarter"
+          width={640}
+          height={578}
+          className="w-full h-auto"
+          priority
+        />
+      </motion.div>
 
-      <div className="space-y-4 md:space-y-12">
+      <motion.div
+        initial={{ opacity: 0, x: 50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6 }}
+        className="space-y-4 md:space-y-12"
+      >
         <h4 className="font-space-grotesk font-bold text-2xl md:text-5xl">
           Why Buy
           <br /> Expensive Hardware When You Can Rent Smarter?
@@ -71,7 +86,7 @@ const RentSmarter: React.FC = () => (
             </p>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   </section>
 );
