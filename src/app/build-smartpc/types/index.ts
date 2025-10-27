@@ -11,6 +11,7 @@ export interface DesktopInstance {
   region?: string;
   systemName: string;
   storageGiB?: number;
+  billingPlan?: string;
 }
 
 export type PC = {

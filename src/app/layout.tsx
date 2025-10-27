@@ -6,8 +6,8 @@ import AuthGuard from "@/guards/auth-guard";
 import { usePathname } from "next/navigation";
 import { ReduxProvider } from "@/redux/provider";
 import { isDev } from "@/constants/initial-values";
+import { Inter, Space_Grotesk } from "next/font/google";
 import { AmplifyProvider } from "@/providers/AmplifyProvider";
-import { Inter, Poppins, Space_Grotesk } from "next/font/google";
 import { WebSocketProvider } from "@/providers/WebSocketProvider";
 
 import Navbar from "@/components/shared/layout/navbar";
@@ -24,12 +24,6 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
 });
 
-const poppins = Poppins({
-  subsets: ["latin"],
-  variable: "--font-poppins",
-  weight: ["400", "500", "600", "700"],
-});
-
 export default function RootLayout({
   children,
 }: {
@@ -40,14 +34,11 @@ export default function RootLayout({
   // Special case: root landing page in prod
   if (pathname === "/" && !isDev) {
     return (
-      <html
-        lang="en"
-        className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable}`}
-      >
+      <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
         <head>
-          <title>SmartPC</title>
-          <meta name="description" content="SmartPC Application" />
-          <link rel="icon" href="/favicon.ico" />{" "}
+          <title>SensePC</title>
+          <meta name="description" content="SensePC Application" />
+          <link rel="icon" href="/favicon.ico" />
         </head>
         <body suppressHydrationWarning className="font-inter overflow-hidden">
           {children}
@@ -56,30 +47,42 @@ export default function RootLayout({
     );
   }
 
-  const hideChrome = pathname.startsWith("/welcome");
+  // Routes that should be true fullscreen (no chrome, no page scroll)
+  const isLandingProd = pathname === "/" && !isDev;
+  const hideChrome =
+    pathname.startsWith("/pc-viewer") ||
+    pathname.startsWith("/welcome") ||
+    isLandingProd;
+
+  // Body classes — lock only on the pages that need it
+  const bodyClass = hideChrome
+    ? "h-full overflow-hidden" // viewer/welcome/landing in prod
+    : "min-h-screen overflow-x-hidden"; // normal app pages (scroll allowed)
 
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable}`}
+      className={`${inter.variable} ${spaceGrotesk.variable} h-full`}
     >
       <head>
-        <title>SmartPC</title>
-        <meta name="description" content="SmartPC Application" />
-        <link rel="icon" href="/favicon.ico" />{" "}
+        <title>SensePC</title>
+        <meta name="description" content="SensePC Application" />
+        <link rel="icon" href="/favicon.ico" />
       </head>
-      <body suppressHydrationWarning className="font-inter">
+      <body suppressHydrationWarning className={`font-inter ${bodyClass}`}>
         <ReduxProvider>
           <AmplifyProvider>
             <WebSocketProvider>
               <ThemeWrapper>
                 <AuthGuard>
                   {hideChrome ? (
-                    <div className="min-h-screen">{children}</div>
+                    // Full-bleed canvas for pc-viewer/welcome/landing(prod)
+                    <div className="h-full">{children}</div>
                   ) : (
-                    <div className="flex min-h-screen flex-col overflow-x-hidden">
+                    // Normal app chrome with scrollable main
+                    <div className="flex min-h-screen flex-col">
                       <Navbar />
-                      {children}
+                      <main className="flex-1 min-h-0">{children}</main>
                       <Footer />
                     </div>
                   )}
@@ -92,6 +95,7 @@ export default function RootLayout({
     </html>
   );
 }
+
 
 // import "../styles/globals.css";
 

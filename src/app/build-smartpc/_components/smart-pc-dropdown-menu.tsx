@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
 import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
+import {
   DropdownMenu,
   DropdownMenuItem,
   DropdownMenuContent,
@@ -41,86 +47,133 @@ const SmartPcDropdownMenu = ({
   handleIdle,
   handleAssignUser,
   handleDelete,
-}: Props) => (
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-      <Button variant="ghost" size="icon">
-        <MoreVertical className="h-4 w-4" />
-      </Button>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent align="end">
-      <DropdownMenuItem
-        onClick={(e) => {
-          e.stopPropagation();
-          setSelectedInstance(pc);
-          handleSchedule();
-        }}
-      >
-        <CalendarClock className="h-4 w-4 mr-2" />
-        Schedule
-      </DropdownMenuItem>
+}: Props) => {
+  const plan = pc.billingPlan?.toLowerCase() || "";
+  const planRestricted = !plan || plan === "daily" || plan === "monthly";
 
-      <DropdownMenuItem
-        onClick={(e) => {
-          e.stopPropagation();
-          setSelectedInstance(pc);
-          handleIdle();
-        }}
-      >
-        <Moon className="h-4 w-4 mr-2" />
-        Idle Settings
-      </DropdownMenuItem>
+  console.log("PC plan info:", pc);
 
-      {/* NEW: PC Resize (CPU-only) */}
-      <DropdownMenuItem
-        onClick={(e) => {
-          e.stopPropagation();
-          openPCResizeDialog(pc);
-        }}
-      >
-        <Shield className="h-4 w-4 mr-2" />
-        PC Resize
-      </DropdownMenuItem>
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+        <Button variant="ghost" size="icon">
+          <MoreVertical className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
 
-      {/* NEW: Increase Storage */}
-      <DropdownMenuItem
-        onClick={(e) => {
-          e.stopPropagation();
-          openStorageDialog(pc);
-        }}
-      >
-        <Cpu className="h-4 w-4 mr-2" />
-        Add Volume (SSD)
-      </DropdownMenuItem>
-
-      {!isMember && (
+      <DropdownMenuContent align="end">
+        {/* Schedule */}
         <DropdownMenuItem
           onClick={(e) => {
             e.stopPropagation();
             setSelectedInstance(pc);
-            handleAssignUser();
+            handleSchedule();
           }}
         >
-          <Plus className="h-4 w-4 mr-2" />
-          Assign User
+          <CalendarClock className="h-4 w-4 mr-2" />
+          Schedule
         </DropdownMenuItem>
-      )}
-      <DropdownMenuSeparator />
-      {!isMember && (
+
+        {/* Idle Settings */}
         <DropdownMenuItem
-          className="text-destructive"
           onClick={(e) => {
             e.stopPropagation();
             setSelectedInstance(pc);
-            handleDelete();
+            handleIdle();
           }}
         >
-          <Trash2 className="h-4 w-4 mr-2" />
-          Delete
+          <Moon className="h-4 w-4 mr-2" />
+          Idle Settings
         </DropdownMenuItem>
-      )}
-    </DropdownMenuContent>
-  </DropdownMenu>
-);
+
+        {/* --- Tooltip-enabled restricted actions --- */}
+        <TooltipProvider>
+          {/* PC Resize */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (planRestricted) return;
+                  openPCResizeDialog(pc);
+                }}
+                className={
+                  planRestricted
+                    ? "opacity-50 cursor-default select-none"
+                    : ""
+                }
+              >
+                <Shield className="h-4 w-4 mr-2" />
+                PC Resize
+              </DropdownMenuItem>
+            </TooltipTrigger>
+            {planRestricted && (
+              <TooltipContent side="right">
+                Available only for PCs on Hourly plan
+              </TooltipContent>
+            )}
+          </Tooltip>
+
+          {/* Add Volume */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (planRestricted) return;
+                  openStorageDialog(pc);
+                }}
+                className={
+                  planRestricted
+                    ? "opacity-50 cursor-default select-none"
+                    : ""
+                }
+              >
+                <Cpu className="h-4 w-4 mr-2" />
+                Add Volume (SSD)
+              </DropdownMenuItem>
+            </TooltipTrigger>
+            {planRestricted && (
+              <TooltipContent side="right">
+                Available only for PCs on Hourly plan
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
+
+        {/* Assign User */}
+        {!isMember && (
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedInstance(pc);
+              handleAssignUser();
+            }}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Assign User
+          </DropdownMenuItem>
+        )}
+
+        <DropdownMenuSeparator />
+
+        {/* Delete */}
+        {!isMember && (
+          <DropdownMenuItem
+            className="text-destructive"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedInstance(pc);
+              handleDelete();
+            }}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
 
 export default SmartPcDropdownMenu;

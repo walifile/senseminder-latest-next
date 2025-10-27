@@ -37,6 +37,12 @@ export function getErrorMessage(
       return (maybeError.data as { message: string }).message;
     }
 
+    if (
+      typeof (maybeError.data as { error?: unknown })?.error === "string"
+    ) {
+      return (maybeError.data as { error: string }).error;
+    }
+
     if (typeof maybeError.message === "string") return maybeError.message;
     if (typeof maybeError.error === "string") return maybeError.error;
   }

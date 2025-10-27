@@ -1,22 +1,5 @@
 import React, { useRef, useEffect, useCallback } from "react";
 
-interface DCVViewerProps {
-  sessionId: string;
-  authToken: string;
-  onConnect?: () => void;
-  onDisconnect?: () => void;
-  onError?: (error: Error) => void;
-  quality?: "low" | "medium" | "high" | "auto";
-  inputSettings?: {
-    keyboard: boolean;
-    mouse: boolean;
-    touch: boolean;
-    audio: boolean;
-  };
-}
-
-// Specify the type for DCV.Viewer
-
 interface InputSettings {
   keyboard: boolean;
   mouse: boolean;
@@ -24,7 +7,26 @@ interface InputSettings {
   audio: boolean;
 }
 
-// Specify the type for DCV.Viewer
+interface DisplayHead {
+  name: string;
+  rect: { x: number; y: number; width: number; height: number };
+  primary?: boolean;
+  dpi?: number;
+}
+
+export interface DCVViewerProps {
+  /** Gateway base URL, e.g. https://your-dcv-gateway */
+  url: string;
+  sessionId: string;
+  authToken: string;
+  onConnect?: () => void;
+  onDisconnect?: () => void;
+  onError?: (error: Error) => void;
+  quality?: "low" | "medium" | "high" | "auto";
+  inputSettings?: InputSettings;
+}
+
+/** ---- DCV Viewer instance surface (SDK methods vary) ---- */
 interface DCVViewerInstance {
   init: (config: {
     url: string;
@@ -50,23 +52,33 @@ interface DCVViewerInstance {
     display: {
       quality: "low" | "medium" | "high" | "auto";
       codec: string;
-      width: string;
-      height: string;
+      width?: number | string;
+      height?: number | string;
     };
   }) => Promise<void>;
   connect: () => Promise<void>;
   disconnect: () => void;
-  setInputEnabled: (type: string, enabled: boolean) => void;
-  setQualityLevel: (level: string) => void;
-}
-interface DCVViewerProps {
-  sessionId: string;
-  authToken: string;
-  onConnect?: () => void;
-  onDisconnect?: () => void;
-  onError?: (error: Error) => void;
-  quality?: "low" | "medium" | "high" | "auto";
-  inputSettings?: InputSettings;
+
+  setInputEnabled: (type: "keyboard" | "mouse" | "touch" | "audio", enabled: boolean) => void;
+  setQualityLevel: (level: "low" | "medium" | "high" | "auto") => void;
+
+  requestResolution?: (w: number, h: number) => Promise<void> | void;
+  setMaxDisplayResolution?: (w: number, h: number) => void;
+  enableHighPixelDensity?: (enabled: boolean) => void;
+  enableDisplayQualityUpdates?: (enabled: boolean) => void;
+
+  connection?: {
+    requestResolution?: (w: number, h: number) => Promise<void> | void;
+    requestDisplayLayout?: (
+      layout: Array<{ name: string; rect: { x: number; y: number; width: number; height: number } }>
+    ) => Promise<void> | void;
+  };
+
+  setDisplayLayoutCallback?: (
+    cb: (serverWidth: number, serverHeight: number, heads: DisplayHead[]) => void
+  ) => void;
+
+  _lastHeads?: DisplayHead[];
 }
 
 declare global {
@@ -77,56 +89,88 @@ declare global {
   }
 }
 
+/** Debounce helper with typed params */
+function debounce<T extends (...args: unknown[]) => void>(fn: T, ms = 120) {
+  let t: number | undefined;
+  return (...args: Parameters<T>) => {
+    if (t) window.clearTimeout(t);
+    t = window.setTimeout(() => fn(...args), ms);
+  };
+}
+
 const DCVViewer: React.FC<DCVViewerProps> = ({
+  url,
   sessionId,
   authToken,
   onConnect,
   onDisconnect,
   onError,
   quality = "auto",
-  inputSettings = {
-    keyboard: true,
-    mouse: true,
-    touch: true,
-    audio: true,
-  },
+  inputSettings = { keyboard: true, mouse: true, touch: true, audio: true },
 }) => {
   const viewerRef = useRef<HTMLDivElement>(null);
-
-  // Use the type DCVViewerInstance instead of any
   const dcvViewerRef = useRef<DCVViewerInstance | null>(null);
 
-  const initViewer = useCallback(async () => {
+  /** Fit server resolution/layout to the current container box */
+  const fitToContainer = useCallback((): void => {
+    const el = viewerRef.current;
+    const dcv = dcvViewerRef.current;
+    if (!el || !dcv) return;
+
+    const w = el.clientWidth || window.innerWidth;
+    const h = el.clientHeight || window.innerHeight;
+
+    try {
+      dcv.setMaxDisplayResolution?.(w, h);
+    } catch {
+      /* optional API */
+    }
+
+    try {
+      if (dcv.requestResolution) dcv.requestResolution(w, h);
+      else dcv.connection?.requestResolution?.(w, h);
+    } catch {
+      /* best-effort */
+    }
+  }, []);
+
+  /** Initialize viewer (called after SDK loads) */
+  const initViewer = useCallback(async (): Promise<void> => {
     if (!viewerRef.current || !window.DCV) {
       onError?.(new Error("DCV viewer or container not available"));
       return;
     }
 
     try {
-      // Initialize DCV viewer
       const viewer = new window.DCV.Viewer();
 
-      // Configure the viewer with the updated parameters
+      const w = viewerRef.current.clientWidth || window.innerWidth;
+      const h = viewerRef.current.clientHeight || window.innerHeight;
+
       await viewer.init({
-        url: "https://mypc.smartpc.cloud",
+        url,
         sessionId,
         authToken,
         containerElement: viewerRef.current,
-        useGateway: true, // Enable gateway usage
+        useGateway: true,
         callbacks: {
           onConnectionStateChange: (state: string) => {
-            if (state === "CONNECTED") {
-              onConnect?.();
-            } else if (state === "DISCONNECTED") {
-              onDisconnect?.();
-            }
+            if (state === "CONNECTED") onConnect?.();
+            else if (state === "DISCONNECTED") onDisconnect?.();
           },
-          onError: (error: Error) => {
-            onError?.(error);
-          },
+          onError: (error: Error) => onError?.(error),
           firstFrame: () => {
-            console.log("First frame received");
-            // You might want to trigger some UI feedback here
+            try {
+              viewer.enableHighPixelDensity?.(true);
+            } catch {
+              /* optional API */
+            }
+            try {
+              viewer.enableDisplayQualityUpdates?.(true);
+            } catch {
+              /* optional API */
+            }
+            fitToContainer();
           },
         },
         input: {
@@ -142,53 +186,43 @@ const DCVViewer: React.FC<DCVViewerProps> = ({
         display: {
           quality,
           codec: "h264",
-          width: "100%",
-          height: "100%",
+          width: w,
+          height: h,
         },
       });
 
-      dcvViewerRef.current = viewer;
+      try {
+        viewer.setDisplayLayoutCallback?.((_sw, _sh, heads) => {
+          viewer._lastHeads = heads;
+          fitToContainer();
+        });
+      } catch {
+        /* optional API */
+      }
 
-      // Start the connection
+      dcvViewerRef.current = viewer;
       await viewer.connect();
     } catch (error) {
-      console.error("Failed to initialize DCV viewer:", error);
-      onError?.(
-        error instanceof Error
-          ? error
-          : new Error("Failed to initialize DCV viewer")
-      );
+      onError?.(error instanceof Error ? error : new Error("Failed to initialize DCV viewer"));
     }
-  }, [
-    sessionId,
-    authToken,
-    quality,
-    inputSettings,
-    onConnect,
-    onDisconnect,
-    onError,
-  ]);
+  }, [url, sessionId, authToken, quality, inputSettings, onConnect, onDisconnect, onError, fitToContainer]);
 
-  // Load DCV SDK
+  /** Load SDK once and initialize viewer */
   useEffect(() => {
     let mounted = true;
     let script: HTMLScriptElement | null = null;
 
-    const loadDCVSDK = async () => {
+    const loadDCVSDK = async (): Promise<void> => {
       try {
-        // Load the DCV SDK from AWS's CDN
         script = document.createElement("script");
-        script.src =
-          "https://download.nice-dcv.com/latest/web-client/js/dcv-sdk.js";
+        script.src = "https://download.nice-dcv.com/latest/web-client/js/dcv-sdk.js";
         script.async = true;
 
-        // Wait for the SDK to load
         await new Promise<void>((resolve, reject) => {
           if (!script) {
             reject(new Error("Script element not created"));
             return;
           }
-
           script.onload = () => {
             if (mounted) resolve();
           };
@@ -196,63 +230,73 @@ const DCVViewer: React.FC<DCVViewerProps> = ({
           document.body.appendChild(script);
         });
 
-        // Initialize viewer after SDK loads
-        if (mounted) {
-          await initViewer();
-        }
+        if (mounted) await initViewer();
       } catch (error) {
         if (mounted) {
-          console.error("Failed to load DCV SDK:", error);
-          onError?.(
-            error instanceof Error ? error : new Error("Failed to load DCV SDK")
-          );
+          onError?.(error instanceof Error ? error : new Error("Failed to load DCV SDK"));
         }
       }
     };
 
     loadDCVSDK();
 
-    return () => {
+    return (): void => {
       mounted = false;
-      // Cleanup script if it exists
-      if (script && script.parentNode) {
+      if (script?.parentNode) {
         script.parentNode.removeChild(script);
       }
-      // Cleanup viewer
-      if (dcvViewerRef.current) {
-        try {
-          dcvViewerRef.current.disconnect();
-        } catch (error) {
-          console.error("Error during viewer cleanup:", error);
-        }
-        dcvViewerRef.current = null;
+      const v = dcvViewerRef.current;
+      dcvViewerRef.current = null;
+      try {
+        v?.disconnect();
+      } catch {
+        /* ignore */
       }
     };
   }, [initViewer, onError]);
 
-  // Handle input settings changes
+  /** React to container size changes (more accurate than window resize) */
   useEffect(() => {
-    if (dcvViewerRef.current) {
-      dcvViewerRef.current.setInputEnabled("keyboard", inputSettings.keyboard);
-      dcvViewerRef.current.setInputEnabled("mouse", inputSettings.mouse);
-      dcvViewerRef.current.setInputEnabled("touch", inputSettings.touch);
-      dcvViewerRef.current.setInputEnabled("audio", inputSettings.audio);
-    }
+    const el = viewerRef.current;
+    const noop = (): void => {};
+    if (!el) return noop;
+  
+    const refit = debounce(() => fitToContainer(), 120);
+    const ro = new ResizeObserver(() => refit());
+    ro.observe(el);
+  
+    const onFs = (): void => {
+      fitToContainer();
+    };
+    document.addEventListener("fullscreenchange", onFs);
+  
+    return (): void => {
+      ro.disconnect();
+      document.removeEventListener("fullscreenchange", onFs);
+    };
+  }, [fitToContainer]);  
+
+  /** Apply input/quality toggles after init */
+  useEffect(() => {
+    const v = dcvViewerRef.current;
+    if (!v) return;
+    v.setInputEnabled("keyboard", inputSettings.keyboard);
+    v.setInputEnabled("mouse", inputSettings.mouse);
+    v.setInputEnabled("touch", inputSettings.touch);
+    v.setInputEnabled("audio", inputSettings.audio);
   }, [inputSettings]);
 
-  // Handle quality changes
   useEffect(() => {
-    if (dcvViewerRef.current) {
-      dcvViewerRef.current.setQualityLevel(quality);
-    }
+    const v = dcvViewerRef.current;
+    if (!v) return;
+    v.setQualityLevel(quality);
   }, [quality]);
 
   return (
     <div
       ref={viewerRef}
       id="dcv-display"
-      className="w-full h-full relative bg-gray-900"
-      style={{ minHeight: "400px" }}
+      className="absolute inset-0 w-full h-full bg-black overflow-hidden"
     />
   );
 };

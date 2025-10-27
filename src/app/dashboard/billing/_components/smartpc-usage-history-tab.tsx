@@ -7,10 +7,10 @@ import { fCurrency } from "@/lib/utils/format-number";
 
 import { Monitor } from "lucide-react";
 
+import { getUsagePeriod } from "../utils";
 import HistoryFilters from "./history-filters";
 import { useHistoryData } from "../hooks/use-history-data";
 import HistoryLoadMoreButton from "./history-load-more-button";
-import { getUsagePeriod, formatInstanceDuration } from "../utils";
 
 import type { UsageHistory } from "../types";
 
@@ -61,23 +61,24 @@ export function SmartPCUsageHistoryTab() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                {/* ➕ Billing Cost Breakdown */}
-                <div className="text-xs text-muted-foreground text-right">
-                  🖥 Instance: {fCurrency(usage.instanceCost)} (
-                  {formatInstanceDuration(
-                    usage.instanceMinutes,
-                    usage.billingPlan
-                  )}
-                  ) <br />
-                  💾 Storage: {fCurrency(usage.storageCost)} (
-                  {formatInstanceDuration(
-                    usage.storageMinutes,
-                    usage.billingPlan
-                  )}
-                  )
-                </div>
-                <Badge variant="secondary" className="font-medium">
+             <div className="flex items-start gap-5 text-xs text-muted-foreground text-right">
+              {/* 💻 Billing Cost Summary */}
+              <div className="leading-tight">
+                🖥 Instance: {fCurrency(usage.instanceCost)} <br />
+                💾 Storage: {fCurrency(usage.storageCost)}
+              </div>
+
+              {/* 💸 Deduction Breakdown */}
+              <div className="leading-tight border-l pl-4 space-y-0.5 text-left">
+                <p className="font-medium text-muted-foreground">💸 Breakdown</p>
+                <p>• Promo: {fCurrency(usage.promoDeduction ?? 0)}</p>
+                <p>• Cashback: {fCurrency(usage.cashbackDeduction ?? 0)}</p>
+                <p>• Wallet: {fCurrency(usage.balanceDeduction ?? 0)}</p>
+              </div>
+
+              {/* 💰 Amount Badge */}
+              <div className="flex flex-col items-center justify-center gap-2 ml-2">
+                <Badge variant="secondary" className="font-medium px-3 py-1 text-sm">
                   {fCurrency(usage.billingAmount)}
                 </Badge>
 
@@ -85,13 +86,15 @@ export function SmartPCUsageHistoryTab() {
                   variant={usage.status === "running" ? "default" : "outline"}
                   className={
                     usage.status === "running"
-                      ? "bg-green-500/10 text-green-500 hover:bg-green-500/20"
-                      : ""
+                      ? "bg-green-500/10 text-green-500 hover:bg-green-500/20 capitalize"
+                      : "capitalize"
                   }
                 >
                   {usage.status}
                 </Badge>
               </div>
+            </div>
+
             </div>
           ))
         ) : (

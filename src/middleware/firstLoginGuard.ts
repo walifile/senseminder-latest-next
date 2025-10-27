@@ -1,41 +1,72 @@
+
 import type { NextRequest } from "next/server";
 
 import { NextResponse } from "next/server";
+import appConfig from "@/config/app-config";
+
+
+const { USER_POOL_CLIENT_ID } = appConfig;
 
 export async function firstLoginGuard(request: NextRequest) {
-
   const path = request.nextUrl.pathname;
   const allowlist = ["/welcome", "/terms", "/privacy"];
+
+  // Skip guard for public pages
   if (allowlist.includes(path)) {
-    console.log(`Skipping guard for public page: ${path}`);
+    // console.log(`[firstLoginGuard] Skipping guard for public page: ${path}`);
     return null;
   }
 
   try {
     const cookies = request.cookies.getAll();
+
+    // Find the correct Cognito idToken cookie for our App Client ID
     const idTokenCookie = cookies.find(
       (c) =>
-        c.name.includes("CognitoIdentityServiceProvider") &&
-        c.name.includes("idToken")
+        c.name.includes(`CognitoIdentityServiceProvider.${USER_POOL_CLIENT_ID}`) &&
+        c.name.endsWith(".idToken")
     );
 
     if (!idTokenCookie?.value) {
+      // console.log("[firstLoginGuard] No valid idToken cookie found → allow request.");
       return null;
     }
-    const [, payloadBase64] = idTokenCookie.value.split(".");
+
+    // Decode JWT payload
+    const parts = idTokenCookie.value.split(".");
+    if (parts.length !== 3) {
+      // console.warn("[firstLoginGuard] Invalid JWT structure → allow request.");
+      return null;
+    }
+
+    const [, payloadBase64] = parts;
     const decodedPayload = JSON.parse(
       Buffer.from(payloadBase64, "base64").toString("utf8")
     );
 
     const onboarded = decodedPayload["custom:onboarded"];
-    if (onboarded === "false") {
+    // console.log(
+    //   "[firstLoginGuard] Decoded onboarded value:",
+    //   onboarded,
+    //   "type:",
+    //   typeof onboarded
+    // );
+
+    // Normalize and evaluate all possible "false" cases
+    const normalized = String(onboarded ?? "").trim().toLowerCase();
+    const isNotOnboarded =
+      normalized === "false" || normalized === "0" || onboarded === false;
+
+    if (isNotOnboarded) {
       const welcomeUrl = new URL("/welcome", request.url);
+      // console.log("[firstLoginGuard] User not onboarded → redirecting to /welcome");
       return NextResponse.redirect(welcomeUrl);
     }
-    console.log("⏭ Onboarding complete → allow request.");
+
+    // console.log("[firstLoginGuard] ⏭ Onboarding complete → allow request.");
     return null;
   } catch (err) {
-    console.error("ERROR in firstLoginGuard:", err);
+    console.error("[firstLoginGuard] ERROR:", err);
     return null;
   }
 }
