@@ -10,10 +10,10 @@ const socialLinks = [
     href: "#",
     icon: "linkedin",
   },
-  {
-    href: "#",
-    icon: "whatsapp-business",
-  },
+  // {
+  //   href: "#",
+  //   icon: "whatsapp-business",
+  // },
   {
     href: "#",
     icon: "twitter",
@@ -26,10 +26,10 @@ const socialLinks = [
     href: "#",
     icon: "instagram",
   },
-  {
-    href: "#",
-    icon: "youtube",
-  },
+  // {
+  //   href: "#",
+  //   icon: "youtube",
+  // },
 ];
 
 const contactInfo = [
