@@ -26,6 +26,9 @@ export interface UsageHistory {
   status: string;
   instanceCost: string;
   storageCost: string;
+  promoDeduction: string;
+  cashbackDeduction: string;
+  balanceDeduction: string;
 }
 
 export interface Recharge {

@@ -191,17 +191,26 @@ const CloudPCPage = () => {
       })
     : [];
 
-  // Selection helpers
+  // mutiple pc at a time Selection helpers for reference dont remove this code for now.
+
+  // const handlePCSelection = (index: number) => {
+  //   setSelectedPCs((prev) =>
+  //     prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+  //   );
+  // };
+
+
+
+  // Only one PC can be selected at a time
   const handlePCSelection = (index: number) => {
-    setSelectedPCs((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
-    );
+    setSelectedPCs((prev) => (prev.includes(index) ? [] : [index]));
   };
 
-  const handleSelectAll = () => {
-    if (selectedPCs.length === filteredPCs.length) setSelectedPCs([]);
-    else setSelectedPCs(filteredPCs.map((_, index) => index));
-  };
+
+  // const handleSelectAll = () => {
+  //   if (selectedPCs.length === filteredPCs.length) setSelectedPCs([]);
+  //   else setSelectedPCs(filteredPCs.map((_, index) => index));
+  // };
 
   // ============================
   // PC RESIZE
@@ -285,7 +294,7 @@ const CloudPCPage = () => {
             {viewMode === "list" ? (
               <div className="bg-card rounded-lg border border-border">
                 <div className="p-4">
-                  <div className="flex items-center gap-4 mb-4">
+                  {/* <div className="flex items-center gap-4 mb-4">
                     <Checkbox
                       checked={selectedPCs.length === filteredPCs.length}
                       onCheckedChange={handleSelectAll}
@@ -293,7 +302,7 @@ const CloudPCPage = () => {
                     <span className="text-sm text-muted-foreground">
                       {selectedPCs.length} selected
                     </span>
-                  </div>
+                  </div> */}
 
                   <div className="space-y-1">
                     {(filteredPCs as PC[]).map((pc, index) => {

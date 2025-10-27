@@ -4,7 +4,6 @@ import React from "react";
 
 import { Button } from "@/components/ui/button";
 
-import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 
 import { StepCard } from "./step-card";
@@ -41,13 +40,7 @@ const RentSmarterProcess: React.FC = () => (
 
     <div className="container my-12 md:my-20 relative grid lg:grid-cols-5 gap-8 md:gap-24">
       {/* Left Content */}
-      <motion.div
-        initial={{ opacity: 0, x: -50 }}
-        whileInView={{ opacity: 1, x: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.6 }}
-        className="lg:col-span-2 space-y-12"
-      >
+      <div className="lg:col-span-2 space-y-12">
         <h4 className="max-w-lg font-space-grotesk font-bold text-2xl md:text-5xl">
           Why Buy <br /> Expensive Hardware When You Can Rent Smarter?
         </h4>
@@ -56,16 +49,10 @@ const RentSmarterProcess: React.FC = () => (
           Build Your Sense PC Now!
           <ArrowUpRight />
         </Button>
-      </motion.div>
+      </div>
 
       {/* Right Content - Steps */}
-      <motion.div
-        initial={{ opacity: 0, x: 50 }}
-        whileInView={{ opacity: 1, x: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.6 }}
-        className="relative lg:col-span-3"
-      >
+      <div className="relative lg:col-span-3">
         {/* Mobile/Tablet Layout (md and below) */}
         <div className="block lg:hidden space-y-8 relative">
           {/* Vertical dotted line for mobile */}
@@ -162,7 +149,7 @@ const RentSmarterProcess: React.FC = () => (
             </div>
           ))}
         </div>
-      </motion.div>
+      </div>
     </div>
   </section>
 );

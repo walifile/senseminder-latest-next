@@ -319,14 +319,26 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                         onOpenChange={setShowBillingDialog}
                         onConfirm={async (newPlan) => {
                           try {
-                            await addBillingPlan({
+                            const response = await addBillingPlan({
                               instanceId: pc[0].instanceId,
                               billingPlan: newPlan,
                             }).unwrap();
+                            
+                            const change = response.change ?? "no-change";
+
+                            let message = "";
+
+                            if (change === "no_change") {
+                              message = "You have selected the same billing plan. No changes were made.";
+                            } else if (change === "upgrade") {
+                              message = `You’ve switched to the ${newPlan} plan.`;
+                            } else if (change === "downgrade") {
+                              message = `Your request to downgrade to ${newPlan} plan have been saved. The new plan will take effect after the current billing cycle.`;
+                            }
 
                             toast({
-                              title: "Billing Plan Changed",
-                              description: `You’ve switched to the ${newPlan} plan.`,
+                              title: "Billing Plan request saved",
+                              description: message
                             });
 
                             setCloudPCs((prev) => {

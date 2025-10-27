@@ -15,6 +15,7 @@ import { useEmailFromSession } from "@/hooks/useEmailFromSession";
 import { Form } from "@/components/shared/hook-form/form-provider";
 import { RHFText } from "@/components/shared/hook-form/rhf-text";
 import { checkOnboarded } from "@/lib/utils/checkOnboarded";
+import { useSubUserInfo } from "@/hooks/use-sub-userInfo";
 
 type WelcomeFormValues = {
   fullName: string;
@@ -22,6 +23,7 @@ type WelcomeFormValues = {
 };
 
 export default function WelcomePage() {
+  // ---- Redirect if already onboarded ----
   useEffect(() => {
     const check = async () => {
       const onboarded = await checkOnboarded();
@@ -32,20 +34,23 @@ export default function WelcomePage() {
     check();
   }, []);
 
+  // ---- API Hooks ----
   const [completeFirstLogin, { isLoading: isCompleting }] =
     useCompleteFirstLoginMutation();
-
   const { email, loading: emailLoading, error: emailError } =
     useEmailFromSession();
 
+  // ---- Local state ----
   const [error, setError] = useState("");
-
+  const { isSubUser, organization, role } = useSubUserInfo();
+  
+  // ---- React Hook Form setup ----
   const methods = useForm<WelcomeFormValues>({
     defaultValues: {
       fullName: "",
       acceptTerms: false,
     },
-    mode: "onChange", // important for live validation
+    mode: "onChange",
   });
 
   const { handleSubmit, watch, formState } = methods;
@@ -53,6 +58,7 @@ export default function WelcomePage() {
   const fullName = watch("fullName");
   const isValid = formState.isValid;
 
+  // ---- Submit handler ----
   const onSubmit = async (values: WelcomeFormValues) => {
     setError("");
 
@@ -67,19 +73,9 @@ export default function WelcomePage() {
     }
 
     try {
-      // Step 1: Complete onboarding in backend
       await completeFirstLogin({ name: values.fullName }).unwrap();
-
-      // Step 2: Force refresh session
       await fetchAuthSession({ forceRefresh: true });
 
-      // Step 3: Fetch again to ensure new token is present in cookies
-      const refreshedSession = await fetchAuthSession();
-      const onboarded =
-        refreshedSession.tokens?.idToken?.payload["custom:onboarded"];
-      console.log("✅ Onboarded claim after refresh:", onboarded);
-
-      // Step 4: Route to dashboard
       window.location.href = routes.dashboard;
     } catch (err) {
       console.error(err);
@@ -91,11 +87,15 @@ export default function WelcomePage() {
     await handleSignOut();
   };
 
+  // ---- UI ----
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-white dark:bg-gray-900">
       <div className="w-full max-w-md">
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 p-8 relative overflow-hidden">
+          {/* Gradient top bar */}
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-blue-600" />
+
+          {/* Logo */}
           <div className="flex justify-center mb-6">
             <Image
               src="/sensepc-logo.png"
@@ -106,32 +106,56 @@ export default function WelcomePage() {
               className="h-18 w-auto"
             />
           </div>
+
+          {/* Dynamic heading */}
           <h1 className="text-2xl font-semibold text-center text-gray-900 dark:text-gray-100 mb-6">
-            Create your account
+            {isSubUser
+              ? `Setup your account`
+              : "Create your account"}
           </h1>
 
-          {/* Info banner */}
-          <div className="flex items-start space-x-3 mb-8 rounded-lg border border-blue-100 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20 px-4 py-3">
-            <div className="flex-shrink-0 mt-0.5">
-              <svg
-                className="h-5 w-5 text-blue-500 dark:text-blue-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
-                />
-              </svg>
+          {/* Info Banner */}
+          {!isSubUser ? (
+            <div className="flex items-start space-x-3 mb-8 rounded-lg border border-blue-100 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20 px-4 py-3">
+              <div className="flex-shrink-0 mt-0.5">
+                <svg
+                  className="h-5 w-5 text-blue-500 dark:text-blue-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                  />
+                </svg>
+              </div>
+              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                We were unable to find an existing account. A new account will be
+                created with the email below.
+              </p>
             </div>
-            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-              We were unable to find an existing account. A new account will be
-              created with the email below.
-            </p>
-          </div>
+          ) : (
+            <div className="mb-6 text-center">
+              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                {organization ? (
+                  <>
+                    Complete your setup as{" "}
+                    <strong>{role ? role.toLowerCase() : "member"}</strong> of{" "}
+                    <strong>{organization}</strong>.
+                  </>
+                ) : (
+                  <>
+                    Complete your setup as{" "}
+                    <strong>{role ? role.toLowerCase() : "member"}</strong>.
+                  </>
+                )}
+              </p>
+            </div>
+
+          )}
 
           {/* Email Display */}
           <div className="mb-6">
@@ -150,12 +174,12 @@ export default function WelcomePage() {
           {/* Form */}
           <Form methods={methods} onSubmit={handleSubmit(onSubmit)}>
             <div className="mb-6">
-             <RHFText
-              name="fullName"
-              label="Full Name"
-              placeholder="Enter your full name"
-              required
-            />
+              <RHFText
+                name="fullName"
+                label="Full Name"
+                placeholder="Enter your full name"
+                required
+              />
             </div>
 
             <div className="flex items-start space-x-3 mb-6">
@@ -202,7 +226,7 @@ export default function WelcomePage() {
               className={`w-full py-3 rounded-lg font-medium text-white text-sm transition 
               ${
                 acceptTerms && fullName.trim() && isValid && !isCompleting
-                  ? "bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-800"
+                  ? "w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white dark:from-[#0EA5E9] dark:to-[#6366F1] dark:hover:from-[#0284C7] dark:hover:to-[#4F46E5] disabled:opacity-60 disabled:cursor-not-allowed"
                   : "bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-50"
               }`}
             >
@@ -224,5 +248,6 @@ export default function WelcomePage() {
         </div>
       </div>
     </div>
+    
   );
 }

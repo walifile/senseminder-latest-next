@@ -53,7 +53,14 @@ export default function ForgotPassword() {
           description:
             "We've sent a secure recovery link to your email. Please check your inbox.",
         });
-      } else if (action === "cognito_reset") {
+      } else if (action === "external_provider") {
+          toast({
+            title: `${mfaResult.provider} Sign-in Detected`,
+            description: mfaResult.message,
+          });
+         
+        }
+        else if (action === "cognito_reset") {
         console.log("Email MFA not enabled. Proceeding with Cognito reset...");
         const response = await handleResetPassword(email);
         console.log("📨 Cognito Reset Response:", response);
