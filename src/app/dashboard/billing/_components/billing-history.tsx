@@ -27,7 +27,7 @@ const BillingHistory = () => (
             {[
               { value: "recharge", label: "Wallet Recharge" },
               { value: "usage", label: "Sense PC Billing" },
-              { value: "storage-usage", label: "Sense Storage Billing" },
+              { value: "storage-usage", label: "Sense Cloud Billing" },
             ].map((tab) => (
               <TabsTrigger key={tab.value} value={tab.value}>
                 {tab.label}

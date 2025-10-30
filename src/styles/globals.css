@@ -47,7 +47,7 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
-    --paragraph: 220 25% 80%;
+    --paragraph: 221 25% 78%;
   }
 }
 
@@ -136,6 +136,9 @@
 
   .text-link {
     @apply text-base text-[#B9C2D5] dark:text-paragraph hover:text-white;
+  }
+  .nav-text-link {
+    @apply text-base md:text-lg font-medium text-[#020816] dark:text-[#F8F8F8] hover:text-black dark:hover:text-white;
   }
 
   .text-gradient {
@@ -318,7 +321,9 @@
 
 .outline-border {
   position: relative;
+  transition: all 0.3s ease;
 }
+
 .outline-border::before {
   content: "";
   position: absolute;
@@ -326,7 +331,15 @@
   border-radius: 50px;
   padding: 1px;
   background: linear-gradient(45deg, #2701ff, #8f00be);
+  background-size: 100% 100%;
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   mask-composite: exclude;
   pointer-events: none;
+  transition: background 0.5s ease, background-position 0.5s ease;
+}
+
+.outline-border:hover::before {
+  background: linear-gradient(45deg, #2701ff, #8f00be, #2701ff);
+  background-size: 200% 200%;
+  background-position: 100% 0;
 }

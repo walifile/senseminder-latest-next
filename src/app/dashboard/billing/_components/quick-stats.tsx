@@ -85,7 +85,7 @@ const QuickStats = () => {
               </span>
               <QuickStatsTooltip
                 content="This is your available wallet balance. It is used for all
-                    active services, including Sense PC and Sense Storage
+                    active services, including Sense PC and Sense Cloud
                     charges. Keep it funded to avoid service interruptions"
               />
             </div>
@@ -127,7 +127,7 @@ const QuickStats = () => {
                 Monthly Spending
               </span>
               <QuickStatsTooltip
-                content="This shows your total charges for Sense PC and Sense Storage
+                content="This shows your total charges for Sense PC and Sense Cloud
                     services this month. Spending includes compute time, storage
                     usage, and any other billable activity."
               />

@@ -15,7 +15,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogContent,
-  DialogDescription,
 } from "@/components/ui/dialog";
 
 import { toast } from "@/hooks/use-toast";
@@ -169,12 +168,11 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Assign SmartPC</DialogTitle>
-          <DialogDescription>
-            {pc?.systemName} ({pc?.instanceId})
-          </DialogDescription>
-        </DialogHeader>
+       <DialogHeader>
+        <DialogTitle className="text-lg font-semibold">
+          SensePC : {pc?.systemName}
+        </DialogTitle>
+      </DialogHeader>
 
         {isLoading ? (
           <div>Loading members...</div>

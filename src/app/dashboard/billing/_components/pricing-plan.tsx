@@ -73,7 +73,7 @@ const PricingPlan = () => {
               },
               {
                 value: "smartstorage",
-                label: "Sense Storage",
+                label: "Sense Cloud",
                 icon: HardDrive,
               },
             ].map(({ value, label, icon: Icon }) => (

@@ -11,7 +11,9 @@ import { ArrowUpRight } from "lucide-react";
 
 const Hero = () => (
   <section className="relative bg-[linear-gradient(180deg,_#F4F1FF_0%,_#FFFFFF_100%)] dark:bg-none ">
-    <div className="z-0 absolute inset-0 bg-[url('/assets/svg/hero-bg-lines.svg')] bg-contain bg-center" />
+    {/* <div className="z-0 absolute inset-0 bg-[url('/assets/svg/hero-bg-lines.svg')] bg-contain bg-center" /> */}
+    {/* Light beam overlay behind the illustration */}
+
     <div className="z-0 md:-rotate-[168deg] absolute -top-10 md:-top-32 -left-20 blur-[60px] md:blur-[150px] size-32 md:size-60 bg-[#2530F0]" />
     <div className="z-0 md:-rotate-[11deg] absolute -top-10 md:-top-32 -right-20 blur-[60px] md:blur-[150px] size-32 md:size-60 bg-[#2530F0]" />
 
@@ -23,13 +25,13 @@ const Hero = () => (
       <div className="container flex flex-col-reverse md:grid md:grid-cols-2 gap-4 md:items-center py-10 md:py-32">
         <div className="flex flex-col gap-6 md:gap-12">
           <div className="flex flex-col gap-2.5 md:gap-3">
-            <p className="font-space-grotesk font-bold text-3xl md:text-7xl">
+            <p className="font-space-grotesk font-bold text-3xl md:text-[82px] leading-[1]">
               <span className="text-transparent bg-clip-text bg-[linear-gradient(270deg,_#BA25F0_4.8%,_#2530F0_46.15%,_#8086F3_100%)]">
                 The Future of
               </span>{" "}
-              Computing is Here
+              Computing is <br /> Here
             </p>
-            <p className="text-paragraph text-base">
+            <p className="text-paragraph text-base md:text-2xl">
               Build, manage, and optimize your computer in minutes
             </p>
           </div>
@@ -44,16 +46,25 @@ const Hero = () => (
           </div>
         </div>
 
-        <Image
-          src="/assets/svg/hero.svg"
-          alt="Hero"
-          width={600}
-          height={400}
-          className="size-full"
-          priority
-        />
+        <div className="relative">
+          <Image
+            src="/assets/svg/hero-banner.svg"
+            alt="Hero"
+            width={600}
+            height={400}
+            className="size-full"
+            priority
+          />
+        </div>
       </div>
     </div>
+    {/* <Image
+      src="/assets/svg/light-beam.svg"
+      alt=""
+      fill
+      priority={false}
+      className="hidden md:block z-0 object-cover opacity-60 pointer-events-none select-none !top-[45%]"
+    /> */}
   </section>
 );
 

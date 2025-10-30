@@ -43,13 +43,21 @@ const Navbar = () => {
 
           <div className="hidden md:flex items-center space-x-8">
             <ThemeToggle />
+            {isAuthenticated && (
+              <Link href={routes?.dashboard} className="nav-text-link">
+                Home
+              </Link>
+            )}
             <Link
               href={isAuthenticated ? routes.storage : routes.smartStorage}
-              className="text-lg font-medium"
+              className="nav-text-link"
             >
-              Sense Storage
+              Sense Cloud
             </Link>
-            <Link href={routes.buildPc} className="text-lg font-medium">
+            <Link
+              href={isAuthenticated ? routes.dashboard : routes.buildPc}
+              className="nav-text-link"
+            >
               Build Sense PC
             </Link>
             {isAuthenticated ? (
@@ -90,14 +98,24 @@ const Navbar = () => {
               className="text-sm w-full justify-start"
               asChild
             >
-              <Link href={routes.smartStorage}>Sense Storage</Link>
+              <Link
+                href={isAuthenticated ? routes.storage : routes.smartStorage}
+                className="nav-text-link"
+              >
+                Sense Cloud
+              </Link>
             </Button>
             <Button
               variant="ghost"
               className="text-sm w-full justify-start"
               asChild
             >
-              <Link href={routes.buildPc}>Build Sense PC</Link>
+              <Link
+                href={isAuthenticated ? routes.dashboard : routes.buildPc}
+                className="nav-text-link"
+              >
+                Build Sense PC
+              </Link>
             </Button>
             {isAuthenticated ? (
               <ProfileDropdown />

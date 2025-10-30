@@ -6,7 +6,7 @@ import type { RootState } from "@/redux/store";
 
 import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
-import React, { useMemo, useEffect } from "react";
+import React, { useRef, useMemo, useEffect } from "react";
 import { useCreateVMMutation } from "@/api/vmManagement";
 import { FEEDBACK_TRIGGERS } from "@/constants/app-constants";
 import {
@@ -38,7 +38,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { motion } from "framer-motion";
-import { Cpu, Globe, HardDrive, MonitorPlay } from "lucide-react";
+import { Cpu, Globe, HardDrive, MoveRight, MonitorPlay } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
 import { useFeedback } from "@/hooks/use-feedback";
@@ -64,9 +64,7 @@ export default function BuildSmartPCPage() {
   const config = useSelector((state: RootState) => state.smartPcConfig);
 
   const [getEstimate, { data, isLoading, error }] = useGetEstimateMutation();
-  const { refetch: refetchRemoteDesktops } = useListRemoteDesktopQuery({
-    userId,
-  });
+  const { refetch: refetchRemoteDesktops } = useListRemoteDesktopQuery({ userId });
   const [createVM, { isLoading: isCreating }] = useCreateVMMutation();
 
   const defaultValues: Partial<FormValues> = useMemo(
@@ -91,7 +89,6 @@ export default function BuildSmartPCPage() {
   const { control, reset, watch, setValue, handleSubmit } = methods;
 
   const values = watch();
-
   const {
     operatingSystem: selectedOS,
     linuxCategory: selectedLinuxCategory,
@@ -103,10 +100,10 @@ export default function BuildSmartPCPage() {
 
   const isLinuxOS = selectedOS === "Linux";
 
-  // Fetch API cpuOptions via RTK Query
+  // API-driven options (memoized to avoid changing deps each render)
   const { data: apiConfig } = useGetSmartPcConfigQuery();
-  const apiCpuOptions = apiConfig?.cpuOptions || {};
-  const apiCpuCategories = apiConfig?.cpuCategories || {};
+  const apiCpuOptions = useMemo(() => apiConfig?.cpuOptions ?? {}, [apiConfig?.cpuOptions]);
+  const apiCpuCategories = useMemo(() => apiConfig?.cpuCategories ?? {}, [apiConfig?.cpuCategories]);
 
   const linuxCategoryCpuOptions =
     (
@@ -118,29 +115,21 @@ export default function BuildSmartPCPage() {
 
   const cpuOptionsForOS = isLinuxOS
     ? linuxCategoryCpuOptions
-    : (apiCpuOptions as Record<string, { value: string; label: string }[]>)[
-        selectedOS
-      ] || [];
+    : (apiCpuOptions as Record<string, { value: string; label: string }[]>)[selectedOS] || [];
 
   useEffect(() => {
     if (selectedOS) {
       if (isLinuxOS) {
-        setValue("linuxCategory", "Ubuntu_24.04_LTS_X64", {
-          shouldValidate: true,
-        });
+        setValue("linuxCategory", "Ubuntu_24.04_LTS_X64", { shouldValidate: true });
       }
-      const opts = (apiCpuOptions as Record<string, { value: string }[]>)?.[
-        selectedOS
-      ];
+      const opts = (apiCpuOptions as Record<string, { value: string }[]>)?.[selectedOS];
       if (opts && opts.length > 0) {
-        setValue("cpu", opts[0].value, {
-          shouldValidate: true,
-        });
+        setValue("cpu", opts[0].value, { shouldValidate: true });
       }
     }
   }, [selectedOS, isLinuxOS, setValue, apiCpuOptions]);
 
-  // estimate
+  // Trigger estimate on key changes
   useEffect(() => {
     fetchEstimate({
       methods,
@@ -148,16 +137,81 @@ export default function BuildSmartPCPage() {
       toast,
       showError: false,
     });
-  }, [cpu, storage, region]);
+  }, [cpu, storage, region, methods, getEstimate, toast]);
 
-  const handleEstimate = async () =>
+  // Keep last stable estimate to prevent UI flicker
+  const stableEstimateRef = useRef<typeof data>(null);
+  useEffect(() => {
+    if (data) stableEstimateRef.current = data;
+  }, [data]);
+
+  // Use the fresh `data` if present; otherwise fall back to last stable.
+  const effectiveEstimate = useMemo(
+    () => data ?? stableEstimateRef.current,
+    [data]
+  );
+
+  // Ensure this handler returns no value (void)
+  const handleEstimate = async () => {
     await fetchEstimate({
       methods,
       getEstimate,
       toast,
     });
+  };
 
-  const onSubmit = handleSubmit(async (data: FormValues) => {
+  // Visual click effect ONLY on the Refresh button (inside CostSummary)
+  const asideRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const root = asideRef.current;
+    if (!root) return () => {};
+
+    const findRefreshBtn = (): HTMLButtonElement | null => {
+      const buttons = root.querySelectorAll<HTMLButtonElement>("button");
+      for (const b of buttons) {
+        const txt = (b.textContent || "").trim().toLowerCase();
+        if (txt.includes("refresh estimate")) return b;
+      }
+      return null;
+    };
+
+    let refreshBtn = findRefreshBtn();
+
+    const attach = (btn: HTMLButtonElement | null) => {
+      if (!btn) return () => {};
+      btn.classList.add("sm-refresh-btn");
+      const onClick = () => {
+        btn.classList.add("sm-pressed");
+        setTimeout(() => btn.classList.remove("sm-pressed"), 160);
+      };
+      btn.addEventListener("click", onClick);
+      return () => btn.removeEventListener("click", onClick);
+    };
+
+    let detach = attach(refreshBtn);
+
+    const mo = new MutationObserver(() => {
+      const newBtn = findRefreshBtn();
+      if (newBtn && newBtn !== refreshBtn) {
+        detach?.();
+        refreshBtn = newBtn;
+        detach = attach(refreshBtn);
+      }
+    });
+    mo.observe(root, { childList: true, subtree: true });
+
+    return () => {
+      mo.disconnect();
+      detach?.();
+    };
+  }, []);
+
+  // Also ensure no return value here
+  const handleEstimateWithFX = async () => {
+    await handleEstimate();
+  };
+
+  const onSubmit = handleSubmit(async (formData: FormValues) => {
     if (!isAuthenticated) {
       toast({
         title: "Authentication Required",
@@ -170,21 +224,18 @@ export default function BuildSmartPCPage() {
     try {
       await createVM({
         action: "create",
-        configId: data.cpu,
-        systemName: data.pcName,
-        region: data.region || "us-east-1",
-        storageSize: parseInt(data.storage, 10),
-        billingPlan: data.billingPlan,
+        configId: formData.cpu,
+        systemName: formData.pcName,
+        region: formData.region || "us-east-1",
+        storageSize: parseInt(formData.storage, 10),
+        billingPlan: formData.billingPlan,
       }).unwrap();
       while (true) {
         const fetchResult = await refetchRemoteDesktops();
         if (fetchResult.status === "fulfilled") break;
         await new Promise((res) => setTimeout(res, 2000));
       }
-      void triggerFeedback({
-        trigger: FEEDBACK_TRIGGERS.PC_ACTION,
-        delayMinutes: 0,
-      });
+      void triggerFeedback({ trigger: FEEDBACK_TRIGGERS.PC_ACTION, delayMinutes: 0 });
       reset();
       router.push(routes.dashboard);
     } catch (err) {
@@ -198,61 +249,64 @@ export default function BuildSmartPCPage() {
     }
   });
 
-  const getPlanLabel = (plan: "hourly" | "daily" | "monthly") => {
-    if (isLoading) return "(...)";
-
-    const planKey =
-      plan === "hourly"
-        ? "pricePerHour"
-        : plan === "daily"
-        ? "pricePerDay"
-        : "pricePerMonth";
-
-    const decimals = plan === "hourly" ? 3 : 2;
-    const price = data?.total?.[planKey];
-
-    return price != null ? `(est. $${price.toFixed(decimals)})` : "";
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0A0A1B]">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#070713]">
       <Navbar />
-      <div className="min-h-screen pt-20 pb-16">
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-4xl font-bold mb-4"
-              >
-                Build Your <span className="gradient-text">Sense PC</span>
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="text-lg text-muted-foreground"
-              >
-                Configure your perfect Sense PC in minutes
-              </motion.p>
-            </div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
+
+      {/* Hero */}
+      <section className="relative pt-24 pb-10">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 -top-8 mx-auto h-40 w-[90%] rounded-full blur-3xl opacity-30 dark:opacity-60"
+          style={{
+            background:
+              "radial-gradient(50% 50% at 50% 50%, rgba(99,102,241,0.25) 0%, rgba(99,102,241,0) 70%)",
+          }}
+        />
+        <div className="container mx-auto px-4">
+          <div className="mx-auto max-w-5xl text-center">
+            <motion.h1
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="grid gap-8"
+              transition={{ duration: 0.35 }}
+              className="text-4xl font-bold tracking-tight sm:text-5xl"
             >
+              Build your <span className="text-indigo-600 dark:text-indigo-400">Sense PC</span>
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.05 }}
+              className="mt-3 text-base text-muted-foreground sm:text-lg"
+            >
+              Configure in minutes — priced with a built-in estimator.
+            </motion.p>
+          </div>
+        </div>
+      </section>
+
+      {/* Builder + Summary */}
+      <section className="pb-24">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: 0.1 }}
+            className="mx-auto grid max-w-6xl gap-5 md:grid-cols-3"
+          >
+            {/* Left: Form */}
+            <div className="md:col-span-2 grid gap-5">
               <Form {...methods} control={control}>
-                <form className="grid gap-8" onSubmit={onSubmit}>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Basic Information</CardTitle>
-                      <CardDescription>
-                        Name your Sense PC and choose an operating system
+                <form className="grid gap-5" onSubmit={onSubmit}>
+                  {/* Basic */}
+                  <Card className="border border-border/60 shadow-sm">
+                    <CardHeader className="py-2">
+                      <CardTitle className="text-lg">Basic Information</CardTitle>
+                      <CardDescription className="mt-0.5">
+                        Name your Sense PC and choose an operating system.
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="grid gap-3 py-3">
                       <FormField
                         control={control}
                         name="pcName"
@@ -260,7 +314,11 @@ export default function BuildSmartPCPage() {
                           <FormItem>
                             <FormLabel>PC Name</FormLabel>
                             <FormControl>
-                              <Input placeholder="Enter PC name" {...field} />
+                              <Input
+                                placeholder="E.g., Design-Workstation"
+                                {...field}
+                                aria-label="PC Name"
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -276,55 +334,56 @@ export default function BuildSmartPCPage() {
                     </CardContent>
                   </Card>
 
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Hardware Configuration</CardTitle>
-                      <CardDescription>
-                        Choose your computing resources
+                  {/* Hardware */}
+                  <Card className="border border-border/60 shadow-sm">
+                    <CardHeader className="py-2">
+                      <CardTitle className="text-lg">Hardware Configuration</CardTitle>
+                      <CardDescription className="mt-0.5">
+                        Choose your computing resources.
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="grid gap-3 py-3">
                       {isLinuxOS && (
                         <Field.Select
                           name="linuxCategory"
-                          label="Category"
+                          label="Linux Distribution"
                           options={Object.keys(
                             (
-                              apiCpuCategories as Record<
-                                string,
-                                Record<string, unknown>
-                              >
+                              apiCpuCategories as Record<string, Record<string, unknown>>
                             )?.Linux || {}
                           )}
                         />
                       )}
 
-                      <Field.Select
-                        name="cpu"
-                        label="CPU"
-                        options={cpuOptionsForOS}
-                        icon={Cpu}
-                      />
-
-                      <Field.Select
-                        name="storage"
-                        label="Storage"
-                        options={storageOptions.map((opt) => ({
-                          value: opt.value,
-                          label: `${opt.label} ${
-                            opt.pricePerHour ? `($${opt.pricePerHour}/hr)` : ""
-                          }`,
-                        }))}
-                        icon={HardDrive}
-                      />
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Field.Select
+                          name="cpu"
+                          label="CPU"
+                          options={cpuOptionsForOS}
+                          icon={Cpu}
+                        />
+                        <Field.Select
+                          name="storage"
+                          label="Storage (SSD)"
+                          options={storageOptions.map((opt) => ({
+                            value: opt.value,
+                            label: `${opt.label}${opt.pricePerHour ? ` — $${opt.pricePerHour}/hr` : ""}`,
+                          }))}
+                          icon={HardDrive}
+                        />
+                      </div>
                     </CardContent>
                   </Card>
 
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Location</CardTitle>
+                  {/* Location */}
+                  <Card className="border border-border/60 shadow-sm">
+                    <CardHeader className="py-2">
+                      <CardTitle className="text-lg">Location</CardTitle>
+                      <CardDescription className="mt-0.5">
+                        Select the closest region for low latency.
+                      </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="py-3">
                       <Field.Select
                         name="region"
                         label="Region"
@@ -334,99 +393,103 @@ export default function BuildSmartPCPage() {
                     </CardContent>
                   </Card>
 
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Billing Plan</CardTitle>
-                      <CardDescription>
-                        Select how you want to be billed
+                  {/* Billing */}
+                  <Card className="border border-border/60 shadow-sm">
+                    <CardHeader className="py-2">
+                      <CardTitle className="text-lg">Billing Plan</CardTitle>
+                      <CardDescription className="mt-0.5">
+                        Choose how you’d like to be billed.
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="grid gap-3 py-3">
                       <Field.Select
                         name="billingPlan"
                         label="Billing Plan"
                         placeholder="Choose billing plan"
                         options={[
-                          {
-                            value: "hourly",
-                            label: `Hourly ${getPlanLabel("hourly")}`,
-                          },
-                          {
-                            value: "daily",
-                            label: `Daily ${getPlanLabel("daily")}`,
-                          },
-                          {
-                            value: "monthly",
-                            label: `Monthly ${getPlanLabel("monthly")}`,
-                          },
+                          { value: "hourly", label: "Hourly" },
+                          { value: "daily", label: "Daily" },
+                          { value: "monthly", label: "Monthly" },
                         ]}
                       />
+                      <div className="rounded-md bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+                        Tip: Hourly is flexible. Daily/Monthly give predictable spend. You can change plans later from your dashboard.
+                      </div>
                     </CardContent>
                   </Card>
 
-                  <Card>
-                    <CardHeader>
-                      {/* <CardTitle>Cost Summary</CardTitle>
-                      <CardDescription>
-                        Estimated costs for your Sense PC
-                      </CardDescription> */}
+                  {/* Actions (Build only) */}
+                  <Card className="border border-border/60 shadow-sm">
+                    <CardHeader className="py-2">
+                      <CardTitle className="text-lg">Build</CardTitle>
+                      <CardDescription className="mt-0.5">
+                        We’ll spin up your Sense PC securely.
+                      </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      {/* <div className="flex justify-between">
-                        <span className="font-medium">Hourly Cost</span>
-                        <span className="text-2xl font-bold">
-                          ${data ? `${data.hourlyCost}/hour` : "0/hour"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>Monthly Estimate</span>
-                        <span>
-                          $
-                          {data
-                            ? (data.hourlyCost * 24 * 30).toFixed(2)
-                            : "0.00"}
-                          /month
-                        </span>
-                      </div> */}
-
-                      {/* <Button
-                        type="button"
-                        onClick={handleEstimate}
-                        disabled={isLoading || isCreating}
-                        className="w-full"
-                      >
-                        {isLoading ? "Estimating..." : "Get Estimate"}
-                      </Button> */}
+                    <CardContent className="pt-3">
                       <Button
                         type="submit"
-                        className="w-full"
+                        className="group/build w-full"
                         disabled={isCreating || isLoading}
+                        aria-disabled={isCreating || isLoading}
                       >
-                        Create Sense PC
+                        {isCreating ? (
+                          "Building..."
+                        ) : (
+                          <>
+                            Build This PC Now
+                            <MoveRight
+                              className="ml-2 h-4 w-4 transition-transform duration-200 group-hover/build:translate-x-0.5"
+                              aria-hidden="true"
+                            />
+                          </>
+                        )}
                       </Button>
+
                       {error && (
-                        <p className="text-red-500 text-sm">
-                          Error getting estimate.
-                        </p>
+                        <p className="mt-2 text-sm text-red-500">Error getting estimate.</p>
                       )}
                     </CardContent>
                   </Card>
-
-                  <div>
-                    <CostSummary
-                      isResize={false}
-                      billingPlan={billingPlan}
-                      handleEstimate={handleEstimate}
-                      estimateData={data}
-                      isEstimating={isLoading}
-                    />
-                  </div>
                 </form>
               </Form>
-            </motion.div>
-          </div>
+            </div>
+
+            {/* Right: Cost Summary (sticky, no flicker) */}
+            <aside ref={asideRef} className="md:sticky md:top-24 h-max">
+              <Card className="border border-border/60 shadow-sm">
+                <CardHeader className="py-2">
+                  <CardTitle className="text-lg">Cost Summary</CardTitle>
+                  <CardDescription className="mt-0.5">
+                    Live estimate based on your selections.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="py-3">
+                  <CostSummary
+                    isResize={false}
+                    billingPlan={billingPlan}
+                    handleEstimate={handleEstimateWithFX}
+                    estimateData={effectiveEstimate}
+                    isEstimating={isLoading}
+                  />
+                </CardContent>
+              </Card>
+            </aside>
+          </motion.div>
         </div>
-      </div>
+      </section>
+
+      {/* Only decorates the Refresh Estimate button */}
+      <style>{`
+        .sm-refresh-btn {
+          transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
+        }
+        .sm-refresh-btn.sm-pressed {
+          transform: scale(0.98);
+          box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.18);
+          opacity: 0.96;
+        }
+      `}</style>
     </div>
   );
 }

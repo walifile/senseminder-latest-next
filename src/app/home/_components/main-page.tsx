@@ -1,7 +1,7 @@
 "use client";
 
-import RentSmarter from "@/app/home/_components/RentSmarter";
-import RentSmarterProcess from "@/app/home/_components/RentSmarterProcess";
+import RentSmarter from "@/app/home/_components/rent-smarter";
+import RentSmarterProcess from "@/app/home/_components/rent-smarter-process";
 
 import FAQ from "./faq";
 import Hero from "./hero";

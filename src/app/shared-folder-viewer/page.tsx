@@ -286,7 +286,7 @@ const StaticStoragePage = () => {
     <Card className="relative my-20 p-3 m-20">
       <CardHeader className="pb-2 flex flex-row justify-between items-center w-full">
         <div>
-          <CardTitle>Sense Storage</CardTitle>
+          <CardTitle>Sense cloud</CardTitle>
           <CardDescription className="mt-3">
             Manage your files and folders
           </CardDescription>

@@ -40,3 +40,37 @@
     background-position: 200% center;
   }
 }
+
+/* Magic UI additions */
+@keyframes twinkle {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0) scale(0.8);
+  }
+}
+
+.twinkle {
+  animation: twinkle var(--twinkle-duration, 3s)
+    ease-in-out var(--twinkle-delay, 0s) infinite;
+}
+
+@keyframes slow-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-slow-spin {
+  animation: slow-spin 24s linear infinite;
+}

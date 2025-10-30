@@ -813,7 +813,7 @@ const CloudStorage = () => {
               {/* <Button onClick={handleDownloadClick} disabled={isFetching}>
                 {isFetching ? "Downloading..." : "Download Folder"}
               </Button> */}
-              <CardTitle>Sense Storage</CardTitle>
+              <CardTitle>Sense Cloud</CardTitle>
               <CardDescription>Manage your files and folders</CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -1109,7 +1109,7 @@ const CloudStorage = () => {
                           Fetching your files...
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          Please wait while we load your sense storage.
+                          Please wait while we load your sense cloud.
                         </p>
                       </div>
                     )}

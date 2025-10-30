@@ -10,6 +10,7 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 
+import { motion } from "framer-motion";
 import { Youtube, ArrowLeft, ArrowRight } from "lucide-react";
 
 import { TutorialCard } from "./tutorial-card";
@@ -132,7 +133,13 @@ const TutorialSection = () => {
       <div className="container my-12 md:my-20 space-y-8 md:space-y-12 overflow-hidden">
         {/* Header Section */}
         <div className="flex items-center justify-between gap-2">
-          <div className="max-md:w-full space-y-3 md:space-y-2.5">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+            className="max-md:w-full space-y-3 md:space-y-2.5"
+          >
             <h4 className="font-space-grotesk font-bold text-2xl md:text-5xl text-center md:text-left">
               Learn How to{" "}
               <span className="text-transparent bg-clip-text bg-[linear-gradient(290.5deg,#D971FF_-70.94%,#4C55F8_10.02%,#8086F3_115.42%)]">
@@ -143,10 +150,16 @@ const TutorialSection = () => {
             <p className="text-paragraph text-center md:text-left text-base md:text-2xl">
               Watch our tutorial series to master your Sense PC experience
             </p>
-          </div>
+          </motion.div>
 
           {/* Navigation Buttons - Only show on desktop */}
-          <div className="hidden md:flex items-center gap-3">
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+            className="hidden md:flex items-center gap-3"
+          >
             <Button
               size="lg"
               variant={canScrollLeft ? "default" : "outline"}
@@ -166,11 +179,15 @@ const TutorialSection = () => {
             >
               <ArrowRight />
             </Button>
-          </div>
+          </motion.div>
         </div>
 
         {/* Desktop Layout - Horizontal Carousel */}
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, delay: 0.2 }}
           ref={carouselRef}
           className="hidden md:flex gap-6 overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
@@ -183,10 +200,14 @@ const TutorialSection = () => {
               onClick={() => setSelectedVideo(tutorial)}
             />
           ))}
-        </div>
+        </motion.div>
 
         {/* Mobile Layout - Carousel with peek view */}
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, delay: 0.2 }}
           className="space-y-8 md:hidden relative overflow-visible"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -231,7 +252,7 @@ const TutorialSection = () => {
               />
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Dialog for video playback */}
         <Dialog

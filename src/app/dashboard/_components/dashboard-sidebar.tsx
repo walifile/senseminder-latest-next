@@ -36,7 +36,7 @@ const navItems = [
     icon: Monitor,
   },
   {
-    name: "Sense Storage",
+    name: "Sense Cloud",
     path: routes.storage,
     icon: HardDrive,
   },

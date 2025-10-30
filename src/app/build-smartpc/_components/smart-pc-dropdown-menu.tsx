@@ -51,8 +51,6 @@ const SmartPcDropdownMenu = ({
   const plan = pc.billingPlan?.toLowerCase() || "";
   const planRestricted = !plan || plan === "daily" || plan === "monthly";
 
-  console.log("PC plan info:", pc);
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>

@@ -154,7 +154,7 @@ export default function SmartStoragePage() {
             <Card className="relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary-foreground" />
               <CardHeader>
-                <CardTitle>Welcome to Sense Storage Intelligent Tier</CardTitle>
+                <CardTitle>Welcome to Sense Cloud Intelligent Tier</CardTitle>
                 <CardDescription>
                   Start free with 20GB — just pay for your highest tier usage
                   each month, no fixed plans.

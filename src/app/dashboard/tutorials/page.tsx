@@ -55,7 +55,7 @@ const tutorials = [
     id: 3,
     title: "Storage Management Guide",
     duration: "6:15",
-    description: "Master the art of managing your Sense storage efficiently.",
+    description: "Master the art of managing your Sense cloud efficiently.",
     videoUrl: "/videos/storage.mp4",
     youtubeUrl: "https://youtube.com/watch?v=storage",
     category: "Storage",

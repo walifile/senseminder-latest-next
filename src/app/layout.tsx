@@ -6,8 +6,8 @@ import AuthGuard from "@/guards/auth-guard";
 import { usePathname } from "next/navigation";
 import { ReduxProvider } from "@/redux/provider";
 import { isDev } from "@/constants/initial-values";
-import { Inter, Space_Grotesk } from "next/font/google";
 import { AmplifyProvider } from "@/providers/AmplifyProvider";
+import { Inter, Poppins, Space_Grotesk } from "next/font/google";
 import { WebSocketProvider } from "@/providers/WebSocketProvider";
 
 import Navbar from "@/components/shared/layout/navbar";
@@ -24,6 +24,12 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
 });
 
+const poppins = Poppins({
+  subsets: ["latin"],
+  variable: "--font-poppins",
+  weight: ["400", "500", "600", "700"],
+});
+
 export default function RootLayout({
   children,
 }: {
@@ -34,7 +40,10 @@ export default function RootLayout({
   // Special case: root landing page in prod
   if (pathname === "/" && !isDev) {
     return (
-      <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
+      <html
+        lang="en"
+        className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable}`}
+      >
         <head>
           <title>SensePC</title>
           <meta name="description" content="SensePC Application" />
@@ -62,7 +71,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${spaceGrotesk.variable} h-full`}
+      className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable}`}
     >
       <head>
         <title>SensePC</title>
@@ -75,14 +84,17 @@ export default function RootLayout({
             <WebSocketProvider>
               <ThemeWrapper>
                 <AuthGuard>
+                  {/* <div className="min-h-screen">{children}</div> */}
+
                   {hideChrome ? (
-                    // Full-bleed canvas for pc-viewer/welcome/landing(prod)
                     <div className="h-full">{children}</div>
                   ) : (
-                    // Normal app chrome with scrollable main
                     <div className="flex min-h-screen flex-col">
+                      {/* <div className="flex min-h-screen flex-col overflow-x-hidden"> */}
                       <Navbar />
-                      <main className="flex-1 min-h-0">{children}</main>
+                      {/* <main className="flex-1 min-h-0"> */}
+                      {children}
+                      {/* </main> */}
                       <Footer />
                     </div>
                   )}
@@ -95,7 +107,6 @@ export default function RootLayout({
     </html>
   );
 }
-
 
 // import "../styles/globals.css";
 

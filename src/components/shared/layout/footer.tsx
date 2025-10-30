@@ -10,10 +10,10 @@ const socialLinks = [
     href: "#",
     icon: "linkedin",
   },
-  {
-    href: "#",
-    icon: "whatsapp-business",
-  },
+  // {
+  //   href: "#",
+  //   icon: "whatsapp-business",
+  // },
   {
     href: "#",
     icon: "twitter",
@@ -26,10 +26,10 @@ const socialLinks = [
     href: "#",
     icon: "instagram",
   },
-  {
-    href: "#",
-    icon: "youtube",
-  },
+  // {
+  //   href: "#",
+  //   icon: "youtube",
+  // },
 ];
 
 const contactInfo = [
@@ -158,7 +158,7 @@ const Footer = () => {
 
         {/* Bottom bar */}
         <div className="pt-6 md:pt-8 border-t border-[#F8F8F8]">
-          <p className="text-center text-[#F8F8F8] text-sm">
+          <p className="text-center text-[#F8F8F8] text-sm font-poppins">
             © {currentYear} smartpc. All rights reserved.
           </p>
         </div>
