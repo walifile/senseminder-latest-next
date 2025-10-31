@@ -1,4 +1,8 @@
 import json
+try:
+    from decimal import Decimal  # for JSON-safe conversion
+except Exception:
+    Decimal = None
 import boto3
 from botocore.exceptions import ClientError
 from datetime import datetime, timedelta, timezone
@@ -1219,7 +1223,7 @@ def handle_share_download(event):
         return response(400, {'message': 'shareId is required'})
 
     # Load share record
-    item = shares_table.get_item(Key={'shareId': share_id}).get('Item')
+    item = shares_table.get_item(Key={'shareId': share_id}, ConsistentRead=True).get('Item')
     if not item:
         return response(404, {'message': 'Share not found'})
 
@@ -1295,12 +1299,12 @@ def handle_cancel_share(event):
     try:
         shares_table.update_item(
             Key={'shareId': share_id},
-            UpdateExpression="SET #s=:rev, cancelledAt=:c, ttl=:ttl",
-            ExpressionAttributeNames={'#s': 'status'},
+            UpdateExpression="SET #s=:rev, cancelledAt=:c, #ttl=:ttlv",
+            ExpressionAttributeNames={'#s': 'status', '#ttl': 'ttl'},
             ExpressionAttributeValues={
                 ':rev': 'revoked',
                 ':c': now_iso,
-                ':ttl': int(datetime.now(timezone.utc).timestamp()) + 300
+                ':ttlv': int(datetime.now(timezone.utc).timestamp()) + 300
             },
             ConditionExpression=boto3.dynamodb.conditions.Attr('shareId').exists()
         )
@@ -1313,19 +1317,48 @@ def handle_cancel_share(event):
             return response(403, {'message': 'Access denied to cancel share'})
         return response(500, {'message': 'Failed to cancel share'})
 
-    # Best-effort: clear 'shared' flag on the file metadata so UI stops showing as shared
+    # Best-effort: clear shared markers on the object (and nested items for folders)
     try:
         key = item.get('objectKey')
         if key:
-            # Only update if the metadata exists to avoid creating empty items
-            meta = file_metadata_table.get_item(Key={'id': key}).get('Item')
-            if meta:
-                file_metadata_table.update_item(
-                    Key={'id': key},
-                    UpdateExpression="REMOVE shared"
+            if key.endswith('/'):
+                # Folder: clear shared on the folder itself and all descendants
+                # Clear root folder
+                try:
+                    file_metadata_table.update_item(
+                        Key={'id': key},
+                        UpdateExpression="SET #st=:priv REMOVE shared, sharePermissions, sharePassword, shareExpiry",
+                        ExpressionAttributeNames={'#st': 'status'},
+                        ExpressionAttributeValues={':priv': 'private'}
+                    )
+                except Exception as e2:
+                    print(f"Failed to clear shared on folder root {key}: {e2}")
+                # Clear children
+                scan = file_metadata_table.scan(
+                    FilterExpression=boto3.dynamodb.conditions.Attr('id').begins_with(key)
                 )
+                for it in scan.get('Items', []):
+                    try:
+                        file_metadata_table.update_item(
+                            Key={'id': it['id']},
+                            UpdateExpression="SET #st=:priv REMOVE shared, sharePermissions, sharePassword, shareExpiry",
+                            ExpressionAttributeNames={'#st': 'status'},
+                            ExpressionAttributeValues={':priv': 'private'}
+                        )
+                    except Exception as e3:
+                        print(f"Failed to clear shared on child {it.get('id')}: {e3}")
+            else:
+                # Single file
+                meta = file_metadata_table.get_item(Key={'id': key}).get('Item')
+                if meta:
+                    file_metadata_table.update_item(
+                        Key={'id': key},
+                        UpdateExpression="SET #st=:priv REMOVE shared, sharePermissions, sharePassword, shareExpiry",
+                        ExpressionAttributeNames={'#st': 'status'},
+                        ExpressionAttributeValues={':priv': 'private'}
+                    )
     except Exception as e:
-        print(f"Failed to clear shared flag for {item.get('objectKey')}: {e}")
+        print(f"Failed to clear shared markers for {item.get('objectKey')}: {e}")
 
     return response(200, {'message': 'Share cancelled', 'shareId': share_id})
 
@@ -1345,14 +1378,23 @@ def handle_list_shares(event):
     )
     items = resp.get('Items', [])
     # Return only minimal info
-    out = [
-        {
+    out = []
+    for it in items:
+        exp = it.get('expiresAt')
+        try:
+            exp_val = int(exp) if exp is not None else None
+        except Exception:
+            # Fallback if Decimal or non-int
+            try:
+                exp_val = int(float(exp))
+            except Exception:
+                exp_val = None
+        out.append({
             'shareId': it.get('shareId'),
             'type': it.get('type'),
-            'expiresAt': it.get('expiresAt'),
+            'expiresAt': exp_val,
             'status': it.get('status'),
-        } for it in items
-    ]
+        })
     return response(200, {'items': out})
 
 def handle_share_info(event):
@@ -1362,7 +1404,7 @@ def handle_share_info(event):
     if not share_id:
         return response(400, {'message': 'shareId is required'})
 
-    item = shares_table.get_item(Key={'shareId': share_id}).get('Item')
+    item = shares_table.get_item(Key={'shareId': share_id}, ConsistentRead=True).get('Item')
     if not item:
         return response(404, {'message': 'Share not found'})
 
@@ -1717,5 +1759,15 @@ def handle_move_or_copy(event, operation):
 
 # ----------------------------------------------------------------
 
+def _json_default(o):
+    try:
+        if Decimal is not None and isinstance(o, Decimal):
+            # Prefer int when it is whole, otherwise float
+            n = float(o)
+            return int(n) if n.is_integer() else n
+    except Exception:
+        pass
+    return str(o)
+
 def response(status_code, body):
-    return {'statusCode': status_code, 'body': json.dumps(body)}
+    return {'statusCode': status_code, 'body': json.dumps(body, default=_json_default)}
