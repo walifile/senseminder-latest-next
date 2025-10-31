@@ -3,7 +3,10 @@
 import type { RootState } from "@/redux/store";
 
 import React, { useState, useEffect } from "react";
-import { useShareFileMutation } from "@/api/fileManagerAPI";
+import {
+  useShareFileMutation,
+  useCancelShareMutation,
+} from "@/api/fileManagerAPI";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,13 +59,16 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
   const [sharePasswordEnabled, setSharePasswordEnabled] = useState(false);
   const [sharePassword, setSharePassword] = useState("");
   const [shareLink, setShareLink] = useState("");
+  const [shareId, setShareId] = useState<string | null>(null);
 
   const userId = useSelector((state: RootState) => state.auth.user?.id);
   const [shareFile, { isLoading }] = useShareFileMutation();
+  const [cancelShare, { isLoading: isCancelling }] = useCancelShareMutation();
 
   useEffect(() => {
     if (!open) {
       setShareLink("");
+      setShareId(null);
       setSharePermissions("view");
       setShareExpiry("7days");
       setSharePassword("");
@@ -97,6 +103,13 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
 
       let link = result.shareLink;
 
+      // capture shareId for cancellable file shares (folders keep key-based viewer)
+      if (result?.id && isFolder === false) {
+        try {
+          setShareId(String(result.id));
+        } catch {}
+      }
+
       // Make absolute URL if not already
       if (!/^https?:\/\//i.test(link)) {
         const origin = window.location.origin;
@@ -116,6 +129,26 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
       toast({
         title: "Share Failed",
         description: "Could not share. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCancelShare = async () => {
+    if (!shareId) return;
+    try {
+      await cancelShare({ shareId }).unwrap();
+      setShareId(null);
+      setShareLink("");
+      toast({
+        title: "Share Cancelled",
+        description: "The share link can no longer be used.",
+      });
+    } catch (error) {
+      console.error("Cancel share failed:", error);
+      toast({
+        title: "Cancel Failed",
+        description: "Could not cancel the share. Please try again.",
         variant: "destructive",
       });
     }
@@ -170,6 +203,15 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Download
+                </Button>
+              )}
+              {shareId && (
+                <Button
+                  variant="destructive"
+                  onClick={handleCancelShare}
+                  disabled={isCancelling}
+                >
+                  {isCancelling ? "Cancelling..." : "Cancel Share"}
                 </Button>
               )}
             </div>

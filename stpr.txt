@@ -15,7 +15,6 @@ dynamodb = boto3.resource('dynamodb')
 bucket_table = dynamodb.Table('SmartPCBuckets')
 file_metadata_table = dynamodb.Table('SmartPCStorageMetadata')
 usage_table = dynamodb.Table('SmartPCStorageUsage')  # NEW: monthly usage table
-shares_table = dynamodb.Table('SmartPCShares')  # NEW: share control table
 TTL_DAYS = 60
 
 # ------------ Helpers (NEW) ------------
@@ -360,10 +359,6 @@ def lambda_handler(event, context):
             return handle_usage(event)
         elif route_key == "GET /download-folder":
             return handle_download_folder(event)
-        elif route_key == "GET /shares/{shareId}/download":
-            return handle_share_download(event)
-        elif route_key == "POST /shares/{shareId}/cancel":
-            return handle_cancel_share(event)
         else:
             return response(400, {'message': 'Invalid HTTP method or path'})
 
@@ -1153,132 +1148,25 @@ def handle_share(event):
             print(f"Metadata update error for {k}: {e}")
 
     if is_folder:
-        # Keep existing public folder viewer flow (optional to migrate later)
-        share_url = f"/shared-folder-viewer?key={key}"
+        share_url = f"shared-folder-viewer?key={key}"
     else:
-        # Create a cancellable share record and return API-gated link
-        now_epoch = int(datetime.now(timezone.utc).timestamp())
-        expires_at = now_epoch + (expiry_seconds if expiry != 'never' else 315360000)
-        share_id = str(uuid.uuid4())
-
-        # Persist share record (TTL slightly after expiry for auto-removal)
-        ttl_epoch = expires_at + 300
-        shares_table.put_item(Item={
-            'shareId': share_id,
-            'type': 'file',
-            'ownerUserId': user_id,
-            'bucket': bucket_name,
-            'objectKey': key,
-            'permissions': permissions,
-            'status': 'active',
-            'createdAt': _iso_now(),
-            'expiresAt': expires_at,
-            'ttl': ttl_epoch,
-        })
-
-        # API download endpoint that mints a very short presigned URL per request
-        # Note: API base path is handled by API Gateway; we return a relative path for the UI to absolve
-        share_url = f"/shares/{share_id}/download"
+        try:
+            share_url = s3.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': bucket_name, 'Key': key},
+                ExpiresIn=expiry_seconds
+            )
+        except ClientError as e:
+            print(f"Presign error for {key}: {e}")
+            return response(404, {'message': 'File not found or inaccessible.'})
 
     return response(200, {
         'message': f'{"Folder and contents" if is_folder else "File"} shared successfully.',
         'shareLink': share_url,
-        'id': key if is_folder else share_id,
+        'id': key,
         'permissions': permissions,
         'expiry': expiry
     })
-
-def handle_share_download(event):
-    """GET /shares/{shareId}/download -> 302 redirect to short-lived S3 URL if active and not expired."""
-    params = (event.get('pathParameters') or {})
-    share_id = params.get('shareId')
-    if not share_id:
-        return response(400, {'message': 'shareId is required'})
-
-    # Load share record
-    item = shares_table.get_item(Key={'shareId': share_id}).get('Item')
-    if not item:
-        return response(404, {'message': 'Share not found'})
-
-    # Check status and expiry
-    status = item.get('status', 'active')
-    now_epoch = int(datetime.now(timezone.utc).timestamp())
-    expires_at = int(item.get('expiresAt', 0) or 0)
-    if status != 'active' or (expires_at and now_epoch > expires_at):
-        return response(410, {'message': 'Share is expired or revoked'})
-
-    bucket = item.get('bucket')
-    key = item.get('objectKey')
-    if not bucket or not key:
-        return response(500, {'message': 'Share is misconfigured'})
-
-    # Mint a very short presigned URL (2 minutes)
-    try:
-        presigned = s3.generate_presigned_url(
-            'get_object',
-            Params={'Bucket': bucket, 'Key': key},
-            ExpiresIn=120
-        )
-    except ClientError as e:
-        print(f"Presign error for share {share_id}: {e}")
-        return response(404, {'message': 'File not found or inaccessible.'})
-
-    return {
-        'statusCode': 302,
-        'headers': {'Location': presigned}
-    }
-
-def handle_cancel_share(event):
-    """POST /shares/{shareId}/cancel -> revoke share and optionally clear shared flag on metadata."""
-    params = (event.get('pathParameters') or {})
-    share_id = params.get('shareId')
-    if not share_id:
-        # Also support body-driven cancellation as a fallback
-        try:
-            body = json.loads(event.get('body', '{}'))
-        except Exception:
-            body = {}
-        share_id = body.get('shareId')
-    if not share_id:
-        return response(400, {'message': 'shareId is required'})
-
-    # Load share
-    item = shares_table.get_item(Key={'shareId': share_id}).get('Item')
-    if not item:
-        return response(404, {'message': 'Share not found'})
-
-    if item.get('status') != 'active':
-        return response(409, {'message': f"Share already {item.get('status')}"})
-
-    now_iso = _iso_now()
-    # Mark revoked and pull TTL forward for quick removal
-    try:
-        shares_table.update_item(
-            Key={'shareId': share_id},
-            UpdateExpression="SET #s=:rev, cancelledAt=:c, ttl=:ttl",
-            ExpressionAttributeNames={'#s': 'status'},
-            ExpressionAttributeValues={
-                ':rev': 'revoked',
-                ':c': now_iso,
-                ':ttl': int(datetime.now(timezone.utc).timestamp()) + 300
-            }
-        )
-    except ClientError as e:
-        print(f"Cancel share update error {share_id}: {e}")
-        return response(500, {'message': 'Failed to cancel share'})
-
-    # Best-effort: clear 'shared' flag on the file metadata so UI stops showing as shared
-    try:
-        key = item.get('objectKey')
-        if key:
-            file_metadata_table.update_item(
-                Key={'id': key},
-                UpdateExpression="REMOVE shared"
-            )
-    except Exception as e:
-        print(f"Failed to clear shared flag for {item.get('objectKey')}: {e}")
-
-    return response(200, {'message': 'Share cancelled', 'shareId': share_id})
 
 def handle_share_multiple(event):
     body = json.loads(event.get('body', '{}'))

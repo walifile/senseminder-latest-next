@@ -337,6 +337,12 @@ export const fileManagerAPI = createApi({
       }),
       invalidatesTags: ["Files"],
     }),
+    cancelShare: builder.mutation<{ message: string }, { shareId: string }>({
+      query: ({ shareId }) => ({
+        url: `shares/${shareId}/cancel`,
+        method: "POST",
+      }),
+    }),
     publicSharedList: builder.query({
       query: ({ region, key }) => ({
         url: "public-shared-list",
@@ -584,6 +590,7 @@ export const {
   useUnstarFileMutation,
   useShareFileMutation,
   useShareFilesMutation,
+  useCancelShareMutation,
   useCopyFilesMutation,
   useMoveFilesMutation,
   useGetUsageQuery,
