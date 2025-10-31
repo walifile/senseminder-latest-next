@@ -324,6 +324,42 @@ def _ttl_from_iso(iso_str: str, days: int = TTL_DAYS) -> int:
 
 
 
+def _has_active_share_for_key(folder_key: str) -> bool:
+    """Return True if an ACTIVE, non-expired share exists for folder_key.
+    Accepts both with and without trailing slash to tolerate legacy records.
+    """
+    try:
+        base = folder_key.rstrip('/')
+        candidates = {base, base + '/', folder_key}
+        now_epoch = int(datetime.now(timezone.utc).timestamp())
+        for ok in candidates:
+            try:
+                resp = shares_table.scan(
+                    FilterExpression=(
+                        boto3.dynamodb.conditions.Attr('objectKey').eq(ok) &
+                        boto3.dynamodb.conditions.Attr('status').eq('active')
+                    )
+                )
+            except Exception as e:
+                print(f"shares scan error for {ok}: {e}")
+                continue
+            for it in (resp.get('Items') or []):
+                exp = it.get('expiresAt')
+                try:
+                    exp_i = int(exp) if exp is not None else None
+                except Exception:
+                    try:
+                        exp_i = int(float(exp))
+                    except Exception:
+                        exp_i = None
+                if exp_i is None or now_epoch <= exp_i:
+                    return True
+        return False
+    except Exception as e:
+        print(f"_has_active_share_for_key error: {e}")
+        return False
+
+
 # ---------------------------------------
 
 def lambda_handler(event, context):
@@ -832,6 +868,9 @@ def handle_download_folder(event):
         parts = key.strip('/').split('/')
         user_id = parts[0]
         clean_folder_name = parts[-1]
+        # Public path: only allow if an active share exists for this folder key
+        if not _has_active_share_for_key(key):
+            return response(410, {'message': 'This shared link is expired or revoked.'})
     else:
         prefix = f"{user_id}/uploads/{folder.strip('/')}/"
         clean_folder_name = folder.strip('/').replace('/', '_')
@@ -1547,6 +1586,10 @@ def handle_public_shared_list(event):
 
         if not region or not key:
             return response(400, {'message': 'region and key are required.'})
+
+        # Require an active share for this folder
+        if not _has_active_share_for_key(key):
+            return response(410, {'message': 'This shared link is expired or revoked.'})
 
         bucket_resp = bucket_table.get_item(Key={'region': region})
         if 'Item' not in bucket_resp:
