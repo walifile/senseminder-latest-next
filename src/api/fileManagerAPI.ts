@@ -22,6 +22,15 @@ export const fileManagerAPI = createApi({
   baseQuery: baseQueryWithReauth(false),
   tagTypes: ["Files", "VM", "Hierarchy"],
   endpoints: (builder) => ({
+    getShareInfo: builder.query<
+      { shareId: string; type: string; status: string; expiresAt?: number; name?: string },
+      { shareId: string }
+    >({
+      query: ({ shareId }) => ({
+        url: `shares/${shareId}`,
+        method: "GET",
+      }),
+    }),
     getEstimate: builder.mutation({
       query: ({ configId, storageSize, region }) => ({
         url: ESTIMATION_URL,
@@ -337,11 +346,19 @@ export const fileManagerAPI = createApi({
       }),
       invalidatesTags: ["Files"],
     }),
+    getSharesForObject: builder.query<{ items: { shareId: string }[] }, { key: string }>({
+      query: ({ key }) => ({
+        url: "shares",
+        method: "GET",
+        params: { key },
+      }),
+    }),
     cancelShare: builder.mutation<{ message: string }, { shareId: string }>({
       query: ({ shareId }) => ({
         url: `shares/${shareId}/cancel`,
         method: "POST",
       }),
+      invalidatesTags: ["Files"],
     }),
     publicSharedList: builder.query({
       query: ({ region, key }) => ({
@@ -590,6 +607,10 @@ export const {
   useUnstarFileMutation,
   useShareFileMutation,
   useShareFilesMutation,
+  useGetShareInfoQuery,
+  useLazyGetShareInfoQuery,
+  useLazyGetSharesForObjectQuery,
+  useGetSharesForObjectQuery,
   useCancelShareMutation,
   useCopyFilesMutation,
   useMoveFilesMutation,
