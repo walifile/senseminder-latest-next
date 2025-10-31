@@ -41,7 +41,7 @@ const FutureOfComputing = () => (
         transition={{ duration: 0.6 }}
         className="space-y-2.5 text-center"
       >
-        <p className="font-space-grotesk font-bold text-2xl md:text-5xl">
+        <p className="font-space-grotesk font-semibold text-2xl md:text-5xl">
           The Future of Computing{" "}
           <span className="bg-[linear-gradient(270deg,_#BA25F0_4.8%,_#2530F0_46.15%,_#8086F3_100%)] bg-clip-text text-transparent">
             No Hardware Required
@@ -64,10 +64,10 @@ const FutureOfComputing = () => (
           >
             <Card
               className={cn(
-                "px-4 py-8 md:px-10 md:py-24 rounded-2xl border border-cyan-400/30 bg-cover bg-center bg-no-repeat",
+                "px-4 py-8 md:px-8 md:py-24 rounded-2xl border border-cyan-400/30 bg-cover bg-center bg-no-repeat",
                 "bg-[url('/assets/svg/future-of-computing-card-bg.svg')]",
                 "dark:bg-[url('/assets/svg/future-of-computing-card-bg-dark.svg')]",
-                "dark:bg-[#010526] dark:shadow-[0px_17px_44px_rgba(2,97,206,0.32)]",
+                "dark:bg-[#010526] dark:shadow-[0px_17px_44px_rgba(2,97,206,0.32)] h-[-webkit-fill-available]",
                 index !== 1 ? "md:mt-10" : "md:mb-10"
               )}
             >

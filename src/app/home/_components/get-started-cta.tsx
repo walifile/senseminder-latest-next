@@ -28,7 +28,7 @@ export default function GetStartedCTA() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="relative mx-auto w-fit text-center space-y-4 md:space-y-8"
           >
-            <h3 className="font-space-grotesk font-bold text-2xl md:text-5xl">
+            <h3 className="font-space-grotesk font-semibold text-2xl md:text-5xl">
               Make the Smart Move -
               <br />
               Switch to Sense PC!

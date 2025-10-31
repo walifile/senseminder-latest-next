@@ -19,7 +19,7 @@ const ProductHighlights = () => (
       >
         <div className="space-y-6 md:space-y-9">
           <div className="space-y-2">
-            <p className="font-space-grotesk font-bold text-2xl md:text-3xl">
+            <p className="font-space-grotesk font-semibold text-2xl md:text-3xl">
               High-Performance Cloud PCs
             </p>
             <p className="text-paragraph text-base md:text-lg">
@@ -40,7 +40,7 @@ const ProductHighlights = () => (
           alt="Way We Compute"
           width={600}
           height={400}
-          className="w-full md:w-9/12 md:mx-auto"
+          className="w-full md:w-9/12 md:mx-auto relative z-10"
           priority
         />
 
@@ -67,7 +67,7 @@ const ProductHighlights = () => (
             unoptimized
           />
           <div className="space-y-2">
-            <p className="font-space-grotesk font-bold text-2xl md:text-3xl">
+            <p className="font-space-grotesk font-semibold text-2xl md:text-3xl">
               Seamless Collaboration
             </p>
             <p className="text-paragraph text-base md:text-lg">
@@ -97,7 +97,7 @@ const ProductHighlights = () => (
       >
         <div className="space-y-6 md:space-y-9">
           <div className="space-y-2">
-            <p className="font-space-grotesk font-bold text-2xl md:text-3xl">
+            <p className="font-space-grotesk font-semibold text-2xl md:text-3xl">
               Cost-Effective Solutions
             </p>
             <p className="text-paragraph text-base md:text-lg">
@@ -118,7 +118,7 @@ const ProductHighlights = () => (
           alt="Way We Compute"
           width={600}
           height={400}
-          className="w-full md:w-9/12 md:mx-auto"
+          className="w-full md:w-9/12 md:mx-auto relative z-10"
           priority
         />
 
@@ -145,7 +145,7 @@ const ProductHighlights = () => (
             unoptimized
           />
           <div className="space-y-2">
-            <p className="font-space-grotesk font-bold text-2xl md:text-3xl">
+            <p className="font-space-grotesk font-semibold text-2xl md:text-3xl">
               Secure Data Storage
             </p>
             <p className="text-paragraph text-base md:text-lg">
