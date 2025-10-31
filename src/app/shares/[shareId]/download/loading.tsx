@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable perfectionist/sort-imports, perfectionist/sort-named-imports */
+
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 

@@ -280,7 +280,7 @@ const StaticStoragePage = () => {
     }
   };
 
-  const files = data?.files || [];
+  const files: FileItem[] = (data?.files as FileItem[]) || [];
 
   return (
     <Card className="relative my-20 p-3 m-20">
@@ -293,7 +293,7 @@ const StaticStoragePage = () => {
         </div>
         <Button
           onClick={handleDownloadFolder}
-          disabled={isFetching || isError || (data && (data as any).files?.length === 0)}
+          disabled={isFetching || isError || files.length === 0}
         >
           <Download className="h-4 w-4 mr-2" />
           {isFetching ? "Preparing..." : "Download Folder"}
@@ -316,7 +316,21 @@ const StaticStoragePage = () => {
                   <div className="flex justify-center items-center h-full">Loading...</div>
                 ) : isError ? (
                   (() => {
-                    const status = (error as any)?.status ?? (error as any)?.originalStatus;
+                    const extractStatus = (err: unknown): number | undefined => {
+                      if (err && typeof err === 'object') {
+                        const eo = err as Record<string, unknown>;
+                        const s = eo['status'];
+                        if (typeof s === 'number') return s;
+                        if (typeof s === 'string') {
+                          const n = Number(s);
+                          return Number.isFinite(n) ? n : undefined;
+                        }
+                        const os = eo['originalStatus'];
+                        if (typeof os === 'number') return os;
+                      }
+                      return undefined;
+                    };
+                    const status = extractStatus(error);
                     const title = status === 410 ? "Link unavailable" : status === 404 ? "Nothing here" : "Unable to load";
                     const desc =
                       status === 410

@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable perfectionist/sort-imports, perfectionist/sort-named-imports */
+
 import type { RootState } from "@/redux/store";
 
 import React, { useState, useEffect } from "react";
@@ -31,7 +33,6 @@ import {
 import { useSelector } from "react-redux";
 
 import { Copy, Download } from "lucide-react";
-import appConfig from "@/config/app-config";
 
 // import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
@@ -106,9 +107,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
 
       // capture shareId for cancellable shares (files and folders)
       if (result?.id) {
-        try {
-          setShareId(String(result.id));
-        } catch {}
+        setShareId(String(result.id));
       }
 
       // Prefer a friendly front-end link for file shares: {origin}/share/{id}

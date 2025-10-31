@@ -1,4 +1,6 @@
 "use client";
+
+/* eslint-disable perfectionist/sort-imports */
 import { useGetShareInfoQuery } from "@/api/fileManagerAPI";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
