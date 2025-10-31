@@ -323,6 +323,42 @@ def _ttl_from_iso(iso_str: str, days: int = TTL_DAYS) -> int:
     return int((base + timedelta(days=days)).timestamp())
 
 
+def _active_share_keys_for_user(user_id: str) -> set:
+    """Return a set of object keys with ACTIVE, non-expired shares for this owner.
+    Includes both with and without trailing slash to simplify membership checks.
+    """
+    keys = set()
+    try:
+        now_epoch = int(datetime.now(timezone.utc).timestamp())
+        # Scan by owner; for scale, add a GSI on ownerUserId
+        resp = shares_table.scan(
+            FilterExpression=(
+                boto3.dynamodb.conditions.Attr('ownerUserId').eq(user_id) &
+                boto3.dynamodb.conditions.Attr('status').eq('active')
+            )
+        )
+        for it in resp.get('Items', []) or []:
+            exp = it.get('expiresAt')
+            try:
+                exp_i = int(exp) if exp is not None else None
+            except Exception:
+                try:
+                    exp_i = int(float(exp))
+                except Exception:
+                    exp_i = None
+            if exp_i is not None and now_epoch > exp_i:
+                continue
+            ok = (it.get('objectKey') or '').strip()
+            if not ok:
+                continue
+            base = ok.rstrip('/')
+            keys.add(base)
+            keys.add(base + '/')
+            keys.add(ok)
+    except Exception as e:
+        print(f"_active_share_keys_for_user error for {user_id}: {e}")
+    return keys
+
 
 def _has_active_share_for_key(folder_key: str) -> bool:
     """Return True if an ACTIVE, non-expired share exists for folder_key.
@@ -559,6 +595,27 @@ def handle_list(event):
 
         # Region filter + hide soft-deleted
         files = [item for item in files if item.get('region') == region and not item.get('isDeleted')]
+
+        # Derive accurate 'shared' based on active share records (covers cancel/expiry)
+        try:
+            active_share_keys = _active_share_keys_for_user(user_id)
+            def _is_shared_key(k: str) -> bool:
+                if not k:
+                    return False
+                if k in active_share_keys:
+                    return True
+                for sk in active_share_keys:
+                    if sk.endswith('/') and k.startswith(sk):
+                        return True
+                return False
+            for it in files:
+                k = it.get('id') or ''
+                derived = _is_shared_key(k)
+                it['shared'] = bool(derived)
+                if not derived and it.get('status') == 'shared':
+                    it['status'] = 'private'
+        except Exception as e:
+            print(f"derive shared failed: {e}")
 
         if filter_type:
             ft = filter_type.lower()
