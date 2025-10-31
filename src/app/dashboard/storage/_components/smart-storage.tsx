@@ -1558,7 +1558,7 @@ const CloudStorage = () => {
                                         {file.fileType === "folder" &&
                                           formatDate(file.createdAt)}
                                         <div className="flex items-center gap-1">
-                                          {file.status === "shared" && (
+                                          {file.shared && (
                                             <Share2 className="h-3.5 w-3.5 text-green-500" />
                                           )}
                                           {file.starred && (
