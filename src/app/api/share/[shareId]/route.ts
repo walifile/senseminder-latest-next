@@ -6,9 +6,9 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  ctx: { params: { shareId: string } }
+  ctx: { params: Promise<{ shareId: string }> }
 ) {
-  const { shareId } = ctx.params || { shareId: "" };
+  const { shareId } = (await ctx.params) || { shareId: "" };
   if (!shareId) {
     return NextResponse.json({ message: "shareId is required" }, { status: 400 });
   }
