@@ -1274,8 +1274,16 @@ def handle_cancel_share(event):
     if not share_id:
         return response(400, {'message': 'shareId is required'})
 
-    # Load share
-    item = shares_table.get_item(Key={'shareId': share_id}).get('Item')
+    # Load share (catch table-not-found or permission errors explicitly)
+    try:
+        item = shares_table.get_item(Key={'shareId': share_id}).get('Item')
+    except ClientError as e:
+        print(f"Cancel share get_item error {share_id}: {e}")
+        code = e.response.get('Error', {}).get('Code', '')
+        if code in ('ResourceNotFoundException', 'AccessDeniedException', 'AccessDenied'):
+            return response(500, {'message': 'Share store not available', 'code': code})
+        return response(500, {'message': 'AWS Error', 'code': code})
+
     if not item:
         return response(404, {'message': 'Share not found'})
 
@@ -1283,7 +1291,7 @@ def handle_cancel_share(event):
         return response(409, {'message': f"Share already {item.get('status')}"})
 
     now_iso = _iso_now()
-    # Mark revoked and pull TTL forward for quick removal
+    # Mark revoked and pull TTL forward for quick removal (guard that item exists)
     try:
         shares_table.update_item(
             Key={'shareId': share_id},
@@ -1293,20 +1301,29 @@ def handle_cancel_share(event):
                 ':rev': 'revoked',
                 ':c': now_iso,
                 ':ttl': int(datetime.now(timezone.utc).timestamp()) + 300
-            }
+            },
+            ConditionExpression=boto3.dynamodb.conditions.Attr('shareId').exists()
         )
     except ClientError as e:
         print(f"Cancel share update error {share_id}: {e}")
+        code = e.response.get('Error', {}).get('Code', '')
+        if code == 'ConditionalCheckFailedException':
+            return response(404, {'message': 'Share not found'})
+        if code in ('AccessDeniedException', 'AccessDenied'):
+            return response(403, {'message': 'Access denied to cancel share'})
         return response(500, {'message': 'Failed to cancel share'})
 
     # Best-effort: clear 'shared' flag on the file metadata so UI stops showing as shared
     try:
         key = item.get('objectKey')
         if key:
-            file_metadata_table.update_item(
-                Key={'id': key},
-                UpdateExpression="REMOVE shared"
-            )
+            # Only update if the metadata exists to avoid creating empty items
+            meta = file_metadata_table.get_item(Key={'id': key}).get('Item')
+            if meta:
+                file_metadata_table.update_item(
+                    Key={'id': key},
+                    UpdateExpression="REMOVE shared"
+                )
     except Exception as e:
         print(f"Failed to clear shared flag for {item.get('objectKey')}: {e}")
 
