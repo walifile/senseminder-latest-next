@@ -66,7 +66,7 @@ export default function FAQ() {
             transition={{ duration: 0.4 }}
             className="space-y-2.5"
           >
-            <h2 className="font-space-grotesk font-bold text-2xl md:text-5xl">
+            <h2 className="font-space-grotesk font-semibold text-2xl md:text-5xl">
               Frequently Asked Questions
             </h2>
             <p className="text-paragraph text-2xl">

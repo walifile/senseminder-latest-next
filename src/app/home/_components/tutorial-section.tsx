@@ -140,7 +140,7 @@ const TutorialSection = () => {
             transition={{ duration: 0.6 }}
             className="max-md:w-full space-y-3 md:space-y-2.5"
           >
-            <h4 className="font-space-grotesk font-bold text-2xl md:text-5xl text-center md:text-left">
+            <h4 className="font-space-grotesk font-semibold text-2xl md:text-5xl text-center md:text-left">
               Learn How to{" "}
               <span className="text-transparent bg-clip-text bg-[linear-gradient(290.5deg,#D971FF_-70.94%,#4C55F8_10.02%,#8086F3_115.42%)]">
                 Get Started

@@ -43,7 +43,7 @@ const FutureVision = () => (
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-3xl md:text-3xl font-bold mb-6"
+          className="text-3xl md:text-3xl font-semibold mb-6"
         >
           The Future of Computing{" "}
           <span className="gradient-text">No Hardware Required</span>
@@ -99,7 +99,7 @@ const FutureVision = () => (
         transition={{ duration: 0.5, delay: 0.6 }}
         className="text-center max-w-3xl mx-auto"
       >
-        <h3 className="text-2xl md:text-2xl font-bold mb-6">
+        <h3 className="text-2xl md:text-2xl font-semibold mb-6">
           SenseMinder Sense PC—
           <span className="gradient-text">Revolutionizing</span> the Way We
           Compute
