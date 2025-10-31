@@ -72,12 +72,27 @@ const Navbar = () => {
             )}
           </div>
 
-          <div className="flex items-center space-x-4 md:hidden">
+          <div className="flex items-center space-x-2 md:hidden">
             <ThemeToggle />
+            {isAuthenticated ? (
+              <ProfileDropdown />
+            ) : (
+              <Button
+                asChild
+                size="icon"
+                variant="ghost"
+                className="rounded-full"
+              >
+                <Link href="/auth" aria-label="Sign in">
+                  <CircleUserRound className="h-6 w-6" />
+                </Link>
+              </Button>
+            )}
             <Button
               size="icon"
               className="rounded-full"
               onClick={toggleMobileMenu}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             >
               {mobileMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -128,13 +143,7 @@ const Navbar = () => {
                 Build Sense PC
               </Link>
             </Button>
-            {isAuthenticated ? (
-              <ProfileDropdown />
-            ) : (
-              <Button variant="ghost" className="text-sm" asChild>
-                <Link href="/auth">Sign in</Link>
-              </Button>
-            )}
+            {/* Auth controls moved to top mobile bar next to theme toggle */}
           </div>
         </div>
       )}
