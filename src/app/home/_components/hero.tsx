@@ -11,14 +11,14 @@ import { ArrowUpRight } from "lucide-react";
 import { useTheme } from "@/components/shared/layout/theme-provider";
 
 const Hero = () => {
-  
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
   // Use dark-specific image when theme resolves to dark; otherwise light/default
-  const heroSrc = mounted && resolvedTheme === "dark"
-    ? "/assets/svg/hero-banner-light.svg"
-    : "/assets/svg/hero-banner-light.svg"; // change to hero-banner-light.svg if you add it
+  const heroSrc =
+    mounted && resolvedTheme === "dark"
+      ? "/assets/svg/hero-banner-light.svg"
+      : "/assets/svg/hero-banner-light.svg"; // change to hero-banner-light.svg if you add it
 
   return (
     <section className="relative bg-[linear-gradient(180deg,_#F4F1FF_0%,_#FFFFFF_100%)] dark:bg-none ">
@@ -34,7 +34,7 @@ const Hero = () => {
 
       <div className="z-10 relative mt-[60px] md:mt-[92px]">
         {/* <div className="container flex flex-col-reverse md:grid md:grid-cols-2 gap-4 md:items-center py-10 md:py-32"> */}
-        <div className="container flex flex-col-reverse md:grid md:grid-cols-2 gap-4 md:gap-[90px] md:px-0 md:items-center py-10 md:py-32">
+        <div className="container flex flex-col-reverse md:grid md:grid-cols-2 gap-4 md:gap-[90px] md:px-0 md:items-center py-10 md:pt-16 md:pb-32">
           <div className="flex flex-col gap-6 md:gap-12">
             {/* <div className="flex flex-col gap-2.5 md:gap-3 w-[85%]"> */}
             <div className="flex flex-col gap-2.5 md:gap-3">
@@ -80,6 +80,6 @@ const Hero = () => {
     /> */}
     </section>
   );
-}
+};
 
 export default Hero;
