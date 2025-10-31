@@ -539,7 +539,8 @@ def handle_list(event):
             elif 'starred' in ft:
                 files = [f for f in files if f.get('starred', False)]
             elif 'share' in ft:
-                files = [f for f in files if f.get('status') == 'shared' or f.get('shared', False)]
+                # Treat shared strictly by the 'shared' flag to avoid stale 'status' values
+                files = [f for f in files if bool(f.get('shared', False))]
             elif 'recent' in ft:
                 one_day_ago = datetime.now(timezone.utc) - timedelta(days=1)
                 files = [f for f in files if 'createdAt' in f and datetime.fromisoformat(f['createdAt']) > one_day_ago]
@@ -1359,6 +1360,36 @@ def handle_cancel_share(event):
                     )
     except Exception as e:
         print(f"Failed to clear shared markers for {item.get('objectKey')}: {e}")
+
+    # Defense-in-depth: revoke any other active share records for the same objectKey
+    try:
+        obj_key = item.get('objectKey')
+        if obj_key:
+            scan = shares_table.scan(
+                FilterExpression=(
+                    boto3.dynamodb.conditions.Attr('objectKey').eq(obj_key) &
+                    boto3.dynamodb.conditions.Attr('status').eq('active')
+                )
+            )
+            for other in scan.get('Items', []) or []:
+                sid = other.get('shareId')
+                if not sid or sid == share_id:
+                    continue
+                try:
+                    shares_table.update_item(
+                        Key={'shareId': sid},
+                        UpdateExpression="SET #s=:rev, cancelledAt=:c, #ttl=:ttlv",
+                        ExpressionAttributeNames={'#s': 'status', '#ttl': 'ttl'},
+                        ExpressionAttributeValues={
+                            ':rev': 'revoked',
+                            ':c': now_iso,
+                            ':ttlv': int(datetime.now(timezone.utc).timestamp()) + 300
+                        }
+                    )
+                except Exception as e2:
+                    print(f"Failed to revoke sibling share {sid}: {e2}")
+    except Exception as e:
+        print(f"Sibling share revoke scan failed: {e}")
 
     return response(200, {'message': 'Share cancelled', 'shareId': share_id})
 
