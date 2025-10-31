@@ -119,3 +119,17 @@ export function formatBytes(bytes: number): string {
 export function getRelativePath(fullPath: string): string {
   return fullPath.split("/").slice(2).join("/");
 }
+
+// Build common props for shared file views
+export function buildSharedFileView(
+  shareId: string,
+  name?: string,
+  expiresAt?: number
+) {
+  const fileName = name || "Shared file";
+  const ext = (fileName.split(".").pop() || "").toUpperCase();
+  const expires = expiresAt ? new Date(expiresAt * 1000).toLocaleString() : null;
+  const downloadUrl = `/api/share/${shareId}?disposition=attachment`;
+  const previewUrl = `/api/share/${shareId}?disposition=inline`;
+  return { fileName, ext, expires, downloadUrl, previewUrl };
+}

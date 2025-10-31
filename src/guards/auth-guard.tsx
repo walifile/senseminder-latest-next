@@ -27,7 +27,9 @@ export default function AuthGuard({ children }: AuthProviderProps) {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [initialized, setInitialized] = useState(false);
 
-  const isPublicRoute = publicRoutes.includes(pathname);
+  const isPublicRoute = publicRoutes.some(
+    (r) => pathname === r || (r.endsWith("/") && pathname.startsWith(r))
+  );
 
   const initializeAuth = async () => {
     try {

@@ -26,10 +26,9 @@ const PrivateRouteGuard = ({ children }: { children: React.ReactNode }) => {
 
   const isPublicRoute = () => {
     if (typeof window !== "undefined") {
+      const path = window.location.pathname;
       return publicRoutes.some(
-        (route) =>
-          window.location.pathname === route ||
-          window.location.pathname === `${route}/`
+        (route) => path === route || (route.endsWith("/") && path.startsWith(route))
       );
     }
     return false;

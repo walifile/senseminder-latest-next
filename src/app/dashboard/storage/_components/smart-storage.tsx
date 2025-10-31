@@ -14,6 +14,8 @@ import {
   useDeleteFilesMutation,
   useLazyDownloadFileQuery,
   useLazyDownloadFolderQuery,
+  useCancelShareMutation,
+  useLazyGetSharesForObjectQuery,
 } from "@/api/fileManagerAPI";
 
 import { Input } from "@/components/ui/input";
@@ -168,6 +170,8 @@ const CloudStorage = () => {
   const [selectedFilesToDelete, setSelectedFilesToDelete] = useState<string[]>(
     []
   );
+  const [cancelShare] = useCancelShareMutation();
+  const [triggerGetShares] = useLazyGetSharesForObjectQuery();
   const [isBulkDownloading, setIsBulkDownloading] = useState(false);
   const [filters, setFilters] = useState({
     starred: false,
@@ -182,6 +186,27 @@ const CloudStorage = () => {
   const debouncedQuery = useDebounce(searchQuery, 500);
 
   console.log(lastSynced);
+
+  // Cancel share (files or folders) using API hooks
+  const cancelShareForObject = async (objectKey: string) => {
+    try {
+      const data = await triggerGetShares({ key: objectKey }).unwrap();
+      const shareId = data?.items?.[0]?.shareId;
+      if (!shareId) {
+        toast({ title: "No active share", description: "Nothing to cancel." });
+        return;
+      }
+      await cancelShare({ shareId }).unwrap();
+      toast({ title: "Share cancelled" });
+    } catch (e) {
+      console.error("Cancel from list failed", e);
+      toast({
+        title: "Cancel failed",
+        description: "Could not cancel share. Try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const folderPath = path.map((f) => f.fileName).join("/");
 
@@ -1353,6 +1378,16 @@ const CloudStorage = () => {
                                               </Tooltip>
                                             </TooltipProvider>
 
+                                            {file.shared && (
+                                              <DropdownMenuItem
+                                                onClick={() =>
+                                                  cancelShareForObject(file.id)
+                                                }
+                                              >
+                                                <Share2 className="h-4 w-4 mr-2" />
+                                                Cancel Share
+                                              </DropdownMenuItem>
+                                            )}
                                             <DropdownMenuItem
                                               onClick={() => handleStar(file)}
                                             >
@@ -1594,6 +1629,17 @@ const CloudStorage = () => {
                                                 )}
                                               </Tooltip>
                                             </TooltipProvider>
+
+                                            {file.shared && (
+                                              <DropdownMenuItem
+                                                onClick={() =>
+                                                  cancelShareForObject(file.id)
+                                                }
+                                              >
+                                                <Share2 className="h-4 w-4 mr-2" />
+                                                Cancel Share
+                                              </DropdownMenuItem>
+                                            )}
 
                                             <DropdownMenuItem
                                               onClick={() => handleStar(file)}

@@ -18,9 +18,9 @@ export const routes = {
   support: "/dashboard/support",
   tutorials: "/dashboard/tutorials",
   profileSecurity: "/dashboard/profile?tab=security",
-  welcome:"/welcome",
-  terms:"/terms",
-  privacy:"/privacy",
+  welcome: "/welcome",
+  terms: "/terms",
+  privacy: "/privacy",
 };
 
 export const publicRoutes: string[] = [
@@ -39,6 +39,10 @@ export const publicRoutes: string[] = [
   "/login",
   "/index",
   "/shared-folder-viewer",
+  // Treat trailing slash items as prefixes in middleware/guards
+  "/shares/",
+  "/shared-file/",
+  "/api/share/",
   "/auth/mfa-totp",
   "/auth/mfa-email",
   "/auth/mfa-select",

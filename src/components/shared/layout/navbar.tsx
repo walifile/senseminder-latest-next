@@ -93,6 +93,17 @@ const Navbar = () => {
       {mobileMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-1 pb-2 space-y-0.5 sm:px-3 glass-effect border-t border-border/5">
+            {isAuthenticated && (
+              <Button
+                variant="ghost"
+                className="text-sm w-full justify-start"
+                asChild
+              >
+                <Link href={routes.dashboard} className="nav-text-link">
+                  Home
+                </Link>
+              </Button>
+            )}
             <Button
               variant="ghost"
               className="text-sm w-full justify-start"

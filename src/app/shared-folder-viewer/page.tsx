@@ -123,7 +123,7 @@ const StaticStoragePage = () => {
   const searchParams = useSearchParams();
 
   const key = searchParams.get("key") || "";
-  const { data, isLoading } = usePublicSharedListQuery({
+  const { data, isLoading, isError, error } = usePublicSharedListQuery({
     key,
     region: "virginia",
   });
@@ -280,7 +280,7 @@ const StaticStoragePage = () => {
     }
   };
 
-  const files = data?.files || [];
+  const files: FileItem[] = (data?.files as FileItem[]) || [];
 
   return (
     <Card className="relative my-20 p-3 m-20">
@@ -291,7 +291,10 @@ const StaticStoragePage = () => {
             Manage your files and folders
           </CardDescription>
         </div>
-        <Button onClick={handleDownloadFolder} disabled={isFetching}>
+        <Button
+          onClick={handleDownloadFolder}
+          disabled={isFetching || isError || files.length === 0}
+        >
           <Download className="h-4 w-4 mr-2" />
           {isFetching ? "Preparing..." : "Download Folder"}
         </Button>
@@ -310,9 +313,40 @@ const StaticStoragePage = () => {
             >
               <ScrollArea className="flex-1 h-full">
                 {isLoading ? (
-                  <div className="flex justify-center items-center h-full">
-                    Loading...
-                  </div>
+                  <div className="flex justify-center items-center h-full">Loading...</div>
+                ) : isError ? (
+                  (() => {
+                    const extractStatus = (err: unknown): number | undefined => {
+                      if (err && typeof err === 'object') {
+                        const eo = err as Record<string, unknown>;
+                        const s = eo['status'];
+                        if (typeof s === 'number') return s;
+                        if (typeof s === 'string') {
+                          const n = Number(s);
+                          return Number.isFinite(n) ? n : undefined;
+                        }
+                        const os = eo['originalStatus'];
+                        if (typeof os === 'number') return os;
+                      }
+                      return undefined;
+                    };
+                    const status = extractStatus(error);
+                    const title = status === 410 ? "Link unavailable" : status === 404 ? "Nothing here" : "Unable to load";
+                    const desc =
+                      status === 410
+                        ? "This shared link is expired or revoked."
+                        : status === 404
+                        ? "No files found in this shared folder."
+                        : "This link may be invalid, or the folder is not publicly shared.";
+                    return (
+                      <div className="flex items-center justify-center h-full p-10 text-center">
+                        <div>
+                          <div className="text-xl font-semibold">{title}</div>
+                          <div className="text-muted-foreground mt-2">{desc}</div>
+                        </div>
+                      </div>
+                    );
+                  })()
                 ) : (
                   <Table>
                     <TableHeader>
