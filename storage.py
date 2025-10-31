@@ -360,6 +360,10 @@ def lambda_handler(event, context):
             return handle_usage(event)
         elif route_key == "GET /download-folder":
             return handle_download_folder(event)
+        elif route_key == "GET /shares":
+            return handle_list_shares(event)
+        elif route_key == "GET /shares/{shareId}":
+            return handle_share_info(event)
         elif route_key == "GET /shares/{shareId}/download":
             return handle_share_download(event)
         elif route_key == "POST /shares/{shareId}/cancel":
@@ -1153,7 +1157,24 @@ def handle_share(event):
             print(f"Metadata update error for {k}: {e}")
 
     if is_folder:
-        # Keep existing public folder viewer flow (optional to migrate later)
+        # Create a cancellable share record for folders too
+        now_epoch = int(datetime.now(timezone.utc).timestamp())
+        expires_at = now_epoch + (expiry_seconds if expiry != 'never' else 315360000)
+        share_id = str(uuid.uuid4())
+        ttl_epoch = expires_at + 300
+        shares_table.put_item(Item={
+            'shareId': share_id,
+            'type': 'folder',
+            'ownerUserId': user_id,
+            'bucket': bucket_name,
+            'objectKey': key,  # folder prefix with trailing '/'
+            'permissions': permissions,
+            'status': 'active',
+            'createdAt': _iso_now(),
+            'expiresAt': expires_at,
+            'ttl': ttl_epoch,
+        })
+        # Keep existing viewer path but return shareId for cancel support
         share_url = f"/shared-folder-viewer?key={key}"
     else:
         # Create a cancellable share record and return API-gated link
@@ -1183,13 +1204,15 @@ def handle_share(event):
     return response(200, {
         'message': f'{"Folder and contents" if is_folder else "File"} shared successfully.',
         'shareLink': share_url,
-        'id': key if is_folder else share_id,
+        'id': share_id,
         'permissions': permissions,
         'expiry': expiry
     })
 
 def handle_share_download(event):
-    """GET /shares/{shareId}/download -> 302 redirect to short-lived S3 URL if active and not expired."""
+    """GET /shares/{shareId}/download -> 302 redirect to short-lived S3 URL.
+    Supports query param `disposition=inline|attachment` (default attachment).
+    """
     params = (event.get('pathParameters') or {})
     share_id = params.get('shareId')
     if not share_id:
@@ -1212,21 +1235,30 @@ def handle_share_download(event):
     if not bucket or not key:
         return response(500, {'message': 'Share is misconfigured'})
 
+    # Determine content disposition
+    q = event.get('queryStringParameters') or {}
+    disp = (q.get('disposition') or 'attachment').lower()
+    if disp not in ('inline', 'attachment'):
+        disp = 'attachment'
+    filename = key.rstrip('/').split('/')[-1]
+    content_disp = f"{disp}; filename=\"{filename}\""
+
     # Mint a very short presigned URL (2 minutes)
     try:
         presigned = s3.generate_presigned_url(
             'get_object',
-            Params={'Bucket': bucket, 'Key': key},
+            Params={
+                'Bucket': bucket,
+                'Key': key,
+                'ResponseContentDisposition': content_disp,
+            },
             ExpiresIn=120
         )
     except ClientError as e:
         print(f"Presign error for share {share_id}: {e}")
         return response(404, {'message': 'File not found or inaccessible.'})
 
-    return {
-        'statusCode': 302,
-        'headers': {'Location': presigned}
-    }
+    return {'statusCode': 302, 'headers': {'Location': presigned}}
 
 def handle_cancel_share(event):
     """POST /shares/{shareId}/cancel -> revoke share and optionally clear shared flag on metadata."""
@@ -1279,6 +1311,65 @@ def handle_cancel_share(event):
         print(f"Failed to clear shared flag for {item.get('objectKey')}: {e}")
 
     return response(200, {'message': 'Share cancelled', 'shareId': share_id})
+
+def handle_list_shares(event):
+    """GET /shares?key=<objectKey> -> returns active shares for an objectKey."""
+    query = event.get('queryStringParameters', {}) or {}
+    object_key = query.get('key') or query.get('objectKey')
+    if not object_key:
+        return response(400, {'message': 'key (objectKey) is required'})
+
+    # There is no PK on objectKey; in simple setups, a scan with filter is acceptable at low scale.
+    resp = shares_table.scan(
+        FilterExpression=(
+            boto3.dynamodb.conditions.Attr('objectKey').eq(object_key) &
+            boto3.dynamodb.conditions.Attr('status').eq('active')
+        )
+    )
+    items = resp.get('Items', [])
+    # Return only minimal info
+    out = [
+        {
+            'shareId': it.get('shareId'),
+            'type': it.get('type'),
+            'expiresAt': it.get('expiresAt'),
+            'status': it.get('status'),
+        } for it in items
+    ]
+    return response(200, {'items': out})
+
+def handle_share_info(event):
+    """GET /shares/{shareId} -> share metadata for public info page."""
+    params = (event.get('pathParameters') or {})
+    share_id = params.get('shareId')
+    if not share_id:
+        return response(400, {'message': 'shareId is required'})
+
+    item = shares_table.get_item(Key={'shareId': share_id}).get('Item')
+    if not item:
+        return response(404, {'message': 'Share not found'})
+
+    now_epoch = int(datetime.now(timezone.utc).timestamp())
+    expires_at = int(item.get('expiresAt', 0) or 0)
+    status = item.get('status', 'active')
+    is_expired = bool(expires_at and now_epoch > expires_at)
+
+    # Try to resolve presentable name
+    display_name = None
+    try:
+        fk = item.get('objectKey')
+        meta = file_metadata_table.get_item(Key={'id': fk}).get('Item')
+        display_name = meta.get('fileName') if meta else (fk.rstrip('/').split('/')[-1] if fk else None)
+    except Exception:
+        pass
+
+    return response(200, {
+        'shareId': share_id,
+        'type': item.get('type'),
+        'status': 'expired' if is_expired else status,
+        'expiresAt': expires_at,
+        'name': display_name,
+    })
 
 def handle_share_multiple(event):
     body = json.loads(event.get('body', '{}'))
