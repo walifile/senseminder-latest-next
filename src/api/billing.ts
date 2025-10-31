@@ -44,6 +44,7 @@ export const billingAPI = createApi({
     "UsageHistory",
     "AutoRecharge",
     "Storage",
+    "AutoRenew"
   ],
   endpoints: (builder) => ({
     // payment methods
@@ -94,6 +95,16 @@ export const billingAPI = createApi({
         body,
       }),
       invalidatesTags: ["AutoRecharge"],
+    }),
+
+    // auto-renew
+    updateAutoRenew: builder.mutation({
+      query: (body: { instanceId: string; autoRenew: boolean }) => ({
+        url: "auto-renew",
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["AutoRenew"],
     }),
 
     // storage pricing
@@ -193,6 +204,9 @@ export const {
   // auto-recharge
   useGetAutoRechargeQuery,
   useUpdateAutoRechargeMutation,
+
+  // auto-renew
+  useUpdateAutoRenewMutation,
 
   // storage
   useGetStoragePricingTierQuery,

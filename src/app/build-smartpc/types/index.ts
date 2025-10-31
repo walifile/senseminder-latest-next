@@ -60,6 +60,7 @@ export type PC = {
     email: string;
   };
   monthlyBillingTotal?: number;
+  autoRenew?: boolean;
 };
 export interface CloudPC {
   id?: string;

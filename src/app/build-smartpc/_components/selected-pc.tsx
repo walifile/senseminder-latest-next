@@ -7,8 +7,10 @@ import type { RootState } from "@/redux/store";
 import appConfig from "@/config/app-config";
 import React, { useState, useEffect } from "react";
 import { useAddBillingPlanMutation } from "@/api/billing";
+import { useUpdateAutoRenewMutation } from "@/api/billing";
 
 import { getErrorMessage } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { getFriendlyOSName } from "@/lib/utils/format-string";
@@ -30,6 +32,7 @@ import {
   MonitorPlay,
   AlertCircle,
   ChevronDown,
+  RotateCw
 } from "lucide-react";
 
 import { BillingPlanDialog } from "./billing-dialog";
@@ -48,6 +51,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
   setSelectedInstance,
 }) => {
   const [addBillingPlan] = useAddBillingPlanMutation();
+  const [updateAutoRenew] = useUpdateAutoRenewMutation();
 
   useEffect(() => {
     const fetchMetrics = async () => {
@@ -93,6 +97,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
             monthlyBillingTotal: parseFloat(
               matched?.monthlyBilling?.total ?? "0"
             ),
+            autoRenew: matched.autoRenew,
           };
 
           const updatedCloudPCs = [...cloudPCs];
@@ -288,6 +293,71 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                   </div>
                 )}
 
+                {!isMember && pc[0]?.billingPlan !== "hourly" && (
+                <div className="col-span-full mt-4 border-t pt-4">
+                  <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    
+                    {/* Left side: Label + Description */}
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <RotateCw className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">Auto-Renew</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        Automatically renew billing plan each cycle
+                      </span>
+                    </div>
+                    
+
+                    {/* Right side: Switch */}
+                    <div className="flex items-center gap-2 mt-2 md:mt-0">
+                      <Switch
+                        checked={pc[0]?.autoRenew}
+                        onCheckedChange={async (newAutoRenew) => {
+                          try {
+                            await updateAutoRenew({
+                              instanceId: pc[0].instanceId,
+                              autoRenew: newAutoRenew,
+                            }).unwrap();
+
+                            setCloudPCs((prev) => {
+                              const updated = [...prev];
+                              updated[selectedPCs[0]] = {
+                                ...updated[selectedPCs[0]],
+                                autoRenew: newAutoRenew,
+                              };
+                              return updated;
+                            });
+
+                            toast({
+                              title: "Auto-Renew Updated",
+                              description: `Auto-renew has been ${
+                                newAutoRenew ? "enabled" : "disabled"
+                              } for this instance.`,
+                            });
+                          } catch (error) {
+                            toast({
+                              title: "Error",
+                              description: getErrorMessage(
+                                error,
+                                "Failed to update auto-renew setting."
+                              ),
+                              variant: "destructive",
+                            });
+                          }
+                        }}
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        {pc[0]?.autoRenew ? "Enabled" : "Disabled"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+
+
+
                 {!isMember && pc[0]?.billingPlan && (
                   <div className="col-span-full mt-4 border-t pt-4">
                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -350,7 +420,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                             message = "You selected the same billing plan. Nothing was changed.";
                           } else if (change === "upgrade") {
                             title = "Billing Plan Updated";
-                            message = `You’ve switched to the ${newPlan} plan.`;
+                            message = `You've switched to the ${newPlan} plan.`;
                           } else if (change === "downgrade") {
                             title = "Downgrade Scheduled";
                             message =
