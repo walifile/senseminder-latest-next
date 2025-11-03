@@ -47,7 +47,12 @@ export default function RootLayout({
         <head>
           <title>SensePC</title>
           <meta name="description" content="SensePC Application" />
-          <link rel="icon" href="/favicon.ico" />
+          <link
+            id="favicon"
+            rel="icon"
+            href="/sensepc-logo-light.png"
+            type="image/svg+xml"
+          />
         </head>
         <body suppressHydrationWarning className="font-inter overflow-hidden">
           {children}
@@ -76,7 +81,12 @@ export default function RootLayout({
       <head>
         <title>SensePC</title>
         <meta name="description" content="SensePC Application" />
-        <link rel="icon" href="/favicon.ico" />
+        <link
+          id="favicon"
+          rel="icon"
+          href="/sensepc-logo-light.png"
+          type="image/svg+xml"
+        />
       </head>
       <body suppressHydrationWarning className={`font-inter ${bodyClass}`}>
         <ReduxProvider>
