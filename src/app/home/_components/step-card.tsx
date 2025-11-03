@@ -25,7 +25,7 @@ export function StepCard({ icon, title, description }: StepCardProps) {
 
         {/* Content */}
         <div className="space-y-2">
-          <h3 className="font-space-grotesk font-bold text-2xl md:text-3xl">
+          <h3 className="font-space-grotesk font-bold text-2xl md:text-[32px]">
             {title}
           </h3>
           <p className="text-paragraph text-base md:text-lg">{description}</p>

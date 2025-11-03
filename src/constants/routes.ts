@@ -3,6 +3,7 @@ export const routes = {
   auth: "/auth",
   signIn: "/auth",
   signUp: "/auth/sign-up",
+  about: "/about",
   verifyOTP: "/auth/verify-otp",
   resetPassword: "/auth/reset-password",
   forgotPassword: "/auth/forgot-password",

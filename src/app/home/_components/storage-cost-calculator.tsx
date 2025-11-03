@@ -4,6 +4,8 @@ import appConfig from "@/config/app-config";
 import React, { useState, useEffect } from "react";
 
 import { cn } from "@/lib/utils";
+import { routes } from "@/constants/routes";
+import { useRouter } from "next/navigation";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +19,7 @@ import {
 const { PING_API_KEY, PING_API_URL } = appConfig;
 
 const StorageCostCalculator = () => {
+  const router = useRouter();
   const [storageTier, setStorageTier] = useState(1);
   const [selectedServer, setSelectedServer] = useState("us-east");
   const [latencyMap, setLatencyMap] = useState<Record<string, number>>({});
@@ -56,6 +59,10 @@ const StorageCostCalculator = () => {
   useEffect(() => {
     fetchLatencies();
   }, []);
+
+  const getStartedURL = () => {
+    router.push(routes?.storage);
+  };
 
   return (
     <div
@@ -131,7 +138,7 @@ const StorageCostCalculator = () => {
         </div>
       </div>
 
-      <Button size="lg" className="w-full" onClick={fetchLatencies}>
+      <Button size="lg" className="w-full" onClick={getStartedURL}>
         Get Started
       </Button>
     </div>

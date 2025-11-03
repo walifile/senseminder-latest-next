@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 
 import { StepCard } from "./step-card";
+import { useBuildPcNav } from "@/hooks/use-get-started";
 
 const steps = [
   {
@@ -32,7 +33,9 @@ const steps = [
   },
 ];
 
-const RentSmarterProcess: React.FC = () => (
+const RentSmarterProcess: React.FC = () => {
+  const onBuildPc = useBuildPcNav();
+  return (
   <section className="relative">
     <div className="z-0 absolute -top-80 -left-96 blur-[160px] md:blur-[200px] w-60 md:w-[400px] h-full opacity-40 bg-[#9C05BF]" />
     <div className="z-0 absolute top-0 -left-72 blur-[160px] md:blur-[200px] w-60 md:w-[400px] h-full opacity-40 bg-[#4027E5]" />
@@ -52,7 +55,7 @@ const RentSmarterProcess: React.FC = () => (
           Why Buy <br /> Expensive Hardware When You Can Rent Smarter?
         </h4>
 
-        <Button size="lg" className="w-full lg:w-fit">
+        <Button size="lg" className="w-full lg:w-fit" onClick={onBuildPc}>
           Build Your Sense PC Now!
           <ArrowUpRight />
         </Button>
@@ -165,6 +168,7 @@ const RentSmarterProcess: React.FC = () => (
       </motion.div>
     </div>
   </section>
-);
+  );
+};
 
 export default RentSmarterProcess;

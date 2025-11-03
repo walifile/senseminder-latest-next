@@ -87,7 +87,7 @@ export type BalanceResponse = {
 export type AutoRechargeResponse = {
   autoRecharge: boolean;
   threshold?: number;
-  amount?: number;
+  autoRechargeAmount?: number;
 };
 
 export type StoragePricingTierResponse = {

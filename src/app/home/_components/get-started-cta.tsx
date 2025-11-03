@@ -4,11 +4,13 @@ import React from "react";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
+import { useGetStartedNav } from "@/hooks/use-get-started";
 
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 
 export default function GetStartedCTA() {
+  const onGetStarted = useGetStartedNav();
   return (
     <section className="relative">
       <div className="relative container my-12 md:my-20">
@@ -34,7 +36,7 @@ export default function GetStartedCTA() {
               Switch to Sense PC!
             </h3>
 
-            <Button size="lg" className="w-full md:w-fit">
+            <Button size="lg" className="w-full md:w-fit" onClick={onGetStarted}>
               Get Started Now
               <ArrowUpRight />
             </Button>
