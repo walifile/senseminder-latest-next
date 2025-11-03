@@ -1,7 +1,6 @@
 "use client";
 
-import RentSmarter from "@/app/home/_components/rent-smarter";
-import RentSmarterProcess from "@/app/home/_components/rent-smarter-process";
+/* eslint-disable perfectionist/sort-imports */
 
 import FAQ from "./faq";
 import Hero from "./hero";
@@ -12,6 +11,8 @@ import GetStartedCTA from "./get-started-cta";
 import TutorialSection from "./tutorial-section";
 import ProductHighlights from "./product-highlights";
 import FutureOfComputing from "./future-of-computing";
+import RentSmarter from "./rent-smarter";
+import RentSmarterProcess from "./rent-smarter-process";
 
 export default function HomePage() {
   return (
@@ -21,7 +22,7 @@ export default function HomePage() {
       <WayWeCompute />
       <ProductHighlights />
       <TutorialSection />
-      {/* <RentSmarter /> */}
+      <RentSmarter />
       {/* <TutorialSection /> */}
       {/* <WhySettle /> */}
       {/* <ProblemSolution />
@@ -35,9 +36,11 @@ export default function HomePage() {
       {/* <Pricing /> */}
       {/* <CostCalculator /> */}
       <GetStartedCTA />
-      {/* <RentSmarterProcess /> */}
+      <RentSmarterProcess />
       <SensePCCost />
       <FAQ />
     </MainLayout>
   );
 }
+
+

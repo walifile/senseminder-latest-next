@@ -182,20 +182,6 @@
     @apply opacity-100;
   }
 
-  /* Button Effects */
-  .button-gradient {
-    @apply relative overflow-hidden transition-all duration-300;
-  }
-
-  .button-gradient::before {
-    content: "";
-    @apply absolute inset-0 bg-gradient-to-r from-primary via-primary-foreground to-primary opacity-0 transition-opacity duration-300;
-  }
-
-  .button-gradient:hover::before {
-    @apply opacity-100;
-  }
-
   /* Animation Utilities */
   .animate-float {
     animation: float 6s ease-in-out infinite;

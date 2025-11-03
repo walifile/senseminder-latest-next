@@ -80,7 +80,7 @@ const Navbar = () => {
               <Button
                 asChild
                 size="icon"
-                variant="ghost"
+                // variant="ghost"
                 className="rounded-full"
               >
                 <Link href="/auth" aria-label="Sign in">

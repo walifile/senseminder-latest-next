@@ -1,12 +1,13 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+// import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 
 import { motion } from "framer-motion";
 import { Play, Laptop, Settings, ArrowRight } from "lucide-react";
+import { useBuildPcNav } from "@/hooks/use-get-started";
 
 const steps = [
   {
@@ -73,7 +74,9 @@ const steps = [
   },
 ];
 
-const HowItWorks = () => (
+const HowItWorks = () => {
+  const onBuildPc = useBuildPcNav();
+  return (
   <section className="py-24 relative overflow-hidden">
     {/* Background Effects */}
     <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
@@ -138,19 +141,20 @@ const HowItWorks = () => (
         className="text-center mt-16"
       >
         <Button
-          asChild
           size="lg"
+          onClick={onBuildPc}
           className="relative group bg-primary hover:bg-primary/90 text-primary-foreground"
         >
-          <Link href="/signup" className="flex items-center gap-2">
+          <span className="flex items-center gap-2">
             Build Your Sense PC Now!
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary/0 via-primary-foreground/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
-          </Link>
+          </span>
+          <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary/0 via-primary-foreground/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
         </Button>
       </motion.div>
     </div>
   </section>
-);
+  );
+};
 
 export default HowItWorks;

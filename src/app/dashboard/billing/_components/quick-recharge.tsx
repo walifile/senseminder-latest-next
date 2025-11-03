@@ -37,12 +37,15 @@ import { quickRechargeAmounts } from "../data";
 
 const QuickRecharge = () => {
   const showConfirm = useBoolean();
+  const showAutoRechargeConfig = useBoolean();
   const { triggerFeedback } = useFeedback();
 
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState<number | null>(null);
 
   const [autoRechargeEnabled, setAutoRechargeEnabled] = useState(false);
+  const [autoRechargeAmount, setAutoRechargeAmount] = useState<number>(20);
+  const [tempAutoRechargeAmount, setTempAutoRechargeAmount] = useState<number>(20);
   const [addFundsAutoRechargeEnabled, setAddFundsAutoRechargeEnabled] =
     useState(false);
 
@@ -53,6 +56,9 @@ const QuickRecharge = () => {
   useEffect(() => {
     if (autoRechargeResponse) {
       setAutoRechargeEnabled(autoRechargeResponse.autoRecharge);
+      if (autoRechargeResponse.autoRechargeAmount) {
+        setAutoRechargeAmount(autoRechargeResponse.autoRechargeAmount);
+      }
     }
   }, [autoRechargeResponse]);
 
@@ -89,16 +95,47 @@ const QuickRecharge = () => {
     }
   };
 
-  const setAutoRecharge = async (enabled: boolean) => {
+  const handleAutoRechargeToggle = () => {
+    if (!autoRechargeEnabled) {
+      // If enabling, show dialog to ask for amount
+      setTempAutoRechargeAmount(autoRechargeAmount);
+      showAutoRechargeConfig.onTrue();
+    } else {
+      // If disabling, directly disable
+      setAutoRecharge(false, autoRechargeAmount);
+    }
+  };
+
+  const confirmAutoRechargeConfig = () => {
+    if (tempAutoRechargeAmount < 20) {
+      toast({
+        title: "Invalid amount",
+        description: "Please enter a valid amount (minimum $20).",
+        variant: "destructive",
+      });
+      return;
+    }
+    setAutoRechargeAmount(tempAutoRechargeAmount);
+    setAutoRecharge(true, tempAutoRechargeAmount);
+    showAutoRechargeConfig.onFalse();
+  };
+
+  const setAutoRecharge = async (enabled: boolean, amount: number) => {
     try {
       setAutoRechargeEnabled(enabled);
-      await updateAutoRecharge({ autoRecharge: enabled }).unwrap();
+      await updateAutoRecharge({ 
+        autoRecharge: enabled,
+        autoRechargeAmount: enabled ? amount : undefined 
+      }).unwrap();
       const refreshed = await refetch().unwrap();
       setAutoRechargeEnabled(refreshed.autoRecharge);
+      if (refreshed.autoRechargeAmount) {
+        setAutoRechargeAmount(refreshed.autoRechargeAmount);
+      }
       toast({
         title: "Auto-Recharge Updated",
         description: `Auto-recharge has been ${
-          enabled ? "enabled" : "disabled"
+          enabled ? `enabled with $${amount}` : "disabled"
         }.`,
       });
     } catch (error: unknown) {
@@ -204,20 +241,74 @@ const QuickRecharge = () => {
               </div>
 
               {/* ✅ Auto Recharge Checkbox */}
-              <label className="flex items-center text-sm font-medium cursor-pointer text-primary dark:text-primary">
-                <input
-                  type="checkbox"
-                  className="mr-2 h-4 w-4 accent-primary"
-                  checked={autoRechargeEnabled}
-                  onChange={() => setAutoRecharge(!autoRechargeEnabled)}
-                />
-                Enable auto-recharge when balance drops below $10
-              </label>
+              <div className="space-y-2">
+                <label className="flex items-center text-sm font-medium cursor-pointer text-primary dark:text-primary">
+                  <input
+                    type="checkbox"
+                    className="mr-2 h-4 w-4 accent-primary"
+                    checked={autoRechargeEnabled}
+                    onChange={handleAutoRechargeToggle}
+                  />
+                  Enable auto-recharge when balance drops below $10
+                </label>
+                
+                {/* Show current amount only when auto-recharge is enabled */}
+                {autoRechargeEnabled && (
+                  <div className="ml-6 text-sm text-muted-foreground">
+                    Current Auto-Recharge amount: ${autoRechargeAmount}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
+      {/* Auto-Recharge Configuration Dialog */}
+      <Dialog open={showAutoRechargeConfig.value} onOpenChange={showAutoRechargeConfig.onToggle}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Configure Auto-Recharge</DialogTitle>
+            <DialogDescription>
+              Set the amount to automatically recharge when your balance drops below $10.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Recharge Amount</label>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  $
+                </div>
+                <Input
+                  type="number"
+                  placeholder="Enter amount"
+                  className="pl-7"
+                  value={tempAutoRechargeAmount}
+                  onChange={(e) =>
+                    setTempAutoRechargeAmount(parseFloat(e.target.value) || 0)
+                  }
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Minimum amount: $20
+              </p>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={showAutoRechargeConfig.onFalse}>
+              Cancel
+            </Button>
+            <Button onClick={confirmAutoRechargeConfig}>
+              Enable Auto-Recharge
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Recharge Confirmation Dialog */}
       <Dialog open={showConfirm.value} onOpenChange={showConfirm.onToggle}>
         <DialogContent>
           <DialogHeader>

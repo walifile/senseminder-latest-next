@@ -4,10 +4,17 @@ import React from "react";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
+import { useGetStartedNav } from "@/hooks/use-get-started";
+import { useRouter } from "next/navigation";
+import { routes } from "@/constants/routes";
 
 import { motion } from "framer-motion";
 
-const ProductHighlights = () => (
+const ProductHighlights = () => {
+  const onGetStarted = useGetStartedNav();
+  const router = useRouter();
+  const onLearnMore = () => router.push(routes.about);
+  return (
   <div className="container relative my-12 md:my-20">
     <div className="relative z-10 max-md:flex max-md:flex-col md:grid md:grid-cols-2 md:grid-rows-3 gap-6 md:gap-8">
       <motion.div
@@ -28,8 +35,8 @@ const ProductHighlights = () => (
           </div>
 
           <div className="max-md:grid grid-cols-2 md:flex gap-3 flex-wrap">
-            <Button size="sm">Get Started</Button>
-            <Button size="sm" variant="outline">
+            <Button size="sm" onClick={onGetStarted}>Get Started</Button>
+            <Button size="sm" variant="outline" onClick={onLearnMore}>
               Learn More
             </Button>
           </div>
@@ -77,8 +84,8 @@ const ProductHighlights = () => (
         </div>
 
         <div className="max-md:grid grid-cols-2 md:flex gap-3 flex-wrap">
-          <Button size="sm">Get Started</Button>
-          <Button size="sm" variant="outline">
+          <Button size="sm" onClick={onGetStarted}>Get Started</Button>
+          <Button size="sm" variant="outline" onClick={onLearnMore}>
             Learn More
           </Button>
         </div>
@@ -106,8 +113,8 @@ const ProductHighlights = () => (
           </div>
 
           <div className="max-md:grid grid-cols-2 md:flex gap-3 flex-wrap">
-            <Button size="sm">Get Started</Button>
-            <Button size="sm" variant="outline">
+            <Button size="sm" onClick={onGetStarted}>Get Started</Button>
+            <Button size="sm" variant="outline" onClick={onLearnMore}>
               Learn More
             </Button>
           </div>
@@ -155,8 +162,8 @@ const ProductHighlights = () => (
         </div>
 
         <div className="max-md:grid grid-cols-2 md:flex gap-3 flex-wrap">
-          <Button size="sm">Get Started</Button>
-          <Button size="sm" variant="outline">
+          <Button size="sm" onClick={onGetStarted}>Get Started</Button>
+          <Button size="sm" variant="outline" onClick={onLearnMore}>
             Learn More
           </Button>
         </div>
@@ -169,6 +176,7 @@ const ProductHighlights = () => (
 
     <div className="z-0 absolute -bottom-20 left-1/2 -translate-x-1/2 w-[680px] h-[680px] -rotate-[11.32deg] opacity-50 blur-[500px] dark:blur-[120px] bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)]" />
   </div>
-);
+  );
+};
 
 export default ProductHighlights;

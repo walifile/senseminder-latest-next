@@ -1,14 +1,20 @@
 "use client";
 
+/* eslint-disable perfectionist/sort-imports */
+
 import React from "react";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { routes } from "@/constants/routes";
 
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 
-const WayWeCompute = () => (
+const WayWeCompute = () => {
+  const router = useRouter();
+  return (
   <div className="container relative my-12 md:my-20">
     <div className="z-0 hidden dark:block absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 size-1/2 blur-[300px] bg-[#6A00FF]" />
 
@@ -40,7 +46,7 @@ const WayWeCompute = () => (
           </p>
         </div>
 
-        <Button size="lg" className="w-full md:w-fit">
+        <Button size="lg" className="w-full md:w-fit" onClick={() => router.push(routes.about)}>
           Learn More
           <ArrowUpRight />
         </Button>
@@ -63,6 +69,7 @@ const WayWeCompute = () => (
       </motion.div>
     </motion.div>
   </div>
-);
+  );
+};
 
 export default WayWeCompute;
