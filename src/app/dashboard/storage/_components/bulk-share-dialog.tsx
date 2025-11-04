@@ -137,6 +137,7 @@ const BulkShareDialog: React.FC<ShareDialogProps> = ({
                 <SelectValue placeholder="Select expiry" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="1min">1 minute (test)</SelectItem>
                 <SelectItem value="1day">1 day</SelectItem>
                 <SelectItem value="7days">7 days</SelectItem>
                 <SelectItem value="30days">30 days</SelectItem>
