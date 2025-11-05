@@ -86,7 +86,7 @@ const ProfileDropdown = () => {
   return (
     isOnboarded && (
       <>
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2 px-3">
               <Avatar className="size-10">
@@ -102,7 +102,7 @@ const ProfileDropdown = () => {
             </Button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" modal={false}>
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
 
