@@ -15,12 +15,14 @@ interface TutorialCardProps {
     youtubeUrl: string;
   };
   index: number;
+  type: "desktop" | "mobile";
   onClick: () => void;
 }
 
 export const TutorialCard = ({
   tutorial,
   index,
+  type,
   onClick,
 }: TutorialCardProps) => (
   <motion.div
@@ -32,7 +34,7 @@ export const TutorialCard = ({
     onClick={onClick}
     className={cn(
       "relative group cursor-pointer shrink-0 rounded-t-2xl overflow-hidden transition-all duration-300 w-[96%] md:w-[31.5%] h-[500px]",
-      index === 0
+      index === 0 && type === "desktop"
         ? "lg:w-[48%] lg:min-w-[200px]"
         : "lg:w-[24%] lg:min-w-[150px]"
     )}

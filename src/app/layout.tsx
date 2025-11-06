@@ -43,6 +43,7 @@ export default function RootLayout({
       <html
         lang="en"
         className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable}`}
+        style={{ overflowX: "hidden" }}
       >
         <head>
           <title>SensePC</title>
@@ -77,6 +78,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable}`}
+      style={{ overflowX: "hidden" }}
     >
       <head>
         <title>SensePC</title>

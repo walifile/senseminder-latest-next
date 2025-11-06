@@ -197,6 +197,7 @@ const TutorialSection = () => {
               key={tutorial.id}
               tutorial={tutorial}
               index={index}
+              type="desktop"
               onClick={() => setSelectedVideo(tutorial)}
             />
           ))}
@@ -218,7 +219,7 @@ const TutorialSection = () => {
             className="flex gap-4 transition-transform duration-300 ease-out"
             style={{
               transform: `translateX(calc(-${currentIndex * 96}% - ${
-                currentIndex * 0.5
+                currentIndex * 1
               }rem + 2%))`,
             }}
           >
@@ -227,6 +228,7 @@ const TutorialSection = () => {
                 key={tutorial.id}
                 tutorial={tutorial}
                 index={index}
+                type="mobile"
                 onClick={() => {
                   if (index === currentIndex) {
                     setSelectedVideo(tutorial);

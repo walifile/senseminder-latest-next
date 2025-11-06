@@ -102,7 +102,7 @@ const ProfileDropdown = () => {
             </Button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end" modal={false}>
+          <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
 
