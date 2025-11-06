@@ -8,6 +8,7 @@ import { useCreateFolderMutation } from "@/api/fileManagerAPI";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Logger } from "@/lib/utils/logger";
 import {
   Dialog,
   DialogTitle,
@@ -66,7 +67,7 @@ const NewFolderDialog: React.FC<NewFolderDialogProps> = ({
       onOpenChange(false);
       setFolderName("");
     } catch (err) {
-      console.error("Failed to create folder:", err);
+      Logger.error("Failed to create folder:", err);
       toast({
         title: "Error",
         description: "Could not create the folder. Please try again.",

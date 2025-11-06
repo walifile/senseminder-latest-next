@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import { signOut, fetchAuthSession } from "aws-amplify/auth";
+import { Logger } from "@/lib/utils/logger";
 
 type CognitoIdTokenPayload = {
   sub: string;
@@ -44,7 +45,7 @@ export default function Dashboard() {
   //       setIdPayload(decodedIdPayload);
   //       setAccessPayload(decodedAccessPayload);
   //     } catch (err) {
-  //       console.error("Error loading tokens:", err);
+  //       Logger.error("Error loading tokens:", err);
   //       router.push("/login");
   //     }
   //   };
@@ -71,7 +72,7 @@ export default function Dashboard() {
       setIdPayload(decodedIdPayload);
       setAccessPayload(decodedAccessPayload);
     } catch (err) {
-      console.error("Error loading tokens:", err);
+      Logger.error("Error loading tokens:", err);
       router.push("/login");
     }
   };
@@ -87,7 +88,7 @@ export default function Dashboard() {
           alert(`${label} copied to clipboard!`);
         })
         .catch((err) => {
-          console.error(`Error copying ${label}: `, err);
+          Logger.error(`Error copying ${label}: `, err);
         });
     }
   };
@@ -97,7 +98,7 @@ export default function Dashboard() {
       await signOut();
       router.push("/login");
     } catch (error) {
-      console.error("Logout failed:", error);
+      Logger.error("Logout failed:", error);
     }
   };
 

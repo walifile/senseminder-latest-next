@@ -8,7 +8,7 @@ import { fetchActiveSessions } from "@/api/session";
 import React, { useRef, useState, useEffect } from "react";
 import MfaTotpDialog from "@/app/dashboard/_components/MfaTotpDialog";
 import { getUserProfile, updateUserProfile } from "@/api/profileManagement";
-
+import { Logger } from "@/lib/utils/logger";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -93,7 +93,7 @@ async function handleGlobalSignOut() {
     await signOut({ global: true });
     window.location.href = routes.auth;
   } catch (err) {
-    console.error("Global sign-out failed:", err);
+    Logger.error("Global sign-out failed:", err);
   }
 }
   // ===== Profile & Org Data Fetch/Sync =====
@@ -151,7 +151,7 @@ async function handleGlobalSignOut() {
           );
         setIsFederatedUser(isFederated);
       } catch (err) {
-        console.error("Failed to decode token for federated check:", err);
+        Logger.error("Failed to decode token for federated check:", err);
       }
     };
 
@@ -162,7 +162,7 @@ async function handleGlobalSignOut() {
     const checkMFAPreference = async () => {
       try {
         const result = await fetchMFAPreference();
-        console.log("MFA preference result:", result);
+        Logger.log("MFA preference result:", result);
 
         const isTOTPEnabled =
           result.enabled?.includes("TOTP") || result.preferred === "TOTP";
@@ -753,7 +753,7 @@ async function handleGlobalSignOut() {
                         email: isEmailMFAEnabled ? "NOT_PREFERRED" : "DISABLED",
                       });
                       const result = await fetchMFAPreference();
-                      console.log(
+                      Logger.log(
                         "MFA preference result (onComplete):",
                         result
                       );
@@ -763,7 +763,7 @@ async function handleGlobalSignOut() {
                         result.preferred === "TOTP";
                       setIs2FAEnabled(isTOTPEnabled);
                     } catch (err) {
-                      console.error("Error fetching MFA (onComplete):", err);
+                      Logger.error("Error fetching MFA (onComplete):", err);
                     }
                   }}
                 />

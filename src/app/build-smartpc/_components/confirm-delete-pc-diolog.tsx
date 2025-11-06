@@ -5,6 +5,7 @@ import { useDeleteVMMutation } from "@/api/vmManagement";
 import { useStopVMMutation } from "@/api/fileManagerAPI";
 import { removeStartingInstance } from "@/redux/slices/dcv/starting-instances-slice";
 
+import { Logger } from "@/lib/utils/logger";
 import {
   Tooltip,
   TooltipTrigger,
@@ -66,7 +67,7 @@ export const ConfirmDeleteModal = ({
         await stopVM(instanceId).unwrap();
       }
       if (!region) {
-        console.warn(
+        Logger.warn(
           "Region is missing from Computer metadata:",
           selectedInstance
         );
@@ -81,7 +82,7 @@ export const ConfirmDeleteModal = ({
       onSuccess();
       closeDialog();
     } catch (error) {
-      console.log("Delete Error:", error);
+      Logger.log("Delete Error:", error);
       toast({
         title: "Deletion Failed",
         description: `Failed to delete this Computer". Please try again.`,

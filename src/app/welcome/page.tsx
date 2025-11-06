@@ -16,6 +16,7 @@ import { Form } from "@/components/shared/hook-form/form-provider";
 import { RHFText } from "@/components/shared/hook-form/rhf-text";
 import { checkOnboarded } from "@/lib/utils/checkOnboarded";
 import { useSubUserInfo } from "@/hooks/use-sub-userInfo";
+import { Logger } from "@/lib/utils/logger";
 
 type WelcomeFormValues = {
   fullName: string;
@@ -78,7 +79,7 @@ export default function WelcomePage() {
 
       window.location.href = routes.dashboard;
     } catch (err) {
-      console.error(err);
+      Logger.error(err);
       setError("Something went wrong while saving your information.");
     }
   };

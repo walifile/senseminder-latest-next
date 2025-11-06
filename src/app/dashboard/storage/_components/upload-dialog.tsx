@@ -30,6 +30,7 @@ import { useSelector } from "react-redux";
 import { X, Check, Upload, Trash2, Loader2 } from "lucide-react";
 
 import { useFeedback } from "@/hooks/use-feedback";
+import { Logger } from "@/lib/utils/logger";
 
 interface UploadDialogProps {
   open: boolean;
@@ -121,7 +122,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
           });
           closeDialog();
         } catch (err) {
-          console.error(err);
+          Logger.error(err);
           setUploadStatus((prev) => ({ ...prev, [file.name]: "error" }));
         }
       })

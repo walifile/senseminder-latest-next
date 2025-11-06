@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from "react";
+import { Logger } from "@/lib/utils/logger";
 
 export const PerformanceMonitor = () => {
   // Replace 'any' with the actual type if known
@@ -38,7 +39,7 @@ export const PerformanceMonitor = () => {
           diskUsage: Math.random() * 100,
         });
       } catch (err) {
-        console.warn("Failed to collect performance data:", err);
+        Logger.warn("Failed to collect performance data:", err);
       }
     }
   };

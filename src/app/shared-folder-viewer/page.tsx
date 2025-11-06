@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Logger } from "@/lib/utils/logger";
 import {
   Card,
   CardTitle,
@@ -70,7 +71,7 @@ const EnhancedBreadcrumbs = ({
 
     // Don't navigate if we're already at this path
     if (normalizedCurrent === normalizedTarget) {
-      console.log("Already at this path, not navigating");
+      Logger.log("Already at this path, not navigating");
       return;
     }
 
@@ -174,7 +175,7 @@ const StaticStoragePage = () => {
 
     // If we're clicking on the same folder we're already in, don't navigate
     if (currentFolder === file.fileName) {
-      console.log("Already in this folder, not navigating");
+      Logger.log("Already in this folder, not navigating");
       return;
     }
 
@@ -219,7 +220,7 @@ const StaticStoragePage = () => {
 
     // Don't navigate if we're already at this path
     if (normalizedCurrent === normalizedTarget) {
-      console.log("Already at this path, not navigating");
+      Logger.log("Already at this path, not navigating");
       return;
     }
 
@@ -275,7 +276,7 @@ const StaticStoragePage = () => {
         alert("Download URL not available.");
       }
     } catch (err) {
-      console.error("Download failed", err);
+      Logger.error("Download failed", err);
       alert("Failed to download folder.");
     }
   };

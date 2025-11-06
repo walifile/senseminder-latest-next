@@ -3,6 +3,7 @@ import { CookieStorage } from "aws-amplify/utils";
 import { cognitoUserPoolsTokenProvider } from "aws-amplify/auth/cognito";
 
 import appConfig from "./app-config";
+import { Logger } from "@/lib/utils/logger";
 
 const {
   USER_POOL_ID,
@@ -18,9 +19,9 @@ const {
 // test commit
 export function configureAmplify() {
   const poolId = USER_POOL_ID;
-  console.log("poolId: " + poolId);
+  Logger.log("poolId: " + poolId);
   const clientPoolId = USER_POOL_CLIENT_ID;
-  console.log("clientPoolId: " + clientPoolId);
+  Logger.log("clientPoolId: " + clientPoolId);
   Amplify.configure({
     Auth: {
       Cognito: {

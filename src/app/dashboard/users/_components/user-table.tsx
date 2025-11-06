@@ -15,6 +15,7 @@ import {
   TableHead,
   TableHeader,
 } from "@/components/ui/table";
+import { Logger } from "@/lib/utils/logger";
 
 import { Mail, UserX, Monitor, UserCheck } from "lucide-react";
 
@@ -159,12 +160,12 @@ const UserTable = ({ loading, filteredUsers }: Props) => {
                       {
                         label: "Change Role",
                         icon: UserCheck,
-                        onClick: () => console.log("Change Role clicked"),
+                        onClick: () => Logger.log("Change Role clicked"),
                       },
                       {
                         label: "Resend Invite",
                         icon: Mail,
-                        onClick: () => console.log("Resend Invite clicked"),
+                        onClick: () => Logger.log("Resend Invite clicked"),
                       },
                       {
                         label: "Delete",

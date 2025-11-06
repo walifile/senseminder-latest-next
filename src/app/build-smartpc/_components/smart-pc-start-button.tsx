@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useDispatch } from "react-redux";
 
 import { Play } from "lucide-react";
+import { Logger } from "@/lib/utils/logger";
 
 import { useToast } from "@/hooks/use-toast";
 
@@ -40,7 +41,7 @@ const SmartPcStartButton = ({
         description: "The Computer is starting .....",
       });
     } catch (error) {
-      console.error("StartVM error:", error);
+      Logger.error("StartVM error:", error);
       toast({
         title: "Failed to Start Computer",
         description: getErrorMessage(

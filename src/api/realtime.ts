@@ -1,4 +1,5 @@
 import appConfig from "@/config/app-config";
+import { Logger } from "@/lib/utils/logger";
 
 export interface ScheduleInfo {
   enabled: boolean;
@@ -56,7 +57,7 @@ export async function fetchInstanceDetails(
     const data = await res.json();
     return data as InstanceDetail[];
   } catch (err) {
-    console.error("Failed to load real-time metrics:", err);
+    Logger.error("Failed to load real-time metrics:", err);
     return [];
   }
 }

@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogContent,
 } from "@/components/ui/dialog";
+import { Logger } from "@/lib/utils/logger";
 
 import { toast } from "@/hooks/use-toast";
 
@@ -101,7 +102,7 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
           memberId: assignedUser.id,
         });
       } catch (e) {
-        console.error("Failed to unassign before assigning:", e);
+        Logger.error("Failed to unassign before assigning:", e);
         toast({
           title: "Failed to unassign before assigning",
           variant: "destructive",

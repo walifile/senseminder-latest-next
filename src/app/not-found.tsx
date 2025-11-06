@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { Logger } from "@/lib/utils/logger";
 
 export default function NotFound() {
   const pathname = usePathname();
 
   useEffect(() => {
     // You can add analytics tracking here
-    console.log(`404 error occurred at path: ${pathname}`);
+    Logger.log(`404 error occurred at path: ${pathname}`);
   }, [pathname]);
 
   return (

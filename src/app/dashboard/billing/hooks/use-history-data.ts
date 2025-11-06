@@ -2,6 +2,7 @@
 import type { DateRange } from "react-day-picker";
 
 import { useState, useEffect } from "react";
+import { Logger } from "@/lib/utils/logger";
 
 import { toast } from "@/components/ui/use-toast";
 
@@ -54,7 +55,7 @@ export function useHistoryData<T>({
         setLastEvaluatedKey(null);
       }
     } catch (error: unknown) {
-      console.error("Failed to fetch history", error);
+      Logger.error("Failed to fetch history", error);
       const message =
         error && typeof error === "object" && "message" in error
           ? (error as Error).message

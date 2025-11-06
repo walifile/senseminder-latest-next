@@ -1,6 +1,7 @@
 import appConfig from "@/config/app-config";
 
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+// import { Logger } from "@/lib/utils/logger";
 
 // import { getIdToken } from "../lib/utils";
 
@@ -14,7 +15,7 @@ const baseQuery = fetchBaseQuery({
   //     headers.set("Authorization", idToken);
   //     headers.set("Content-Type", "application/json");
   //   } catch (err) {
-  //     console.error("Failed to attach auth headers:", err);
+  //     Logger.error("Failed to attach auth headers:", err);
   //   }
   //   return headers;
   // },

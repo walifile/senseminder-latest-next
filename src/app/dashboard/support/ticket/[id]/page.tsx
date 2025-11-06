@@ -24,6 +24,7 @@ import { getStatusBadgeClass } from "../../utils/get-status-badge-class";
 import PrioritySelectField from "../../_components/priority-select-field";
 
 import type { Attachment } from "../../types";
+import { Logger } from "@/lib/utils/logger";
 
 const formatLabel = (text: string) =>
   text.charAt(0).toUpperCase() + text.slice(1).replace("-", " ");
@@ -73,7 +74,7 @@ const TicketDetailPage = () => {
                 type: att.type,
               };
             } catch (err) {
-              console.warn("Failed to get presigned URL", err);
+              Logger.warn("Failed to get presigned URL", err);
               return null;
             }
           })

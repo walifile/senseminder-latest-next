@@ -7,6 +7,7 @@ import {
   useGetAutoRechargeQuery,
   useUpdateAutoRechargeMutation,
 } from "@/api/billing";
+import { Logger } from "@/lib/utils/logger";
 
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -85,7 +86,7 @@ const QuickRecharge = () => {
         delayMinutes: 0,
       });
     } catch (error: unknown) {
-      console.error("Failed to recharge wallet:", error);
+      Logger.error("Failed to recharge wallet:", error);
       const message =
         error instanceof Error ? error.message : "Could not recharge wallet";
       toast({
@@ -139,7 +140,7 @@ const QuickRecharge = () => {
         }.`,
       });
     } catch (error: unknown) {
-      console.error("Failed to update auto-recharge:", error);
+      Logger.error("Failed to update auto-recharge:", error);
       const message =
         error instanceof Error
           ? error.message

@@ -2,6 +2,7 @@
 import appConfig from "@/config/app-config";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { fetchAuthSession } from "aws-amplify/auth";
+import { Logger } from "@/lib/utils/logger";
 
 const { FIRST_TIME_TOKEN_URL } = appConfig;
 
@@ -15,7 +16,7 @@ const baseQuery = fetchBaseQuery({
       headers.set("Authorization", idToken);
       headers.set("Content-Type", "application/json");
     } catch (err) {
-      console.error("Failed to attach auth headers:", err);
+      Logger.error("Failed to attach auth headers:", err);
     }
     return headers;
   },

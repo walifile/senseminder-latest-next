@@ -11,6 +11,7 @@ import { baseFormSchema } from "@/app/build-smartpc/schema";
 import { useGetEstimateMutation } from "@/api/fileManagerAPI";
 import { useGetSmartPcConfigQuery } from "@/api/smartPCConfigAPI";
 import { setSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
+import { Logger } from "@/lib/utils/logger";
 import {
   osOptions,
   storageOptions,
@@ -83,7 +84,7 @@ export default function PCCostCalculator() {
   const values = watch();
 
   const onSubmit = async (data: BaseFormValues) => {
-    console.log("Submitted Config:", data);
+    Logger.log("Submitted Config:", data);
 
     dispatch(
       setSmartPcConfig({
@@ -115,9 +116,9 @@ export default function PCCostCalculator() {
         storageSize,
         region,
       }).unwrap();
-      console.log("Estimated result:", result);
+      Logger.log("Estimated result:", result);
     } catch (err) {
-      console.error("Error fetching estimate:", err);
+      Logger.error("Error fetching estimate:", err);
     }
   };
 

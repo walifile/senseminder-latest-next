@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Logger } from "@/lib/utils/logger";
 import {
   Dialog,
   DialogTitle,
@@ -156,7 +157,7 @@ export default function ScheduleDialog({
       onSuccess();
       closeDialog();
     } catch (err) {
-      console.error("Save error", err);
+      Logger.error("Save error", err);
       alert("Failed to save schedule");
     } finally {
       setLoading(false);
@@ -172,7 +173,7 @@ export default function ScheduleDialog({
       onSuccess();
       closeDialog();
     } catch (err) {
-      console.error("Delete error", err);
+      Logger.error("Delete error", err);
       alert("Failed to delete schedule");
     } finally {
       setLoading(false);

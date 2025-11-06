@@ -8,6 +8,7 @@ import { useShareFilesMutation } from "@/api/fileManagerAPI";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Logger } from "@/lib/utils/logger";
 // import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
@@ -100,7 +101,7 @@ const BulkShareDialog: React.FC<ShareDialogProps> = ({
         description: `Your selected items have been shared successfully`,
       });
     } catch (error) {
-      console.error("Share error:", error);
+      Logger.error("Share error:", error);
       toast({
         title: "Share Failed",
         description: "Could not share. Please try again.",

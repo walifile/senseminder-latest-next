@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { Logger } from "@/lib/utils/logger";
 
 import { Monitor, Settings } from "lucide-react";
 
@@ -39,7 +40,7 @@ export const DisplayManager = ({
 
   const changeResolution = async (width: number, height: number) => {
     if (!connection || !isConnected || !resolutionSettingsEnabled) {
-      console.warn(
+      Logger.warn(
         "Cannot change resolution: connection not available, not connected, or settings disabled"
       );
       return;
@@ -49,9 +50,9 @@ export const DisplayManager = ({
     try {
       await connection.requestResolution(width, height);
       setCurrentResolution({ width, height });
-      console.log(`Resolution changed to ${width}x${height}`);
+      Logger.log(`Resolution changed to ${width}x${height}`);
     } catch (err) {
-      console.error("Failed to change resolution:", err);
+      Logger.error("Failed to change resolution:", err);
     } finally {
       setIsChangingResolution(false);
     }

@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Logger } from "@/lib/utils/logger";
 // import {
 //   Tooltip,
 //   TooltipContent,
@@ -185,7 +186,7 @@ const CloudStorage = () => {
 
   const debouncedQuery = useDebounce(searchQuery, 500);
 
-  console.log(lastSynced);
+  Logger.log(lastSynced);
 
   // Cancel share (files or folders) using API hooks
   const cancelShareForObject = async (objectKey: string) => {
@@ -199,7 +200,7 @@ const CloudStorage = () => {
       await cancelShare({ shareId }).unwrap();
       toast({ title: "Share cancelled" });
     } catch (e) {
-      console.error("Cancel from list failed", e);
+      Logger.error("Cancel from list failed", e);
       toast({
         title: "Cancel failed",
         description: "Could not cancel share. Try again.",
@@ -210,9 +211,9 @@ const CloudStorage = () => {
 
   const folderPath = path.map((f) => f.fileName).join("/");
 
-  console.log({ ">>>>>>>>>>>>": folderPath, path });
+  Logger.log({ ">>>>>>>>>>>>": folderPath, path });
 
-  // console.log(path);
+  // Logger.log(path);
 
   const selectedType = (() => {
     if (selectedCategory === "All Files") return "";
@@ -246,10 +247,10 @@ const CloudStorage = () => {
   const [copyFiles] = useCopyFilesMutation();
   const [moveFiles] = useMoveFilesMutation();
 
-  console.log({ wali: files });
+  Logger.log({ wali: files });
 
   const paths = path.map((f) => f.fileName).join("/");
-  console.log({ paths });
+  Logger.log({ paths });
   // const handleDownloadClick = async () => {
   //   if (!userId) return;
 
@@ -263,7 +264,7 @@ const CloudStorage = () => {
   //     // Trigger browser download
   //     window.location.href = downloadUrl;
   //   } catch (err) {
-  //     console.error("Download failed", err);
+  //     Logger.error("Download failed", err);
   //     alert("Failed to download folder");
   //   }
   // };
@@ -284,7 +285,7 @@ const CloudStorage = () => {
 
       window.location.href = downloadUrl;
     } catch (err) {
-      console.error("Folder download failed", err);
+      Logger.error("Folder download failed", err);
       toast({
         title: "Download Error",
         description: "Failed to download folder",
@@ -384,7 +385,7 @@ const CloudStorage = () => {
         });
       }
     } catch (err) {
-      console.error("Error downloading file:", err);
+      Logger.error("Error downloading file:", err);
       toast({
         title: "Download Error",
         description: "Something went wrong while downloading the file.",
@@ -453,7 +454,7 @@ const CloudStorage = () => {
       setSelectedFiles([]);
       setBulkDeleteDialogOpen(false);
     } catch (error) {
-      console.error("Error deleting files:", error);
+      Logger.error("Error deleting files:", error);
       toast({
         title: "Error",
         description: "Some items could not be deleted.",
@@ -483,7 +484,7 @@ const CloudStorage = () => {
         } your starred items`,
       });
     } catch (err) {
-      console.error("Star/unstar error:", err);
+      Logger.error("Star/unstar error:", err);
       toast({
         title: "Error",
         description: `Failed to ${file.starred ? "unstar" : "star"} the item.`,
@@ -704,7 +705,7 @@ const CloudStorage = () => {
         setDragOperation(null);
       }
     } catch (error) {
-      console.error("Error processing drop:", error);
+      Logger.error("Error processing drop:", error);
     }
   };
 
@@ -783,7 +784,7 @@ const CloudStorage = () => {
         description: `${filesToDownload.length} file(s) downloaded.`,
       });
     } catch (error) {
-      console.error("Bulk download error:", error);
+      Logger.error("Bulk download error:", error);
       toast({
         title: "Error",
         description: "Bulk download failed. Please try again.",

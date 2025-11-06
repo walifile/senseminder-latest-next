@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
+import { Logger } from "@/lib/utils/logger";
 import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -66,7 +67,7 @@ const NotificationsPage = () => {
         const data = await getNotifications();
         setNotifications(data);
       } catch (e) {
-        console.error(e);
+        Logger.error(e);
         toast({
           title: "Failed to load notifications",
           description: String(e),

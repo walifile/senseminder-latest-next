@@ -8,7 +8,7 @@ import {
   useGetCurrentBalanceQuery,
   useGetMonthlySpendingQuery,
 } from "@/api/billing";
-
+import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
 import { cn, getErrorMessage } from "@/lib/utils";
 import { fCurrency } from "@/lib/utils/format-number";
@@ -59,7 +59,7 @@ const QuickStats = () => {
         const info = await getPromoInfo();
         setPromoInfo(info);
       } catch (e) {
-        console.error("Failed to load promo info:", e);
+        Logger.error("Failed to load promo info:", e);
       } finally {
         setPromoLoading(false); // set false when done
       }

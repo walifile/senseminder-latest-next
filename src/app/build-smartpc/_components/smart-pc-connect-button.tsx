@@ -17,6 +17,8 @@ import { useToast } from "@/hooks/use-toast";
 import SlidePopup from "./slide-pop-up"; 
 
 import type { PC } from "../types";
+import { Logger } from "@/lib/utils/logger";
+
 
 type Props = {
   pc: PC;
@@ -57,7 +59,7 @@ const SmartPcConnectButton = ({
           "The Computer has been connected successfully. Redirecting...",
       });
     } catch (error) {
-      console.error(error);
+      Logger.error(error);
       toast({
         title: "Connection Failed",
         description: "Failed to connect to the Computer. Connection aborted.",

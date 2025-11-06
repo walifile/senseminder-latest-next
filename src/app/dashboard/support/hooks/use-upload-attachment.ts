@@ -5,6 +5,7 @@ import {
 
 import { useToast } from "@/components/ui/use-toast";
 import { sanitizeFilename } from "@/lib/utils/index";
+import { Logger } from "@/lib/utils/logger";
 
 export const useUploadAttachment = (
   userId: string | undefined,
@@ -44,7 +45,7 @@ export const useUploadAttachment = (
         fileKey,
       };
     } catch (err) {
-      console.error("Upload failed:", err);
+      Logger.error("Upload failed:", err);
       toast({ title: `Upload failed for ${file.name}` });
       return null;
     }

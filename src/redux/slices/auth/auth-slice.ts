@@ -4,6 +4,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { syncAuthState } from "@/lib/utils/auth-sync";
 
 import { createSlice } from "@reduxjs/toolkit";
+import { Logger } from "@/lib/utils/logger";
 
 interface User {
   email: string;
@@ -71,7 +72,7 @@ export const authSlice = createSlice({
       syncAuthState(false, null);
     },
     setTempUser: (state, action: PayloadAction<TempUser | null>) => {
-      console.log("setTempUser", action.payload);
+      Logger.log("Setting temp user in auth slice:", action.payload);
       state.tempUser = action.payload;
     },
     clearTempUser: (state) => {

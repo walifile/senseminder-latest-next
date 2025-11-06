@@ -11,6 +11,7 @@ import { routes } from "@/constants/routes";
 import { baseFormSchema } from "@/app/build-smartpc/schema";
 import { useGetEstimateMutation } from "@/api/fileManagerAPI";
 import { setSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
+import { Logger } from "@/lib/utils/logger";
 import {
   osOptions,
   storageOptions,
@@ -55,7 +56,7 @@ const CostCalculator = () => {
   const values = watch();
 
   const onSubmit = async (data: BaseFormValues) => {
-    console.log("Submitted Config:", data);
+    Logger.log("Submitted Config:", data);
 
     dispatch(
       setSmartPcConfig({
@@ -87,9 +88,9 @@ const CostCalculator = () => {
         storageSize,
         region,
       }).unwrap();
-      console.log("Estimated result:", result);
+      Logger.log("Estimated result:", result);
     } catch (err) {
-      console.error("Error fetching estimate:", err);
+      Logger.error("Error fetching estimate:", err);
     }
   };
 

@@ -5,8 +5,8 @@ import { isBusy } from "@/app/build-smartpc/utils";
 import { useStopVMMutation } from "@/api/fileManagerAPI";
 import { removeStartingInstance } from "@/redux/slices/dcv/starting-instances-slice";
 import { ConfirmStopModal } from "@/app/build-smartpc/_components/confirm-stop-pc-dialog";
-
 import { getErrorMessage } from "@/lib/utils";
+import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
 
 import { useDispatch } from "react-redux";
@@ -48,7 +48,7 @@ const SmartPcStopButton = ({ pc, isMember, isPCAssigned }: Props) => {
         description: "The Computer is stopping....",
       });
     } catch (error) {
-      console.error("StopVM error:", error);
+      Logger.error("StopVM error:", error);
       toast({
         title: "Failed to Stop Instance",
         description: getErrorMessage(

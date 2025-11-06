@@ -2,6 +2,7 @@ import appConfig from "@/config/app-config";
 import { useState, useEffect } from "react";
 
 import { UAParser } from "ua-parser-js";
+import { Logger } from "@/lib/utils/logger";
 
 interface UserLocation {
   ip: string;
@@ -33,7 +34,7 @@ const useLocation = () => {
         os: result.os.name || "Unknown OS",
       });
     } catch (err) {
-      console.error("Error fetching user location:", err);
+      Logger.error("Error fetching user location:", err);
       setError("Failed to fetch location");
     }
   };

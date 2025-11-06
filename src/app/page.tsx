@@ -10,27 +10,28 @@ import { isDev } from "@/constants/initial-values";
 import { checkOnboarded } from "@/lib/utils/checkOnboarded";
 
 import Home from "../app/home/_components/main-page";
+import { Logger } from "@/lib/utils/logger";
 
 export default function HomePage() {
   const router = useRouter();
 
-    useEffect(() => {
-      async function handleRedirect() {
-        try {
-          const onboarded = await checkOnboarded();
-          if (onboarded === false) {
-            router.replace(routes.welcome);
-          }
-        } catch (err) {
-          console.error("Onboarding check failed:", err);
+  useEffect(() => {
+    async function handleRedirect() {
+      try {
+        const onboarded = await checkOnboarded();
+        if (onboarded === false) {
+          router.replace(routes.welcome);
         }
+      } catch (err) {
+        Logger.error("Onboarding check failed:", err);
       }
+    }
 
-      handleRedirect();
-    }, [router]);
+    handleRedirect();
+  }, [router]);
 
   return (
-    
+
     <>
       {isDev ? (
         <Home />

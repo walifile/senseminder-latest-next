@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getUserProfile } from "@/api/profileManagement";
 
 import { getIdToken } from "@/lib/utils";
+import { Logger } from "@/lib/utils/logger";
 
 export function useSubUserInfo() {
   const [isSubUser, setIsSubUser] = useState(false);
@@ -28,7 +29,7 @@ export function useSubUserInfo() {
           setOrganization(profile.organization || null);
         }
       } catch (err) {
-        console.error("Failed to detect sub-user or fetch org:", err);
+        Logger.error("Failed to detect sub-user or fetch org:", err);
         setError("Failed to load user organization or role");
       } finally {
         setLoading(false);

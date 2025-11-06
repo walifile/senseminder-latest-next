@@ -15,6 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 
 import { handleResetPassword } from "@/lib/services/auth";
+import { Logger } from "@/lib/utils/logger";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -36,17 +37,17 @@ export default function ForgotPassword() {
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
     const email = data.email.trim().toLowerCase();
-    console.log("Submitted email:", email);
+    Logger.log("Submitted email:", email);
 
     try {
-      console.log("Calling checkMfaStatus...");
+      Logger.log("Calling checkMfaStatus...");
       const mfaResult = await checkMfaStatus(email);
-      console.log("MFA Status Response:", mfaResult);
+      Logger.log("MFA Status Response:", mfaResult);
 
       const action = mfaResult?.action;
 
       if (action === "custom_recovery") {
-        console.log("Email MFA enabled. Triggering secure recovery email...");
+        Logger.log("Email MFA enabled. Triggering secure recovery email...");
         await sendRecoveryEmail(email);
         toast({
           title: "Recovery Email Sent",
@@ -61,16 +62,16 @@ export default function ForgotPassword() {
          
         }
         else if (action === "cognito_reset") {
-        console.log("Email MFA not enabled. Proceeding with Cognito reset...");
+        Logger.log("Email MFA not enabled. Proceeding with Cognito reset...");
         const response = await handleResetPassword(email);
-        console.log("📨 Cognito Reset Response:", response);
+        Logger.log("📨 Cognito Reset Response:", response);
 
         if (response.success) {
           router.push(
             `${routes?.resetPassword}?email=${encodeURIComponent(email)}`
           );
         } else {
-          console.error("Cognito Reset Failed:", response.error);
+          Logger.error("Cognito Reset Failed:", response.error);
           toast({
             title: "Reset Failed",
             description: response.error || "Unable to initiate reset.",
@@ -78,7 +79,7 @@ export default function ForgotPassword() {
           });
         }
       } else {
-        console.warn(
+        Logger.warn(
           "Unexpected response from MFA API. Fallback to Cognito reset..."
         );
         const response = await handleResetPassword(email);
@@ -99,7 +100,7 @@ export default function ForgotPassword() {
         error instanceof Error
           ? error.message
           : "Something went wrong. Try again.";
-      console.error("Error in forgot password flow:", msg);
+      Logger.error("Error in forgot password flow:", msg);
       toast({
         title: "Error",
         description: msg,

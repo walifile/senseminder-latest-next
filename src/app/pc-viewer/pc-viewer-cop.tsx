@@ -7,6 +7,7 @@
 // import { Slider } from "@/components/ui/slider";
 // import { Badge } from "@/components/ui/badge";
 // import { useSearchParams } from "next/navigation";
+// import { Logger } from "@/lib/utils/logger";
 // import {
 //   Power,
 //   Keyboard,
@@ -130,7 +131,7 @@
 //   };
 
 //   if (dcvError) {
-//     console.log(dcvError);
+//     Logger.log(dcvError);
 //   }
 //   const [dcvSession, setDcvSession] = useState<{
 //     sessionId: string;
@@ -211,15 +212,15 @@
 //     if (lastResolutionKeyRef.current === currentKey) return;
 //     lastResolutionKeyRef.current = currentKey;
 
-//     console.log("Updating resolution:", width, height);
+//     Logger.log("Updating resolution:", width, height);
 //     connRef.current
 //       .requestResolution(width, height)
-//       .catch((e) => console.warn("Failed to request resolution:", e));
+//       .catch((e) => Logger.warn("Failed to request resolution:", e));
 //   }, []);
 //   // Function to connect to DCV
 //   const connectToDcv = async () => {
 //     if (sessionId && authToken) {
-//       console.log("checking");
+//       Logger.log("checking");
 //       setTvEffect("on");
 //       setIsLoading(true);
 //       setConnectionState("RECONNECTING");
@@ -239,7 +240,7 @@
 //               handleQualityChange("auto");
 //               setConnectionState("CONNECTED");
 //               conn.enableDisplayQualityUpdates(true);
-//               console.log("checking Connection:", conn);
+//               Logger.log("checking Connection:", conn);
 //             },
 //           },
 //         });
@@ -260,7 +261,7 @@
 
 //         window.addEventListener("resize", handleResize);
 //       } catch (error) {
-//         console.error("Connection failed:", error);
+//         Logger.error("Connection failed:", error);
 //         setDcvError(error as Error);
 //         setTvEffect("off");
 //         setIsLoading(false);
@@ -319,7 +320,7 @@
 //           fps: `${Math.round(stats.fps)}`,
 //         }));
 //       } catch (err) {
-//         console.warn("Failed to fetch DCV stats:", err);
+//         Logger.warn("Failed to fetch DCV stats:", err);
 //       }
 //     }
 //   };
@@ -542,7 +543,7 @@
 //                       { key: "Meta", location: 1 },
 //                       { key: "o", location: 0 },
 //                     ]);
-//                     console.log("Sent Ctrl + Win + O to open OSK");
+//                     Logger.log("Sent Ctrl + Win + O to open OSK");
 //                   }
 //                 }}
 //               >

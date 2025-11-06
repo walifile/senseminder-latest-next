@@ -1,6 +1,7 @@
 import type { ToastProps, ToastActionElement } from "@/components/ui/toast";
 
 import * as React from "react";
+import { Logger } from "@/lib/utils/logger";
 
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
@@ -138,7 +139,7 @@ function dispatch(action: Action) {
     try {
       listener(memoryState);
     } catch (error) {
-      console.error("Error in toast listener:", error);
+      Logger.error("Error in toast listener:", error);
     }
   });
 }

@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
+import { Logger } from "@/lib/utils/logger";
 
 import {
   X,
@@ -261,7 +262,7 @@ export const EnhancedFileTransferManager: React.FC<
       setSessions(activeSessions);
       setError(null);
     } catch (error) {
-      console.error("Failed to load file transfer sessions:", error);
+      Logger.error("Failed to load file transfer sessions:", error);
       setError("Failed to load transfer sessions");
       addNotification("error", "Failed to load transfer sessions");
     }
@@ -353,7 +354,7 @@ export const EnhancedFileTransferManager: React.FC<
         setCurrentRemotePath(path);
         addNotification("success", `Loaded ${files.length} items from ${path}`);
       } catch (error) {
-        console.error("Failed to load remote files:", error);
+        Logger.error("Failed to load remote files:", error);
         setError(`Failed to load files from ${path}`);
         addNotification("error", `Failed to load files from ${path}`);
       } finally {
@@ -411,7 +412,7 @@ export const EnhancedFileTransferManager: React.FC<
             }
           }
         } catch (error) {
-          console.error("Failed to monitor session:", error);
+          Logger.error("Failed to monitor session:", error);
           clearInterval(interval);
         }
       }, 1000);
@@ -457,7 +458,7 @@ export const EnhancedFileTransferManager: React.FC<
       monitorSession(session.id);
       addNotification("success", `Started upload: ${files.length} files`);
     } catch (error) {
-      console.error("Failed to start file upload:", error);
+      Logger.error("Failed to start file upload:", error);
       addNotification("error", `Failed to start upload: ${error}`);
     }
   };
@@ -479,7 +480,7 @@ export const EnhancedFileTransferManager: React.FC<
       monitorSession(session.id);
       addNotification("success", `Started download: ${fileName || remotePath}`);
     } catch (error) {
-      console.error("Failed to start file download:", error);
+      Logger.error("Failed to start file download:", error);
       addNotification("error", `Failed to start download: ${error}`);
     }
   };
@@ -511,7 +512,7 @@ export const EnhancedFileTransferManager: React.FC<
       }
       loadSessions();
     } catch (error) {
-      console.error(`Failed to ${action} transfer:`, error);
+      Logger.error(`Failed to ${action} transfer:`, error);
       addNotification("error", `Failed to ${action} transfer`);
     }
   };
@@ -569,7 +570,7 @@ export const EnhancedFileTransferManager: React.FC<
           successCount++;
         } catch (error) {
           errorCount++;
-          console.error(`Failed to download ${file.name}:`, error);
+          Logger.error(`Failed to download ${file.name}:`, error);
         }
       }
     }

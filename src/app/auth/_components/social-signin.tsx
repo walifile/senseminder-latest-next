@@ -5,6 +5,7 @@
 // import { FcGoogle } from "react-icons/fc";
 // import { signInWithRedirect } from "aws-amplify/auth";
 // import { useToast } from "@/hooks/use-toast";
+// import { Logger } from "@/lib/utils/logger";
 
 // declare global {
 //   interface Window {
@@ -41,7 +42,7 @@
 //         title: "Error",
 //         description: "Failed to check user existence.",
 //       });
-//       console.error("API call error:", err);
+//       Logger.error("API call error:", err);
 //       return false;
 //     }
 //   };

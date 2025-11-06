@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { getFriendlyOSName } from "@/lib/utils/format-string";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Logger } from "@/lib/utils/logger";
 
 import { useSelector } from "react-redux";
 
@@ -105,7 +106,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
           setCloudPCs(updatedCloudPCs);
         }
       } catch (err) {
-        console.error("Failed to load real-time metrics:", err);
+        Logger.error("Failed to load real-time metrics:", err);
       }
     };
 

@@ -9,6 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
+import { Logger } from "@/lib/utils/logger";
 import {
   Select,
   SelectItem,
@@ -410,7 +411,7 @@ export const AccessibilityManager: React.FC<AccessibilityManagerProps> = ({
             break;
         }
       } catch (error) {
-        console.error("Failed to update visual setting:", error);
+        Logger.error("Failed to update visual setting:", error);
       }
     }
   };
@@ -450,7 +451,7 @@ export const AccessibilityManager: React.FC<AccessibilityManagerProps> = ({
             break;
         }
       } catch (error) {
-        console.error("Failed to update audio setting:", error);
+        Logger.error("Failed to update audio setting:", error);
       }
     }
   };
@@ -493,7 +494,7 @@ export const AccessibilityManager: React.FC<AccessibilityManagerProps> = ({
             break;
         }
       } catch (error) {
-        console.error("Failed to update motor setting:", error);
+        Logger.error("Failed to update motor setting:", error);
       }
     }
   };
@@ -529,7 +530,7 @@ export const AccessibilityManager: React.FC<AccessibilityManagerProps> = ({
             break;
         }
       } catch (error) {
-        console.error("Failed to update cognitive setting:", error);
+        Logger.error("Failed to update cognitive setting:", error);
       }
     }
   };
@@ -554,7 +555,7 @@ export const AccessibilityManager: React.FC<AccessibilityManagerProps> = ({
       try {
         await connection.loadAccessibilityProfile(profileId);
       } catch (error) {
-        console.error("Failed to load profile:", error);
+        Logger.error("Failed to load profile:", error);
       }
     }
   };
@@ -583,7 +584,7 @@ export const AccessibilityManager: React.FC<AccessibilityManagerProps> = ({
       try {
         await connection.saveAccessibilityProfile(newProfile);
       } catch (error) {
-        console.error("Failed to save profile:", error);
+        Logger.error("Failed to save profile:", error);
       }
     }
   };

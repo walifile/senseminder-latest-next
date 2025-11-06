@@ -7,7 +7,7 @@ import {
   useMoveFilesMutation,
   useListHierarchyQuery,
 } from "@/api/fileManagerAPI";
-
+import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -100,7 +100,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
 
   const handleMove = async () => {
     if (!selectedFolderId) {
-      console.error(" No destination folder selected");
+      Logger.error(" No destination folder selected");
       toast({
         title: "Move Failed",
         description: "Please select a destination folder",
@@ -110,7 +110,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
     }
 
     if (!userId) {
-      console.error("No userId available");
+      Logger.error("No userId available");
       toast({
         title: "Move Failed",
         description: "User authentication required",
@@ -120,7 +120,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
     }
 
     if (selectedFiles.length === 0) {
-      console.error(" No files selected");
+      Logger.error(" No files selected");
       toast({
         title: "Move Failed",
         description: "No files selected to move",
@@ -144,7 +144,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
       }
 
       if (!destinationFolder || destinationFolder.trim() === "") {
-        console.error(" Destination folder is empty after getRelativePath");
+        Logger.error(" Destination folder is empty after getRelativePath");
         throw new Error("Invalid destination folder path");
       }
 
@@ -167,7 +167,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
         status?: number;
         originalError?: unknown;
       };
-      console.error(" Move operation failed:", err);
+      Logger.error(" Move operation failed:", err);
 
       // More detailed error handling
       let errorMessage = "Could not move selected items. Please try again.";
@@ -180,7 +180,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
         errorMessage = err;
       }
 
-      console.error(" Error details:", {
+      Logger.error(" Error details:", {
         status: err?.status,
         data: err?.data,
         message: err?.message,
@@ -210,7 +210,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
 
   const isSameAsCurrentFolder = selectedFolder?.id === selectedFolderId;
   if (isSameAsCurrentFolder) {
-    console.log("⚠️ ~ Trying to move to the same folder:", selectedFolder?.id);
+    Logger.log("⚠️ ~ Trying to move to the same folder:", selectedFolder?.id);
   }
 
   const canMove =
@@ -221,7 +221,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
     userId &&
     !isLoading;
 
-  console.log(" Move button enabled:", canMove, {
+  Logger.log(" Move button enabled:", canMove, {
     selectedFolderId: !!selectedFolderId,
     selectedFolderExists,
     isSameAsCurrentFolder,

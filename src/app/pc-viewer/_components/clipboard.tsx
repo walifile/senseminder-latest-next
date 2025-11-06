@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Logger } from "@/lib/utils/logger";
 
 export const ClipboardManager = () => {
   const [clipboardHistory, setClipboardHistory] = useState<string[]>([]);
@@ -12,7 +13,7 @@ export const ClipboardManager = () => {
         setClipboardHistory((prev) => [text, ...prev.slice(0, 9)]); // Keep last 10
       }
     } catch (err) {
-      console.warn("Clipboard access denied:", err);
+      Logger.warn("Clipboard access denied:", err);
     }
   };
 
@@ -21,7 +22,7 @@ export const ClipboardManager = () => {
       await navigator.clipboard.writeText(text);
       setCurrentClipboard(text);
     } catch (err) {
-      console.warn("Failed to write to clipboard:", err);
+      Logger.warn("Failed to write to clipboard:", err);
     }
   };
 

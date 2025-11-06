@@ -3,6 +3,7 @@ import type { MetadataRoute } from "next";
 import fs from "fs";
 import path from "path";
 import appConfig from "@/config/app-config";
+// import { Logger } from "@/lib/utils/logger";
 
 export const revalidate = 3600;
 
@@ -35,7 +36,7 @@ const pageFileNames = new Set(["page.tsx", "page.ts", "page.jsx", "page.js"]);
 
 //       if (authData.token) {
 //         const tokenPayload = decodeJWT(authData.token);
-//         console.log(tokenPayload);
+//         Logger.log(tokenPayload);
 //         if (tokenPayload?.sub) return tokenPayload.sub;
 //       }
 //     }

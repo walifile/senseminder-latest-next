@@ -17,6 +17,7 @@ import { formatAsYYYYMMDD } from "@/lib/utils/format-time";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import { getIdToken } from "../lib/utils";
+import { Logger } from "@/lib/utils/logger";
 
 const { BILLING_API_URL } = appConfig;
 
@@ -28,7 +29,7 @@ const baseQuery = fetchBaseQuery({
       headers.set("Authorization", idToken);
       headers.set("Content-Type", "application/json");
     } catch (err) {
-      console.error("Failed to attach auth headers:", err);
+      Logger.error("Failed to attach auth headers:", err);
     }
     return headers;
   },

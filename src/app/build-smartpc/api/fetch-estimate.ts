@@ -1,6 +1,7 @@
 import type { UseFormReturn } from "react-hook-form";
 
 import type { FormValues } from "../schema";
+import { Logger } from "@/lib/utils/logger";
 
 interface ToastFunction {
   (options: {
@@ -43,7 +44,7 @@ export const fetchEstimate = async ({
       region: values.region,
     }).unwrap();
   } catch (err) {
-    console.error("Estimate error:", err);
+    Logger.error("Estimate error:", err);
     if (showError && toast) {
       toast({
         title: "Error",

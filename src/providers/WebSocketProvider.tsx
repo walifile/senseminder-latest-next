@@ -13,6 +13,7 @@ import { fetchAuthSession } from "aws-amplify/auth";
 import { toast } from "sonner";
 
 import { useNotifications } from "@/hooks/useNotifications";
+// import { Logger } from "@/lib/utils/logger";
 
 type Props = {
   children: React.ReactNode;
@@ -30,7 +31,7 @@ export const WebSocketProvider: React.FC<Props> = ({ children }) => {
       const payload = JSON.parse(atob(idToken.split(".")[1]));
       return payload.sub ?? null;
     } catch {
-      // console.warn("[WebSocket] Auth session not ready");
+      // Logger.warn("[WebSocket] Auth session not ready");
       return null;
     }
   };
@@ -41,9 +42,9 @@ export const WebSocketProvider: React.FC<Props> = ({ children }) => {
 
     if (socket && socket.readyState === WebSocket.OPEN) return;
 
-    // console.log(`[WebSocket] Connecting with userId: ${userId}`);
+    // Logger.log(`[WebSocket] Connecting with userId: ${userId}`);
     const ws = connectWebSocket(userId, (data: Notification) => {
-      // console.log("[WebSocket] Message received:", data);
+      // Logger.log("[WebSocket] Message received:", data);
 
       // Update Zustand
       useNotifications.getState().addNotification(data);
@@ -73,12 +74,12 @@ export const WebSocketProvider: React.FC<Props> = ({ children }) => {
     pingInterval.current = setInterval(() => {
       if (ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ action: "ping" }));
-        // console.log("[WebSocket] Ping sent");
+        // Logger.log("[WebSocket] Ping sent");
       }
     }, 270000);
 
     ws.onclose = () => {
-      // console.warn(`[WebSocket] Closed (${event.code}). Retrying in 5s...`);
+      // Logger.warn(`[WebSocket] Closed (${event.code}). Retrying in 5s...`);
       setSocket(null);
       setTimeout(initWebSocket, 5000);
     };
@@ -89,7 +90,7 @@ export const WebSocketProvider: React.FC<Props> = ({ children }) => {
 
     const unsubscribe = Hub.listen("auth", ({ payload }) => {
       if (payload.event === "signedIn") {
-        // console.log("[WebSocket] Detected sign-in → reconnecting...");
+        // Logger.log("[WebSocket] Detected sign-in → reconnecting...");
         initWebSocket();
       }
     });

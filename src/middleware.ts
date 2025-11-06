@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { routes, publicRoutes } from "./constants/routes";
 import { firstLoginGuard } from "./middleware/firstLoginGuard";
 import {passwordProtectionMiddleware } from "./middleware/password-protection";
+import { Logger } from "@/lib/utils/logger";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -28,7 +29,7 @@ export async function middleware(request: NextRequest) {
     try {
       authState = JSON.parse(authStateCookie.value);
     } catch {
-      console.warn("Invalid JSON in auth.state cookie:", authStateCookie.value);
+      Logger.warn("Invalid JSON in auth.state cookie:", authStateCookie.value);
     }
 
     hasAuthState = authState?.isAuthenticated && authState?.token;

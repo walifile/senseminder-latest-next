@@ -12,7 +12,7 @@ import {
   DialogContent,
   DialogDescription,
 } from "@/components/ui/dialog";
-
+import { Logger } from "@/lib/utils/logger";
 import { useSelector } from "react-redux";
 
 import type { FileItem } from "../types";
@@ -38,7 +38,7 @@ const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
   const [deleteFile] = useDeleteFileMutation();
   const [isLoading, setIsLoading] = useState(false);
 
-  console.log({ file });
+  Logger.log({ file });
 
   const handleFileDelete = async () => {
     if (!file || !userId) return;
@@ -55,7 +55,7 @@ const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
       if (onDeleteComplete) onDeleteComplete();
       onClose();
     } catch (err) {
-      console.error("Error deleting file:", err);
+      Logger.error("Error deleting file:", err);
     } finally {
       setIsLoading(false);
     }

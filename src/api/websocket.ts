@@ -3,6 +3,7 @@
 import type { Notification } from "@/types/notification";
 
 import appConfig from "@/config/app-config";
+import { Logger } from "@/lib/utils/logger";
 
 let socket: WebSocket | null = null;
 
@@ -19,26 +20,26 @@ export function connectWebSocket(
   socket = new WebSocket(wsUrl);
 
   socket.onopen = () => {
-    console.log("[WebSocket Connected]");
+    Logger.log("[WebSocket Connected]");
   };
 
   socket.onmessage = (event) => {
     try {
       const data: Notification = JSON.parse(event.data);
-      console.log("[WebSocket Message Received]:", data);
+      Logger.log("[WebSocket Message Received]:", data);
       if (onMessage) onMessage(data);
     } catch (err) {
-      console.warn("WebSocket message is not JSON:", event.data);
-      console.log("Error details:", err);
+      Logger.warn("WebSocket message is not JSON:", event.data);
+      Logger.log("Error details:", err);
     }
   };
 
   socket.onerror = (error) => {
-    console.error("[WebSocket Error]:", error);
+    Logger.error("[WebSocket Error]:", error);
   };
 
   socket.onclose = (event) => {
-    console.log(
+    Logger.log(
       `[WebSocket Closed] Code: ${event.code}, Reason: ${event.reason}`
     );
     socket = null;

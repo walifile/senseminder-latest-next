@@ -10,7 +10,7 @@ import {
   useDetachPaymentMethodMutation,
   useSetDefaultPaymentMethodMutation,
 } from "@/api/billing";
-
+import { Logger } from "@/lib/utils/logger";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -106,7 +106,7 @@ export function PaymentMethodDialog() {
     });
 
     if (error) {
-      console.error(error);
+      Logger.error(error);
       toast({
         title: "Failed to add payment method",
         description: "Please check the details and try again.",

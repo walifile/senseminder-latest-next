@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 // --- IDLE TIMEOUT API ---
 import { setIdleTimeout, deleteIdleTimeout } from "@/api/smartPC-Idle-settings";
 
+import { Logger } from "@/lib/utils/logger";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
@@ -71,7 +72,7 @@ const IdleSettingsDialog: React.FC<IdleSettingsDialogProps> = ({
       onSuccess();
       closeDialog();
     } catch (e) {
-      console.error("Failed to save idle timeout:", e);
+      Logger.error("Failed to save idle timeout:", e);
       toast({
         title: "Idle Timeout Change Failed",
         description: "Could not update idle timeout",

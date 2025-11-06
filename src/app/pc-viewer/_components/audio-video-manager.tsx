@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
+import { Logger } from "@/lib/utils/logger";
 import {
   Select,
   SelectItem,
@@ -226,7 +227,7 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
       setAudioDevices([...audioInputs, ...audioOutputs]);
       setVideoDevices(videoInputs);
     } catch (error) {
-      console.error("Failed to load media devices:", error);
+      Logger.error("Failed to load media devices:", error);
     } finally {
       setIsLoadingDevices(false);
     }
@@ -265,7 +266,7 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
         const stats = await connection.getMediaStats();
         setMediaStats(stats);
       } catch (error) {
-        console.error("Failed to get media stats:", error);
+        Logger.error("Failed to get media stats:", error);
       }
     };
 
@@ -306,7 +307,7 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
       try {
         await connection.setAudioSettings({ [key]: value });
       } catch (error) {
-        console.error("Failed to update audio setting:", error);
+        Logger.error("Failed to update audio setting:", error);
       }
     }
   };
@@ -323,7 +324,7 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
       try {
         await connection.setVideoSettings({ [key]: value });
       } catch (error) {
-        console.error("Failed to update video setting:", error);
+        Logger.error("Failed to update video setting:", error);
       }
     }
   };
@@ -359,7 +360,7 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
         await connection.startAudioTest();
       }
     } catch (error) {
-      console.error("Failed to start audio test:", error);
+      Logger.error("Failed to start audio test:", error);
     }
   };
 
@@ -385,7 +386,7 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
       try {
         await connection.stopAudioTest();
       } catch (error) {
-        console.error("Failed to stop audio test:", error);
+        Logger.error("Failed to stop audio test:", error);
       }
     }
   };
@@ -416,7 +417,7 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
         await connection.startVideoTest();
       }
     } catch (error) {
-      console.error("Failed to start video test:", error);
+      Logger.error("Failed to start video test:", error);
     }
   };
 
@@ -437,7 +438,7 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
       try {
         await connection.stopVideoTest();
       } catch (error) {
-        console.error("Failed to stop video test:", error);
+        Logger.error("Failed to stop video test:", error);
       }
     }
   };

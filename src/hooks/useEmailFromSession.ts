@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { fetchAuthSession } from "aws-amplify/auth";
+import { Logger } from "@/lib/utils/logger";
 
 export function useEmailFromSession() {
   const [email, setEmail] = useState<string | null>(null);
@@ -25,7 +26,7 @@ export function useEmailFromSession() {
           setEmail(decodedPayload.email);
         }
       } catch (err) {
-        console.error("Failed to load email:", err);
+        Logger.error("Failed to load email:", err);
         setError("Failed to load email");
       } finally {
         setLoading(false);

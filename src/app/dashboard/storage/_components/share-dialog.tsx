@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Logger } from "@/lib/utils/logger";
 // import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
@@ -129,7 +130,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
         } have been shared successfully.`,
       });
     } catch (error) {
-      console.error("Share error:", error);
+      Logger.error("Share error:", error);
       toast({
         title: "Share Failed",
         description: "Could not share. Please try again.",
@@ -149,7 +150,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
         description: "The share link can no longer be used.",
       });
     } catch (error) {
-      console.error("Cancel share failed:", error);
+      Logger.error("Cancel share failed:", error);
       toast({
         title: "Cancel Failed",
         description: "Could not cancel the share. Please try again.",
@@ -215,7 +216,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                         document.body.removeChild(a);
                         window.URL.revokeObjectURL(blobUrl);
                       } catch (error) {
-                        console.error("Download failed:", error);
+                        Logger.error("Download failed:", error);
                         toast({
                           title: "Download Error",
                           description:

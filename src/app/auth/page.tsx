@@ -9,6 +9,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Logger } from "@/lib/utils/logger";
 
 // import SocialSignIn from "./_components/social-signin";
 import { useToast } from "@/hooks/use-toast";
@@ -33,10 +34,10 @@ export default function SignIn() {
     try {
       setIsLoading(true);
       const response = await handleSignIn(email, password);
-      console.log("Login Response:", response);
+      Logger.log("Login Response:", response);
       // Optional: Log nextStep for deeper MFA/debug insight
       if ("nextStep" in response) {
-        console.log("🟡 Cognito Next Step:", response.nextStep);
+        Logger.log("🟡 Cognito Next Step:", response.nextStep);
       }
 
       if (response.success) {
@@ -47,7 +48,7 @@ export default function SignIn() {
         try {
           await claimSessionIfAvailable();
         } catch (error) {
-          console.error("Error claiming session:", error);
+          Logger.error("Error claiming session:", error);
         }
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -126,7 +127,7 @@ export default function SignIn() {
         description: error.message || "Something went wrong during login.",
       });
 
-      console.error("Login Error:", error);
+      Logger.error("Login Error:", error);
     } finally {
       setIsLoading(false);
     }

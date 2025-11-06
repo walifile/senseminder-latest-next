@@ -10,6 +10,7 @@ import { FaApple } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 
 import { useToast } from "@/hooks/use-toast";
+import { Logger } from "@/lib/utils/logger";
 
 import {
   handleAppleSignUp as appleSignUpService,
@@ -36,7 +37,7 @@ const SocailLogin = () => {
         title: "Google Sign-up Failed",
         description: error.message,
       });
-      console.error("Google Sign-up Error:", error);
+      Logger.error("Google Sign-up Error:", error);
     } finally {
       setIsGoogleLoading(false);
     }
@@ -54,7 +55,7 @@ const SocailLogin = () => {
         title: "Apple Sign-up Failed",
         description: error.message,
       });
-      console.error("Apple Sign-up Error:", error);
+      Logger.error("Apple Sign-up Error:", error);
     } finally {
       setIsAppleLoading(false);
     }

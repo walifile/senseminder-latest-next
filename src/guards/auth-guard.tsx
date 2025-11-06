@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Loader2 } from "lucide-react";
 
 import { handleSignOut, getUserAttributes } from "@/lib/services/auth";
+import { Logger } from "@/lib/utils/logger";
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -51,7 +52,7 @@ export default function AuthGuard({ children }: AuthProviderProps) {
         })
       );
     } catch (error) {
-      console.error("Auth initialization error:", error);
+      Logger.error("Auth initialization error:", error);
       await handleSignOut();
       if (!isPublicRoute) {
         router.replace(routes.auth);

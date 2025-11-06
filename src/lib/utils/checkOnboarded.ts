@@ -1,4 +1,5 @@
 import { fetchAuthSession } from "aws-amplify/auth";
+import { Logger } from "./logger";
 
 
 export async function checkOnboarded(): Promise<boolean | null> {
@@ -7,7 +8,7 @@ export async function checkOnboarded(): Promise<boolean | null> {
     const idToken = session.tokens?.idToken?.toString();
 
     if (!idToken) {
-      console.warn("No ID token found in session.");
+      Logger.warn("No ID token found in session.");
       return null; // user not signed in
     }
 
@@ -21,7 +22,7 @@ export async function checkOnboarded(): Promise<boolean | null> {
 
     return onboarded === "true";
   } catch (err) {
-    console.error("Failed to check onboarded status:", err);
+    Logger.error("Failed to check onboarded status:", err);
     return null;
   }
 }

@@ -144,7 +144,7 @@ export default function RootLayout({
 //   const pathname = headerList.get("x-current-path");
 //   const p = pathname ? "ues " : "jno";
 
-//   console.log({ pathname, p });
+//   Logger.log({ pathname, p });
 
 //   if (!pathname) {
 //     return (

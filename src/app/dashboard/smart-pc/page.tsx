@@ -21,6 +21,7 @@ import SmartPCConfigDialog from "@/app/build-smartpc/_components/smart-pc-config
 import SmartPcDropdownMenu from "@/app/build-smartpc/_components/smart-pc-dropdown-menu";
 import SmartPcConnectButton from "@/app/build-smartpc/_components/smart-pc-connect-button";
 import { ConfirmDeleteModal } from "@/app/build-smartpc/_components/confirm-delete-pc-diolog";
+import { Logger } from "@/lib/utils/logger";
 import {
   getApiUserId,
   getStatusIcon,
@@ -69,7 +70,7 @@ const CloudPCPage = () => {
     getAssignments()
       .then((res) => setAssignments(res))
       .catch((err) => {
-        console.error("Failed to load assignments", err);
+        Logger.error("Failed to load assignments", err);
         setAssignments({});
       });
   }, []);
@@ -170,7 +171,7 @@ const CloudPCPage = () => {
       })
       .catch((err) => {
         setRealtimePcInfo({});
-        console.error("Failed to fetch real-time PC info", err);
+        Logger.error("Failed to fetch real-time PC info", err);
       });
   }, [apiUserId, data, isError]);
 

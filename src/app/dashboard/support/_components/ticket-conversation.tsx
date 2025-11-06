@@ -19,6 +19,7 @@ import { Send, Trash, FileText } from "lucide-react";
 import { useFileValidation } from "../hooks/use-file-validation";
 import { useUploadAttachment } from "../hooks/use-upload-attachment";
 import { useDownloadAttachment } from "../hooks/use-download-attachment";
+import { Logger } from "@/lib/utils/logger";
 
 import type { Message } from "../types";
 
@@ -91,7 +92,7 @@ const TicketConversation: React.FC<Props> = ({
       toast({ title: "Reply sent" });
     } catch (err) {
       toast({ title: "Failed to send reply", variant: "destructive" });
-      console.error("Reply failed:", err);
+      Logger.error("Reply failed:", err);
     }
   };
 

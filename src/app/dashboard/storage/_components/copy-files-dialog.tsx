@@ -5,7 +5,7 @@ import {
   useCopyFilesMutation,
   useListHierarchyQuery,
 } from "@/api/fileManagerAPI";
-
+import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -111,13 +111,13 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
     });
 
     const destinationFolder = getRelativePath(selectedFolderId);
-    // console.log(`🚀 ~ Destination: ${selectedFolderId} → ${destinationFolder}`);
+    // Logger.log(`🚀 ~ Destination: ${selectedFolderId} → ${destinationFolder}`);
 
     if (
       sourceFileNames.some((name) => !name?.trim()) ||
       !destinationFolder?.trim()
     ) {
-      console.error("Invalid paths in copy");
+      Logger.error("Invalid paths in copy");
       toast({
         title: "Copy Failed",
         description: "Invalid file or folder path(s)",
@@ -166,14 +166,14 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
   const selectedFolderExists = selectedFiles?.some((id) => {
     const exists = id === selectedFolderId;
     if (exists) {
-      // console.log("⚠️ ~ Trying to copy into itself:", id);
+      // Logger.log("⚠️ ~ Trying to copy into itself:", id);
     }
     return exists;
   });
 
   const isSameAsCurrentFolder = selectedFolder?.id === selectedFolderId;
   if (isSameAsCurrentFolder) {
-    // console.log(" ~ Copying to same folder:", selectedFolder?.id);
+    // Logger.log(" ~ Copying to same folder:", selectedFolder?.id);
   }
 
   const canCopy =

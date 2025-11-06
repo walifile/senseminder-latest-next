@@ -12,6 +12,7 @@ import {
   CardContent,
   CardDescription,
 } from "@/components/ui/card";
+import { Logger } from "@/lib/utils/logger";
 
 import { Plus, Clock, Power, Trash2, PowerOff, AlarmClock } from "lucide-react";
 
@@ -216,7 +217,7 @@ const AdvancedScheduling = () => {
                         <span>
                           {Object.entries(schedule.days)
                             .filter(([key, value]) => {
-                              console.log(key);
+                              Logger.log(key);
                               return value;
                             })
                             .map(([day]) => day.substring(0, 3))

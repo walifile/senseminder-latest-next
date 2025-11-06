@@ -14,6 +14,7 @@ import { Loader2 } from "lucide-react";
 import useErrorToast from "@/hooks/useErrorToast";
 
 import { handleAuthRedirect } from "@/lib/services/auth";
+import { Logger } from "@/lib/utils/logger";
 
 
 export default function AuthCallback() {
@@ -46,7 +47,7 @@ export default function AuthCallback() {
             await claimSessionIfAvailable();
             router.replace(routes.dashboard);
           } catch (err) {
-            console.warn("Session claim or first login check failed:", err);
+            Logger.warn("Session claim or first login check failed:", err);
             router.replace(routes.dashboard);
           }
         } else {

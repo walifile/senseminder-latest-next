@@ -9,6 +9,7 @@ import {
 } from "@/api/feedback";
 
 import { useDispatch, useSelector } from "react-redux";
+import { Logger } from "@/lib/utils/logger";
 
 type TriggerOptions = {
   trigger: string;
@@ -49,7 +50,7 @@ export function useFeedback() {
 
         dispatch(setIsShow(Boolean(show)));
       } catch (error) {
-        console.error("Feedback flow failed:", error);
+        Logger.error("Feedback flow failed:", error);
       }
     },
     [createTask, getNextPrompt, dispatch, userId]

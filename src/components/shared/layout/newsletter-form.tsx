@@ -14,6 +14,7 @@ import {
 import { useSearchParams } from "next/navigation";
 
 import { useToast } from "@/hooks/use-toast";
+import { Logger } from "@/lib/utils/logger";
 
 type NewsletterFormProps = {
   variant?: "inline" | "card";
@@ -66,7 +67,7 @@ export default function NewsletterForm({
       });
       setEmail("");
     } else {
-      console.log({ else: "Ddffdfdfff" });
+      Logger.log({ else: "Ddffdfdfff" });
 
       let errorMessage = "Subscription failed. Please try again.";
 

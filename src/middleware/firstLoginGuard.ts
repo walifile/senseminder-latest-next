@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 
 import { NextResponse } from "next/server";
 import appConfig from "@/config/app-config";
+import { Logger } from "@/lib/utils/logger";
 
 
 const { USER_POOL_CLIENT_ID } = appConfig;
@@ -13,7 +14,7 @@ export async function firstLoginGuard(request: NextRequest) {
 
   // Skip guard for public pages
   if (allowlist.includes(path)) {
-    // console.log(`[firstLoginGuard] Skipping guard for public page: ${path}`);
+    // Logger.log(`[firstLoginGuard] Skipping guard for public page: ${path}`);
     return null;
   }
 
@@ -28,14 +29,14 @@ export async function firstLoginGuard(request: NextRequest) {
     );
 
     if (!idTokenCookie?.value) {
-      // console.log("[firstLoginGuard] No valid idToken cookie found → allow request.");
+      // Logger.log("[firstLoginGuard] No valid idToken cookie found → allow request.");
       return null;
     }
 
     // Decode JWT payload
     const parts = idTokenCookie.value.split(".");
     if (parts.length !== 3) {
-      // console.warn("[firstLoginGuard] Invalid JWT structure → allow request.");
+      // Logger.warn("[firstLoginGuard] Invalid JWT structure → allow request.");
       return null;
     }
 
@@ -45,7 +46,7 @@ export async function firstLoginGuard(request: NextRequest) {
     );
 
     const onboarded = decodedPayload["custom:onboarded"];
-    // console.log(
+    // Logger.log(
     //   "[firstLoginGuard] Decoded onboarded value:",
     //   onboarded,
     //   "type:",
@@ -59,14 +60,14 @@ export async function firstLoginGuard(request: NextRequest) {
 
     if (isNotOnboarded) {
       const welcomeUrl = new URL("/welcome", request.url);
-      // console.log("[firstLoginGuard] User not onboarded → redirecting to /welcome");
+      // Logger.log("[firstLoginGuard] User not onboarded → redirecting to /welcome");
       return NextResponse.redirect(welcomeUrl);
     }
 
-    // console.log("[firstLoginGuard] ⏭ Onboarding complete → allow request.");
+    // Logger.log("[firstLoginGuard] ⏭ Onboarding complete → allow request.");
     return null;
   } catch (err) {
-    console.error("[firstLoginGuard] ERROR:", err);
+    Logger.error("[firstLoginGuard] ERROR:", err);
     return null;
   }
 }

@@ -3,6 +3,7 @@ import appConfig from "@/config/app-config";
 import { fetchAuthSession } from "aws-amplify/auth";
 
 import { UAParser } from "ua-parser-js";
+import { Logger } from "@/lib/utils/logger";
 
 export interface SmartPCSession {
   sessionId: string;
@@ -25,13 +26,13 @@ export const updateSessionHeartbeat = async () => {
   try {
     const sessionId = localStorage.getItem("smartpc-session-id");
     if (!sessionId) {
-      console.warn("No sessionId in localStorage. Skipping heartbeat.");
+      Logger.warn("No sessionId in localStorage. Skipping heartbeat.");
       return;
     }
 
     const { idToken } = (await fetchAuthSession()).tokens ?? {};
     if (!idToken) {
-      console.warn("No ID token found.");
+      Logger.warn("No ID token found.");
       return;
     }
 
@@ -59,12 +60,12 @@ export const updateSessionHeartbeat = async () => {
     });
 
     if (res.ok) {
-      console.log(" Heartbeat updated for session:", sessionId);
+      Logger.log(" Heartbeat updated for session:", sessionId);
     } else {
-      console.warn("Failed to update heartbeat:", await res.text());
+      Logger.warn("Failed to update heartbeat:", await res.text());
     }
   } catch (err) {
-    console.error(" Heartbeat error:", err);
+    Logger.error(" Heartbeat error:", err);
   }
 };
 
@@ -72,7 +73,7 @@ export const claimSessionIfAvailable = async () => {
   try {
     const { idToken } = (await fetchAuthSession()).tokens ?? {};
     if (!idToken) {
-      console.warn("No ID token available. User might be logged out.");
+      Logger.warn("No ID token available. User might be logged out.");
       return;
     }
 
@@ -106,18 +107,18 @@ export const claimSessionIfAvailable = async () => {
       const newSessionId = data.sessionId;
 
       if (prevSessionId && prevSessionId !== newSessionId) {
-        console.log("⚠️ Replacing old session ID:", prevSessionId);
+        Logger.log("⚠️ Replacing old session ID:", prevSessionId);
         // Optionally invalidate old session by calling another API
         // await invalidateOldSession(prevSessionId, idToken);
       }
 
       localStorage.setItem("smartpc-session-id", newSessionId);
-      console.log("Session claimed:", newSessionId);
+      Logger.log("Session claimed:", newSessionId);
     } else {
-      console.warn("No unclaimed session available:", data.message || data);
+      Logger.warn("No unclaimed session available:", data.message || data);
     }
   } catch (err) {
-    console.error("Failed to claim session:", err);
+    Logger.error("Failed to claim session:", err);
   }
 };
 
@@ -160,7 +161,7 @@ export const fetchActiveSessions = async (): Promise<SmartPCSession[]> => {
       };
     });
   } catch (err) {
-    console.error("Failed to fetch sessions:", err);
+    Logger.error("Failed to fetch sessions:", err);
     return [];
   }
 };

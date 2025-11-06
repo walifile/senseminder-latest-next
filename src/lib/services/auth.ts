@@ -21,6 +21,7 @@ import {
 } from "aws-amplify/auth";
 
 import { getErrorMessage } from "../utils";
+import { Logger } from "@/lib/utils/logger";
 
 interface SignUpFormData {
   email: string;
@@ -58,7 +59,7 @@ export const handleSignUp = async (formData: SignUpFormData) => {
     return { success: true, data: response };
   } catch (error) {
     store.dispatch(setLoading(false));
-    console.log(error);
+    Logger.log(error);
     return { success: false, error: getErrorMessage(error) };
   }
 };
@@ -115,7 +116,7 @@ export const getUserAttributes = async () => {
       token: jwt,
     };
   } catch (error) {
-    console.error("Error getting user attributes:", error);
+    Logger.error("Error getting user attributes:", error);
     return null;
   }
 };
@@ -123,7 +124,7 @@ export const getUserAttributes = async () => {
 // Update handlePostAuthentication function
 const handlePostAuthentication = async () => {
   const userInfo = await getUserAttributes();
-  console.log("userInfo", userInfo);
+  Logger.log("userInfo", userInfo);
   if (userInfo) {
     store.dispatch(
       setUser({
@@ -148,12 +149,12 @@ export const handleSignIn = async (email: string, password: string) => {
       username: email,
       password,
     });
-    console.log(
+    Logger.log(
       "signInResponse from Cognito:",
       JSON.stringify(signInResponse, null, 2)
     );
 
-    // console.log("sign in response", signInResponse);
+    // Logger.log("sign in response", signInResponse);
 
     // Check if user needs to confirm signup
     if (signInResponse.nextStep?.signInStep === "CONFIRM_SIGN_UP") {
@@ -249,7 +250,7 @@ export const handleSignIn = async (email: string, password: string) => {
 
     return await handlePostAuthentication();
   } catch (error) {
-    console.log("sign in error", getErrorMessage(error));
+    Logger.log("sign in error", getErrorMessage(error));
     store.dispatch(setLoading(false));
     return { success: false, error: getErrorMessage(error) };
   }
@@ -296,7 +297,7 @@ export const handleAuthRedirect = async () => {
 
     return { success: false, error: "Failed to get user information" };
   } catch (error) {
-    console.log("Auth redirect error:", error);
+    Logger.log("Auth redirect error:", error);
     return { success: false, error: getErrorMessage(error) };
   } finally {
     store.dispatch(setLoading(false));
@@ -312,7 +313,7 @@ export const handleGoogleSignUp = async () => {
 
     return { success: true };
   } catch (error) {
-    console.log("Google sign up error:", error);
+    Logger.log("Google sign up error:", error);
     return { success: false, error: getErrorMessage(error) };
   } finally {
     store.dispatch(setLoading(false));
@@ -334,7 +335,7 @@ export const handleAppleSignUp = async () => {
 
     return { success: false, error: "Failed to get user information" };
   } catch (error) {
-    console.log("Apple sign up error:", error);
+    Logger.log("Apple sign up error:", error);
     return { success: false, error: getErrorMessage(error) };
   } finally {
     store.dispatch(setLoading(false));
@@ -363,7 +364,7 @@ export const handleSignOut = async () => {
 //     return { success: true };
 //   } catch (error: any) {
 //     store.dispatch(setLoading(false));
-//     console.log(error);
+//     Logger.log(error);
 //     return { success: false, error: error.message };
 //   }
 // };
@@ -378,7 +379,7 @@ export const handleResetPassword = async (email: string) => {
     store.dispatch(setLoading(false));
     const error = err as Error;
 
-    console.error("Cognito resetPassword error:", error);
+    Logger.error("Cognito resetPassword error:", error);
 
     // Special case: MFA (TOTP) is enabled and user has no verified email/phone
     if (
@@ -426,7 +427,7 @@ export const handleConfirmResetPassword = async (
     return { success: true };
   } catch (error) {
     store.dispatch(setLoading(false));
-    console.log(error);
+    Logger.log(error);
     return { success: false, error: getErrorMessage(error) };
   }
 };
@@ -437,7 +438,7 @@ export const getCurrentSession = async () => {
     const session = await fetchAuthSession();
     return session.tokens?.idToken?.toString();
   } catch (error) {
-    console.log(error);
+    Logger.log(error);
     return null;
   }
 };

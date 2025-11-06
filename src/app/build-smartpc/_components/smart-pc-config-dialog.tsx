@@ -9,6 +9,7 @@ import { useGetEstimateMutation } from "@/api/fileManagerAPI";
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { clearSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
 
+import { Logger } from "@/lib/utils/logger";
 import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogFooter, DialogContent } from "@/components/ui/dialog";
@@ -194,7 +195,7 @@ const SmartPCConfigDialog = ({
               : "Ubuntu_24.04_LTS_X64",
         });
       } catch (e) {
-        console.error("Failed to load existing PC config for resize:", e);
+        Logger.error("Failed to load existing PC config for resize:", e);
         toast({
           title: "Unable to load PC details",
           description: "We couldn't prefill the current configuration.",
@@ -228,7 +229,7 @@ const SmartPCConfigDialog = ({
         await handleConfirmPCResize(cpu);
       }
     } catch (error) {
-      console.error("Resize operation failed:", error);
+      Logger.error("Resize operation failed:", error);
     } finally {
       setResizeSubmitting(false);
     }
@@ -253,7 +254,7 @@ const SmartPCConfigDialog = ({
       onSuccess();
       closeDialog();
     } catch (error) {
-      console.error("CPU resize failed:", error);
+      Logger.error("CPU resize failed:", error);
 
       toast({
         title: "Resize failed",
@@ -297,7 +298,7 @@ const SmartPCConfigDialog = ({
       onSuccess();
       closeDialog();
     } catch (error) {
-      console.error("Storage increase failed:", error);
+      Logger.error("Storage increase failed:", error);
       toast({
         title: "Storage increase failed",
         description: getErrorMessage(
