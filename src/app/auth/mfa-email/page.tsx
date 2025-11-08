@@ -7,8 +7,8 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
 import { setLoading, setTempUser } from "@/redux/slices/auth/auth-slice";
-import { Logger } from "@/lib/utils/logger";
 
+import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
 import {
   InputOTP,

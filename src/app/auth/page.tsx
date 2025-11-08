@@ -6,10 +6,10 @@ import { routes } from "@/constants/routes";
 import { claimSessionIfAvailable } from "@/api/session";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { Logger } from "@/lib/utils/logger";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Logger } from "@/lib/utils/logger";
 
 // import SocialSignIn from "./_components/social-signin";
 import { useToast } from "@/hooks/use-toast";

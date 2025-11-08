@@ -44,13 +44,12 @@ export default function TicketTable() {
   const [statusFilter, setStatusFilter] = useState("any");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
-  const tickets = data?.tickets ?? [];
-
   const toggleSort = () => {
     setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
   };
 
   const filtered = useMemo(() => {
+    const tickets = data?.tickets ?? [];
     const sorted = [...tickets].sort((a, b) => {
       const dateA = new Date(a.createdAt).getTime();
       const dateB = new Date(b.createdAt).getTime();
@@ -65,7 +64,7 @@ export default function TicketTable() {
         statusFilter === "any" || t.status.toLowerCase() === statusFilter;
       return matchQuery && matchStatus;
     });
-  }, [tickets, query, statusFilter, sortDirection]);
+  }, [data?.tickets, query, statusFilter, sortDirection]);
 
   const SortIcon = () =>
     sortDirection === "asc" ? (

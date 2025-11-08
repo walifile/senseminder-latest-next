@@ -7,6 +7,8 @@ import { useRouter, usePathname } from "next/navigation";
 import { routes, publicRoutes } from "@/constants/routes";
 import { setUser, setLoading } from "@/redux/slices/auth/auth-slice";
 
+import { Logger } from "@/lib/utils/logger";
+
 import { getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -14,7 +16,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { Loader2 } from "lucide-react";
 
 import { handleSignOut, getUserAttributes } from "@/lib/services/auth";
-import { Logger } from "@/lib/utils/logger";
 
 interface AuthProviderProps {
   children: React.ReactNode;

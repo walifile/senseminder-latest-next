@@ -267,11 +267,6 @@ const customConfig = {
     ...importRules(),
     ...unusedImportsRules(),
     ...sortImportsRules(),
-    // Disable import sorting checks globally (requested)
-    "perfectionist/sort-imports": "off",
-    "perfectionist/sort-named-imports": "off",
-    "perfectionist/sort-named-exports": "off",
-    "import/order": "off",
     // Global restriction on environment variable usage
     "no-restricted-syntax": [
       2,

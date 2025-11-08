@@ -73,7 +73,7 @@ export default function AuthCallback() {
     };
 
     handleCallback();
-  }, [retryCount, router, searchParams]);
+  }, [retryCount, router, searchParams, handleError]);
 
   if (errorMessage) {
 return (

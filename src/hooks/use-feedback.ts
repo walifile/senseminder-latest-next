@@ -8,8 +8,9 @@ import {
   useGetNextFeedbackPromptMutation,
 } from "@/api/feedback";
 
-import { useDispatch, useSelector } from "react-redux";
 import { Logger } from "@/lib/utils/logger";
+
+import { useDispatch, useSelector } from "react-redux";
 
 type TriggerOptions = {
   trigger: string;

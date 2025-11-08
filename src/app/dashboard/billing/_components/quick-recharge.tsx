@@ -7,8 +7,8 @@ import {
   useGetAutoRechargeQuery,
   useUpdateAutoRechargeMutation,
 } from "@/api/billing";
-import { Logger } from "@/lib/utils/logger";
 
+import { Logger } from "@/lib/utils/logger";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

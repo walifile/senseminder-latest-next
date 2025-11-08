@@ -1,11 +1,11 @@
 "use client";
 
 import appConfig from "@/config/app-config";
-import React, { useState, useEffect } from "react";
-
-import { cn } from "@/lib/utils";
 import { routes } from "@/constants/routes";
 import { useRouter } from "next/navigation";
+import React, { useState, useEffect, useCallback } from "react";
+
+import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,15 +27,19 @@ const StorageCostCalculator = () => {
 
   const serverLocations = [{ id: "us-east", name: "US East (N. Virginia)" }];
 
-  const PING_ENDPOINTS: Record<string, string> = {
-    "us-east": PING_API_URL,
-  };
+  const PING_ENDPOINTS = React.useMemo<Record<string, string>>(
+    () => ({
+      "us-east": PING_API_URL,
+    }),
+    []
+  );
 
   const getStorageSizeFromTier = (tier: number) => `${tier * 20} GB`;
   const PRICE_PER_TIER = 0.5;
   const price = storageTier === 1 ? 0 : (storageTier - 1) * PRICE_PER_TIER;
 
-  const fetchLatencies = async () => {
+  // Fetch latencies function: PING_API_URL is safe to use directly inside the callback
+  const fetchLatencies = useCallback(async () => {
     setLatencyLoading(true);
     const results: Record<string, number> = {};
     for (const [region, url] of Object.entries(PING_ENDPOINTS)) {
@@ -43,7 +47,7 @@ const StorageCostCalculator = () => {
       try {
         const res = await fetch(url, {
           cache: "no-store",
-          headers: { "x-api-key": PING_API_KEY },
+          headers: { "x-api-key": PING_API_KEY }, // PING_API_KEY is used directly here
         });
         await res.json();
         const end = performance.now();
@@ -54,11 +58,12 @@ const StorageCostCalculator = () => {
     }
     setLatencyMap(results);
     setLatencyLoading(false);
-  };
+  }, [PING_ENDPOINTS]);  // Do not include PING_API_KEY here
 
   useEffect(() => {
     fetchLatencies();
-  }, []);
+  }, [fetchLatencies]);  // Use the memoized fetchLatencies function as a dependency
+
 
   const getStartedURL = () => {
     router.push(routes?.storage);

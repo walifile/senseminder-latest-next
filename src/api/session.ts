@@ -1,9 +1,10 @@
 import appConfig from "@/config/app-config";
 
+import { Logger } from "@/lib/utils/logger";
+
 import { fetchAuthSession } from "aws-amplify/auth";
 
 import { UAParser } from "ua-parser-js";
-import { Logger } from "@/lib/utils/logger";
 
 export interface SmartPCSession {
   sessionId: string;

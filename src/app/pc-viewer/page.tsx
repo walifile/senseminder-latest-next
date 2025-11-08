@@ -7,7 +7,7 @@ import type { RootState } from "@/redux/store";
 import { useSearchParams } from "next/navigation";
 import DCVViewer from "@/app/pc-viewer/_components/dcv-viewer";
 import { selectLaunchVMResponse } from "@/redux/slices/dcv/dcv-slice";
-import React, { useRef, useState, useEffect, useCallback, Suspense } from "react";
+import React, { useRef, useState, Suspense, useEffect, useCallback } from "react";
 
 /* ---- External: custom-shadcn (must be before custom-redux) ---- */
 import { cn } from "@/lib/utils";

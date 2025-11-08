@@ -4,7 +4,7 @@
 "use client";
 
 import type { RootState } from "@/redux/store";
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect   } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { confirmSignIn } from "aws-amplify/auth";

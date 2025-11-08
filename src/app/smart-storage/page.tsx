@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
 import appConfig from "@/config/app-config";
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -37,9 +37,12 @@ export default function SmartStoragePage() {
 
   const serverLocations = [{ id: "us-east", name: "US East (N. Virginia)" }];
 
-  const PING_ENDPOINTS: Record<string, string> = {
-    "us-east": STORAGE_PING_URL,
-  };
+  const PING_ENDPOINTS = useMemo<Record<string, string>>(
+    () => ({
+      "us-east": STORAGE_PING_URL,
+    }),
+    []
+  );
 
   const getStorageSizeFromTier = (tier: number) => `${tier * 20} GB`;
   const PRICE_PER_TIER = 0.5;
@@ -69,7 +72,7 @@ export default function SmartStoragePage() {
     };
 
     fetchLatencies();
-  }, []);
+  }, [PING_ENDPOINTS]);
 
   const handlePurchase = () => {
     // toast({

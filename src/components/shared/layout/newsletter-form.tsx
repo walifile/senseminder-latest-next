@@ -2,7 +2,7 @@
 
 /* eslint-disable perfectionist/sort-imports */
 
-import { useState, useMemo, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

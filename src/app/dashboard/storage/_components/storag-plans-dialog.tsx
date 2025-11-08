@@ -1,7 +1,7 @@
 "use client";
 
 import appConfig from "@/config/app-config";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -46,16 +46,19 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
   const [latencyLoading, setLatencyLoading] = useState(true);
 
   const serverLocations = [{ id: "us-east", name: "US East (N. Virginia)" }];
-
-  const PING_ENDPOINTS: Record<string, string> = {
-    "us-east": PING_API_URL,
-  };
+  
+  const PING_ENDPOINTS = React.useMemo<Record<string, string>>(
+    () => ({
+      "us-east": PING_API_URL,
+    }),
+    []
+  );
 
   const getStorageSizeFromTier = (tier: number) => `${tier * 20} GB`;
   const PRICE_PER_TIER = 0.5;
   const price = storageTier === 1 ? 0 : (storageTier - 1) * PRICE_PER_TIER;
 
-  const fetchLatencies = async () => {
+  const fetchLatencies = useCallback(async () => {
     setLatencyLoading(true);
     const results: Record<string, number> = {};
     for (const [region, url] of Object.entries(PING_ENDPOINTS)) {
@@ -74,11 +77,12 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
     }
     setLatencyMap(results);
     setLatencyLoading(false);
-  };
+  }, [PING_ENDPOINTS]);  // Dependencies for the memoized function
 
   useEffect(() => {
-    fetchLatencies();
-  }, []);
+    fetchLatencies();  // Call memoized fetchLatencies inside useEffect
+  }, [fetchLatencies]);  // Include fetchLatencies in the dependency array
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

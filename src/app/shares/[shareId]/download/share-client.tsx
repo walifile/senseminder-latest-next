@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
-  CardContent,
-  CardHeader,
   CardTitle,
+  CardHeader,
+  CardContent,
   CardDescription,
 } from "@/components/ui/card";
 import { Download as DownloadIcon } from "lucide-react";

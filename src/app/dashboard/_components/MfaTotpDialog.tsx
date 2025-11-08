@@ -255,7 +255,7 @@ export default function MfaTotpDialog({
     };
 
     setupTotp();
-  }, [open]);
+  }, [open, toast]);
 
   const handleVerify = async () => {
     if (userCode.length !== 6) {

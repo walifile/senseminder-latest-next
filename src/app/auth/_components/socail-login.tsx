@@ -4,13 +4,13 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
 
+import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
 
 import { FaApple } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 
 import { useToast } from "@/hooks/use-toast";
-import { Logger } from "@/lib/utils/logger";
 
 import {
   handleAppleSignUp as appleSignUpService,

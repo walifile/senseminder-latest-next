@@ -3,6 +3,7 @@ import type { RootState } from "@/redux/store";
 import { useState } from "react";
 import { useDeleteFileMutation } from "@/api/fileManagerAPI";
 
+import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,7 +13,7 @@ import {
   DialogContent,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Logger } from "@/lib/utils/logger";
+
 import { useSelector } from "react-redux";
 
 import type { FileItem } from "../types";

@@ -1,6 +1,7 @@
 import type { ToastProps, ToastActionElement } from "@/components/ui/toast";
 
 import * as React from "react";
+
 import { Logger } from "@/lib/utils/logger";
 
 const TOAST_LIMIT = 1;

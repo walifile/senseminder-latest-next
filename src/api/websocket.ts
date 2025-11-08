@@ -3,6 +3,7 @@
 import type { Notification } from "@/types/notification";
 
 import appConfig from "@/config/app-config";
+
 import { Logger } from "@/lib/utils/logger";
 
 let socket: WebSocket | null = null;

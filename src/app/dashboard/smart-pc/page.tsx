@@ -21,7 +21,6 @@ import SmartPCConfigDialog from "@/app/build-smartpc/_components/smart-pc-config
 import SmartPcDropdownMenu from "@/app/build-smartpc/_components/smart-pc-dropdown-menu";
 import SmartPcConnectButton from "@/app/build-smartpc/_components/smart-pc-connect-button";
 import { ConfirmDeleteModal } from "@/app/build-smartpc/_components/confirm-delete-pc-diolog";
-import { Logger } from "@/lib/utils/logger";
 import {
   getApiUserId,
   getStatusIcon,
@@ -34,6 +33,7 @@ import {
 } from "@/app/build-smartpc/utils";
 
 import { cn } from "@/lib/utils/index";
+import { Logger } from "@/lib/utils/logger";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import {
@@ -178,7 +178,7 @@ const CloudPCPage = () => {
   // Open create dialog based on global trigger
   useEffect(() => {
     if (config.show) newPCDialog.onTrue();
-  }, [config.show]);
+  }, [config.show, newPCDialog]);
 
   // List filters
   const filteredPCs = Array.isArray(data)

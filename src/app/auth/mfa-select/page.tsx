@@ -44,7 +44,7 @@ export default function MFASelectPage() {
       });
       router.replace("/auth");
     }
-  }, []);
+  }, [router, toast]);
 
   const handleSelect = async (method: "TOTP" | "EMAIL") => {
     setLoading(true);

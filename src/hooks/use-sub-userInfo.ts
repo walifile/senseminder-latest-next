@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { getUserProfile } from "@/api/profileManagement";
 
 import { getIdToken } from "@/lib/utils";

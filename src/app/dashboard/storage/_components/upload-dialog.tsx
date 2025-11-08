@@ -10,6 +10,7 @@ import {
   useUploadToPresignedUrlMutation,
 } from "@/api/fileManagerAPI";
 
+import { Logger } from "@/lib/utils/logger";
 import {
   Select,
   SelectItem,
@@ -30,7 +31,6 @@ import { useSelector } from "react-redux";
 import { X, Check, Upload, Trash2, Loader2 } from "lucide-react";
 
 import { useFeedback } from "@/hooks/use-feedback";
-import { Logger } from "@/lib/utils/logger";
 
 interface UploadDialogProps {
   open: boolean;

@@ -5,11 +5,11 @@ import type { Schedule } from "@/api/schedule";
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { getSchedule, saveSchedule, deleteSchedule } from "@/api/schedule";
 
+import { Logger } from "@/lib/utils/logger";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Logger } from "@/lib/utils/logger";
 import {
   Dialog,
   DialogTitle,

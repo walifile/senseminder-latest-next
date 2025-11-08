@@ -2,13 +2,14 @@
 
 import React from "react";
 import Image from "next/image";
-
-import { Button } from "@/components/ui/button";
-import { useGetStartedNav } from "@/hooks/use-get-started";
 import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
 
+import { Button } from "@/components/ui/button";
+
 import { motion } from "framer-motion";
+
+import { useGetStartedNav } from "@/hooks/use-get-started";
 
 const ProductHighlights = () => {
   const onGetStarted = useGetStartedNav();

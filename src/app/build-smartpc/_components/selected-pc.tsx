@@ -6,16 +6,15 @@ import type { RootState } from "@/redux/store";
 
 import appConfig from "@/config/app-config";
 import React, { useState, useEffect } from "react";
-import { useAddBillingPlanMutation } from "@/api/billing";
-import { useUpdateAutoRenewMutation } from "@/api/billing";
+import { useAddBillingPlanMutation, useUpdateAutoRenewMutation } from "@/api/billing";
 
+import { Logger } from "@/lib/utils/logger";
 import { getErrorMessage } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { getFriendlyOSName } from "@/lib/utils/format-string";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Logger } from "@/lib/utils/logger";
 
 import { useSelector } from "react-redux";
 
@@ -27,13 +26,13 @@ import {
   Shield,
   Activity,
   Settings,
+  RotateCw,
   HardDrive,
   ChevronUp,
   MemoryStick,
   MonitorPlay,
   AlertCircle,
-  ChevronDown,
-  RotateCw
+  ChevronDown
 } from "lucide-react";
 
 import { BillingPlanDialog } from "./billing-dialog";
@@ -111,7 +110,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
     };
 
     fetchMetrics();
-  }, [selectedPCs]);
+  }, [selectedPCs, cloudPCs, setCloudPCs]);
 
   const pc = [cloudPCs[selectedPCs[0]]];
   const { user } = useSelector((state: RootState) => state.auth);

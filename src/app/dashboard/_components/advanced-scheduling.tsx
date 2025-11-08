@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 
+import { Logger } from "@/lib/utils/logger";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,6 @@ import {
   CardContent,
   CardDescription,
 } from "@/components/ui/card";
-import { Logger } from "@/lib/utils/logger";
 
 import { Plus, Clock, Power, Trash2, PowerOff, AlarmClock } from "lucide-react";
 

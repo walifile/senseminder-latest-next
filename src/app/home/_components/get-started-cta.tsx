@@ -4,10 +4,12 @@ import React from "react";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
-import { useGetStartedNav } from "@/hooks/use-get-started";
 
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
+
+import { useGetStartedNav } from "@/hooks/use-get-started";
+
 
 export default function GetStartedCTA() {
   const onGetStarted = useGetStartedNav();

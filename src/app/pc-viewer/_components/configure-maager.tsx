@@ -1,10 +1,10 @@
 import { useState } from "react";
 
+import { Logger } from "@/lib/utils/logger";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { Logger } from "@/lib/utils/logger";
 
 import { Monitor, Settings } from "lucide-react";
 

@@ -25,8 +25,8 @@ import {
 } from "@/components/ui/dialog";
 import {
   InputOTP,
-  InputOTPGroup,
   InputOTPSlot,
+  InputOTPGroup,
 } from "@/components/ui/input-otp";
 import { confirmSignIn } from "aws-amplify/auth";
 import { useDispatch, useSelector } from "react-redux";

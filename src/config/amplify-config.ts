@@ -1,9 +1,10 @@
+import { Logger } from "@/lib/utils/logger";
+
 import { Amplify } from "aws-amplify";
 import { CookieStorage } from "aws-amplify/utils";
 import { cognitoUserPoolsTokenProvider } from "aws-amplify/auth/cognito";
 
 import appConfig from "./app-config";
-import { Logger } from "@/lib/utils/logger";
 
 const {
   USER_POOL_ID,

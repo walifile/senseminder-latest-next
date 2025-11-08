@@ -1,8 +1,9 @@
 import appConfig from "@/config/app-config";
 import { useState, useEffect } from "react";
 
-import { UAParser } from "ua-parser-js";
 import { Logger } from "@/lib/utils/logger";
+
+import { UAParser } from "ua-parser-js";
 
 interface UserLocation {
   ip: string;

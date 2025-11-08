@@ -74,14 +74,21 @@ const SmartPcConfigForm = ({
     isLoading: isConfigLoading,
     isFetching: isConfigFetching,
   } = useGetSmartPcConfigQuery();
-  const apiCpuOptions = (apiConfig?.cpuOptions || {}) as Record<
-    string,
-    { value: string; label: string }[]
-  >;
-  const apiCpuCategories = (apiConfig?.cpuCategories || {}) as Record<
-    string,
-    Record<string, { value: string; label: string }[]>
-  >;
+  const apiCpuOptions = useMemo(
+    () =>
+      (apiConfig?.cpuOptions || {}) as Record<
+        string,
+        { value: string; label: string }[]
+      >,
+    [apiConfig?.cpuOptions]
+  );
+  const apiCpuCategories = useMemo(
+    () => (apiConfig?.cpuCategories || {}) as Record<
+      string,
+      Record<string, { value: string; label: string }[]>
+    >,
+    [apiConfig?.cpuCategories]
+  );
   const configLoading = isConfigLoading || isConfigFetching;
 
   const linuxCategoryCpuOptions = useMemo(
@@ -89,9 +96,10 @@ const SmartPcConfigForm = ({
     [selectedLinuxCategory, apiCpuCategories]
   );
 
-  const cpuOptionsForOS = isLinuxOS
-    ? linuxCategoryCpuOptions
-    : apiCpuOptions[selectedOS] || [];
+  const cpuOptionsForOS = useMemo(
+    () => (isLinuxOS ? linuxCategoryCpuOptions : apiCpuOptions[selectedOS] || []),
+    [isLinuxOS, linuxCategoryCpuOptions, apiCpuOptions, selectedOS]
+  );
 
   // auto cpu selection
   useEffect(() => {

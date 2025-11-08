@@ -8,6 +8,7 @@ import {
   useGetCurrentBalanceQuery,
   useGetMonthlySpendingQuery,
 } from "@/api/billing";
+
 import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
 import { cn, getErrorMessage } from "@/lib/utils";

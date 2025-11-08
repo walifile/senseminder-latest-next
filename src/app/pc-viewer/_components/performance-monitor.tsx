@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from "react";
+
 import { Logger } from "@/lib/utils/logger";
 
 export const PerformanceMonitor = () => {

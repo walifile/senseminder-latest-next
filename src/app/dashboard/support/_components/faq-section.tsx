@@ -7,10 +7,10 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Card,
-  CardHeader,
   CardTitle,
-  CardDescription,
+  CardHeader,
   CardContent,
+  CardDescription,
 } from "@/components/ui/card";
 import {
   Accordion,
@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search as SearchIcon } from "lucide-react";
-import { Category } from "../types";
+import type { Category } from "../types";
 import { CATEGORIES } from "../data";
 
 export default function FAQSection() {

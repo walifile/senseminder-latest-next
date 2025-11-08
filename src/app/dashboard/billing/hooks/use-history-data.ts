@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { DateRange } from "react-day-picker";
 
-import { useState, useEffect } from "react";
-import { Logger } from "@/lib/utils/logger";
+import { useState, useEffect, useCallback } from "react";
 
+import { Logger } from "@/lib/utils/logger";
 import { toast } from "@/components/ui/use-toast";
 
 interface UseHistoryDataProps<T> {
@@ -26,7 +26,7 @@ export function useHistoryData<T>({
 
   const [fetchHistoryTrigger, { isLoading: loading }] = lazyQueryHook();
 
-  const fetchHistory = async (isLoadMore = false) => {
+  const fetchHistory = useCallback(async (isLoadMore = false) => {
     try {
       const params = {
         from: date?.from,
@@ -65,13 +65,13 @@ export function useHistoryData<T>({
         description: message,
       });
     }
-  };
+  }, [date, lastEvaluatedKey, additionalParams, fetchHistoryTrigger]);
 
   useEffect(() => {
     setAllHistory([]);
     setLastEvaluatedKey(null);
     fetchHistory(false);
-  }, [date]);
+  }, [date, fetchHistory]);
 
   const filteredHistory = filterFunction
     ? allHistory.filter((item) => filterFunction(item, query))

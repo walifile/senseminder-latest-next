@@ -11,14 +11,10 @@ import { baseFormSchema } from "@/app/build-smartpc/schema";
 import { useGetEstimateMutation } from "@/api/fileManagerAPI";
 import { useGetSmartPcConfigQuery } from "@/api/smartPCConfigAPI";
 import { setSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
-import { Logger } from "@/lib/utils/logger";
-import {
-  osOptions,
-  storageOptions,
-  locationOptions,
-} from "@/app/build-smartpc/data";
+import { osOptions, storageOptions, locationOptions } from "@/app/build-smartpc/data";
 
 import { cn } from "@/lib/utils";
+import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 

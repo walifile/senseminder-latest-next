@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useRef, useEffect } from "react";
 
 export function useDraggablePopup(open: boolean) {
   const popupRef = useRef<HTMLDivElement | null>(null);

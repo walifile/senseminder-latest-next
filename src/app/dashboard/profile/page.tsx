@@ -8,6 +8,7 @@ import { fetchActiveSessions } from "@/api/session";
 import React, { useRef, useState, useEffect } from "react";
 import MfaTotpDialog from "@/app/dashboard/_components/MfaTotpDialog";
 import { getUserProfile, updateUserProfile } from "@/api/profileManagement";
+
 import { Logger } from "@/lib/utils/logger";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,10 +25,10 @@ import {
 } from "@/components/ui/card";
 
 import {
+  signOut,
   updatePassword,
   fetchAuthSession,
   fetchMFAPreference,
-  signOut,
   updateMFAPreference,
 } from "aws-amplify/auth";
 

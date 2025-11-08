@@ -1,8 +1,7 @@
 "use client";
 
-/* eslint-disable perfectionist/sort-imports, perfectionist/sort-named-imports */
-
 import { useMemo, useState } from "react";
+
 import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {

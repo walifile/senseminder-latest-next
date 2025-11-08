@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 
-import { StepCard } from "./step-card";
 import { useBuildPcNav } from "@/hooks/use-get-started";
+
+import { StepCard } from "./step-card";
 
 const steps = [
   {

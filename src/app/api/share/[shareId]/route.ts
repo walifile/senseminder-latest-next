@@ -1,8 +1,7 @@
-/* eslint-disable perfectionist/sort-imports, perfectionist/sort-named-imports */
-
-import appConfig from "@/config/app-config";
 import type { NextRequest } from "next/server";
+
 import { NextResponse } from "next/server";
+import appConfig from "@/config/app-config";
 
 export async function GET(
   req: NextRequest,

@@ -10,6 +10,7 @@ import {
   usePresignTicketDownloadMutation,
 } from "@/api/supportAPI";
 
+import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
@@ -24,7 +25,6 @@ import { getStatusBadgeClass } from "../../utils/get-status-badge-class";
 import PrioritySelectField from "../../_components/priority-select-field";
 
 import type { Attachment } from "../../types";
-import { Logger } from "@/lib/utils/logger";
 
 const formatLabel = (text: string) =>
   text.charAt(0).toUpperCase() + text.slice(1).replace("-", " ");
@@ -87,7 +87,7 @@ const TicketDetailPage = () => {
       setPriority(ticket.priority ?? "");
       fetchAttachmentPreviews();
     }
-  }, [ticket?.id, ticket?.priority, userId]);
+  }, [ticket, presignDownload, ticketId, userId]);
 
   const handleStatusChange = async (value: string) => {
     try {

@@ -5,12 +5,12 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogContent,
-  DialogHeader,
   DialogTitle,
+  DialogHeader,
+  DialogContent,
 } from "@/components/ui/dialog";
 
-import { MousePointer2, AlertCircle } from "lucide-react";
+import { AlertCircle, MousePointer2 } from "lucide-react";
 
 type Props = {
   open: boolean;

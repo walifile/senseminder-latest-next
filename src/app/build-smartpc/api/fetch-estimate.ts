@@ -1,7 +1,8 @@
 import type { UseFormReturn } from "react-hook-form";
 
-import type { FormValues } from "../schema";
 import { Logger } from "@/lib/utils/logger";
+
+import type { FormValues } from "../schema";
 
 interface ToastFunction {
   (options: {

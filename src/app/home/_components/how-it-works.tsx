@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 
 import { motion } from "framer-motion";
 import { Play, Laptop, Settings, ArrowRight } from "lucide-react";
+
 import { useBuildPcNav } from "@/hooks/use-get-started";
 
 const steps = [

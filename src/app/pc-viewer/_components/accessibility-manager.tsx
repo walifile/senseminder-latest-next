@@ -1,6 +1,7 @@
 // _components/accessibility-manager.tsx
 import React, { useRef, useState, useEffect, useCallback } from "react";
 
+import { Logger } from "@/lib/utils/logger";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,6 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
-import { Logger } from "@/lib/utils/logger";
 import {
   Select,
   SelectItem,

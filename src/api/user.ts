@@ -2,10 +2,11 @@ import type { ApiUser } from "@/app/dashboard/users/types";
 
 import appConfig from "@/config/app-config";
 
+import { Logger } from "@/lib/utils/logger";
+
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import { getIdToken } from "../lib/utils";
-import { Logger } from "@/lib/utils/logger";
 
 const { USER_MANAGEMENT_API } = appConfig;
 

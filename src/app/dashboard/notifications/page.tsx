@@ -6,12 +6,12 @@ import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { getNotifications, markNotificationsAsRead } from "@/api/notification";
 
+import { Logger } from "@/lib/utils/logger";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
-import { Logger } from "@/lib/utils/logger";
 import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -77,7 +77,7 @@ const NotificationsPage = () => {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [toast]);
 
   /*  Helpers  */
   const unread = notifications.filter((n) => !n.isRead);

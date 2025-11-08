@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { configureAmplify } from "@/config/amplify-config";
+
 import { Logger } from "@/lib/utils/logger";
 
 export function AmplifyProvider({ children }: { children: React.ReactNode }) {

@@ -5,8 +5,9 @@ import { isBusy } from "@/app/build-smartpc/utils";
 import { useStopVMMutation } from "@/api/fileManagerAPI";
 import { removeStartingInstance } from "@/redux/slices/dcv/starting-instances-slice";
 import { ConfirmStopModal } from "@/app/build-smartpc/_components/confirm-stop-pc-dialog";
-import { getErrorMessage } from "@/lib/utils";
+
 import { Logger } from "@/lib/utils/logger";
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 import { useDispatch } from "react-redux";

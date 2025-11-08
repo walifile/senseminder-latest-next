@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+
 import { Logger } from "@/lib/utils/logger";
 
 export default function NotFound() {

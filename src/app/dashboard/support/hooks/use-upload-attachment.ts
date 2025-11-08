@@ -3,9 +3,9 @@ import {
   usePresignTicketUpload2Mutation,
 } from "@/api/supportAPI";
 
+import { Logger } from "@/lib/utils/logger";
 import { useToast } from "@/components/ui/use-toast";
 import { sanitizeFilename } from "@/lib/utils/index";
-import { Logger } from "@/lib/utils/logger";
 
 export const useUploadAttachment = (
   userId: string | undefined,

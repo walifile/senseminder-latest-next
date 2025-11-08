@@ -7,10 +7,10 @@ import {
   useLazyDownloadFolderQuery,
 } from "@/api/fileManagerAPI";
 
+import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { Logger } from "@/lib/utils/logger";
 import {
   Card,
   CardTitle,

@@ -7,10 +7,10 @@ import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
 import { isDev } from "@/constants/initial-values";
 
+import { Logger } from "@/lib/utils/logger";
 import { checkOnboarded } from "@/lib/utils/checkOnboarded";
 
 import Home from "../app/home/_components/main-page";
-import { Logger } from "@/lib/utils/logger";
 
 export default function HomePage() {
   const router = useRouter();

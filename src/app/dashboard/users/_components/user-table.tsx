@@ -6,6 +6,7 @@ import { getAssignments } from "@/api/assignpc";
 import React, { useState, useEffect, useCallback } from "react";
 
 import { cn } from "@/lib/utils";
+import { Logger } from "@/lib/utils/logger";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -15,7 +16,6 @@ import {
   TableHead,
   TableHeader,
 } from "@/components/ui/table";
-import { Logger } from "@/lib/utils/logger";
 
 import { Mail, UserX, Monitor, UserCheck } from "lucide-react";
 

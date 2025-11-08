@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+
 import { Logger } from "@/lib/utils/logger";
 
 export const ClipboardManager = () => {
   const [clipboardHistory, setClipboardHistory] = useState<string[]>([]);
   const [currentClipboard, setCurrentClipboard] = useState("");
 
-  const syncClipboard = async () => {
+  const syncClipboard = useCallback(async () => {
     try {
       const text = await navigator.clipboard.readText();
       if (text && text !== currentClipboard) {
@@ -15,7 +16,7 @@ export const ClipboardManager = () => {
     } catch (err) {
       Logger.warn("Clipboard access denied:", err);
     }
-  };
+  }, [currentClipboard]);
 
   const writeToClipboard = async (text: string) => {
     try {
@@ -29,7 +30,7 @@ export const ClipboardManager = () => {
   useEffect(() => {
     const interval = setInterval(syncClipboard, 2000);
     return () => clearInterval(interval);
-  }, [currentClipboard]);
+  }, [syncClipboard]);
 
   return (
     <div className="space-y-4">

@@ -2,10 +2,11 @@ import type { NextRequest } from "next/server";
 
 import { NextResponse } from "next/server";
 
+import { Logger } from "@/lib/utils/logger";
+
 import { routes, publicRoutes } from "./constants/routes";
 import { firstLoginGuard } from "./middleware/firstLoginGuard";
 import {passwordProtectionMiddleware } from "./middleware/password-protection";
-import { Logger } from "@/lib/utils/logger";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

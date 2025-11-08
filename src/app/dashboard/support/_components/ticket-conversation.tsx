@@ -6,6 +6,7 @@ import {
   useSendTicketMessageMutation,
 } from "@/api/supportAPI";
 
+import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
@@ -19,7 +20,6 @@ import { Send, Trash, FileText } from "lucide-react";
 import { useFileValidation } from "../hooks/use-file-validation";
 import { useUploadAttachment } from "../hooks/use-upload-attachment";
 import { useDownloadAttachment } from "../hooks/use-download-attachment";
-import { Logger } from "@/lib/utils/logger";
 
 import type { Message } from "../types";
 

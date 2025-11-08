@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+
+import { Logger } from "@/lib/utils/logger";
 
 import { fetchAuthSession } from "aws-amplify/auth";
-import { Logger } from "@/lib/utils/logger";
 
 export function useEmailFromSession() {
   const [email, setEmail] = useState<string | null>(null);

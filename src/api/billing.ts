@@ -12,12 +12,12 @@ import type {
 
 import appConfig from "@/config/app-config";
 
+import { Logger } from "@/lib/utils/logger";
 import { formatAsYYYYMMDD } from "@/lib/utils/format-time";
 
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import { getIdToken } from "../lib/utils";
-import { Logger } from "@/lib/utils/logger";
 
 const { BILLING_API_URL } = appConfig;
 

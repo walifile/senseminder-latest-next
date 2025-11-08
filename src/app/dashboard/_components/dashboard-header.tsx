@@ -80,7 +80,7 @@ const DashboardHeader = () => {
 
   useEffect(() => {
     fetchNotifications();
-  }, []);
+  }, [fetchNotifications]);
 
   const getBalanceColor = () => {
     if (balance === null) return "bg-muted text-muted-foreground";

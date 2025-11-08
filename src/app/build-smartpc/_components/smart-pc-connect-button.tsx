@@ -6,6 +6,7 @@ import { isBusy } from "@/app/build-smartpc/utils";
 import { useLaunchVMMutation } from "@/api/fileManagerAPI";
 import { setLaunchVMResponse } from "@/redux/slices/dcv/dcv-slice";
 
+import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
 
 import { useDispatch } from "react-redux";
@@ -17,8 +18,6 @@ import { useToast } from "@/hooks/use-toast";
 import SlidePopup from "./slide-pop-up"; 
 
 import type { PC } from "../types";
-import { Logger } from "@/lib/utils/logger";
-
 
 type Props = {
   pc: PC;

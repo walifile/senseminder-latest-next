@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from "react";
 
 import { cn } from "@/lib/utils";
 // _components/audio-video-manager.tsx
+import { Logger } from "@/lib/utils/logger";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,6 @@ import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
-import { Logger } from "@/lib/utils/logger";
 import {
   Select,
   SelectItem,
@@ -253,7 +253,7 @@ export const AudioVideoManager: React.FC<AudioVideoManagerProps> = ({
         testStream.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [loadDevices]);
+  }, [loadDevices, testStream]);
 
   // Update stats periodically
   useEffect(() => {

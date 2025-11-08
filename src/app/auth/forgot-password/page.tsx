@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
 import { checkMfaStatus, sendRecoveryEmail } from "@/api/mfa-recovery";
 
+import { Logger } from "@/lib/utils/logger";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -15,7 +16,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 
 import { handleResetPassword } from "@/lib/services/auth";
-import { Logger } from "@/lib/utils/logger";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Please enter a valid email address"),

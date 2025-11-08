@@ -6,6 +6,8 @@ import {
   setTempUser,
 } from "@/redux/slices/auth/auth-slice";
 
+import { Logger } from "@/lib/utils/logger";
+
 import {
   signUp,
   signIn,
@@ -21,7 +23,6 @@ import {
 } from "aws-amplify/auth";
 
 import { getErrorMessage } from "../utils";
-import { Logger } from "@/lib/utils/logger";
 
 interface SignUpFormData {
   email: string;

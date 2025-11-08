@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-import { signOut, fetchAuthSession } from "aws-amplify/auth";
 import { Logger } from "@/lib/utils/logger";
+
+import { signOut, fetchAuthSession } from "aws-amplify/auth";
 
 type CognitoIdTokenPayload = {
   sub: string;
@@ -78,7 +79,7 @@ export default function Dashboard() {
   };
 
   loadTokens();
-}, []);
+}, [router]);
 
   const handleCopy = (token: string | null, label: string) => {
     if (token) {

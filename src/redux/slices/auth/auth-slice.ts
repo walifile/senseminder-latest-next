@@ -1,10 +1,10 @@
 import type { RootState } from "@/redux/store";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
+import { Logger } from "@/lib/utils/logger";
 import { syncAuthState } from "@/lib/utils/auth-sync";
 
 import { createSlice } from "@reduxjs/toolkit";
-import { Logger } from "@/lib/utils/logger";
 
 interface User {
   email: string;

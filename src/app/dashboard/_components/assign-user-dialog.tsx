@@ -6,6 +6,7 @@ import { useGetUsersQuery } from "@/api/user";
 import React, { useState, useEffect, useCallback } from "react";
 import { assignPC, unassignPC, getAssignments } from "@/api/assignpc";
 
+import { Logger } from "@/lib/utils/logger";
 import { Badge } from "@/components/ui/badge";
 import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,6 @@ import {
   DialogHeader,
   DialogContent,
 } from "@/components/ui/dialog";
-import { Logger } from "@/lib/utils/logger";
 
 import { toast } from "@/hooks/use-toast";
 
