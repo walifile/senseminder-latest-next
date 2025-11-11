@@ -1,6 +1,8 @@
-/* eslint-disable perfectionist/sort-imports */
+ 
 import { Button } from "@/components/ui/button";
+
 import { Sun, Moon } from "lucide-react";
+
 import { useTheme } from "@/components/shared/layout/theme-provider";
 
 export function ThemeToggle() {

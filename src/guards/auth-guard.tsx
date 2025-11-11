@@ -29,8 +29,9 @@ export default function AuthGuard({ children }: AuthProviderProps) {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [initialized, setInitialized] = useState(false);
 
+  // Treat entries ending with "/" as prefixes, except the root "/".
   const isPublicRoute = publicRoutes.some(
-    (r) => pathname === r || (r.endsWith("/") && pathname.startsWith(r))
+    (r) => pathname === r || (r !== "/" && r.endsWith("/") && pathname.startsWith(r))
   );
 
   const initializeAuth = async () => {

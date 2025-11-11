@@ -1,13 +1,13 @@
 "use client";
 
-/* eslint-disable perfectionist/sort-imports */
+ 
 
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
-
 import { routes } from "@/constants/routes";
 import { selectIsAuthenticated } from "@/redux/slices/auth/auth-slice";
+
+import { useSelector } from "react-redux";
 
 /**
  * Returns a stable handler that routes the user to the right place when

@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "imports:fix": "eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix"
   },
   "dependencies": {
     "@aws-amplify/auth": "^6.9.1",

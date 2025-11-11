@@ -1,9 +1,12 @@
 "use client";
 
-/* eslint-disable perfectionist/sort-imports */
+ 
 import { useGetShareInfoQuery } from "@/api/fileManagerAPI";
-import { Button } from "@/components/ui/button";
+import { buildSharedFileView } from "@/app/dashboard/storage/utils";
+import SharedFileViewer from "@/app/dashboard/storage/_components/shared-file-viewer";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardTitle,
@@ -11,9 +14,8 @@ import {
   CardContent,
   CardDescription,
 } from "@/components/ui/card";
+
 import { Download as DownloadIcon } from "lucide-react";
-import SharedFileViewer from "@/app/dashboard/storage/_components/shared-file-viewer";
-import { buildSharedFileView } from "@/app/dashboard/storage/utils";
 
 export default function Client({ shareId }: { shareId: string }) {
   const { data, isLoading, isError } = useGetShareInfoQuery({ shareId });

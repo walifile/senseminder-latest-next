@@ -20,20 +20,22 @@ import { useSelector } from "react-redux";
 
 /* ---- External: custom-ui ---- */
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
+import { X ,
   Power,
   Monitor,
   Loader2,
   Keyboard,
   Maximize,
   Minimize,
+  FolderDown,
   MonitorPlay,
   ChevronLeft,
 } from "lucide-react";
 
 /* ---- Relative ---- */
 import dcv from "../../../public/dcvjs/dcv";
+import FileStorageModal from "./_components/file-storage-modal";
+import { looksLikeDcvConn } from "./_components/file-transfer/types"; // adjust path
 
 /* ---------------- Types ---------------- */
 
@@ -68,18 +70,10 @@ interface DcvConnection {
 
   // Optional device & transfer APIs (feature-detected at runtime)
   setWebcam?: (enabled: boolean, deviceId?: string) => Promise<void> | void;
-  sendFiles?: (files: File[]) => Promise<void> | void;
-  addEventListener?: (evt: string, cb: (...args: unknown[]) => void) => void;
-  removeEventListener?: (evt: string, cb: (...args: unknown[]) => void) => void;
-  on?: (evt: string, cb: (...args: unknown[]) => void) => void;
-  off?: (evt: string, cb: (...args: unknown[]) => void) => void;
-
   _lastHeads?: Head[];
   _sensepcCleanup?: () => void;
-  _fileOfferCleanup?: () => void;
 }
 
-type IncomingFile = { id: string; name: string; size: number; url: string };
 
 /* ---------------- Utils ---------------- */
 
@@ -135,10 +129,29 @@ function isChromium(): boolean {
   const ua = typeof navigator !== "undefined" ? navigator.userAgent.toLowerCase() : "";
   return typeof window !== "undefined" && (!!(window as { chrome?: unknown }).chrome || ua.includes("edg/"));
 }
+function triggerBrowserDownload(url: string, filename?: string) {
+  if (!url) return;
+  try {
+    const a = document.createElement("a");
+    a.href = filename
+      ? `${url}${url.includes("?") ? "&" : "?"}filename=${encodeURIComponent(filename)}`
+      : url;
+    a.download = filename ?? "";
+    a.target = "_blank";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } catch {
+    window.open(url, "_blank", "noopener");
+  }
+}
+
 
 /* ---------------- Page ---------------- */
 
 const DCViewerContent: React.FC = () => {
+  const [fileModalOpen, setFileModalOpen] = useState(false);
   const searchParams = useSearchParams();
   const sessionParam = searchParams.get("session");
   const instanceId = sessionParam ? atob(sessionParam) : null;
@@ -179,12 +192,6 @@ const DCViewerContent: React.FC = () => {
   const [_webcamDeviceId, setWebcamDeviceId] = useState<string | undefined>(undefined); // used via no-op below
   const [webcamError, setWebcamError] = useState<string | null>(null);
 
-  // File transfer state
-  const [incomingFiles, setIncomingFiles] = useState<IncomingFile[]>([]);
-  const [ftSupported, setFtSupported] = useState<boolean>(false);
-  const [ftError, setFtError] = useState<string | null>(null);
-  const [isDragOver, setIsDragOver] = useState(false);
-  const filePickerRef = useRef<HTMLInputElement | null>(null);
 
   const launchVMResponse = useSelector((state: RootState) =>
     instanceId ? selectLaunchVMResponse(state, instanceId) : null
@@ -306,130 +313,13 @@ const DCViewerContent: React.FC = () => {
     }
   }
 
-  // ---- File transfer helpers ----
-  function detectFileTransferSupport(conn: DcvConnection | null): boolean {
-    if (!conn) return false;
-    const c = conn as unknown as Record<string, unknown>;
-    return Boolean(
-      typeof (conn.sendFiles as unknown) === "function" ||
-        (c.fileTransfer && typeof (c.fileTransfer as { upload?: unknown }).upload === "function") ||
-        typeof (c.uploadFiles as unknown) === "function"
-    );
-  }
-
-  async function uploadFilesViaSDK(files: File[]) {
-    const conn = connRef.current as unknown as Record<string, unknown> | null;
-    if (!conn) throw new Error("Not connected.");
-
-    if (typeof (conn.sendFiles as unknown) === "function") {
-      await (conn.sendFiles as (fs: File[]) => Promise<void> | void)(files);
-      return;
-    }
-
-    if (conn.fileTransfer && typeof (conn.fileTransfer as { upload: (fs: File[]) => Promise<void> | void }).upload === "function") {
-      await (conn.fileTransfer as { upload: (fs: File[]) => Promise<void> | void }).upload(files);
-      return;
-    }
-
-    if (typeof (conn.uploadFiles as unknown) === "function") {
-      await (conn.uploadFiles as (fs: File[]) => Promise<void> | void)(files);
-      return;
-    }
-
-    throw new Error("This DCV web build does not expose file transfer.");
-  }
-
-  async function handlePickUpload(ev: React.ChangeEvent<HTMLInputElement>) {
-    const files = ev.target.files ? Array.from(ev.target.files) : [];
-    ev.target.value = "";
-    if (!files.length) return;
-    try {
-      await uploadFilesViaSDK(files);
-      setFtError(null);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      setFtError(msg);
-    }
-  }
-
-  async function handleDropUpload(ev: React.DragEvent) {
-    ev.preventDefault();
-    ev.stopPropagation();
-    setIsDragOver(false);
-    const dt = ev.dataTransfer;
-    const files = dt?.files ? Array.from(dt.files) : [];
-    if (!files.length) return;
-    try {
-      await uploadFilesViaSDK(files);
-      setFtError(null);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      setFtError(msg);
-    }
-  }
-
-  function handleDragOver(ev: React.DragEvent) {
-    ev.preventDefault();
-    ev.stopPropagation();
-    setIsDragOver(true);
-  }
-  function handleDragLeave(ev: React.DragEvent) {
-    ev.preventDefault();
-    ev.stopPropagation();
-    setIsDragOver(false);
-  }
-
-  function attachFileOfferListeners(conn: DcvConnection) {
-    const handler = async (payload: unknown) => {
-      try {
-        const p = payload as {
-          name?: string;
-          size?: number;
-          arrayBuffer?: ArrayBuffer;
-          blob?: Blob;
-          stream?: { getReader: () => ReadableStreamDefaultReader<Uint8Array> };
-        };
-        const name = p?.name || `dcv-file-${Date.now()}`;
-        const size = p?.size ?? 0;
-
-        let blob: Blob | null = null;
-
-        if (p?.arrayBuffer) {
-          blob = new Blob([p.arrayBuffer]);
-        } else if (p?.blob) {
-          blob = p.blob;
-        } else if (p?.stream && typeof p.stream.getReader === "function") {
-          const reader = p.stream.getReader();
-          const chunks: Uint8Array[] = [];
-          let readingDone = false;
-          while (!readingDone) {
-            const { value, done } = await reader.read();
-            readingDone = done ?? true;
-            if (value) chunks.push(value);
-          }
-          blob = new Blob(chunks);
-        }
-
-        if (!blob) return;
-
-        const url = URL.createObjectURL(blob);
-        setIncomingFiles((prev) => [{ id: `${Date.now()}-${Math.random()}`, name, size, url }, ...prev]);
-      } catch {
-        /* no-op */
-      }
-    };
-
-    if (typeof conn.on === "function") conn.on("file-offer", handler);
-    if (typeof conn.addEventListener === "function") conn.addEventListener("file-offer", handler);
-
-    conn._fileOfferCleanup = () => {
-      if (typeof conn.off === "function") conn.off("file-offer", handler);
-      if (typeof conn.removeEventListener === "function") conn.removeEventListener("file-offer", handler);
-    };
-  }
 
   // ---- Connect & auto-fit ----
   const connectToDcv = async (): Promise<void> => {
+    const assetsPath = "/dcvjs";           // matches /public/dcvjs/*
+    const gatewayBase = `https://${url}`;  // DCV Gateway host (no manual port)
+
+    if (connRef.current) return;
     if (!(sessionId && authToken)) return;
 
     setTvEffect("on");
@@ -485,61 +375,48 @@ const DCViewerContent: React.FC = () => {
         useGateway: true,
         divId: "remote-desktop",
         clientHiDpiScaling: !isHiDpi ? true : false,
-        observers: {
-          firstFrame: () => {
-            try {
-              conn.enableDisplayQualityUpdates?.(true);
-            } catch {
-              /* no-op */
-            }
-            try {
-              conn.enableHighPixelDensity?.(!isHiDpi);
-            } catch {
-              /* no-op */
-            }
+        assetsBaseUrl: assetsPath,
+        baseUrl: assetsPath,
+        resourceBaseUrl: gatewayBase,
+    callbacks: {
+  firstFrame: () => {
+    try { conn.enableDisplayQualityUpdates?.(true); } catch {/* no-op */}
+    try { conn.enableHighPixelDensity?.(!(window?.devicePixelRatio > 1)); } catch { /* no-op */}
+    setIsLoading(false);
+    setIsConnected(true);
+    handleQualityChange("auto");
+    setConnectionState("CONNECTED");
+    void fitToContainer(conn._lastHeads); 
+    void fitToContainer();
+  },
 
-            setIsLoading(false);
-            setIsConnected(true);
-            handleQualityChange("auto");
-            setConnectionState("CONNECTED");
-            void fitToContainer();
-          },
-          displayLayout: (_serverWidth: number, _serverHeight: number, heads: Head[]) => {
-            conn._lastHeads = heads;
-            void fitToContainer(heads);
-          },
-          disconnect: () => {
-            setIsConnected(false);
-            setConnectionState("DISCONNECTED");
-            setTvEffect("off");
+  // moved from observers.displayLayout
+  displayLayout: (_serverWidth: number, _serverHeight: number, heads: Head[]) => {
+    conn._lastHeads = heads;
+    // void fitToContainer(heads);
+  },
 
-            // Cleanup device/file-transfer state on disconnect
-            setWebcamEnabled(false);
-            setWebcamDeviceId(undefined);
-            setWebcamError(null);
-            try {
-              conn._fileOfferCleanup?.();
-            } catch {
-              /* no-op */
-            }
-            setIncomingFiles([]);
-            setFtError(null);
-            setIsDragOver(false);
-          },
-        },
-      })) as DcvConnection;
+  // moved from observers.disconnect
+  disconnect: () => {
+    setIsConnected(false);
+    setConnectionState("DISCONNECTED");
+    setTvEffect("off");
+    setWebcamEnabled(false);
+    setWebcamDeviceId(undefined);
+    setWebcamError(null);
+  },
+
+  // keep these for FileStorage & feature probing
+  fileDownload: (_c: unknown, file: { url?: string; filename?: string }) => {
+    if (file?.url) triggerBrowserDownload(file.url, file.filename);
+  },
+  filePrinted: () => {},
+  featuresUpdate: () => {},
+},
+
+        })) as DcvConnection;
 
       connRef.current = conn;
-
-      // --- File transfer capability and listeners ---
-      const supported = detectFileTransferSupport(conn);
-      setFtSupported(supported);
-      if (supported) {
-        attachFileOfferListeners(conn);
-      } else {
-        setFtSupported(false);
-        setFtError(null); // show Unavailable badge, no red error
-      }
 
       const onResize = debounce(() => {
         void fitToContainer(conn._lastHeads);
@@ -569,11 +446,7 @@ const DCViewerContent: React.FC = () => {
     void connectToDcv();
     return () => {
       const c = connRef.current;
-      try {
-        c?._fileOfferCleanup?.();
-      } catch {
-        /* no-op */
-      }
+    
       try {
         c?._sensepcCleanup?.();
       } catch {
@@ -588,9 +461,6 @@ const DCViewerContent: React.FC = () => {
       setWebcamEnabled(false);
       setWebcamDeviceId(undefined);
       setWebcamError(null);
-      setIncomingFiles([]);
-      setFtError(null);
-      setIsDragOver(false);
       connRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -603,11 +473,6 @@ const DCViewerContent: React.FC = () => {
   const handleDisconnect = () => {
     const c = connRef.current;
     if (c) {
-      try {
-        c._fileOfferCleanup?.();
-      } catch {
-        /* no-op */
-      }
       try {
         c._sensepcCleanup?.();
       } catch {
@@ -626,9 +491,6 @@ const DCViewerContent: React.FC = () => {
       setWebcamEnabled(false);
       setWebcamDeviceId(undefined);
       setWebcamError(null);
-      setIncomingFiles([]);
-      setFtError(null);
-      setIsDragOver(false);
     }
   };
 
@@ -865,6 +727,7 @@ const DCViewerContent: React.FC = () => {
                     {launchVMResponse?.pcName || "—"}
                   </h2>
                 </div>
+
                 <button
                   type="button"
                   aria-label="Close"
@@ -949,6 +812,9 @@ const DCViewerContent: React.FC = () => {
                     </div>
                   </div>
 
+
+                  
+
                   {/* Quality Settings */}
                   <div
                     className={cn(
@@ -1031,6 +897,37 @@ const DCViewerContent: React.FC = () => {
                   </div>
                 </div>
 
+
+                {/* File Transfer (simple box with text + icon) */}
+<div
+  className={cn(
+    "rounded-lg border p-3",
+    connectionState === "DISCONNECTED"
+      ? "border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900"
+      : "border-zinc-300/60 dark:border-zinc-700/60 bg-white/55 dark:bg-zinc-900/35"
+  )}
+>
+  <div className="flex items-center justify-between">
+    <h3 className="text-sm font-semibold">File Transfer</h3>
+
+    <Button
+      variant="outline"
+      size="icon"
+      className={cn(
+        "h-7 w-7",
+        !isConnected && "opacity-50 cursor-not-allowed"
+      )}
+      onClick={() => setFileModalOpen(true)}
+      disabled={!isConnected}
+      title="Open File Storage"
+      aria-label="Open File Storage"
+    >
+      <FolderDown className="h-4 w-4" />
+    </Button>
+  </div>
+</div>
+
+
                 {/* Bottom Session Control */}
                 <div className="relative">
                   <div
@@ -1041,80 +938,13 @@ const DCViewerContent: React.FC = () => {
                         : "border-zinc-300/50 dark:border-zinc-700/50 bg-zinc-50/40 dark:bg-zinc-900/40 backdrop-blur"
                     )}
                   >
-                    {/* File transfer controls */}
-                    <div
-                      className={cn(
-                        "rounded-lg border p-2 mb-2",
-                        "bg-white/70 dark:bg-zinc-900/70 border-zinc-300 dark:border-zinc-700"
-                      )}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-medium">File Transfer</span>
-                        <Badge
-                          variant={ftSupported ? "default" : "secondary"}
-                          className={cn(
-                            "h-5 px-2 text-[11px]",
-                            ftSupported
-                              ? "bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/20"
-                              : "bg-zinc-300/40 text-zinc-700 dark:text-zinc-300 border-zinc-400/30"
-                          )}
-                        >
-                          {ftSupported ? "Enabled" : "Unavailable"}
-                        </Badge>
-                      </div>
-
-                      <div
-                        onDrop={handleDropUpload}
-                        onDragOver={handleDragOver}
-                        onDragLeave={handleDragLeave}
-                        className={cn(
-                          "relative border rounded-md px-2 py-3 text-[11px] text-center cursor-pointer",
-                          "transition-colors",
-                          isDragOver
-                            ? "border-blue-400 bg-blue-50/60 dark:border-blue-500 dark:bg-blue-900/30"
-                            : "border-zinc-300 dark:border-zinc-700 bg-white/50 dark:bg-zinc-900/50"
-                        )}
-                        title={ftSupported ? "Drop files to upload" : "File transfer not supported in this build"}
-                        onClick={() => filePickerRef.current?.click()}
-                      >
-                        {ftSupported ? "Drag & drop files here, or click to choose" : "File transfer not supported"}
-                        <input
-                          ref={filePickerRef}
-                          type="file"
-                          multiple
-                          className="hidden"
-                          onChange={handlePickUpload}
-                        />
-                      </div>
-
-                      {ftError && (
-                        <div className="mt-2 text-[11px] text-red-600 dark:text-red-400">
-                          {ftError}
-                        </div>
-                      )}
-
-                      {/* Incoming / offered files to save locally */}
-                      {incomingFiles.length > 0 && (
-                        <div className="mt-2 max-h-32 overflow-auto space-y-1">
-                          {incomingFiles.map((f) => (
-                            <div key={f.id} className="flex items-center justify-between text-[11px]">
-                              <span className="truncate mr-2" title={`${f.name} • ${Math.round(f.size / 1024)} KB`}>
-                                {f.name}
-                              </span>
-                              <a href={f.url} download={f.name} className="underline hover:opacity-80">
-                                Download
-                              </a>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
 
                     <div className="rounded-lg border p-2 bg-white/70 dark:bg-zinc-900/70 border-zinc-300 dark:border-zinc-700">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-medium">Session Control</span>
                       </div>
 
+            
                       <div className="grid grid-cols-3 gap-2 mb-2">
                         <Button variant="outline" className="h-8" title="Open in New Window" onClick={openNewSession}>
                           <MonitorPlay className="h-4 w-4" />
@@ -1176,6 +1006,14 @@ const DCViewerContent: React.FC = () => {
             </motion.div>
           )}
         </AnimatePresence>
+             {/* File Storage Modal (uses live DCV connection) */}
+        <FileStorageModal
+          conn={looksLikeDcvConn(connRef.current) ? connRef.current : null}
+          open={fileModalOpen}
+          onOpenChange={setFileModalOpen}
+         autoOpenOnGlobalDrag
+         title="File storage"
+        />
       </div>
 
       {/* Force every DCV wrapper node to fill the viewport */}

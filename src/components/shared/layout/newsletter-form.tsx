@@ -1,20 +1,20 @@
 "use client";
 
-/* eslint-disable perfectionist/sort-imports */
+ 
 
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
-
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import useLocation from "@/hooks/use-location";
 import {
   useSubscribeToNewsletterMutation,
   useUnsubscribeFromNewsletterMutation,
 } from "@/api/newsletterAPI";
-import { useSearchParams } from "next/navigation";
+
+import { Logger } from "@/lib/utils/logger";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 import { useToast } from "@/hooks/use-toast";
-import { Logger } from "@/lib/utils/logger";
+import useLocation from "@/hooks/use-location";
 
 type NewsletterFormProps = {
   variant?: "inline" | "card";
