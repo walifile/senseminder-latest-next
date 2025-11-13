@@ -26,6 +26,33 @@ TTL_DAYS = 60
 def _iso_now():
     return datetime.now(timezone.utc).isoformat()
 
+def _parse_created_at(item: dict):
+    """Return a timezone-aware datetime for the item's createdAt field."""
+    if not isinstance(item, dict):
+        return None
+    created = item.get('createdAt')
+    if not created:
+        return None
+
+    if isinstance(created, datetime):
+        dt = created
+    elif isinstance(created, str):
+        created = created.strip()
+        if not created:
+            return None
+        if created.endswith('Z'):
+            created = f"{created[:-1]}+00:00"
+        try:
+            dt = datetime.fromisoformat(created)
+        except Exception:
+            return None
+    else:
+        return None
+
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt
+
 def _month_key(dt=None):
     dt = dt or datetime.now(timezone.utc)
     return dt.strftime('%Y-%m')
@@ -580,6 +607,8 @@ def handle_list(event):
         recursive = query_params.get('recursive', 'false').lower() == 'true'
         page = int(query_params.get('page', 1))
         limit = int(query_params.get('limit', 20))
+        modified_filter = (query_params.get('modified') or '').strip().lower()
+        now_utc = datetime.now(timezone.utc)
 
         if not region or not user_id:
             return response(400, {'message': 'Region and userId are required.'})
@@ -595,6 +624,14 @@ def handle_list(event):
 
         # Region filter + hide soft-deleted
         files = [item for item in files if item.get('region') == region and not item.get('isDeleted')]
+
+        def _filter_items_by_created(items, predicate):
+            filtered = []
+            for entry in items:
+                created_dt = _parse_created_at(entry)
+                if created_dt and predicate(created_dt):
+                    filtered.append(entry)
+            return filtered
 
         # Derive accurate 'shared' based on active share records (covers cancel/expiry)
         try:
@@ -635,14 +672,14 @@ def handle_list(event):
                 # Treat shared strictly by the 'shared' flag to avoid stale 'status' values
                 files = [f for f in files if bool(f.get('shared', False))]
             elif 'recent' in ft:
-                one_day_ago = datetime.now(timezone.utc) - timedelta(days=1)
-                files = [f for f in files if 'createdAt' in f and datetime.fromisoformat(f['createdAt']) > one_day_ago]
+                one_day_ago = now_utc - timedelta(days=1)
+                files = _filter_items_by_created(files, lambda created: created > one_day_ago)
             elif 'today' in ft:
-                today = datetime.now(timezone.utc).date()
-                files = [f for f in files if 'createdAt' in f and datetime.fromisoformat(f['createdAt']).date() == today]
+                today = now_utc.date()
+                files = _filter_items_by_created(files, lambda created: created.date() == today)
             elif 'week' in ft:
-                seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
-                files = [f for f in files if 'createdAt' in f and datetime.fromisoformat(f['createdAt']) > seven_days_ago]
+                seven_days_ago = now_utc - timedelta(days=7)
+                files = _filter_items_by_created(files, lambda created: created > seven_days_ago)
         else:
             if folder:
                 folder = folder.strip('/') + '/'
@@ -664,6 +701,14 @@ def handle_list(event):
                     if f['id'].startswith(base_prefix)
                     and '/' not in f['id'][len(base_prefix):].strip('/')
                 ]
+
+        if modified_filter:
+            if 'today' in modified_filter:
+                today = now_utc.date()
+                files = _filter_items_by_created(files, lambda created: created.date() == today)
+            elif 'week' in modified_filter:
+                seven_days_ago = now_utc - timedelta(days=7)
+                files = _filter_items_by_created(files, lambda created: created > seven_days_ago)
 
         if search_term:
             st = search_term.lower()
