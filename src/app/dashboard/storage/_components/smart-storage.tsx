@@ -216,8 +216,11 @@ const CloudStorage = () => {
   // Logger.log(path);
 
   const selectedType = (() => {
-    if (selectedCategory === "All Files") return "";
-    if (selectedCategory === "Folders") return "folder"; // Add this line
+    if (selectedCategory === "All Files") {
+      // Fallback to modified filter when no category is selected so older backends (type-only) still work.
+      return filters.modified || "";
+    }
+    if (selectedCategory === "Folders") return "folder";
     return selectedCategory.toLowerCase();
   })();
 
