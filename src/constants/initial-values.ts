@@ -1,7 +1,5 @@
 import appConfig from "@/config/app-config";
 
-const { NEXT_PUBLIC_CURRENT_ENVIRONMENT } = appConfig;
-
 export const signupFormInitialvalues = {
   firstName: "",
   lastName: "",
@@ -29,5 +27,7 @@ export const signinInitialvalues = {
   password: "",
   rememberMe: [],
 };
+
+const { NEXT_PUBLIC_CURRENT_ENVIRONMENT } = appConfig;
 
 export const isDev = NEXT_PUBLIC_CURRENT_ENVIRONMENT === "develop";

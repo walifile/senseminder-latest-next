@@ -12,9 +12,10 @@ export const syncAuthState = (
     setCookie("auth.state", JSON.stringify({ isAuthenticated, token }), {
       path: "/",
       secure: NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60, // 30 days
     });
   } else {
-    deleteCookie("auth.state");
+    deleteCookie("auth.state", { path: "/" });
   }
 };

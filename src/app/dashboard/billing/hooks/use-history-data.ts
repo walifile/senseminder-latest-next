@@ -28,11 +28,14 @@ export function useHistoryData<T>({
 
   const fetchHistory = useCallback(async (isLoadMore = false) => {
     try {
+      // Reset pagination if not loading more
+      const startingAfter = isLoadMore ? lastEvaluatedKey : null;
+
       const params = {
         from: date?.from,
         to: date?.to,
         limit: 5,
-        startingAfter: lastEvaluatedKey,
+        startingAfter,
         ...additionalParams,
       };
 
@@ -71,7 +74,7 @@ export function useHistoryData<T>({
     setAllHistory([]);
     setLastEvaluatedKey(null);
     fetchHistory(false);
-  }, [date, fetchHistory]);
+  }, [date]);
 
   const filteredHistory = filterFunction
     ? allHistory.filter((item) => filterFunction(item, query))

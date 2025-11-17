@@ -29,17 +29,35 @@ import { Wallet, TrendingUp, CheckCircle2 } from "lucide-react";
 import { promotionsAndCashback } from "../data";
 import QuickStatsTooltip from "../_components/quick-stats-tooltip";
 import QuickStatsLoading from "../_components/quick-stats-loading";
+import { useBillingRefresh } from "../_context/billing-refresh-context";
 
 type PromoInfoType = {
-  eligible: boolean;
-  promoBalance: number;
+  eligible?: boolean;
+  promoBalance?: number;
+  cashback?: number;
 } | null;
 
+type BalanceDataWithPromo = {
+  balance?: number;
+  lastRecharge?: { timestamp?: string | null } | null;
+  promoBalance?: number;
+  cashback?: number;
+} | null | undefined;
+
 const QuickStats = () => {
-  const { data: balanceData, isLoading: balanceLoading } =
-    useGetCurrentBalanceQuery();
-  const { data: spendingData, isLoading: spendingLoading } =
-    useGetMonthlySpendingQuery();
+  const { refreshKey } = useBillingRefresh();
+
+  const {
+    data: balanceData,
+    isLoading: balanceLoading,
+    refetch: refetchBalance,
+  } = useGetCurrentBalanceQuery();
+
+  const {
+    data: spendingData,
+    isLoading: spendingLoading,
+    refetch: refetchSpending,
+  } = useGetMonthlySpendingQuery();
 
   const balance = balanceData?.balance ?? null;
   const lastRechargeTimestamp = balanceData?.lastRecharge?.timestamp ?? null;
@@ -53,6 +71,9 @@ const QuickStats = () => {
   const [redeeming, setRedeeming] = useState(false);
   const [step, setStep] = useState<"confirm" | "success">("confirm");
 
+  const balanceDataWithPromo = balanceData as BalanceDataWithPromo;
+
+  // Load promo & cashback info (initial + on refresh)
   useEffect(() => {
     (async () => {
       setPromoLoading(true);
@@ -62,10 +83,27 @@ const QuickStats = () => {
       } catch (e) {
         Logger.error("Failed to load promo info:", e);
       } finally {
-        setPromoLoading(false); // set false when done
+        setPromoLoading(false);
       }
     })();
-  }, []);
+  }, [refreshKey]);
+
+  // Refetch balance & monthly spending when refresh is triggered
+  useEffect(() => {
+    refetchBalance();
+    refetchSpending();
+  }, [refreshKey, refetchBalance, refetchSpending]);
+
+  // ✅ Single source of truth for amounts (wallet lambda first, then promo lambda)
+  const promoBalanceValue =
+    balanceDataWithPromo?.promoBalance ??
+    promoInfo?.promoBalance ??
+    0;
+
+  const cashbackValue =
+    balanceDataWithPromo?.cashback ??
+    promoInfo?.cashback ??
+    0;
 
   const getBalanceColor = () => {
     if (balance !== null && balance >= 20) return "text-green-500";
@@ -106,12 +144,12 @@ const QuickStats = () => {
             <p className="text-xs text-muted-foreground">
               {lastRechargeTimestamp
                 ? `Last recharged on ${new Date(
-                    lastRechargeTimestamp
-                  ).toLocaleDateString(undefined, {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}`
+                  lastRechargeTimestamp
+                ).toLocaleDateString(undefined, {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}`
                 : "No recharge history yet"}
             </p>
           </div>
@@ -194,7 +232,11 @@ const QuickStats = () => {
                       Cashback
                     </span>
                     <span className="text-base font-semibold text-purple-500">
-                      $0.00
+                      {promoLoading ? (
+                        <QuickStatsLoading />
+                      ) : (
+                        fCurrency(cashbackValue)
+                      )}
                     </span>
                   </div>
                 </div>
@@ -206,44 +248,62 @@ const QuickStats = () => {
                     label: "Promotion",
                     tooltip:
                       "Promotional balance is a limited-time credit added to your account (e.g., from offers or referrals). It can only be used for service usage and holds no real-world cash value.",
-                    value: promoInfo?.promoBalance || 0,
+                    value: promoBalanceValue,
                     color: "text-sky-500",
                   },
                   ...promotionsAndCashback.filter(
                     (item) => item.label !== "Promotion"
                   ),
-                ].map((item, idx, arr) => (
-                  <React.Fragment key={item.label}>
-                    <div className="flex flex-col items-start gap-0.5 leading-tight">
-                      <div className="flex items-center gap-1">
-                        <span className="text-[11px] tracking-wide text-muted-foreground uppercase">
-                          {item.label}
+                ].map((item, idx, arr) => {
+                  const lowerLabel = item.label.toLowerCase();
+                  const isPromotion = lowerLabel.includes("promotion");
+                  const isCashback = lowerLabel.includes("cashback");
+
+                  let dynamicValue = item.value;
+                  if (isPromotion) {
+                    dynamicValue = promoBalanceValue;
+                  } else if (isCashback) {
+                    dynamicValue = cashbackValue;
+                  }
+
+                  const showLoading = promoLoading && isCashback;
+
+                  return (
+                    <React.Fragment key={item.label}>
+                      <div className="flex flex-col items-start gap-0.5 leading-tight">
+                        <div className="flex items-center gap-1">
+                          <span className="text-[11px] tracking-wide text-muted-foreground uppercase">
+                            {item.label}
+                          </span>
+                          <QuickStatsTooltip
+                            content={item.tooltip}
+                            iconClass="size-3.5 text-muted-foreground"
+                          />
+                        </div>
+
+                        <span
+                          className={`text-base font-semibold ${item.color}`}
+                        >
+                          {showLoading ? (
+                            <QuickStatsLoading />
+                          ) : (
+                            fCurrency(dynamicValue)
+                          )}
                         </span>
-                        <QuickStatsTooltip
-                          content={item.tooltip}
-                          iconClass="size-3.5 text-muted-foreground"
-                        />
                       </div>
 
-                      <span className={`text-base font-semibold ${item.color}`}>
-                        {promoLoading && item.label === "Promotion" ? (
-                          <QuickStatsLoading />
-                        ) : (
-                          fCurrency(item.value)
-                        )}
-                      </span>
-                    </div>
-
-                    {idx < arr.length - 1 && (
-                      <div className="w-px bg-border mx-3" />
-                    )}
-                  </React.Fragment>
-                ))}
+                      {idx < arr.length - 1 && (
+                        <div className="w-px bg-border mx-3" />
+                      )}
+                    </React.Fragment>
+                  );
+                })}
               </div>
             )}
           </div>
         </CardContent>
       </Card>
+
       <Dialog
         open={open}
         onOpenChange={(v) => {
@@ -275,12 +335,13 @@ const QuickStats = () => {
                     try {
                       const res = await redeemPromo();
                       setRedeemedAmount(res.amountAdded);
-                      // toast.success(`Promo redeemed: +${fCurrency(res.amountAdded)} credits`);
                       const info = await getPromoInfo();
                       setPromoInfo(info);
                       setStep("success");
                     } catch (e) {
-                      toast.error(getErrorMessage(e, "Failed to redeem promo"));
+                      toast.error(
+                        getErrorMessage(e, "Failed to redeem promo")
+                      );
                     } finally {
                       setRedeeming(false);
                     }
@@ -292,17 +353,6 @@ const QuickStats = () => {
             </>
           ) : (
             <>
-              {/* <DialogHeader className="flex flex-col items-center space-y-2">
-          <CheckCircle2 className="h-10 w-10 text-green-500" />
-          <DialogTitle>Credits Redeemed!</DialogTitle>
-          <DialogDescription className="text-center">
-            You’ve received{" "}
-            <span className="font-semibold text-green-600">
-              {fCurrency(redeemedAmount)}
-            </span>{" "}
-            in your SensePC wallet.
-          </DialogDescription>
-        </DialogHeader> */}
               <DialogHeader className="flex flex-col items-center space-y-3">
                 <Player
                   autoplay

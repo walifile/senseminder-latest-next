@@ -20,7 +20,8 @@ import { useSelector } from "react-redux";
 
 /* ---- External: custom-ui ---- */
 import { motion, AnimatePresence } from "framer-motion";
-import { X ,
+import {
+  X,
   Power,
   Monitor,
   Loader2,
@@ -70,6 +71,11 @@ interface DcvConnection {
 
   // Optional device & transfer APIs (feature-detected at runtime)
   setWebcam?: (enabled: boolean, deviceId?: string) => Promise<void> | void;
+
+  // ✅ Audio (web mic + playback)
+  setMicrophone?: (enabled: boolean, deviceId?: string) => Promise<void> | void; // audio-in
+  setAudioEnabled?: (enabled: boolean) => Promise<void> | void;                  // audio-out
+  queryFeature?: (name: string) => Promise<{ enabled?: boolean }>;
   _lastHeads?: Head[];
   _sensepcCleanup?: () => void;
 }
@@ -99,6 +105,7 @@ function headsBBox(heads: Head[]) {
   const maxY = Math.max(...heads.map((h) => h.rect.y + h.rect.height));
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
+
 
 function buildFittedLayout(heads: Head[], containerW: number, containerH: number) {
   if (!heads.length || containerW <= 0 || containerH <= 0) return null;
@@ -183,14 +190,68 @@ const DCViewerContent: React.FC = () => {
 
   // Tooltips / notices
   const NOT_SUPPORTED_TIP =
-    "This capability isn’t available in the web viewer. Please use the NICE DCV desktop client to access it.";
+    "This capability isn’t available in the Web Browser. Please use the SensePC desktop application.";
   const CAMERA_LIMIT_TIP =
-    "Webcam redirection in the web viewer requires Chrome or Edge and a Windows-based DCV server. Safari/Firefox aren’t supported.";
+    "Webcam redirection in the Web Browser requires Chrome or Edge, and SensePC Windows PC. Safari/Firefox aren’t supported.";
 
   // Camera state
   const [webcamEnabled, setWebcamEnabled] = useState(false);
   const [_webcamDeviceId, setWebcamDeviceId] = useState<string | undefined>(undefined); // used via no-op below
   const [webcamError, setWebcamError] = useState<string | null>(null);
+
+  // Microphone state
+  const [micEnabled, setMicEnabled] = useState(false);
+  const [micError, setMicError] = useState<string | null>(null);
+  const [micSupported, setMicSupported] = useState<boolean | null>(null);
+  const [micSupportReason, setMicSupportReason] = useState<string | null>(null);
+
+  // ---- Microphone helpers (uses setMicrophone) ----
+  async function requestAndEnableMic() {
+    const c = connRef.current as DcvConnection | null;
+    if (!c || typeof c.setMicrophone !== "function") {
+      throw new Error("DCV microphone API not available.");
+    }
+    if (!isChromium()) {
+      throw new Error("Use Chrome/Edge to enable microphone.");
+    }
+
+    // Optional: feature gate probe (audio-in)
+    try {
+      const f = await c.queryFeature?.("audio-in");
+      if (f && f.enabled === false) throw new Error("Microphone not permitted by DCV policy.");
+    } catch {
+      /* ignore feature probe errors */
+    }
+
+    // Must occur on a user gesture
+    await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    await c.setMicrophone(true);
+    setMicEnabled(true);
+    setMicError(null);
+  }
+
+  async function disableMic() {
+    const c = connRef.current as DcvConnection | null;
+    try {
+      await c?.setMicrophone?.(false);
+    } catch {
+      /* no-op */
+    }
+    setMicEnabled(false);
+  }
+
+  async function handleToggleMic() {
+    try {
+      if (!connRef.current) throw new Error("Not connected.");
+      if (micEnabled) await disableMic();
+      else await requestAndEnableMic();
+    } catch (e) {
+      setMicError(e instanceof Error ? e.message : String(e));
+    }
+  }
+
+
 
 
   const launchVMResponse = useSelector((state: RootState) =>
@@ -259,7 +320,7 @@ const DCViewerContent: React.FC = () => {
 
   useEffect(() => {
     const el = document.getElementById("remote-desktop");
-    const noop = (): void => {};
+    const noop = (): void => { };
     if (!el) return noop;
 
     const debounced = debounce(() => updateResolution(), 120);
@@ -378,43 +439,72 @@ const DCViewerContent: React.FC = () => {
         assetsBaseUrl: assetsPath,
         baseUrl: assetsPath,
         resourceBaseUrl: gatewayBase,
-    callbacks: {
-  firstFrame: () => {
-    try { conn.enableDisplayQualityUpdates?.(true); } catch {/* no-op */}
-    try { conn.enableHighPixelDensity?.(!(window?.devicePixelRatio > 1)); } catch { /* no-op */}
-    setIsLoading(false);
-    setIsConnected(true);
-    handleQualityChange("auto");
-    setConnectionState("CONNECTED");
-    void fitToContainer(conn._lastHeads); 
-    void fitToContainer();
-  },
+        callbacks: {
+          firstFrame: () => {
+            try { conn.enableDisplayQualityUpdates?.(true); } catch {/* no-op */ }
+            try { conn.enableHighPixelDensity?.(!(window?.devicePixelRatio > 1)); } catch { /* no-op */ }
+            try { (conn as DcvConnection).setAudioEnabled?.(true); } catch { /* no-op */ }
+            try {
+              if (typeof (conn as DcvConnection).setMicrophone === "function") {
+                (async () => {
+                  try {
+                    const f = await (conn as DcvConnection).queryFeature?.("audio-in");
+                    if (f && f.enabled === false) {
+                      setMicSupported(false);
+                      setMicSupportReason("Microphone disabled by DCV permissions (audio-in).");
+                    } else {
+                      setMicSupported(true);
+                      setMicSupportReason(null);
+                    }
+                  } catch {
+                    setMicSupported(null);
+                    setMicSupportReason(null);
+                  }
+                })();
+              } else {
+                setMicSupported(false);
+                setMicSupportReason("Web client build does not expose setMicrophone.");
+              }
+            } catch {
+              setMicSupported(null);
+              setMicSupportReason(null);
+            }
 
-  // moved from observers.displayLayout
-  displayLayout: (_serverWidth: number, _serverHeight: number, heads: Head[]) => {
-    conn._lastHeads = heads;
-    // void fitToContainer(heads);
-  },
+            setIsLoading(false);
+            setIsConnected(true);
+            handleQualityChange("auto");
+            setConnectionState("CONNECTED");
+            void fitToContainer(conn._lastHeads);
+            void fitToContainer();
+          },
 
-  // moved from observers.disconnect
-  disconnect: () => {
-    setIsConnected(false);
-    setConnectionState("DISCONNECTED");
-    setTvEffect("off");
-    setWebcamEnabled(false);
-    setWebcamDeviceId(undefined);
-    setWebcamError(null);
-  },
+          // moved from observers.displayLayout
+          displayLayout: (_serverWidth: number, _serverHeight: number, heads: Head[]) => {
+            conn._lastHeads = heads;
+            // void fitToContainer(heads);
+          },
 
-  // keep these for FileStorage & feature probing
-  fileDownload: (_c: unknown, file: { url?: string; filename?: string }) => {
-    if (file?.url) triggerBrowserDownload(file.url, file.filename);
-  },
-  filePrinted: () => {},
-  featuresUpdate: () => {},
-},
+          // moved from observers.disconnect
+          disconnect: () => {
+            setIsConnected(false);
+            setConnectionState("DISCONNECTED");
+            setTvEffect("off");
+            setWebcamEnabled(false);
+            setWebcamDeviceId(undefined);
+            setWebcamError(null);
+            setMicEnabled(false);
+            setMicError(null);
+          },
 
-        })) as DcvConnection;
+          // keep these for FileStorage & feature probing
+          fileDownload: (_c: unknown, file: { url?: string; filename?: string }) => {
+            if (file?.url) triggerBrowserDownload(file.url, file.filename);
+          },
+          filePrinted: () => { },
+          featuresUpdate: () => { },
+        },
+
+      })) as DcvConnection;
 
       connRef.current = conn;
 
@@ -446,7 +536,7 @@ const DCViewerContent: React.FC = () => {
     void connectToDcv();
     return () => {
       const c = connRef.current;
-    
+
       try {
         c?._sensepcCleanup?.();
       } catch {
@@ -461,6 +551,8 @@ const DCViewerContent: React.FC = () => {
       setWebcamEnabled(false);
       setWebcamDeviceId(undefined);
       setWebcamError(null);
+      setMicEnabled(false);
+      setMicError(null);
       connRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -682,15 +774,15 @@ const DCViewerContent: React.FC = () => {
               style={
                 connectionState === "DISCONNECTED"
                   ? {
-                      backgroundImage:
-                        "linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 12%), linear-gradient(180deg, var(--tw-gradient-from), var(--tw-gradient-to))",
-                      backgroundBlendMode: "screen, normal",
-                    }
+                    backgroundImage:
+                      "linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 12%), linear-gradient(180deg, var(--tw-gradient-from), var(--tw-gradient-to))",
+                    backgroundBlendMode: "screen, normal",
+                  }
                   : {
-                      backgroundImage:
-                        "linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.08) 10%, rgba(255,255,255,0) 25%), linear-gradient(180deg, var(--tw-gradient-from), var(--tw-gradient-to))",
-                      backgroundBlendMode: "screen, normal",
-                    }
+                    backgroundImage:
+                      "linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.08) 10%, rgba(255,255,255,0) 25%), linear-gradient(180deg, var(--tw-gradient-from), var(--tw-gradient-to))",
+                    backgroundBlendMode: "screen, normal",
+                  }
               }
               onMouseLeave={armAutoClose}
               onMouseEnter={cancelAutoClose}
@@ -764,11 +856,11 @@ const DCViewerContent: React.FC = () => {
                           className={cn(
                             "h-5 px-2 text-[11px]",
                             connectionState === "CONNECTED" &&
-                              "bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/20",
+                            "bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/20",
                             connectionState === "DISCONNECTED" &&
-                              "bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/20",
+                            "bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/20",
                             connectionState === "RECONNECTING" &&
-                              "bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-yellow-500/20"
+                            "bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-yellow-500/20"
                           )}
                         >
                           {connectionState}
@@ -813,7 +905,7 @@ const DCViewerContent: React.FC = () => {
                   </div>
 
 
-                  
+
 
                   {/* Quality Settings */}
                   <div
@@ -866,6 +958,36 @@ const DCViewerContent: React.FC = () => {
                           {webcamError}
                         </div>
                       )}
+                      {/* Microphone */}
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs">Microphone</Label>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-6 px-2 text-[11px]"
+                          onClick={handleToggleMic}
+                          disabled={!isConnected || micSupported === false}
+                          aria-pressed={micEnabled}
+                          title={
+                            micSupported === false
+                              ? (micSupportReason ?? "Microphone not supported")
+                              : "Enable/disable microphone redirection"
+                          }
+                        >
+                          {micSupported === false ? "Unsupported" : (micEnabled ? "Disable" : "Enable")}
+                        </Button>
+                      </div>
+                      {micError && (
+                        <div className="text-[11px] text-red-600 dark:text-red-400">
+                          {micError}
+                        </div>
+                      )}
+                      {micSupported === false && micSupportReason && (
+                        <div className="text-[11px] text-zinc-600 dark:text-zinc-300">
+                          {micSupportReason}
+                        </div>
+                      )}
+
 
                       {/* Items with requested labels & statuses (USB/VR disabled + tooltip) */}
                       {[
@@ -899,33 +1021,33 @@ const DCViewerContent: React.FC = () => {
 
 
                 {/* File Transfer (simple box with text + icon) */}
-<div
-  className={cn(
-    "rounded-lg border p-3",
-    connectionState === "DISCONNECTED"
-      ? "border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900"
-      : "border-zinc-300/60 dark:border-zinc-700/60 bg-white/55 dark:bg-zinc-900/35"
-  )}
->
-  <div className="flex items-center justify-between">
-    <h3 className="text-sm font-semibold">File Transfer</h3>
+                <div
+                  className={cn(
+                    "rounded-lg border p-3",
+                    connectionState === "DISCONNECTED"
+                      ? "border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900"
+                      : "border-zinc-300/60 dark:border-zinc-700/60 bg-white/55 dark:bg-zinc-900/35"
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold">File Transfer</h3>
 
-    <Button
-      variant="outline"
-      size="icon"
-      className={cn(
-        "h-7 w-7",
-        !isConnected && "opacity-50 cursor-not-allowed"
-      )}
-      onClick={() => setFileModalOpen(true)}
-      disabled={!isConnected}
-      title="Open File Storage"
-      aria-label="Open File Storage"
-    >
-      <FolderDown className="h-4 w-4" />
-    </Button>
-  </div>
-</div>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className={cn(
+                        "h-7 w-7",
+                        !isConnected && "opacity-50 cursor-not-allowed"
+                      )}
+                      onClick={() => setFileModalOpen(true)}
+                      disabled={!isConnected}
+                      title="Open File Storage"
+                      aria-label="Open File Storage"
+                    >
+                      <FolderDown className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
 
 
                 {/* Bottom Session Control */}
@@ -944,7 +1066,7 @@ const DCViewerContent: React.FC = () => {
                         <span className="text-xs font-medium">Session Control</span>
                       </div>
 
-            
+
                       <div className="grid grid-cols-3 gap-2 mb-2">
                         <Button variant="outline" className="h-8" title="Open in New Window" onClick={openNewSession}>
                           <MonitorPlay className="h-4 w-4" />
@@ -1006,13 +1128,13 @@ const DCViewerContent: React.FC = () => {
             </motion.div>
           )}
         </AnimatePresence>
-             {/* File Storage Modal (uses live DCV connection) */}
+        {/* File Storage Modal (uses live DCV connection) */}
         <FileStorageModal
           conn={looksLikeDcvConn(connRef.current) ? connRef.current : null}
           open={fileModalOpen}
           onOpenChange={setFileModalOpen}
-         autoOpenOnGlobalDrag
-         title="File storage"
+          autoOpenOnGlobalDrag
+          title="File storage"
         />
       </div>
 

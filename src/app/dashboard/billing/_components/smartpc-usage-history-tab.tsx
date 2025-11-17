@@ -4,6 +4,7 @@ import { useLazySearchUsageHistoryQuery } from "@/api/billing";
 import { Badge } from "@/components/ui/badge";
 import { TabsContent } from "@/components/ui/tabs";
 import { fCurrency } from "@/lib/utils/format-number";
+import { formatDateTime } from "@/lib/utils/format-time";
 
 import { Monitor } from "lucide-react";
 
@@ -27,6 +28,10 @@ export function SmartPCUsageHistoryTab() {
       query,
     });
 
+  const handleRefresh = async () => {
+    await fetchHistory(false);
+  };
+
   return (
     <TabsContent value="usage" className="space-y-4">
       {/* Filters */}
@@ -35,6 +40,8 @@ export function SmartPCUsageHistoryTab() {
         setDate={setDate}
         query={query}
         setQuery={setQuery}
+        onRefresh={handleRefresh}
+        isRefreshing={loading}
       />
 
       {/* History List */}
@@ -59,41 +66,44 @@ export function SmartPCUsageHistoryTab() {
                   <p className="text-sm text-muted-foreground">
                     {getUsagePeriod(usage)}
                   </p>
+                  <p className="text-xs text-muted-foreground/70 mt-1">
+                    Billed: {formatDateTime(usage.timestamp)}
+                  </p>
                 </div>
               </div>
-             <div className="flex items-start gap-5 text-xs text-muted-foreground text-right">
-              {/* 💻 Billing Cost Summary */}
-              <div className="leading-tight">
-                🖥 Instance: {fCurrency(usage.instanceCost)} <br />
-                💾 Storage: {fCurrency(usage.storageCost)}
-              </div>
+              <div className="flex items-start gap-5 text-xs text-muted-foreground text-right">
+                {/* 💻 Billing Cost Summary */}
+                <div className="leading-tight">
+                  🖥 Instance: {fCurrency(usage.instanceCost)} <br />
+                  💾 Storage: {fCurrency(usage.storageCost)}
+                </div>
 
-              {/* 💸 Deduction Breakdown */}
-              <div className="leading-tight border-l pl-4 space-y-0.5 text-left">
-                <p className="font-medium text-muted-foreground">💸 Breakdown</p>
-                <p>• Promo: {fCurrency(usage.promoDeduction ?? 0)}</p>
-                <p>• Cashback: {fCurrency(usage.cashbackDeduction ?? 0)}</p>
-                <p>• Wallet: {fCurrency(usage.balanceDeduction ?? 0)}</p>
-              </div>
+                {/* 💸 Deduction Breakdown */}
+                <div className="leading-tight border-l pl-4 space-y-0.5 text-left">
+                  <p className="font-medium text-muted-foreground">💸 Breakdown</p>
+                  <p>• Promo: {fCurrency(usage.promoDeduction ?? 0)}</p>
+                  <p>• Cashback: {fCurrency(usage.cashbackDeduction ?? 0)}</p>
+                  <p>• Wallet: {fCurrency(usage.balanceDeduction ?? 0)}</p>
+                </div>
 
-              {/* 💰 Amount Badge */}
-              <div className="flex flex-col items-center justify-center gap-2 ml-2">
-                <Badge variant="secondary" className="font-medium px-3 py-1 text-sm">
-                  {fCurrency(usage.billingAmount)}
-                </Badge>
+                {/* 💰 Amount Badge */}
+                <div className="flex flex-col items-center justify-center gap-2 ml-2">
+                  <Badge variant="secondary" className="font-medium px-3 py-1 text-sm">
+                    {fCurrency(usage.billingAmount)}
+                  </Badge>
 
-                <Badge
-                  variant={usage.status === "running" ? "default" : "outline"}
-                  className={
-                    usage.status === "running"
-                      ? "bg-green-500/10 text-green-500 hover:bg-green-500/20 capitalize"
-                      : "capitalize"
-                  }
-                >
-                  {usage.status}
-                </Badge>
+                  <Badge
+                    variant={usage.status === "running" ? "default" : "outline"}
+                    className={
+                      usage.status === "running"
+                        ? "bg-green-500/10 text-green-500 hover:bg-green-500/20 capitalize"
+                        : "capitalize"
+                    }
+                  >
+                    {usage.status}
+                  </Badge>
+                </div>
               </div>
-            </div>
 
             </div>
           ))

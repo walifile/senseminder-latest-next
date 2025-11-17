@@ -10,7 +10,8 @@ import { useAddBillingPlanMutation, useUpdateAutoRenewMutation } from "@/api/bil
 
 import { Logger } from "@/lib/utils/logger";
 import { getErrorMessage } from "@/lib/utils";
-import { Switch } from "@/components/ui/switch";
+// Auto-renew switch is now managed only inside billing-dialog.tsx
+// import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { getFriendlyOSName } from "@/lib/utils/format-string";
@@ -26,13 +27,13 @@ import {
   Shield,
   Activity,
   Settings,
-  RotateCw,
+  // RotateCw, // auto-renew icon removed from this page
   HardDrive,
   ChevronUp,
   MemoryStick,
   MonitorPlay,
   AlertCircle,
-  ChevronDown
+  ChevronDown,
 } from "lucide-react";
 
 import { BillingPlanDialog } from "./billing-dialog";
@@ -116,7 +117,42 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
   const { user } = useSelector((state: RootState) => state.auth);
   const isMember = user?.role === "member";
   const [showBillingDialog, setShowBillingDialog] = useState(false);
-  
+
+  // Shared auto-renew handler (now only used by BillingPlanDialog)
+  const handleAutoRenewToggle = async (newAutoRenew: boolean) => {
+    if (!pc[0]?.instanceId) return;
+
+    try {
+      await updateAutoRenew({
+        instanceId: pc[0].instanceId,
+        autoRenew: newAutoRenew,
+      }).unwrap();
+
+      setCloudPCs((prev) => {
+        const updated = [...prev];
+        updated[selectedPCs[0]] = {
+          ...updated[selectedPCs[0]],
+          autoRenew: newAutoRenew,
+        };
+        return updated;
+      });
+
+      toast({
+        title: "Auto-Renew Updated",
+        description: `Auto-renew has been ${newAutoRenew ? "enabled" : "disabled"
+          } for this instance.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: getErrorMessage(
+          error,
+          "Failed to update auto-renew setting."
+        ),
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <>
@@ -268,7 +304,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                         }}
                         className="h-7 px-2 text-xs hover:bg-primary/5 hover:text-primary"
                       >
-                        <Plus className="h-3 w-3 mr-1" /> Assign
+                        <Plus className="h-3 w-3 mr-1" /> Manage User
                       </Button>
                     </div>
                     {pc[0]?.assignedUser ? (
@@ -293,70 +329,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                   </div>
                 )}
 
-                {!isMember && pc[0]?.billingPlan !== "hourly" && (
-                <div className="col-span-full mt-4 border-t pt-4">
-                  <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                    
-                    {/* Left side: Label + Description */}
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <RotateCw className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Auto-Renew</span>
-                      </div>
-                      <span className="text-sm text-muted-foreground">
-                        Automatically renew billing plan each cycle
-                      </span>
-                    </div>
-                    
-
-                    {/* Right side: Switch */}
-                    <div className="flex items-center gap-2 mt-2 md:mt-0">
-                      <Switch
-                        checked={pc[0]?.autoRenew}
-                        onCheckedChange={async (newAutoRenew) => {
-                          try {
-                            await updateAutoRenew({
-                              instanceId: pc[0].instanceId,
-                              autoRenew: newAutoRenew,
-                            }).unwrap();
-
-                            setCloudPCs((prev) => {
-                              const updated = [...prev];
-                              updated[selectedPCs[0]] = {
-                                ...updated[selectedPCs[0]],
-                                autoRenew: newAutoRenew,
-                              };
-                              return updated;
-                            });
-
-                            toast({
-                              title: "Auto-Renew Updated",
-                              description: `Auto-renew has been ${
-                                newAutoRenew ? "enabled" : "disabled"
-                              } for this instance.`,
-                            });
-                          } catch (error) {
-                            toast({
-                              title: "Error",
-                              description: getErrorMessage(
-                                error,
-                                "Failed to update auto-renew setting."
-                              ),
-                              variant: "destructive",
-                            });
-                          }
-                        }}
-                      />
-                      <span className="text-xs text-muted-foreground">
-                        {pc[0]?.autoRenew ? "Enabled" : "Disabled"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-
-
+                {/* Auto-Renew block removed from here – now controlled only via BillingPlanDialog */}
 
                 {!isMember && pc[0]?.billingPlan && (
                   <div className="col-span-full mt-4 border-t pt-4">
@@ -382,96 +355,101 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                           setShowBillingDialog(true);
                         }}
                       >
-                        Change Plan
+                        Manage Plan
                       </Button>
-                     
-                     <BillingPlanDialog
-                      currentPlan={pc[0].billingPlan as "hourly" | "daily" | "monthly"}
-                      open={showBillingDialog}
-                      onOpenChange={setShowBillingDialog}
-                      configId={pc[0].configId}
-                      storageSize={pc[0].specs?.storage}
-                      region={pc[0].region}
-                      onConfirm={async (newPlan) => {
-                        try {
-                          const response = await addBillingPlan({
-                            instanceId: pc[0].instanceId,
-                            billingPlan: newPlan,
-                          }).unwrap();
 
-                          // Backend may return: "no_change" | "upgrade" | "downgrade"
-                          const change = (response?.change ?? "no_change") as
-                            | "no_change"
-                            | "upgrade"
-                            | "downgrade";
-
-                          // Friendly copy
-                          const descriptions: Record<"hourly" | "daily" | "monthly", string> = {
-                            hourly: "Perfect for quick tasks and testing.",
-                            daily: "Ideal for day-long projects. ~15% savings vs hourly.",
-                            monthly: "Best value for regular users. ~35% savings vs weekly.",
-                          };
-
-                          let title = "Billing Plan";
-                          let message = "";
-
-                          if (change === "no_change") {
-                            title = "No Changes Made";
-                            message = "You selected the same billing plan. Nothing was changed.";
-                          } else if (change === "upgrade") {
-                            title = "Billing Plan Updated";
-                            message = `You've switched to the ${newPlan} plan.`;
-                          } else if (change === "downgrade") {
-                            title = "Downgrade Scheduled";
-                            message =
-                              `Your request to downgrade to the ${newPlan} plan has been saved. ` +
-                              `The new plan will take effect after the current billing cycle.`;
-                          }
-
-                          toast({ title, description: message });
-
-                          // State updates:
-                          // - upgrade: reflect immediately
-                          // - downgrade: keep current plan in UI (applies next cycle)
-                          // - no_change: do nothing
-                          if (change === "upgrade") {
-                            setCloudPCs((prev) => {
-                              const updated = [...prev];
-                              updated[selectedPCs[0]] = {
-                                ...updated[selectedPCs[0]],
-                                billingPlan: newPlan,
-                                billingPlanDescription: descriptions[newPlan],
-                              };
-                              return updated;
-                            });
-                          } else if (change === "downgrade") {
-                            // Optionally, you could set a "pendingPlan" flag in state here if your UI supports it.
-                            setCloudPCs((prev) => {
-                              const updated = [...prev];
-                              updated[selectedPCs[0]] = {
-                                ...updated[selectedPCs[0]],
-                                // keep current billingPlan unchanged
-                                // billingPlanDescription can stay as-is; or append a hint if desired:
-                                billingPlanDescription:
-                                  (updated[selectedPCs[0]]?.billingPlanDescription ?? "") +
-                                  " (Downgrade scheduled)",
-                              };
-                              return updated;
-                            });
-                          }
-
-                          setShowBillingDialog(false);
-                        } catch (error) {
-                          toast({
-                            title: "Error",
-                            description: getErrorMessage(error, "Failed to update billing plan."),
-                            variant: "destructive",
-                          });
+                      <BillingPlanDialog
+                        currentPlan={
+                          pc[0].billingPlan as "hourly" | "daily" | "monthly"
                         }
-                      }}
-                    />
+                        open={showBillingDialog}
+                        onOpenChange={setShowBillingDialog}
+                        configId={pc[0].configId}
+                        storageSize={pc[0].specs?.storage}
+                        region={pc[0].region}
+                        autoRenewEnabled={pc[0].autoRenew}
+                        onToggleAutoRenew={handleAutoRenewToggle}
+                        onConfirm={async (newPlan) => {
+                          try {
+                            const response = await addBillingPlan({
+                              instanceId: pc[0].instanceId,
+                              billingPlan: newPlan,
+                            }).unwrap();
 
+                            const change = (response?.change ?? "no_change") as
+                              | "no_change"
+                              | "upgrade"
+                              | "downgrade";
 
+                            const descriptions: Record<
+                              "hourly" | "daily" | "monthly",
+                              string
+                            > = {
+                              hourly:
+                                "Perfect for quick tasks and testing.",
+                              daily:
+                                "Ideal for day-long projects. ~15% savings vs hourly.",
+                              monthly:
+                                "Best value for regular users. ~35% savings vs weekly.",
+                            };
+
+                            let title = "Billing Plan";
+                            let message = "";
+
+                            if (change === "no_change") {
+                              title = "No Changes Made";
+                              message =
+                                "You selected the same billing plan. Nothing was changed.";
+                            } else if (change === "upgrade") {
+                              title = "Billing Plan Updated";
+                              message = `You've switched to the ${newPlan} plan.`;
+                            } else if (change === "downgrade") {
+                              title = "Downgrade Scheduled";
+                              message =
+                                `Your request to downgrade to the ${newPlan} plan has been saved. ` +
+                                `The new plan will take effect after the current billing cycle.`;
+                            }
+
+                            toast({ title, description: message });
+
+                            if (change === "upgrade") {
+                              setCloudPCs((prev) => {
+                                const updated = [...prev];
+                                updated[selectedPCs[0]] = {
+                                  ...updated[selectedPCs[0]],
+                                  billingPlan: newPlan,
+                                  billingPlanDescription:
+                                    descriptions[newPlan],
+                                };
+                                return updated;
+                              });
+                            } else if (change === "downgrade") {
+                              setCloudPCs((prev) => {
+                                const updated = [...prev];
+                                updated[selectedPCs[0]] = {
+                                  ...updated[selectedPCs[0]],
+                                  billingPlanDescription:
+                                    (updated[selectedPCs[0]]
+                                      ?.billingPlanDescription ?? "") +
+                                    " (Downgrade scheduled)",
+                                };
+                                return updated;
+                              });
+                            }
+
+                            setShowBillingDialog(false);
+                          } catch (error) {
+                            toast({
+                              title: "Error",
+                              description: getErrorMessage(
+                                error,
+                                "Failed to update billing plan."
+                              ),
+                              variant: "destructive",
+                            });
+                          }
+                        }}
+                      />
                     </div>
                   </div>
                 )}

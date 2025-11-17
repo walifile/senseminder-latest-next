@@ -1,11 +1,13 @@
-/* eslint perfectionist/sort-imports: "off" */
-
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
+import { useGetEstimateMutation } from "@/api/fileManagerAPI";
+
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/components/ui/use-toast";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -14,11 +16,8 @@ import {
   DialogFooter,
   DialogContent,
 } from "@/components/ui/dialog";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/components/ui/use-toast";
-import { Info, Crown, Loader2, TrendingUp, CheckCircle2 } from "lucide-react";
-import { useGetEstimateMutation } from "@/api/fileManagerAPI";
 
+import { Info, Crown, Loader2, TrendingUp, CheckCircle2 } from "lucide-react";
 
 type TotalEstimate = {
   pricePerHour?: number;
@@ -42,7 +41,7 @@ interface BillingPlanDialogProps {
   onToggleAutoRenew?: (enabled: boolean) => Promise<void> | void;
   onBlockedCardDeleteAttempt?: () => void;
   configId?: string;
-  storageSize?: string; 
+  storageSize?: string;
   region?: string;
   currentPeriodEnd?: string;
   autoRenewEnabled?: boolean;
@@ -55,26 +54,27 @@ const PLAN_TITLES = {
 } as const;
 
 const PLAN_TAGLINES = {
-  hourly: "Perfect for quick tasks and testing",
-  daily: "Ideal for day-long projects",
-  monthly: "Best value for regular users",
+  hourly:
+    "Pay only for what you use — perfect for quick tasks and experiments.",
+  daily: "Built for full workdays with predictable cost and extra savings.",
+  monthly: "Max savings and zero hassle — the best choice for regular users.",
 } as const;
 
 const PLAN_FEATURES = {
   hourly: [
     "Pay only for actual usage",
     "No minimum commitment",
-    "Basic support included",
+    "Support included",
   ],
   daily: [
-    "24-hour continuous access",
-    "15% savings vs hourly",
-    "Priority support included",
+    "24-hours continuous access",
+    "Up to 15% savings vs hourly",
+    "Support included",
   ],
   monthly: [
-    "30-day continuous access",
-    "35% savings vs weekly",
-    "Premium support access",
+    "30-days continuous access",
+    "Up to 25% savings vs Hourly",
+    "Support included",
   ],
 } as const;
 
@@ -83,7 +83,6 @@ const PLAN_ICONS = {
   daily: <TrendingUp className="h-4 w-4" />,
   monthly: <Crown className="h-4 w-4" />,
 } as const;
-
 
 function fmtMoney(n?: number, digits: number = 2) {
   if (n == null) return "-";
@@ -102,7 +101,11 @@ function defersAtEOT(from: PlanType, to: PlanType, currentActive: boolean) {
   return false;
 }
 
-function requiresImmediateCharge(from: PlanType, to: PlanType, currentActive: boolean) {
+function requiresImmediateCharge(
+  from: PlanType,
+  to: PlanType,
+  currentActive: boolean
+) {
   if (from === "hourly" && (to === "daily" || to === "monthly")) return true;
   if (from === "daily" && to === "monthly") return true;
   if (!currentActive && (from === "daily" || from === "monthly")) return true;
@@ -114,7 +117,6 @@ function normalizeGB(storageSize?: string) {
   return Number.isFinite(n) ? String(n) : "";
 }
 
-
 export const BillingPlanDialog: React.FC<BillingPlanDialogProps> = ({
   currentPlan,
   open,
@@ -125,17 +127,27 @@ export const BillingPlanDialog: React.FC<BillingPlanDialogProps> = ({
   storageSize,
   region,
   currentPeriodEnd,
- 
+  autoRenewEnabled,
 }) => {
   const { toast } = useToast?.() ?? { toast: (_: unknown) => {} };
   const [selectedPlan, setSelectedPlan] = useState<PlanType>(currentPlan);
   const [consent, setConsent] = useState(false);
   const [showDisableRenewConfirm, setShowDisableRenewConfirm] = useState(false);
-  const [uiAutoRenew, setUiAutoRenew] = useState<boolean>(currentPlan !== "hourly");
+  const [uiAutoRenew, setUiAutoRenew] = useState<boolean>(
+    autoRenewEnabled ?? currentPlan !== "hourly"
+  );
 
-  const [getEstimate, { data: estimateData, isLoading }] = useGetEstimateMutation();
+  const [getEstimate, { data: estimateData, isLoading }] =
+    useGetEstimateMutation();
 
-  const currentIsActive = useMemo(() => isActive(currentPeriodEnd), [currentPeriodEnd]);
+  const currentIsActive = useMemo(
+    () => isActive(currentPeriodEnd),
+    [currentPeriodEnd]
+  );
+
+  // 🔔 New: state for plan-change confirmation dialog
+  const [showPlanConfirm, setShowPlanConfirm] = useState(false);
+  const [pendingPlan, setPendingPlan] = useState<PlanType | null>(null);
 
   useEffect(() => {
     if (open && configId && storageSize && region) {
@@ -151,9 +163,9 @@ export const BillingPlanDialog: React.FC<BillingPlanDialogProps> = ({
     if (open) {
       setSelectedPlan(currentPlan);
       setConsent(false);
-      setUiAutoRenew(currentPlan !== "hourly");
+      setUiAutoRenew(autoRenewEnabled ?? currentPlan !== "hourly");
     }
-  }, [open, currentPlan]);
+  }, [open, currentPlan, autoRenewEnabled]);
 
   const plans: PlanType[] = ["hourly", "daily", "monthly"];
 
@@ -167,7 +179,11 @@ export const BillingPlanDialog: React.FC<BillingPlanDialogProps> = ({
     return fmtMoney(p?.pricePerMonth, 2);
   };
 
-  function renderDeferralOrImmediateNote(from: PlanType, to: PlanType, isCurrent: boolean) {
+  function renderDeferralOrImmediateNote(
+    from: PlanType,
+    to: PlanType,
+    isCurrent: boolean
+  ) {
     if (isCurrent) return null;
 
     const defers = defersAtEOT(from, to, currentIsActive);
@@ -180,7 +196,8 @@ export const BillingPlanDialog: React.FC<BillingPlanDialogProps> = ({
             <Info className="h-4 w-4" /> Scheduled at period end
           </AlertTitle>
           <AlertDescription className="text-sm">
-            Your current {PLAN_TITLES[from]} plan remains active until <strong>dummy date...</strong>. The new plan will start right after.
+            Your current {PLAN_TITLES[from]} plan remains active until{" "}
+            <strong>dummy date...</strong>. The new plan will start right after.
           </AlertDescription>
         </Alert>
       );
@@ -193,7 +210,8 @@ export const BillingPlanDialog: React.FC<BillingPlanDialogProps> = ({
             <Info className="h-4 w-4" /> Takes effect immediately
           </AlertTitle>
           <AlertDescription className="text-sm">
-            This change will take effect immediately and you will be charged from the wallet.
+            This change will take effect immediately and you will be charged
+            from the wallet.
           </AlertDescription>
         </Alert>
       );
@@ -211,12 +229,52 @@ export const BillingPlanDialog: React.FC<BillingPlanDialogProps> = ({
     );
   }
 
-
   function confirmDisabled(from: PlanType, to: PlanType) {
-  if (to === from) return true;   // prevent "no change"
-  if (!consent) return true;      // require consent only
-  return false;                   // don't block for wallet/card in UI
-}
+    if (to === from) return true; // prevent "no change"
+    if (!consent) return true; // require consent only
+    return false; // don't block for wallet/card in UI
+  }
+
+  const handleConfirmPlanChange = () => {
+    if (!pendingPlan) return;
+    onConfirm(pendingPlan);
+    setShowPlanConfirm(false);
+  };
+
+  // Helper to describe what will happen for the pending change
+  const renderPlanConfirmBody = () => {
+    if (!pendingPlan) return null;
+
+    const defers = defersAtEOT(currentPlan, pendingPlan, currentIsActive);
+    const immediate = requiresImmediateCharge(
+      currentPlan,
+      pendingPlan,
+      currentIsActive
+    );
+
+    let subtitle = "";
+    if (defers) {
+      subtitle =
+        "Your current plan will stay active until the end of this billing period. The new plan will start automatically after that.";
+    } else if (immediate) {
+      subtitle =
+        "This change will take effect immediately and charges may be applied from your wallet right away based on the new plan.";
+    } else {
+      subtitle =
+        "This change will update your billing behavior for this computer according to the selected plan.";
+    }
+
+    return (
+      <>
+        <p className="text-sm text-muted-foreground">
+          You&apos;re changing your billing plan from{" "}
+          <strong>{PLAN_TITLES[currentPlan]}</strong> to{" "}
+          <strong>{PLAN_TITLES[pendingPlan]}</strong>.
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
+      </>
+    );
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -267,10 +325,17 @@ export const BillingPlanDialog: React.FC<BillingPlanDialogProps> = ({
                           {getPrice(plan)}
                         </span>
                         <span className="text-muted-foreground font-medium">
-                          / {plan === "hourly" ? "hour" : plan === "daily" ? "day" : "month"}
+                          /{" "}
+                          {plan === "hourly"
+                            ? "hour"
+                            : plan === "daily"
+                            ? "day"
+                            : "month"}
                         </span>
                       </div>
-                      <p className="text-sm text-muted-foreground">{PLAN_TAGLINES[plan]}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {PLAN_TAGLINES[plan]}
+                      </p>
                     </div>
                     {isCurrent && (
                       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
@@ -281,22 +346,29 @@ export const BillingPlanDialog: React.FC<BillingPlanDialogProps> = ({
                   {/* Owner asks to show when this period ends -> placeholder */}
                   {isCurrent && (plan === "daily" || plan === "monthly") && (
                     <div className="pt-2 text-xs text-muted-foreground flex items-center gap-1.5">
-                      <Info className="h-3.5 w-3.5" /> Ends: <span className="font-medium ml-1">dummy date...</span>
+                      <Info className="h-3.5 w-3.5" /> Ends:{" "}
+                      <span className="font-medium ml-1">dummy date...</span>
                     </div>
                   )}
                   {!isCurrent && (
                     <div className="pt-2 text-xs text-muted-foreground flex items-center gap-1.5">
-                      <Info className="h-3.5 w-3.5" /> Estimated based on your current configuration
+                      <Info className="h-3.5 w-3.5" /> Estimated based on your
+                      current configuration
                     </div>
                   )}
                 </div>
 
                 {/* Features */}
                 <div className="space-y-3">
-                  <h4 className="text-sm font-semibold text-foreground">What's included</h4>
+                  <h4 className="text-sm font-semibold text-foreground">
+                    What's included
+                  </h4>
                   <ul className="space-y-3">
                     {PLAN_FEATURES[plan].map((f) => (
-                      <li key={f} className="flex items-start gap-3 text-sm group">
+                      <li
+                        key={f}
+                        className="flex items-start gap-3 text-sm group"
+                      >
                         <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-primary/20 transition-colors">
                           <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
                         </div>
@@ -317,7 +389,10 @@ export const BillingPlanDialog: React.FC<BillingPlanDialogProps> = ({
                       <Info className="h-4 w-4" /> Hourly billing behavior
                     </AlertTitle>
                     <AlertDescription className="text-sm">
-                      With Hourly Plan you will not get charged for <strong>Stopped</strong> computer CPU and Memory. However, SSD charges will continue, since the disk remains allocated to preserve your data.
+                      With Hourly Plan you will not get charged for{" "}
+                      <strong>Stopped</strong> computer CPU and Memory. However,
+                      SSD charges will continue, since the disk remains
+                      allocated to preserve your data.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -328,10 +403,15 @@ export const BillingPlanDialog: React.FC<BillingPlanDialogProps> = ({
                       <Checkbox
                         id={`consent-${plan}`}
                         checked={selectedPlan === plan ? !!consent : false}
-                        onCheckedChange={(v) => selectedPlan === plan && setConsent(Boolean(v))}
+                        onCheckedChange={(v) =>
+                          selectedPlan === plan && setConsent(Boolean(v))
+                        }
                         className="mt-0.5"
                       />
-                      <label htmlFor={`consent-${plan}`} className="text-sm text-foreground/80 cursor-pointer">
+                      <label
+                        htmlFor={`consent-${plan}`}
+                        className="text-sm text-foreground/80 cursor-pointer"
+                      >
                         I Understand, Confirm Apply
                       </label>
                     </div>
@@ -341,11 +421,18 @@ export const BillingPlanDialog: React.FC<BillingPlanDialogProps> = ({
                 {/* Footer Actions */}
                 {!isCurrent && (
                   <DialogFooter className="gap-2 pt-2">
-                    <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-none">
+                    <Button
+                      variant="outline"
+                      onClick={() => onOpenChange(false)}
+                      className="flex-1 sm:flex-none"
+                    >
                       Cancel
                     </Button>
                     <Button
-                      onClick={() => onConfirm(plan)}
+                      onClick={() => {
+                        setPendingPlan(plan);
+                        setShowPlanConfirm(true);
+                      }}
                       disabled={confirmDisabled(currentPlan, plan)}
                       className="flex-1 sm:flex-none min-w-[140px] bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md hover:opacity-90 transition-all"
                     >
@@ -369,18 +456,27 @@ export const BillingPlanDialog: React.FC<BillingPlanDialogProps> = ({
                             return;
                           }
                           setUiAutoRenew(true);
-                          if (onToggleAutoRenew) await onToggleAutoRenew(true);
+                          if (onToggleAutoRenew) {
+                            await onToggleAutoRenew(true);
+                          }
                         }}
                         className="mt-0.5"
                       />
-                      <label htmlFor={`autorenew-${plan}`} className="text-sm text-foreground/80 cursor-pointer">
-                        Enable auto-renew for the next {PLAN_TITLES[plan]} cycle.
+                      <label
+                        htmlFor={`autorenew-${plan}`}
+                        className="text-sm text-foreground/80 cursor-pointer"
+                      >
+                        Enable auto-renew for the next {PLAN_TITLES[plan]}{" "}
+                        cycle.
                       </label>
                     </div>
 
                     <Alert className="border-muted-foreground/20">
                       <AlertDescription className="text-xs leading-relaxed">
-                        When enabled, your plan will automatically renew at the end of the current period. You must have at least one saved card. To remove your last card while any auto-renew is enabled, please add another card first.
+                        When enabled, your plan will automatically renew at the
+                        end of the current period. You must have at least one
+                        saved card. To remove your last card while any
+                        auto-renew is enabled, please add another card first.
                       </AlertDescription>
                     </Alert>
                   </div>
@@ -390,23 +486,60 @@ export const BillingPlanDialog: React.FC<BillingPlanDialogProps> = ({
           })}
         </Tabs>
 
+        {/* 🔔 Plan change confirmation dialog */}
+        <Dialog open={showPlanConfirm} onOpenChange={setShowPlanConfirm}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Confirm plan change?</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 text-sm text-muted-foreground">
+              {renderPlanConfirmBody()}
+            </div>
+            <DialogFooter className="gap-2 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowPlanConfirm(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmPlanChange}
+                className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:opacity-90"
+              >
+                Confirm change
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Disable Auto-renew consent dialog */}
-        <Dialog open={showDisableRenewConfirm} onOpenChange={setShowDisableRenewConfirm}>
+        <Dialog
+          open={showDisableRenewConfirm}
+          onOpenChange={setShowDisableRenewConfirm}
+        >
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Disable Auto-renew?</DialogTitle>
             </DialogHeader>
             <div className="text-sm text-muted-foreground">
-              Disabling auto renew will stop the PC as soon as current plan ends.
+              Disabling auto renew will stop the PC as soon as current plan
+              ends.
             </div>
             <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={() => setShowDisableRenewConfirm(false)}>Cancel</Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowDisableRenewConfirm(false)}
+              >
+                Cancel
+              </Button>
               <Button
                 variant="destructive"
                 onClick={async () => {
                   setShowDisableRenewConfirm(false);
                   setUiAutoRenew(false);
-                  if (onToggleAutoRenew) await onToggleAutoRenew(false);
+                  if (onToggleAutoRenew) {
+                    await onToggleAutoRenew(false);
+                  }
                   toast({ description: "Auto-renew disabled." });
                 }}
               >

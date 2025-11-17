@@ -1,7 +1,6 @@
 "use client";
 
-import appConfig from "@/config/app-config";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -29,8 +28,6 @@ import {
 
 import { Info, Server } from "lucide-react";
 
-const { PING_API_KEY, PING_API_URL } = appConfig;
-
 type StoragePlansDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -47,9 +44,9 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
 
   const serverLocations = [{ id: "us-east", name: "US East (N. Virginia)" }];
   
-  const PING_ENDPOINTS = React.useMemo<Record<string, string>>(
+  const PING_TARGETS = useMemo<Record<string, string>>(
     () => ({
-      "us-east": PING_API_URL,
+      "us-east": "default",
     }),
     []
   );
@@ -61,13 +58,15 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
   const fetchLatencies = useCallback(async () => {
     setLatencyLoading(true);
     const results: Record<string, number> = {};
-    for (const [region, url] of Object.entries(PING_ENDPOINTS)) {
+    for (const [region, target] of Object.entries(PING_TARGETS)) {
       const start = performance.now();
       try {
-        const res = await fetch(url, {
+        const res = await fetch(`/api/ping?target=${target}`, {
           cache: "no-store",
-          headers: { "x-api-key": PING_API_KEY },
         });
+        if (!res.ok) {
+          throw new Error("Ping request failed");
+        }
         await res.json();
         const end = performance.now();
         results[region] = Math.round(end - start);
@@ -77,11 +76,11 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
     }
     setLatencyMap(results);
     setLatencyLoading(false);
-  }, [PING_ENDPOINTS]);  // Dependencies for the memoized function
+  }, [PING_TARGETS]);
 
   useEffect(() => {
-    fetchLatencies();  // Call memoized fetchLatencies inside useEffect
-  }, [fetchLatencies]);  // Include fetchLatencies in the dependency array
+    fetchLatencies();
+  }, [fetchLatencies]);
 
 
   return (

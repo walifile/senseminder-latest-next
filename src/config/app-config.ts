@@ -11,15 +11,10 @@ const ENV_VARS = {
 
   // Missing Ones
   RESIZE_API_URL: process.env.NEXT_PUBLIC_RESIZE_API_URL,
-  APPLE_CLIENT_ID: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID,
-  APPLE_PRIVATE_KEY: process.env.NEXT_PUBLIC_APPLE_PRIVATE_KEY,
-  PING_API_KEY: process.env.NEXT_PUBLIC_PING_API_KEY,
-  PING_API_URL: process.env.NEXT_PUBLIC_PING_API_URL,
 
   // Authentication
   AUTH_REDIRECT_URL: process.env.NEXT_PUBLIC_AUTH_REDIRECT_URL,
   GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_SECRET: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET,
   OAUTH_DOMAIN: process.env.NEXT_PUBLIC_OAUTH_DOMAIN,
   USER_POOL_CLIENT_ID: process.env.NEXT_PUBLIC_USER_POOL_CLIENT_ID,
   USER_POOL_ID: process.env.NEXT_PUBLIC_USER_POOL_ID,
@@ -67,8 +62,6 @@ const ENV_VARS = {
 
   // IP & Location Services
   IPIFY_URL: process.env.NEXT_PUBLIC_IPIFY_URL,
-  IPINFO_URL: process.env.NEXT_PUBLIC_IPINFO_URL,
-  STORAGE_PING_URL: process.env.NEXT_PUBLIC_STORAGE_PING_URL,
   PROMO_API_URL: process.env.NEXT_PUBLIC_PROMO_API_URL,
 
   // Stripe
@@ -85,3 +78,34 @@ const appConfig = Object.fromEntries(
 };
 
 export default appConfig;
+
+type ServerConfig = {
+  PING_API_URL: string;
+  STORAGE_PING_URL: string;
+  PING_API_KEY: string;
+  IPINFO_URL: string;
+  IPINFO_TOKEN: string;
+};
+
+let serverConfig: ServerConfig | null = null;
+
+export function getServerConfig(): ServerConfig {
+  if (typeof window !== "undefined") {
+    throw new Error("getServerConfig can only be used on the server");
+  }
+
+  if (!serverConfig) {
+    serverConfig = {
+      PING_API_URL: requireEnvVar(process.env.PING_API_URL, "PING_API_URL"),
+      STORAGE_PING_URL: requireEnvVar(
+        process.env.STORAGE_PING_URL,
+        "STORAGE_PING_URL"
+      ),
+      PING_API_KEY: requireEnvVar(process.env.PING_API_KEY, "PING_API_KEY"),
+      IPINFO_URL: requireEnvVar(process.env.IPINFO_URL, "IPINFO_URL"),
+      IPINFO_TOKEN: requireEnvVar(process.env.IPINFO_TOKEN, "IPINFO_TOKEN"),
+    };
+  }
+
+  return serverConfig;
+}

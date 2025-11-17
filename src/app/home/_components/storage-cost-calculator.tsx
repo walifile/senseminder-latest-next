@@ -1,9 +1,8 @@
 "use client";
 
-import appConfig from "@/config/app-config";
 import { routes } from "@/constants/routes";
 import { useRouter } from "next/navigation";
-import React, { useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
@@ -16,8 +15,6 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 
-const { PING_API_KEY, PING_API_URL } = appConfig;
-
 const StorageCostCalculator = () => {
   const router = useRouter();
   const [storageTier, setStorageTier] = useState(1);
@@ -27,9 +24,9 @@ const StorageCostCalculator = () => {
 
   const serverLocations = [{ id: "us-east", name: "US East (N. Virginia)" }];
 
-  const PING_ENDPOINTS = React.useMemo<Record<string, string>>(
+  const PING_TARGETS = useMemo<Record<string, string>>(
     () => ({
-      "us-east": PING_API_URL,
+      "us-east": "default",
     }),
     []
   );
@@ -38,17 +35,18 @@ const StorageCostCalculator = () => {
   const PRICE_PER_TIER = 0.5;
   const price = storageTier === 1 ? 0 : (storageTier - 1) * PRICE_PER_TIER;
 
-  // Fetch latencies function: PING_API_URL is safe to use directly inside the callback
   const fetchLatencies = useCallback(async () => {
     setLatencyLoading(true);
     const results: Record<string, number> = {};
-    for (const [region, url] of Object.entries(PING_ENDPOINTS)) {
+    for (const [region, target] of Object.entries(PING_TARGETS)) {
       const start = performance.now();
       try {
-        const res = await fetch(url, {
+        const res = await fetch(`/api/ping?target=${target}`, {
           cache: "no-store",
-          headers: { "x-api-key": PING_API_KEY }, // PING_API_KEY is used directly here
         });
+        if (!res.ok) {
+          throw new Error("Ping request failed");
+        }
         await res.json();
         const end = performance.now();
         results[region] = Math.round(end - start);
@@ -58,11 +56,11 @@ const StorageCostCalculator = () => {
     }
     setLatencyMap(results);
     setLatencyLoading(false);
-  }, [PING_ENDPOINTS]);  // Do not include PING_API_KEY here
+  }, [PING_TARGETS]);
 
   useEffect(() => {
     fetchLatencies();
-  }, [fetchLatencies]);  // Use the memoized fetchLatencies function as a dependency
+  }, [fetchLatencies]);
 
 
   const getStartedURL = () => {

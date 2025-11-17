@@ -1,4 +1,3 @@
-import appConfig from "@/config/app-config";
 import { useState, useEffect } from "react";
 
 import { Logger } from "@/lib/utils/logger";
@@ -12,15 +11,13 @@ interface UserLocation {
   browser: string;
   os: string;
 }
-const { IPINFO_URL } = appConfig;
-
 const useLocation = () => {
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fetchLocation = async () => {
     try {
-      const response = await fetch(IPINFO_URL);
+      const response = await fetch("/api/ipinfo", { cache: "no-store" });
       const data = await response.json();
       const { ip, country, city } = data;
 

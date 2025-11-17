@@ -21,10 +21,20 @@ export function SmartStorageUsageHistoryTab() {
       additionalParams: { isStorageHistory: true },
     });
 
+  const handleRefresh = async () => {
+    await fetchHistory(false);
+  };
+
   return (
     <TabsContent value="storage-usage" className="space-y-4">
       {/* Filters */}
-      <HistoryFilters date={date} setDate={setDate} showSearch={false} />
+      <HistoryFilters
+        date={date}
+        setDate={setDate}
+        showSearch={false}
+        onRefresh={handleRefresh}
+        isRefreshing={loading}
+      />
 
       {/* History List */}
       <div className="rounded-lg border max-h-[400px] overflow-y-auto divide-y">
@@ -51,6 +61,9 @@ export function SmartStorageUsageHistoryTab() {
                     {`${formatDateTime(usage.startTime)} - ${formatDateTime(
                       usage.endTime
                     )}`}
+                  </p>
+                  <p className="text-xs text-muted-foreground/70 mt-1">
+                    Billed: {formatDateTime(usage.timestamp)}
                   </p>
                 </div>
               </div>

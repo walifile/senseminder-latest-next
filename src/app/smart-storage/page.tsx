@@ -2,8 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
-import appConfig from "@/config/app-config";
-import React, { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -25,8 +24,6 @@ import {
 import { motion } from "framer-motion";
 import { Clock, Cloud, Shield, Share2, Server } from "lucide-react";
 
-const { PING_API_KEY, STORAGE_PING_URL } = appConfig;
-
 export default function SmartStoragePage() {
   const router = useRouter();
 
@@ -37,9 +34,9 @@ export default function SmartStoragePage() {
 
   const serverLocations = [{ id: "us-east", name: "US East (N. Virginia)" }];
 
-  const PING_ENDPOINTS = useMemo<Record<string, string>>(
+  const PING_TARGETS = useMemo<Record<string, string>>(
     () => ({
-      "us-east": STORAGE_PING_URL,
+      "us-east": "storage",
     }),
     []
   );
@@ -51,15 +48,15 @@ export default function SmartStoragePage() {
   useEffect(() => {
     const fetchLatencies = async () => {
       const results: Record<string, number> = {};
-      for (const [region, url] of Object.entries(PING_ENDPOINTS)) {
+      for (const [region, target] of Object.entries(PING_TARGETS)) {
         const start = performance.now();
         try {
-          const res = await fetch(url, {
+          const res = await fetch(`/api/ping?target=${target}`, {
             cache: "no-store",
-            headers: {
-              "x-api-key": PING_API_KEY,
-            },
           });
+          if (!res.ok) {
+            throw new Error("Ping request failed");
+          }
           await res.json();
           const end = performance.now();
           results[region] = Math.round(end - start);
@@ -72,7 +69,7 @@ export default function SmartStoragePage() {
     };
 
     fetchLatencies();
-  }, [PING_ENDPOINTS]);
+  }, [PING_TARGETS]);
 
   const handlePurchase = () => {
     // toast({

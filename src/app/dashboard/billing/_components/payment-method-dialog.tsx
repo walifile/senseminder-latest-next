@@ -70,17 +70,17 @@ export function PaymentMethodDialog() {
     const defaultId = apiResponse.defaultPaymentMethod?.id;
     return apiResponse.paymentMethods.map(
       (pm) =>
-        ({
-          id: pm.id,
-          type: "card",
-          card: {
-            last4: pm.card.last4,
-            exp_month: pm.card.exp_month,
-            exp_year: pm.card.exp_year,
-            brand: pm.card.brand,
-          },
-          isDefault: pm.id === defaultId,
-        } as ExtendedPaymentMethod)
+      ({
+        id: pm.id,
+        type: "card",
+        card: {
+          last4: pm.card.last4,
+          exp_month: pm.card.exp_month,
+          exp_year: pm.card.exp_year,
+          brand: pm.card.brand,
+        },
+        isDefault: pm.id === defaultId,
+      } as ExtendedPaymentMethod)
     );
   };
 
@@ -195,8 +195,8 @@ export function PaymentMethodDialog() {
           updated.length === 1
             ? updated[0]
             : wasDefault
-            ? updated[updated.length - 1]
-            : null;
+              ? updated[updated.length - 1]
+              : null;
 
         if (candidate) {
           setMakeDefaultId(candidate.id);
@@ -244,11 +244,19 @@ export function PaymentMethodDialog() {
     }
   };
 
+  // 🔹 Theme-aware colors for Stripe CardElement
+  const isDarkMode =
+    typeof window !== "undefined" &&
+    document.documentElement.classList.contains("dark");
+
+  const cardTextColor = isDarkMode ? "#e5e7eb" : "#0f172a"; // light text on dark, dark text on light
+  const cardPlaceholderColor = isDarkMode ? "#9ca3af" : "#94a3b8";
+
   return (
     <>
       <Button onClick={() => setOpen(true)} className="gap-2">
         <CreditCard className="h-4 w-4" />
-        Add Payment Method
+        Manage Payment
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -323,8 +331,10 @@ export function PaymentMethodDialog() {
                             style: {
                               base: {
                                 fontSize: "16px",
-                                color: "#0f172a",
-                                "::placeholder": { color: "#94a3b8" },
+                                color: cardTextColor,
+                                "::placeholder": {
+                                  color: cardPlaceholderColor,
+                                },
                                 fontSmoothing: "antialiased",
                               },
                               invalid: { color: "#dc2626" },

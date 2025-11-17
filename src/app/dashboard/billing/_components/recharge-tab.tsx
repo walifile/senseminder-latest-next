@@ -32,6 +32,10 @@ export function RechargeHistoryTab() {
       query,
     });
 
+  const handleRefresh = async () => {
+    await fetchHistory(false);
+  };
+
   return (
     <TabsContent value="recharge" className="space-y-4">
       {/* Filters */}
@@ -40,6 +44,8 @@ export function RechargeHistoryTab() {
         setDate={setDate}
         query={query}
         setQuery={setQuery}
+        onRefresh={handleRefresh}
+        isRefreshing={loading}
       />
 
       {/* History List */}
