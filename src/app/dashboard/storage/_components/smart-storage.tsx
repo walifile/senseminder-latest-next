@@ -1757,7 +1757,13 @@ const CloudStorage = () => {
                                               />
                                             );
                                           } else if (
-                                            ["mp4", "webm", "ogg"].includes(ext)
+                                            [
+                                              "mp4",
+                                              "webm",
+                                              "ogg",
+                                              "mov",
+                                              "quicktime",
+                                            ].includes(ext)
                                           ) {
                                             return (
                                               <video

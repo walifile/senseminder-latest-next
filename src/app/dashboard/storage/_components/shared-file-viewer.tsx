@@ -53,7 +53,7 @@ export default function SharedFileViewer({ name, previewUrl }: Props) {
     );
   }
 
-  if (["mp4", "webm", "ogg"].includes(ext)) {
+  if (["mp4", "webm", "ogg", "mov", "quicktime"].includes(ext)) {
     return (
       <div className="w-full">
         {!loaded && skeleton}

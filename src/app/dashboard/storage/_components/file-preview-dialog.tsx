@@ -64,7 +64,7 @@ const FilePreviewDialog: React.FC<FilePreviewProps> = ({
         className="w-full h-[75vh] rounded border"
       />
     );
-  } else if (["mp4", "webm", "ogg"].includes(ext)) {
+  } else if (["mp4", "webm", "ogg", "mov", "quicktime"].includes(ext)) {
     content = (
       <video
         src={src}
