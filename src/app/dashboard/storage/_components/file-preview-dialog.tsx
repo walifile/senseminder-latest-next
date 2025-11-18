@@ -31,19 +31,13 @@ const FilePreviewDialog: React.FC<FilePreviewProps> = ({
 
   if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) {
     content = (
-      <img
-        src={src}
-        alt={file.fileName}
-        className="max-h-[60vh] max-w-[60vw] m-0 p-0 block"
-        style={{
-          display: "block",
-          margin: "0 auto",
-          padding: 0,
-          border: "none",
-          boxShadow: "none",
-          background: "none",
-        }}
-      />
+      <div className="w-full max-w-4xl">
+        <img
+          src={src}
+          alt={file.fileName}
+          className="max-h-[60vh] max-w-full object-contain mx-auto block rounded-lg"
+        />
+      </div>
     );
   } else if (ext === "pdf") {
     content = (
@@ -69,14 +63,18 @@ const FilePreviewDialog: React.FC<FilePreviewProps> = ({
       <video
         src={src}
         controls
-        className="max-h-[75vh] object-contain rounded"
+        className="max-h-[65vh] w-full h-full object-contain rounded-lg bg-black"
       />
     );
   } else if (["mp3", "wav", "ogg"].includes(ext)) {
-    content = <audio src={src} controls className="w-full max-w-xl" />;
+    content = (
+      <div className="w-full max-w-2xl">
+        <audio src={src} controls className="w-full" />
+      </div>
+    );
   } else {
     content = (
-      <div className="text-muted-foreground text-center py-12">
+      <div className="text-muted-foreground text-center py-12 text-sm">
         <p>Preview not available for this file type.</p>
       </div>
     );
@@ -84,31 +82,38 @@ const FilePreviewDialog: React.FC<FilePreviewProps> = ({
 
   return (
     <Dialog open={!!file} onOpenChange={onClose}>
-      <DialogContent
-        className="max-w-fit px-4 py-0 m-0"
-        style={{ "--hide-close-button": "none" } as React.CSSProperties}
-      >
-        <style>{`
-          [data-state="open"] > button[data-dialog-close] {
-            display: var(--hide-close-button);
-          }
-        `}</style>
-
-        <DialogHeader>
-          <DialogTitle>Preview: {file.fileName}</DialogTitle>
+      <DialogContent className="w-[90vw] max-w-5xl border-none bg-background/95 p-6 rounded-3xl shadow-2xl">
+        <DialogHeader className="pb-4 border-b">
+          <DialogTitle className="text-lg font-semibold text-foreground">
+            File preview
+          </DialogTitle>
+          <p className="text-sm text-muted-foreground truncate">
+            {file.fileName}
+          </p>
         </DialogHeader>
 
-        <div className="flex items-center justify-center p-0 m-0">
+        <div className="mt-4 bg-black/90 rounded-2xl p-4 flex items-center justify-center min-h-[40vh] max-h-[70vh] overflow-hidden">
           {content}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            <X className="h-4 w-4 text-red-500" />
-          </Button>
-          <Button onClick={() => handleDownload(file)}>
-            <Download className="h-4 w-4" />
-          </Button>
+        <DialogFooter className="mt-4 flex items-center justify-between gap-3 flex-wrap">
+          <div className="text-sm text-muted-foreground truncate">
+            {file.fileName}
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="gap-2 text-sm"
+            >
+              <X className="h-4 w-4" />
+              Close
+            </Button>
+            <Button onClick={() => handleDownload(file)} className="gap-2">
+              <Download className="h-4 w-4" />
+              Download
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
