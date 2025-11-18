@@ -138,6 +138,8 @@ const CloudStorage = () => {
   const [showBulkShareDialog, setShowBulkShareDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
+  const [dropSession, setDropSession] = useState(0);
   const [showNewFolderDialog, setShowNewFolderDialog] = useState(false);
   // const [newFolderName, setNewFolderName] = useState("");
   // const [uploadProgress, setUploadProgress] = useState(0);
@@ -562,14 +564,16 @@ const CloudStorage = () => {
 
     // Handle external file drops (upload)
     if (e.dataTransfer.types.includes("Files")) {
-      const files = Array.from(e.dataTransfer.files);
+      const files = Array.from(e.dataTransfer.files || []);
       if (files.length > 0) {
+        setDroppedFiles(files);
+        setDropSession((prev) => prev + 1);
+        setShowUploadDialog(true);
         toast({
-          title: "Files Uploading",
-          description: `Uploading ${files.length} file(s)...`,
+          title: "Files ready to upload",
+          description: `Added ${files.length} file(s) to the uploader.`,
         });
       }
-      return;
     }
   };
 
@@ -2052,6 +2056,8 @@ const CloudStorage = () => {
         open={showUploadDialog}
         onOpenChange={setShowUploadDialog}
         folderPath={folderPath}
+        prefillFiles={droppedFiles}
+        prefillToken={dropSession}
         // handleFileUpload={handleFileUpload}
         // uploadProgress={uploadProgress}
       />

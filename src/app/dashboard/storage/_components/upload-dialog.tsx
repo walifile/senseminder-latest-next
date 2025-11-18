@@ -36,12 +36,16 @@ interface UploadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   folderPath?: string;
+  prefillFiles?: File[];
+  prefillToken?: number;
 }
 
 const UploadDialog: React.FC<UploadDialogProps> = ({
   open,
   onOpenChange,
   folderPath,
+  prefillFiles,
+  prefillToken,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -57,9 +61,9 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   const { user } = useSelector((state: RootState) => state.auth);
   const { triggerFeedback } = useFeedback();
 
-  const handleFileChange = (files: FileList | null) => {
-    if (!files) return;
-    const fileArray = Array.from(files);
+  const appendFiles = (incoming: File[] | FileList | null) => {
+    if (!incoming) return;
+    const fileArray = Array.from(incoming);
 
     const updatedFiles: File[] = [];
 
@@ -87,6 +91,10 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
     });
 
     setSelectedFiles((prev) => [...prev, ...updatedFiles]);
+  };
+
+  const handleFileChange = (files: FileList | null) => {
+    appendFiles(files);
   };
 
   const handleFileRemove = (index: number) => {
@@ -132,13 +140,20 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   const handleDrop = (event: React.DragEvent<HTMLLabelElement>) => {
     event.preventDefault();
     setIsDragging(false);
-    handleFileChange(event.dataTransfer.files);
+    appendFiles(event.dataTransfer.files);
   };
 
   const closeDialog = () => {
     setSelectedFiles([]);
     onOpenChange(false);
   };
+
+  React.useEffect(() => {
+    if (prefillFiles && prefillFiles.length && prefillToken !== undefined) {
+      appendFiles(prefillFiles);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillToken]);
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
