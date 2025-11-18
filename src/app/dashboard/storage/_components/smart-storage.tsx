@@ -89,7 +89,6 @@ import {
   ArrowLeft,
   FolderPlus,
   FolderIcon,
-  FolderSync,
   ListFilter,
   ChevronLeft,
   GripVertical,
@@ -224,7 +223,7 @@ const CloudStorage = () => {
     return selectedCategory.toLowerCase();
   })();
 
-  const { data, error, isFetching } = useListFilesQuery({
+  const { data, error, isFetching, refetch } = useListFilesQuery({
     userId,
     region: "virginia",
     type: selectedType,
@@ -846,14 +845,14 @@ const CloudStorage = () => {
               <CardDescription>Manage your files and folders</CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              <Button
+              {/* <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setSyncDialogOpen(true)}
               >
                 <FolderSync className="h-4 w-4 mr-2" />
                 Sync Storage
-              </Button>
+              </Button> */}
               <Button
                 variant="outline"
                 size="sm"
@@ -955,58 +954,58 @@ const CloudStorage = () => {
                         Filter
                       </Button>
                     </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Filter by</DropdownMenuLabel>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Filter by</DropdownMenuLabel>
 
-                  <DropdownMenuCheckboxItem
-                    checked={filters.modified === ""}
-                    onCheckedChange={() =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        modified: "",
-                      }))
-                    }
-                  >
-                    All uploads
-                  </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem
+                        checked={filters.modified === ""}
+                        onCheckedChange={() =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            modified: "",
+                          }))
+                        }
+                      >
+                        All uploads
+                      </DropdownMenuCheckboxItem>
 
-                  <DropdownMenuCheckboxItem
-                    checked={filters.modified === "today"}
-                    onCheckedChange={() =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        modified: "today",
-                      }))
-                    }
-                  >
-                    Uploaded today
-                  </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem
+                        checked={filters.modified === "today"}
+                        onCheckedChange={() =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            modified: "today",
+                          }))
+                        }
+                      >
+                        Uploaded today
+                      </DropdownMenuCheckboxItem>
 
-                  <DropdownMenuCheckboxItem
-                    checked={filters.modified === "week"}
-                    onCheckedChange={() =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        modified: "week",
-                      }))
-                    }
-                  >
-                    Uploaded this week
-                  </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem
+                        checked={filters.modified === "week"}
+                        onCheckedChange={() =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            modified: "week",
+                          }))
+                        }
+                      >
+                        Uploaded this week
+                      </DropdownMenuCheckboxItem>
 
-                  <DropdownMenuCheckboxItem
-                    checked={filters.modified === "month"}
-                    onCheckedChange={() =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        modified: "month",
-                      }))
-                    }
-                  >
-                    Uploaded this month
-                  </DropdownMenuCheckboxItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                      <DropdownMenuCheckboxItem
+                        checked={filters.modified === "month"}
+                        onCheckedChange={() =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            modified: "month",
+                          }))
+                        }
+                      >
+                        Uploaded this month
+                      </DropdownMenuCheckboxItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -1070,7 +1069,7 @@ const CloudStorage = () => {
                       <List className="h-4 w-4" />
                     )}
                   </Button>
-                  <Button size="sm" variant="ghost">
+                  <Button size="sm" variant="ghost" onClick={() => refetch()}>
                     <RefreshCw className="h-4 w-4" />
                   </Button>
                   <DropdownMenu>
