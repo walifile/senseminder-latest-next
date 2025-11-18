@@ -955,34 +955,58 @@ const CloudStorage = () => {
                         Filter
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Filter by</DropdownMenuLabel>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Filter by</DropdownMenuLabel>
 
-                      <DropdownMenuCheckboxItem
-                        checked={filters.modified === "today"}
-                        onCheckedChange={() =>
-                          setFilters((prev) => ({
-                            ...prev,
-                            modified: prev.modified === "today" ? "" : "today",
-                          }))
-                        }
-                      >
-                        Uploaded today
-                      </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={filters.modified === ""}
+                    onCheckedChange={() =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        modified: "",
+                      }))
+                    }
+                  >
+                    All uploads
+                  </DropdownMenuCheckboxItem>
 
-                      <DropdownMenuCheckboxItem
-                        checked={filters.modified === "week"}
-                        onCheckedChange={() =>
-                          setFilters((prev) => ({
-                            ...prev,
-                            modified: prev.modified === "week" ? "" : "week",
-                          }))
-                        }
-                      >
-                        Uploaded this week
-                      </DropdownMenuCheckboxItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <DropdownMenuCheckboxItem
+                    checked={filters.modified === "today"}
+                    onCheckedChange={() =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        modified: "today",
+                      }))
+                    }
+                  >
+                    Uploaded today
+                  </DropdownMenuCheckboxItem>
+
+                  <DropdownMenuCheckboxItem
+                    checked={filters.modified === "week"}
+                    onCheckedChange={() =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        modified: "week",
+                      }))
+                    }
+                  >
+                    Uploaded this week
+                  </DropdownMenuCheckboxItem>
+
+                  <DropdownMenuCheckboxItem
+                    checked={filters.modified === "month"}
+                    onCheckedChange={() =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        modified: "month",
+                      }))
+                    }
+                  >
+                    Uploaded this month
+                  </DropdownMenuCheckboxItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

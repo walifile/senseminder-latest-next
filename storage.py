@@ -680,6 +680,9 @@ def handle_list(event):
             elif 'week' in ft:
                 seven_days_ago = now_utc - timedelta(days=7)
                 files = _filter_items_by_created(files, lambda created: created > seven_days_ago)
+            elif 'month' in ft:
+                thirty_days_ago = now_utc - timedelta(days=30)
+                files = _filter_items_by_created(files, lambda created: created > thirty_days_ago)
         else:
             if folder:
                 folder = folder.strip('/') + '/'
@@ -709,6 +712,9 @@ def handle_list(event):
             elif 'week' in modified_filter:
                 seven_days_ago = now_utc - timedelta(days=7)
                 files = _filter_items_by_created(files, lambda created: created > seven_days_ago)
+            elif 'month' in modified_filter:
+                thirty_days_ago = now_utc - timedelta(days=30)
+                files = _filter_items_by_created(files, lambda created: created > thirty_days_ago)
 
         if search_term:
             st = search_term.lower()
