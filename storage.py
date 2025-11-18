@@ -21,6 +21,7 @@ file_metadata_table = dynamodb.Table('SmartPCStorageMetadata')
 usage_table = dynamodb.Table('SmartPCStorageUsage')  # NEW: monthly usage table
 shares_table = dynamodb.Table('SmartPCShares')  # NEW: share control table
 TTL_DAYS = 60
+MAX_STORAGE_BYTES = 1024 ** 4  # 1 TB per-user limit
 
 # ------------ Helpers (NEW) ------------
 def _iso_now():
@@ -170,6 +171,23 @@ def _size_to_int(val):
     except Exception:
         pass
     return _normalize_size_bytes(val)
+
+
+def _get_user_storage_bytes(user_id: str) -> int:
+    """Return the total bytes stored for a user (ignoring folders and soft-deleted files)."""
+    response_db = file_metadata_table.query(
+        IndexName='userId-index',
+        KeyConditionExpression=boto3.dynamodb.conditions.Key('userId').eq(user_id)
+    )
+    files = response_db.get('Items', []) or []
+
+    total_bytes = 0
+    for f in files:
+        if f.get('fileType') == 'folder' or f.get('isDeleted'):
+            continue
+        total_bytes += _size_to_int(f.get('size', 0))
+    return total_bytes
+
 
 def resolve_key_from_item(it, user_id: str):
     """
@@ -508,6 +526,20 @@ def handle_upload(event):
     if 'Item' not in bucket_response:
         return response(404, {'message': f'No bucket found for region: {region}'})
     bucket_name = bucket_response['Item']['bucketName']
+
+    # Enforce per-user storage limit (1 TB)
+    try:
+        current_bytes = _get_user_storage_bytes(user_id)
+    except Exception as e:
+        print(f"Failed to calculate usage for {user_id}: {e}")
+        return response(500, {'message': 'Unable to verify storage quota. Please try again later.'})
+
+    if current_bytes + file_size_bytes > MAX_STORAGE_BYTES:
+        return response(403, {
+            'message': 'Storage limit exceeded. Delete files or upgrade your plan before uploading.',
+            'currentBytes': current_bytes,
+            'maxBytes': MAX_STORAGE_BYTES
+        })
 
     # Build initial key
     base_name, ext = file_name.rsplit('.', 1) if '.' in file_name else (file_name, '')
@@ -929,19 +961,7 @@ def handle_usage(event):
         return response(400, {'message': 'userId is required.'})
 
     try:
-        response_db = file_metadata_table.query(
-            IndexName='userId-index',
-            KeyConditionExpression=boto3.dynamodb.conditions.Key('userId').eq(user_id)
-        )
-        files = response_db.get('Items', []) or []
-
-        total_bytes = 0
-        for f in files:
-            # skip folders and soft-deleted items
-            if f.get('fileType') == 'folder' or f.get('isDeleted'):
-                continue
-            total_bytes += _size_to_int(f.get('size', 0))
-
+        total_bytes = _get_user_storage_bytes(user_id)
         return response(200, {
             'userId': user_id,
             'totalBytes': total_bytes,
