@@ -330,7 +330,6 @@
   background-position: 100% 0;
 }
 
-
 .gradient-outline-border {
   position: relative;
   transition: all 0.3s ease;
@@ -349,21 +348,4 @@
   background: linear-gradient(90deg, #8086F3 0%, #4C55F8 54%, #D971FF 95%);  /* Gradient color */
   -webkit-background-clip: border-box;  /* For Webkit browsers */
   background-clip: border-box;  /* For other browsers */
-}
-
-a.sidebar-navlink {
-  position: relative;
-  padding-right: 35px; /* space for the indicator */
-}
-
-a.sidebar-navlink.active::before {
-  content: "";
-  position: absolute;
-  right: -23px;
-  bottom: 0; /* adjust this based on the design */
-  width: 10px;
-  height: 100%;
-  background-color: #A601BA; /* color of the active link */
-  border-top-left-radius: 12px; /* Rounded left corner (adjust based on your design) */
-  border-bottom-left-radius: 12px;
 }
