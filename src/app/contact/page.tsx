@@ -88,7 +88,7 @@ const Contact = () => {
           <span />
         </div>
 
-        <div className="glass-card !shadow-none dark:gradient-outline-border !rounded-3xl !border-0 px-0 md:px-12 py-12 w-full flex flex-col-reverse md:flex-row gap-8 md:gap-24">
+        <div className="glass-card !shadow-none gradient-outline-border !rounded-3xl !border-0 px-0 md:px-12 py-12 w-full flex flex-col-reverse md:flex-row gap-8 md:gap-24">
           <div className="w-full md:w-3/4 px-6 md:px-0">
             <div className="mb-6 flex items-center space-x-2 text-sm font-light text-paragraph dark:text-gray-300">
               <Link
@@ -122,7 +122,7 @@ const Contact = () => {
           </div>
         </div>
 
-        <div className="glass-card !shadow-none dark:gradient-outline-border !rounded-3xl !border-0 w-full grid grid-cols-1 lg:grid-cols-2 gap-16 mt-8 px-6 md:px-12 py-12">
+        <div className="glass-card !shadow-none gradient-outline-border !rounded-3xl !border-0 w-full grid grid-cols-1 lg:grid-cols-2 gap-16 mt-8 px-6 md:px-12 py-12">
           <div className="space-y-8">
             <p className="font-space-grotesk font-semibold text-3xl mb-3">
               Contact Information
