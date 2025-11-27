@@ -152,19 +152,16 @@ const DashboardSidebar = () => {
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
-          <div className="h-16 px-4 border-b border-border flex items-center justify-between">
+          <div className="relative h-20 px-4 border-b border-border flex items-center">
+            {/* Centered logo when expanded */}
             {!collapsed && (
-              <Link href="/" className="flex items-center">
+              <div className="mx-auto transform scale-90">
                 <Logo />
-              </Link>
+              </div>
             )}
 
-            <div
-              className={cn(
-                "flex items-center",
-                collapsed && "w-full justify-center"
-              )}
-            >
+            {/* Right-side controls (collapse + mobile close) */}
+            <div className="absolute inset-y-0 right-0 flex items-center pr-1">
               <Button
                 variant="ghost"
                 size="icon"

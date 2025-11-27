@@ -336,9 +336,9 @@ export default [
   ...eslintTs.configs.recommended,
   reactPlugin.configs.flat.recommended,
   customConfig,
-  // Exception for the single file allowed to access environment variables
+  // Exception for the only files allowed to access environment variables
   {
-    files: ["src/config/app-config.ts"],
+    files: ["src/config/app-config.ts", "src/app/api/ping/route.ts", "src/app/api/ipinfo/route.ts"],
     rules: {
       "no-restricted-syntax": "off",
     },

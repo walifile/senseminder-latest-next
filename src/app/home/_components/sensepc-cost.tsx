@@ -35,7 +35,7 @@ export default function SensePCCost() {
           className="text-center"
         >
           <div className="space-y-2.5">
-            <h2 className="font-space-grotesk font-semibold text-2xl md:text-5xl">
+            <h2 className="font-space-grotesk font-semibold text-2xl md:text-4xl">
               Check Your Sense PC Cost
             </h2>
             <p className="text-paragraph text-base md:text-2xl">
@@ -66,7 +66,7 @@ export default function SensePCCost() {
             onClick={() => setSelectedTab("storage")}
             className="transition-all"
           >
-            Storage
+            Sense Cloud
           </Button>
         </motion.div>
 

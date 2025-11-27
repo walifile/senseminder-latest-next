@@ -59,7 +59,7 @@ const Hero = () => {
 
           <div className="relative">
             <Image
-              src="/assets/svg/light-banner.svg"
+              src="/assets/svg/hero-img-dark.svg"
               alt="Hero"
               width={600}
               height={400}

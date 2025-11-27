@@ -91,10 +91,7 @@ const Contact = () => {
         <div className="glass-card !shadow-none gradient-outline-border !rounded-3xl !border-0 px-0 md:px-12 py-12 w-full flex flex-col-reverse md:flex-row gap-8 md:gap-24">
           <div className="w-full md:w-3/4 px-6 md:px-0">
             <div className="mb-6 flex items-center space-x-2 text-sm font-light text-paragraph dark:text-gray-300">
-              <Link
-                href="/"
-                className="text-primary hover:text-primary/80"
-              >
+              <Link href="/" className="text-primary hover:text-primary/80">
                 Home
               </Link>
               <span>-</span>
@@ -104,10 +101,10 @@ const Contact = () => {
               Contact Us
             </h1>
             <p className="text-base md:text-lg text-paragraph dark:text-gray-300 leading-relaxed font-light">
-              Let’s connect. Whether you have a question, need support, or want to explore a
-              partnership — we’re here for you. Our team is always ready to assist, collaborate,
-              or simply hear your ideas. Reach out using any of the options below — we’d love
-              to hear from you.
+              Let’s connect. Whether you have a question, need support, or want
+              to explore a partnership — we’re here for you. Our team is always
+              ready to assist, collaborate, or simply hear your ideas. Reach out
+              using any of the options below — we’d love to hear from you.
             </p>
           </div>
           <div className="w-full md:w-1/4 content-center justify-items-center">
@@ -141,7 +138,9 @@ const Contact = () => {
                   />
                 </div>
                 <div>
-                  <h3 className="text-paragraph text-base mb-3">Phone Number</h3>
+                  <h3 className="text-paragraph text-base mb-3">
+                    Phone Number
+                  </h3>
                   <p className="text-black dark:text-white text-base md:text-xl font-semibold leading-[30px]">
                     <a
                       href="tel:+16462265995"
@@ -164,7 +163,9 @@ const Contact = () => {
                   />
                 </div>
                 <div>
-                  <h3 className="text-paragraph text-base mb-3">Email Address</h3>
+                  <h3 className="text-paragraph text-base mb-3">
+                    Email Address
+                  </h3>
                   <p className="text-black dark:text-white text-base md:text-xl font-semibold leading-[30px]">
                     <a
                       href="mailto:info@smartpc.com"
@@ -188,10 +189,8 @@ const Contact = () => {
                 </div>
                 <div>
                   <p className="text-black dark:text-white text-base md:text-xl font-semibold leading-[30px]">
-                    Elan Satellite Place
-                    3100 Commerce Avenue NW
-                    Duluth, GA 30096,
-                    United States
+                    Elan Satellite Place 3100 Commerce Avenue NW Duluth, GA
+                    30096, United States
                   </p>
                 </div>
               </div>
@@ -199,29 +198,41 @@ const Contact = () => {
 
             <div className="px-4 py-4 md:px-8 md:py-6 rounded-lg border bg-[#5220DE09] dark:[#ffffff0a]">
               <h2 className="text-2xl font-semibold mb-6 flex gap-4 items-center">
-                  <Image
-                    src="/assets/svg/contact/clock.svg"
-                    alt="Contact Us"
-                    className="h-8 w-8"
-                    width={34}
-                    height={34}
-                    priority
-                  />
+                <Image
+                  src="/assets/svg/contact/clock.svg"
+                  alt="Contact Us"
+                  className="h-8 w-8"
+                  width={34}
+                  height={34}
+                  priority
+                />
                 Business Hours
               </h2>
 
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-paragraph text-xl font-semibold">Monday - Friday:</span>
-                  <span className="text-paragraph text-xl font-semibold">10:00 AM - 4:00 PM</span>
+                  <span className="text-paragraph text-xl font-semibold">
+                    Monday - Friday:
+                  </span>
+                  <span className="text-paragraph text-xl font-semibold">
+                    10:00 AM - 4:00 PM
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-paragraph text-xl font-semibold">Saturday:</span>
-                  <span className="text-paragraph text-xl font-semibold">Closed</span>
+                  <span className="text-paragraph text-xl font-semibold">
+                    Saturday:
+                  </span>
+                  <span className="text-paragraph text-xl font-semibold">
+                    Closed
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-paragraph text-xl font-semibold">Sunday:</span>
-                  <span className="text-paragraph text-xl font-semibold">Closed</span>
+                  <span className="text-paragraph text-xl font-semibold">
+                    Sunday:
+                  </span>
+                  <span className="text-paragraph text-xl font-semibold">
+                    Closed
+                  </span>
                 </div>
                 <p className="text-sm font-light text-paragraph dark:text-gray-300 pt-4">
                   * All times are in Eastern Standard Time (EST)
@@ -234,7 +245,8 @@ const Contact = () => {
               Send Us a Message
             </p>
             <p className="text-paragraph text-base font-light leading-[32px]">
-              Please fill out the form below and we will contact you within 24 hours.
+              Please fill out the form below and we will contact you within 24
+              hours.
             </p>
             <br />
             <hr />

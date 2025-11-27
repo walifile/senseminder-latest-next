@@ -8,20 +8,22 @@ import { usePathname } from "next/navigation";
 import NewsletterForm from "@/components/shared/layout/newsletter-form";
 
 const socialLinks = [
-  { href: "#", icon: "linkedin" },
-  { href: "#", icon: "twitter" },
-  { href: "#", icon: "facebook" },
-  { href: "#", icon: "instagram" },
+  { href: "https://www.facebook.com/officialsensepc/", icon: "facebook1" },
+  { href: "https://www.instagram.com/sensepcofficial/", icon: "instagram1" },
+  { href: "https://x.com/sensepcofficial/", icon: "twitter1" },
+  { href: "https://www.linkedin.com/company/sensepcofficial/", icon: "linkedin1" },
 ];
 
-const contactInfo = [
-  {
-    icon: "marker-pin",
-    text: "Elan Satellite Place, 3100 Commerce Avenue NW, Duluth, GA 30096, USA",
-    href: null as string | null,
-  },
-  { icon: "phone-call", text: "+1 (646) 226-5995", href: "tel:+16462265995" },
-  { icon: "email", text: "info@sensepc.com", href: "mailto:info@sensepc.com" },
+const quickLinks = [
+  { href: "/about", text: "About Us", icon: "about-us-icon" },
+  { href: "/contact", text: "Contact", icon: "contact-icon" },
+  { href: "/privacy", text: "Privacy Policy", icon: "privacy-policy-icon" },
+  { href: "/terms", text: "Terms of Service", icon: "terms-icon" },
+];
+
+const product = [
+  { icon: "computer1", text: "Sense PC", href: "/products/sensepc" },
+  { icon: "storage", text: "Sense Cloud", href: "/products/sensecloud" },
 ];
 
 const Footer = () => {
@@ -38,21 +40,32 @@ const Footer = () => {
 
   return (
     <footer
-      className="relative text-white overflow-visible"
+      className="
+        relative text-white overflow-visible
+        min-h-[190px]          /* 💯 ensures SAME height light/dark */
+      "
       aria-label="Site footer"
     >
-      {/* Glow background layers */}
-      <div className="z-0 absolute -top-10 left-1/2 -translate-x-1/2 md:-top-16 md:left-[10%] blur-[160px] md:blur-[200px] size-1/2 opacity-40 bg-[#4027E5]" />
-      <div className="z-0 absolute -top-10 left-1/2 -translate-x-1/2 md:-top-20 md:right-[10%] blur-[160px] md:blur-[200px] size-1/2 opacity-40 bg-[#9C05BF]" />
 
-      {/* Background layer */}
+      {/* Glow background layers */}
+      <div className="z-0 absolute -top-10 left-1/2 -translate-x-1/2 md:-top-16 md:left-[10%]
+      blur-[160px] md:blur-[200px] size-1/2 opacity-40 bg-[#4027E5]" />
+
+      <div className="z-0 absolute -top-10 left-1/2 -translate-x-1/2 md:-top-20 md:right-[10%]
+      blur-[160px] md:blur-[200px] size-1/2 opacity-40 bg-[#9C05BF]" />
+
+      {/* Background layer — same size in light/dark */}
       <div className="absolute inset-0 bg-[#020817] dark:bg-[#0208176E]" />
 
-      <div className="relative container pt-14 pb-6 space-y-8 md:pt-24 md:pb-5 md:space-y-12">
-        <div className="grid grid-cols-1 lg:grid-cols-4 items-start gap-10 md:gap-12">
+      {/* Content wrapper — unified spacing */}
+      <div className="relative container pt-10 pb-6 space-y-8">
+
+        {/* 4-column layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 items-start gap-8">
+
           {/* Brand */}
-          <div className="space-y-6">
-            <div className="space-y-5">
+          <div className="space-y-4">
+            <div className="space-y-3">
               <Image
                 src="/sensepc-home-logo.png"
                 alt="SensePC logo"
@@ -61,18 +74,19 @@ const Footer = () => {
                 className="w-[210px] h-[60px] object-contain"
               />
               <p className="text-base max-w-sm">
-                Access your powerful PC from anywhere, with low latency and
-                enterprise-grade security.
+                Access your powerful PC from anywhere, with low latency and enterprise-grade security.
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              {socialLinks.map((social, index) => (
-                <a key={index} href={social.href} aria-label="Social link">
+
+            {/* Social media icons - pulled to the left */}
+            <div className="flex items-center gap-3 -ml-1">
+              {socialLinks.map((social, i) => (
+                <a key={i} href={social.href} target="_blank" rel="noreferrer">
                   <Image
                     src={`/assets/svg/${social.icon}.svg`}
-                    alt={`${social.icon} icon`}
-                    width={20}
-                    height={20}
+                    alt={social.icon}
+                    width={28}
+                    height={28}
                     unoptimized
                   />
                 </a>
@@ -81,41 +95,67 @@ const Footer = () => {
           </div>
 
           {/* Quick Links */}
-          <div className="w-full space-y-4 md:space-y-6">
-            <h3 className="font-semibold text-base">Quick Links</h3>
+          <div className="w-full space-y-4">
+            <div className="flex items-center gap-2">
+              <Image
+                src="/assets/svg/quick-links-icon.svg"
+                alt="Quick Links"
+                width={26}
+                height={26}
+                unoptimized
+              />
+              <h3 className="font-semibold text-base">Quick Links</h3>
+            </div>
+
             <ul className="flex md:flex-col gap-3 flex-wrap">
-              {[
-                { href: "/about", text: "About Us" },
-                { href: "/contact", text: "Contact" },
-                { href: "/privacy", text: "Privacy Policy" },
-                { href: "/terms", text: "Terms of Service" },
-              ].map((link) => (
+              {quickLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-link">
-                    {link.text}
+                  <Link href={link.href} className="flex items-center gap-2 text-link">
+                    <Image
+                      src={`/assets/svg/${link.icon}.svg`}
+                      alt={link.text}
+                      width={24}
+                      height={24}
+                      unoptimized
+                    />
+                    <span>{link.text}</span>
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Contact */}
-          <div className="w-full space-y-4 md:space-y-6">
-            <h3 className="font-semibold text-base">Contact Us</h3>
-            <ul className="space-y-4 md:space-y-6">
-              {contactInfo.map((item, index) => (
-                <li key={index} className="flex items-start gap-3">
+          {/* Product */}
+          <div className="w-full space-y-4">
+            <div className="flex items-center gap-3">
+              <Image
+                src="/assets/svg/product-icon.svg"
+                alt="Product"
+                width={26}
+                height={26}
+                unoptimized
+              />
+              <h3 className="font-semibold text-base">Products</h3>
+            </div>
+
+            <ul className="space-y-3">
+              {product.map((item, index) => (
+                <li
+                  key={index}
+                  className="flex items-center gap-3 ml-0.5" 
+                  /* ⭐ pushes Sense PC + Cloud slightly right */
+                >
                   <Image
                     src={`/assets/svg/${item.icon}.svg`}
-                    alt={`${item.icon} icon`}
-                    width={24}
-                    height={24}
+                    alt={item.text}
+                    width={20}
+                    height={20}
                     unoptimized
                   />
                   {item.href ? (
-                    <a href={item.href} className="text-link">
+                    <Link href={item.href} className="text-link">
                       {item.text}
-                    </a>
+                    </Link>
                   ) : (
                     <span className="text-link">{item.text}</span>
                   )}
@@ -124,21 +164,33 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Newsletter (last column) */}
-          <div className="w-full space-y-4 md:space-y-6">
-            <h3 className="font-semibold text-base">Newsletter</h3>
+          {/* Newsletter */}
+          <div className="w-full space-y-4">
+            <div className="flex items-center gap-3">
+              <Image
+                src="/assets/svg/newsletter-icon.svg"
+                alt="Newsletter"
+                width={26}
+                height={26}
+                unoptimized
+              />
+              <h3 className="font-semibold text-base">Newsletter</h3>
+            </div>
+
             <div className="max-w-sm">
               <NewsletterForm variant="inline" source="footer" />
             </div>
           </div>
+
         </div>
 
         {/* Bottom bar */}
-        <div className="pt-6 md:pt-8 border-t border-[#F8F8F8]">
+        <div className="pt-4 border-t border-[#F8F8F8]">
           <p className="text-center text-[#F8F8F8] text-sm font-poppins">
             © {currentYear} sensepc. All rights reserved.
           </p>
         </div>
+
       </div>
     </footer>
   );

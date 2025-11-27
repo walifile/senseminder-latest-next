@@ -56,7 +56,7 @@ const ENV_VARS = {
   SUPPORT_API_BASE: process.env.NEXT_PUBLIC_SUPPORT_API_BASE,
   NOTIFICATION_API: process.env.NEXT_PUBLIC_NOTIFICATION_API,
   WEBSOCKET_URL: process.env.NEXT_PUBLIC_WEBSOCKET_URL,
-  
+
   // Smart PC Config
   SMART_PC_CONFIG_URL: process.env.NEXT_PUBLIC_SMART_PC_CONFIG_URL,
 
@@ -68,7 +68,7 @@ const ENV_VARS = {
   STRIPE_PK: process.env.NEXT_PUBLIC_STRIPE_PK,
 } as const;
 
-const appConfig = Object.fromEntries(
+const requiredAppConfig = Object.fromEntries(
   Object.entries(ENV_VARS).map(([key, value]) => [
     key,
     requireEnvVar(value, key),
@@ -77,35 +77,17 @@ const appConfig = Object.fromEntries(
   [K in keyof typeof ENV_VARS]: string;
 };
 
-export default appConfig;
-
-type ServerConfig = {
-  PING_API_URL: string;
-  STORAGE_PING_URL: string;
-  PING_API_KEY: string;
-  IPINFO_URL: string;
-  IPINFO_TOKEN: string;
+const serverEnv = {
+  // TODO: keep server-side when backend env is fixed
+  PING_API_URL: process.env.NEXT_PUBLIC_PING_API_URL ?? "",
+  PING_API_KEY: process.env.NEXT_PUBLIC_PING_API_KEY ?? "",
+  IPINFO_URL: process.env.NEXT_PUBLIC_IPINFO_URL ?? "",
+  IPINFO_TOKEN: process.env.NEXT_PUBLIC_IPINFO_TOKEN ?? "",
 };
 
-let serverConfig: ServerConfig | null = null;
+const appConfig = {
+  ...requiredAppConfig,
+  ...serverEnv,
+};
 
-export function getServerConfig(): ServerConfig {
-  if (typeof window !== "undefined") {
-    throw new Error("getServerConfig can only be used on the server");
-  }
-
-  if (!serverConfig) {
-    serverConfig = {
-      PING_API_URL: requireEnvVar(process.env.PING_API_URL, "PING_API_URL"),
-      STORAGE_PING_URL: requireEnvVar(
-        process.env.STORAGE_PING_URL,
-        "STORAGE_PING_URL"
-      ),
-      PING_API_KEY: requireEnvVar(process.env.PING_API_KEY, "PING_API_KEY"),
-      IPINFO_URL: requireEnvVar(process.env.IPINFO_URL, "IPINFO_URL"),
-      IPINFO_TOKEN: requireEnvVar(process.env.IPINFO_TOKEN, "IPINFO_TOKEN"),
-    };
-  }
-
-  return serverConfig;
-}
+export default appConfig;

@@ -7,7 +7,9 @@ import { useGetLegalDocumentsQuery } from "@/api/legalDocumentsAPI";
 const Privacy = () => {
   const { isLoading } = useGetLegalDocumentsQuery();
 
-  const [activeSection, setActiveSection] = useState<string>("how-we-handle-your-data");
+  const [activeSection, setActiveSection] = useState<string>(
+    "how-we-handle-your-data"
+  );
 
   const baseLinkClasses =
     "relative pr-9 text-black hover:text-white dark:text-white dark:hover:text-white mx-6 p-4 rounded-lg border hover:bg-gradient-to-r hover:from-[#3A29E7] hover:to-[#A601BA]";
@@ -32,10 +34,7 @@ const Privacy = () => {
       <div className="container mx-auto px-4 md:px-6">
         {/* Breadcrumb */}
         <div className="my-8 flex items-center space-x-2 text-sm">
-          <Link
-            href="/"
-            className="text-primary hover:text-primary/80"
-          >
+          <Link href="/" className="text-primary hover:text-primary/80">
             Home
           </Link>
           <span>-</span>
@@ -55,68 +54,123 @@ const Privacy = () => {
               </div>
               <hr />
               <div className="space-y-3 py-6 flex flex-col">
-                <a href="#how-we-handle-your-data"
-                  className={`${baseLinkClasses} ${activeSection === "how-we-handle-your-data" ? activeLinkClasses : ""}`}
+                <a
+                  href="#how-we-handle-your-data"
+                  className={`${baseLinkClasses} ${
+                    activeSection === "how-we-handle-your-data"
+                      ? activeLinkClasses
+                      : ""
+                  }`}
                   onClick={() => setActiveSection("how-we-handle-your-data")}
                 >
                   How We Handle Your Data
                 </a>
-                <a href="#personal-information"
-                  className={`${baseLinkClasses} ${activeSection === "personal-information" ? activeLinkClasses : ""}`}
+                <a
+                  href="#personal-information"
+                  className={`${baseLinkClasses} ${
+                    activeSection === "personal-information"
+                      ? activeLinkClasses
+                      : ""
+                  }`}
                   onClick={() => setActiveSection("personal-information")}
                 >
                   Personal Information We Collect
                 </a>
-                <a href="#how-we-use-your-information"
-                  className={`${baseLinkClasses} ${activeSection === "how-we-use-your-information" ? activeLinkClasses : ""}`}
-                  onClick={() => setActiveSection("how-we-use-your-information")}
+                <a
+                  href="#how-we-use-your-information"
+                  className={`${baseLinkClasses} ${
+                    activeSection === "how-we-use-your-information"
+                      ? activeLinkClasses
+                      : ""
+                  }`}
+                  onClick={() =>
+                    setActiveSection("how-we-use-your-information")
+                  }
                 >
                   How We Use Your Information
                 </a>
-                <a href="#how-we-share-your-information"
-                  className={`${baseLinkClasses} ${activeSection === "how-we-share-your-information" ? activeLinkClasses : ""}`}
-                  onClick={() => setActiveSection("how-we-share-your-information")}
+                <a
+                  href="#how-we-share-your-information"
+                  className={`${baseLinkClasses} ${
+                    activeSection === "how-we-share-your-information"
+                      ? activeLinkClasses
+                      : ""
+                  }`}
+                  onClick={() =>
+                    setActiveSection("how-we-share-your-information")
+                  }
                 >
                   How We Share Your Information
                 </a>
-                <a href="#your-rights-choices"
-                  className={`${baseLinkClasses} ${activeSection === "your-rights-choices" ? activeLinkClasses : ""}`}
+                <a
+                  href="#your-rights-choices"
+                  className={`${baseLinkClasses} ${
+                    activeSection === "your-rights-choices"
+                      ? activeLinkClasses
+                      : ""
+                  }`}
                   onClick={() => setActiveSection("your-rights-choices")}
                 >
                   Your Rights & Choices
                 </a>
-                <a href="#data-security"
-                  className={`${baseLinkClasses} ${activeSection === "data-security" ? activeLinkClasses : ""}`}
+                <a
+                  href="#data-security"
+                  className={`${baseLinkClasses} ${
+                    activeSection === "data-security" ? activeLinkClasses : ""
+                  }`}
                   onClick={() => setActiveSection("data-security")}
                 >
                   Data Security
                 </a>
-                <a href="#cookies-tracking"
-                  className={`${baseLinkClasses} ${activeSection === "cookies-tracking" ? activeLinkClasses : ""}`}
+                <a
+                  href="#cookies-tracking"
+                  className={`${baseLinkClasses} ${
+                    activeSection === "cookies-tracking"
+                      ? activeLinkClasses
+                      : ""
+                  }`}
                   onClick={() => setActiveSection("cookies-tracking")}
                 >
                   Cookies & Tracking Technologies
                 </a>
-                <a href="#do-not-track"
-                  className={`${baseLinkClasses} ${activeSection === "do-not-track" ? activeLinkClasses : ""}`}
+                <a
+                  href="#do-not-track"
+                  className={`${baseLinkClasses} ${
+                    activeSection === "do-not-track" ? activeLinkClasses : ""
+                  }`}
                   onClick={() => setActiveSection("do-not-track")}
                 >
                   Do Not Track (DNT) Signals
                 </a>
-                <a href="#childrens-privacy"
-                  className={`${baseLinkClasses} ${activeSection === "childrens-privacy" ? activeLinkClasses : ""}`}
+                <a
+                  href="#childrens-privacy"
+                  className={`${baseLinkClasses} ${
+                    activeSection === "childrens-privacy"
+                      ? activeLinkClasses
+                      : ""
+                  }`}
                   onClick={() => setActiveSection("childrens-privacy")}
                 >
                   Children's Privacy
                 </a>
-                <a href="#international-transfers"
-                  className={`${baseLinkClasses} ${activeSection === "international-transfers" ? activeLinkClasses : ""}`}
+                <a
+                  href="#international-transfers"
+                  className={`${baseLinkClasses} ${
+                    activeSection === "international-transfers"
+                      ? activeLinkClasses
+                      : ""
+                  }`}
                   onClick={() => setActiveSection("international-transfers")}
                 >
                   International Transfers
                 </a>
-                <a href="#notice-european-users"
-                  className={`${baseLinkClasses} ${activeSection === "notice-european-users" ? activeLinkClasses : ""}`}
+                <a
+                  href="#notice-european-users"
+                  className={`${baseLinkClasses} ${
+                    activeSection === "notice-european-users"
+                      ? activeLinkClasses
+                      : ""
+                  }`}
                   onClick={() => setActiveSection("notice-european-users")}
                 >
                   Notice to European Users (GDPR/UK)
@@ -139,25 +193,27 @@ const Privacy = () => {
                   <div className="space-y-4 p-8">
                     <p className="text-paragraph dark:text-gray-300">
                       Welcome to Senseminder. This Privacy Policy explains how
-                      Senseminder LLC (“Senseminder”, “we”, “our”, or “us”) collects,
-                      uses, shares, and protects your personal information when you
-                      interact with our services. These services include:
+                      Senseminder LLC (“Senseminder”, “we”, “our”, or “us”)
+                      collects, uses, shares, and protects your personal
+                      information when you interact with our services. These
+                      services include:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>SmartPC (virtual desktop computing),</li>
                       <li>SmartStorage (cloud-based personal file storage),</li>
                       <li>
-                        Our website, platform dashboard, desktop applications, and
-                        other related tools or communications (collectively, the
-                        “Services”).
+                        Our website, platform dashboard, desktop applications,
+                        and other related tools or communications (collectively,
+                        the “Services”).
                       </li>
                     </ul>
                     <p className="text-paragraph dark:text-gray-300">
-                      Senseminder LLC is a U.S.-based company registered in the State
-                      of Georgia, and all data handling practices comply with
-                      applicable federal and state privacy laws. Where applicable, we
-                      also adhere to international regulations such as the EU General
-                      Data Protection Regulation (GDPR) and UK data protection laws.
+                      Senseminder LLC is a U.S.-based company registered in the
+                      State of Georgia, and all data handling practices comply
+                      with applicable federal and state privacy laws. Where
+                      applicable, we also adhere to international regulations
+                      such as the EU General Data Protection Regulation (GDPR)
+                      and UK data protection laws.
                     </p>
                     <p className="text-paragraph dark:text-gray-300">
                       This policy outlines:
@@ -170,13 +226,13 @@ const Privacy = () => {
                       <li>How we safeguard your data</li>
                     </ul>
                     <p className="text-paragraph dark:text-gray-300">
-                      By using our Services, creating an account, or communicating
-                      with us, you agree to the collection and use of your information
-                      as described in this Privacy Policy.
+                      By using our Services, creating an account, or
+                      communicating with us, you agree to the collection and use
+                      of your information as described in this Privacy Policy.
                     </p>
                     <p className="text-paragraph dark:text-gray-300">
-                      If you do not agree with this policy, please refrain from using
-                      our Services.
+                      If you do not agree with this policy, please refrain from
+                      using our Services.
                     </p>
                   </div>
                 </div>
@@ -194,8 +250,9 @@ const Privacy = () => {
                   <div className="space-y-4 p-8">
                     <p className="text-paragraph dark:text-gray-300">
                       We collect and process various categories of personal
-                      information in order to deliver and improve our SmartPC and
-                      SmartStorage services. This information may be collected:
+                      information in order to deliver and improve our SmartPC
+                      and SmartStorage services. This information may be
+                      collected:
                     </p>
 
                     {/* 1. Information You Provide Directly */}
@@ -203,16 +260,18 @@ const Privacy = () => {
                       1. Information You Provide Directly
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      This includes any personal data you voluntarily submit to us,
-                      such as when you:
+                      This includes any personal data you voluntarily submit to
+                      us, such as when you:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>Create or manage a Senseminder account</li>
                       <li>Purchase or activate a subscription</li>
-                      <li>Submit a support request or communicate with our team</li>
                       <li>
-                        Fill out forms, surveys, or other fields on our website or
-                        platform
+                        Submit a support request or communicate with our team
+                      </li>
+                      <li>
+                        Fill out forms, surveys, or other fields on our website
+                        or platform
                       </li>
                     </ul>
                     <p className="text-paragraph dark:text-gray-300">
@@ -232,9 +291,9 @@ const Privacy = () => {
                       2. Information Collected Automatically
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      When you use our services, we may collect certain information
-                      automatically through cookies, device analytics, and server
-                      logs. This includes:
+                      When you use our services, we may collect certain
+                      information automatically through cookies, device
+                      analytics, and server logs. This includes:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>IP address and geolocation</li>
@@ -242,7 +301,9 @@ const Privacy = () => {
                       <li>
                         Activity logs (e.g., login timestamps, resource usage)
                       </li>
-                      <li>Clickstream data (navigation paths, session duration)</li>
+                      <li>
+                        Clickstream data (navigation paths, session duration)
+                      </li>
                       <li>
                         Connection status and SmartPC/SmartStorage interactions
                       </li>
@@ -257,17 +318,19 @@ const Privacy = () => {
                       3. Information from Third Parties
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      We may receive personal information about you from third-party
-                      sources, including:
+                      We may receive personal information about you from
+                      third-party sources, including:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
-                        Authentication providers (e.g., Google, Microsoft, Discord)
+                        Authentication providers (e.g., Google, Microsoft,
+                        Discord)
                       </li>
                       <li>Payment processors (e.g., Stripe)</li>
                       <li>Referral programs or marketing affiliates</li>
                       <li>
-                        Public records or social profiles (when legally permitted)
+                        Public records or social profiles (when legally
+                        permitted)
                       </li>
                     </ul>
                     <p className="text-paragraph dark:text-gray-300">
@@ -281,21 +344,24 @@ const Privacy = () => {
                       4. Information on Usage & Preferences
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      To better serve our users, we may collect metadata related to
-                      how you use our SmartPC and SmartStorage services, including:
+                      To better serve our users, we may collect metadata related
+                      to how you use our SmartPC and SmartStorage services,
+                      including:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
                         System configurations (e.g., selected CPU, RAM, storage)
                       </li>
-                      <li>SmartPC runtime history (e.g., uptime, idle periods)</li>
+                      <li>
+                        SmartPC runtime history (e.g., uptime, idle periods)
+                      </li>
                       <li>File upload/download behavior</li>
                       <li>Support history and in-app behavior</li>
                     </ul>
                     <p className="text-paragraph dark:text-gray-300">
-                      All such data is subject to this Privacy Policy and is used in
-                      accordance with your consent or legitimate interests under
-                      applicable law.
+                      All such data is subject to this Privacy Policy and is
+                      used in accordance with your consent or legitimate
+                      interests under applicable law.
                     </p>
                   </div>
                 </div>
@@ -312,11 +378,11 @@ const Privacy = () => {
                   <hr />
                   <div className="space-y-4 p-8">
                     <p className="text-paragraph dark:text-gray-300">
-                      Senseminder collects and uses your personal information for a
-                      variety of business, legal, and operational purposes, all
-                      aligned with our mission to provide secure and reliable
-                      SmartPC and SmartStorage services. Specifically, we use the
-                      information collected:
+                      Senseminder collects and uses your personal information
+                      for a variety of business, legal, and operational
+                      purposes, all aligned with our mission to provide secure
+                      and reliable SmartPC and SmartStorage services.
+                      Specifically, we use the information collected:
                     </p>
 
                     {/* 1. To Provide and Maintain Our Services */}
@@ -334,10 +400,13 @@ const Privacy = () => {
                       </li>
                       <li>Create, manage, and bill subscription plans</li>
                       <li>
-                        Enable resource provisioning (e.g., CPU, RAM, storage, OS)
+                        Enable resource provisioning (e.g., CPU, RAM, storage,
+                        OS)
                       </li>
                       <li>Monitor performance, uptime, and service usage</li>
-                      <li>Provide technical support and respond to inquiries</li>
+                      <li>
+                        Provide technical support and respond to inquiries
+                      </li>
                       <li>
                         Send system alerts, status updates, and billing notices
                       </li>
@@ -352,8 +421,12 @@ const Privacy = () => {
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>Enhance the stability and security of our systems</li>
-                      <li>Identify technical issues and optimize performance</li>
-                      <li>Tailor settings, recommendations, or system behaviors</li>
+                      <li>
+                        Identify technical issues and optimize performance
+                      </li>
+                      <li>
+                        Tailor settings, recommendations, or system behaviors
+                      </li>
                       <li>
                         Conduct service quality checks and user satisfaction
                         analysis
@@ -369,9 +442,12 @@ const Privacy = () => {
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
-                        Send product updates, feature announcements, and newsletters
+                        Send product updates, feature announcements, and
+                        newsletters
                       </li>
-                      <li>Deliver targeted promotions, offers, or usage tips</li>
+                      <li>
+                        Deliver targeted promotions, offers, or usage tips
+                      </li>
                       <li>
                         Invite you to provide feedback or participate in surveys
                       </li>
@@ -412,9 +488,9 @@ const Privacy = () => {
                       <li>Analyze usage trends and infrastructure demand</li>
                       <li>Develop new features, products, or services</li>
                       <li>
-                        Improve AI models used for performance recommendations or
-                        chat assistance (never using identifiable data without
-                        consent)
+                        Improve AI models used for performance recommendations
+                        or chat assistance (never using identifiable data
+                        without consent)
                       </li>
                     </ul>
                   </div>
@@ -432,12 +508,12 @@ const Privacy = () => {
                   <hr />
                   <div className="space-y-4 p-8">
                     <p className="text-paragraph dark:text-gray-300">
-                      Senseminder does not sell your personal information. We only
-                      share your information in specific cases that are necessary
-                      to deliver services, comply with legal obligations, or
-                      protect our platform and users. We carefully select trusted
-                      partners and limit sharing to what’s required for each
-                      purpose.
+                      Senseminder does not sell your personal information. We
+                      only share your information in specific cases that are
+                      necessary to deliver services, comply with legal
+                      obligations, or protect our platform and users. We
+                      carefully select trusted partners and limit sharing to
+                      what’s required for each purpose.
                     </p>
 
                     {/* 1. With Service Providers and Contractors */}
@@ -489,8 +565,8 @@ const Privacy = () => {
                       </li>
                     </ul>
                     <p className="text-paragraph dark:text-gray-300">
-                      Sharing with partners is governed by contractual agreements
-                      and always aligned with your usage or consent.
+                      Sharing with partners is governed by contractual
+                      agreements and always aligned with your usage or consent.
                     </p>
 
                     {/* 3. For Legal Compliance and Protection */}
@@ -506,8 +582,8 @@ const Privacy = () => {
                         government requests
                       </li>
                       <li>
-                        Investigate and prevent fraud, abuse, or violations of our
-                        Terms of Service
+                        Investigate and prevent fraud, abuse, or violations of
+                        our Terms of Service
                       </li>
                       <li>
                         Protect the rights, safety, or property of Senseminder,
@@ -527,8 +603,8 @@ const Privacy = () => {
                       In the event of a merger, acquisition, restructuring, or
                       sale of assets, user information may be part of the
                       transferred assets. We will ensure the receiving party
-                      adheres to privacy commitments no less protective than this
-                      policy, and notify you where legally required.
+                      adheres to privacy commitments no less protective than
+                      this policy, and notify you where legally required.
                     </p>
 
                     {/* 5. With Your Consent */}
@@ -536,11 +612,11 @@ const Privacy = () => {
                       5. With Your Consent
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      In specific cases, we may ask for your consent to share your
-                      information outside of the scenarios above — for example, to
-                      connect with a third-party app or service you authorize. You
-                      will always have the option to review and revoke such
-                      permissions.
+                      In specific cases, we may ask for your consent to share
+                      your information outside of the scenarios above — for
+                      example, to connect with a third-party app or service you
+                      authorize. You will always have the option to review and
+                      revoke such permissions.
                     </p>
                   </div>
                 </div>
@@ -565,8 +641,8 @@ const Privacy = () => {
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
-                        <strong>Right to Access</strong> – You may request a copy
-                        of the personal data we hold about you, including
+                        <strong>Right to Access</strong> – You may request a
+                        copy of the personal data we hold about you, including
                         information about how it is used and shared.
                       </li>
                       <li>
@@ -575,31 +651,35 @@ const Privacy = () => {
                         incomplete personal data we hold about you.
                       </li>
                       <li>
-                        <strong>Right to Deletion (Right to Be Forgotten)</strong>{" "}
+                        <strong>
+                          Right to Deletion (Right to Be Forgotten)
+                        </strong>{" "}
                         – You may request that we delete your personal
                         information, subject to certain exceptions (e.g., legal
                         retention requirements, active billing obligations).
                       </li>
                       <li>
-                        <strong>Right to Restrict or Object to Processing</strong>{" "}
+                        <strong>
+                          Right to Restrict or Object to Processing
+                        </strong>{" "}
                         – You can ask us to pause or restrict our use of your
-                        personal data, or object to specific types of processing,
-                        such as direct marketing.
+                        personal data, or object to specific types of
+                        processing, such as direct marketing.
                       </li>
                       <li>
                         <strong>Right to Data Portability</strong> – You may
                         request to receive your personal data in a structured,
-                        machine-readable format or have it transmitted directly to
-                        another service provider where technically feasible.
+                        machine-readable format or have it transmitted directly
+                        to another service provider where technically feasible.
                       </li>
                       <li>
-                        <strong>Right to Withdraw Consent</strong> – Where we rely
-                        on your consent to process data (e.g., marketing), you can
-                        withdraw that consent at any time.
+                        <strong>Right to Withdraw Consent</strong> – Where we
+                        rely on your consent to process data (e.g., marketing),
+                        you can withdraw that consent at any time.
                       </li>
                       <li>
-                        <strong>Right to Lodge a Complaint</strong> – You have the
-                        right to lodge a complaint with a supervisory data
+                        <strong>Right to Lodge a Complaint</strong> – You have
+                        the right to lodge a complaint with a supervisory data
                         protection authority in your region (such as the Georgia
                         Attorney General or, for EU/UK users, your local Data
                         Protection Authority).
@@ -640,8 +720,8 @@ const Privacy = () => {
                     </ul>
                     <p className="text-paragraph dark:text-gray-300">
                       We will respond within the timeframe required by law,
-                      typically within 30 days. In rare cases, an extension may be
-                      required due to request complexity.
+                      typically within 30 days. In rare cases, an extension may
+                      be required due to request complexity.
                     </p>
                   </div>
 
@@ -674,8 +754,8 @@ const Privacy = () => {
                   <hr />
                   <div className="space-y-4 p-8">
                     <p className="text-paragraph dark:text-gray-300">
-                      At Senseminder, safeguarding your personal information is a
-                      top priority. We implement industry-standard technical,
+                      At Senseminder, safeguarding your personal information is
+                      a top priority. We implement industry-standard technical,
                       administrative, and physical security measures designed to
                       protect your data from unauthorized access, misuse,
                       disclosure, alteration, or destruction.
@@ -686,15 +766,16 @@ const Privacy = () => {
                     </h3>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
-                        <strong>Encryption:</strong> All data transmitted between
-                        users and our services is encrypted using HTTPS (TLS).
-                        Sensitive data stored at rest may also be encrypted using
-                        AWS KMS.
+                        <strong>Encryption:</strong> All data transmitted
+                        between users and our services is encrypted using HTTPS
+                        (TLS). Sensitive data stored at rest may also be
+                        encrypted using AWS KMS.
                       </li>
                       <li>
                         <strong>Access Controls:</strong> We employ strict
                         role-based access controls (RBAC) to ensure only
-                        authorized personnel can access your personal information.
+                        authorized personnel can access your personal
+                        information.
                       </li>
                       <li>
                         <strong>Secure Infrastructure:</strong> Senseminder
@@ -704,13 +785,14 @@ const Privacy = () => {
                       </li>
                       <li>
                         <strong>Audit Logging & Monitoring:</strong> We monitor
-                        our systems and use automated alerts to detect and respond
-                        to suspicious activity.
+                        our systems and use automated alerts to detect and
+                        respond to suspicious activity.
                       </li>
                       <li>
-                        <strong>Regular Assessments:</strong> Security procedures
-                        and systems are regularly reviewed and tested, including
-                        penetration tests and compliance audits.
+                        <strong>Regular Assessments:</strong> Security
+                        procedures and systems are regularly reviewed and
+                        tested, including penetration tests and compliance
+                        audits.
                       </li>
                     </ul>
                   </div>
@@ -750,9 +832,9 @@ const Privacy = () => {
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
                       Although we take reasonable steps to secure your
-                      information, no system is completely immune to breaches. We
-                      do not accept liability for unauthorized access, loss, or
-                      corruption of data beyond our reasonable control,
+                      information, no system is completely immune to breaches.
+                      We do not accept liability for unauthorized access, loss,
+                      or corruption of data beyond our reasonable control,
                       particularly if caused by user negligence or third-party
                       misuse.
                     </p>
@@ -771,23 +853,25 @@ const Privacy = () => {
                   <hr />
                   <div className="space-y-4 p-8">
                     <p className="text-paragraph dark:text-gray-300">
-                      Senseminder does <strong>not use cookies</strong> or similar
-                      tracking technologies for behavioral advertising or
-                      analytics. We are committed to delivering a privacy-focused
-                      experience and do not deploy browser cookies on our core
-                      platform or website.
+                      Senseminder does <strong>not use cookies</strong> or
+                      similar tracking technologies for behavioral advertising
+                      or analytics. We are committed to delivering a
+                      privacy-focused experience and do not deploy browser
+                      cookies on our core platform or website.
                     </p>
 
                     <p className="text-paragraph dark:text-gray-300">
                       While we may use limited forms of local device storage
                       (e.g., session memory for UI preferences), no persistent
-                      identifiers or cross-site tracking mechanisms are utilized.
+                      identifiers or cross-site tracking mechanisms are
+                      utilized.
                     </p>
 
                     <p className="text-paragraph dark:text-gray-300">
-                      If third-party services are integrated in the future (e.g.,
-                      analytics or embedded tools), we will update this policy and
-                      allow users to opt in through a visible consent banner.
+                      If third-party services are integrated in the future
+                      (e.g., analytics or embedded tools), we will update this
+                      policy and allow users to opt in through a visible consent
+                      banner.
                     </p>
 
                     <p className="text-paragraph dark:text-gray-300">
@@ -817,7 +901,8 @@ const Privacy = () => {
                     <p className="text-paragraph dark:text-gray-300">
                       Some web browsers offer a "Do Not Track" (DNT) setting,
                       which signals to websites and online services that you do
-                      not wish to be tracked across different websites over time.
+                      not wish to be tracked across different websites over
+                      time.
                     </p>
 
                     <h3 className="text-xl font-medium text-black dark:text-white">
@@ -826,16 +911,16 @@ const Privacy = () => {
                     <p className="text-paragraph dark:text-gray-300">
                       At this time, Senseminder does not respond to DNT signals
                       sent by browsers. This is because there is currently no
-                      uniform industry standard for how to interpret or act on DNT
-                      signals.
+                      uniform industry standard for how to interpret or act on
+                      DNT signals.
                     </p>
 
                     <h3 className="text-xl font-medium text-black dark:text-white">
                       2. Alternatives for Managing Tracking
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      While we do not respond to DNT signals, you may still manage
-                      or limit tracking in the following ways:
+                      While we do not respond to DNT signals, you may still
+                      manage or limit tracking in the following ways:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
@@ -847,8 +932,8 @@ const Privacy = () => {
                         block third-party cookies or clear stored data.
                       </li>
                       <li>
-                        Opt out of targeted advertising through industry-supported
-                        tools like:
+                        Opt out of targeted advertising through
+                        industry-supported tools like:
                       </li>
                       <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                         <li>Network Advertising Initiative</li>
@@ -879,8 +964,8 @@ const Privacy = () => {
                       information from individuals under the age of 16. Our
                       services, including SmartPC and SmartStorage, are intended
                       for use only by individuals who are 16 years of age or
-                      older, or by those who have obtained the consent of a legal
-                      guardian.
+                      older, or by those who have obtained the consent of a
+                      legal guardian.
                     </p>
 
                     <h3 className="text-xl font-medium text-black dark:text-white">
@@ -888,19 +973,19 @@ const Privacy = () => {
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
                       If you are under 16, or under the age of majority in your
-                      jurisdiction without proper guardian consent, please do not
-                      register for a Senseminder account, use our services, or
-                      submit any personal information.
+                      jurisdiction without proper guardian consent, please do
+                      not register for a Senseminder account, use our services,
+                      or submit any personal information.
                     </p>
 
                     <h3 className="text-xl font-medium text-black dark:text-white">
                       2. Account Closure for Minors
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      If we become aware that we have collected personal data from
-                      a minor without verifiable parental or guardian consent, we
-                      will promptly delete the information and take steps to
-                      deactivate the associated account.
+                      If we become aware that we have collected personal data
+                      from a minor without verifiable parental or guardian
+                      consent, we will promptly delete the information and take
+                      steps to deactivate the associated account.
                     </p>
 
                     <h3 className="text-xl font-medium text-black dark:text-white">
@@ -908,8 +993,8 @@ const Privacy = () => {
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
                       If you believe that your child may have submitted personal
-                      data to Senseminder without your consent, you may contact us
-                      at:
+                      data to Senseminder without your consent, you may contact
+                      us at:
                     </p>
                     <ul className="pl-6 text-black dark:text-gray-300 space-y-1">
                       <li>
@@ -954,11 +1039,12 @@ const Privacy = () => {
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
                       To provide our SmartPC and SmartStorage services with high
-                      availability and performance, we may store and process your
-                      data in the United States or other countries where our cloud
-                      infrastructure or partners operate. This may involve
-                      transferring your information across national borders,
-                      including outside of your country or region of residence.
+                      availability and performance, we may store and process
+                      your data in the United States or other countries where
+                      our cloud infrastructure or partners operate. This may
+                      involve transferring your information across national
+                      borders, including outside of your country or region of
+                      residence.
                     </p>
 
                     <h3 className="text-xl font-medium text-black dark:text-white">
@@ -976,7 +1062,9 @@ const Privacy = () => {
                         Standard Contractual Clauses (SCCs) approved by relevant
                         regulators
                       </li>
-                      <li>Data Processing Agreements with third-party vendors</li>
+                      <li>
+                        Data Processing Agreements with third-party vendors
+                      </li>
                       <li>
                         Security controls in accordance with industry best
                         practices
@@ -984,7 +1072,8 @@ const Privacy = () => {
                     </ul>
                     <p className="text-paragraph dark:text-gray-300">
                       These measures are in place to ensure your personal data
-                      continues to be protected under equivalent legal standards.
+                      continues to be protected under equivalent legal
+                      standards.
                     </p>
 
                     <h3 className="text-xl font-medium text-black dark:text-white">
@@ -1025,18 +1114,18 @@ const Privacy = () => {
                   <div className="space-y-4 p-8">
                     <p className="text-paragraph dark:text-gray-300">
                       If you are located in the European Economic Area (EEA) or
-                      the United Kingdom (UK), the following section outlines your
-                      data rights and the lawful basis under which we process your
-                      personal information in accordance with the General Data
-                      Protection Regulation (GDPR) and the UK GDPR.
+                      the United Kingdom (UK), the following section outlines
+                      your data rights and the lawful basis under which we
+                      process your personal information in accordance with the
+                      General Data Protection Regulation (GDPR) and the UK GDPR.
                     </p>
 
                     <h3 className="text-xl font-medium text-black dark:text-white">
                       1. Data Controller
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      The data controller responsible for processing your personal
-                      information under this Privacy Policy is:
+                      The data controller responsible for processing your
+                      personal information under this Privacy Policy is:
                     </p>
                     <ul className="pl-6 text-black dark:text-gray-300 space-y-1">
                       <li>Senseminder LLC</li>
@@ -1088,8 +1177,8 @@ const Privacy = () => {
                         of your personal data held by us.
                       </li>
                       <li>
-                        <strong>Rectification</strong> – Correct any inaccuracies
-                        or incomplete data.
+                        <strong>Rectification</strong> – Correct any
+                        inaccuracies or incomplete data.
                       </li>
                       <li>
                         <strong>Erasure</strong> – Request deletion of your data
@@ -1100,17 +1189,18 @@ const Privacy = () => {
                         processing of your data in specific scenarios.
                       </li>
                       <li>
-                        <strong>Portability</strong> – Receive your personal data
-                        in a structured, machine-readable format or have it
+                        <strong>Portability</strong> – Receive your personal
+                        data in a structured, machine-readable format or have it
                         transferred to another controller.
                       </li>
                       <li>
-                        <strong>Objection</strong> – Object to processing based on
-                        legitimate interest or for direct marketing purposes.
+                        <strong>Objection</strong> – Object to processing based
+                        on legitimate interest or for direct marketing purposes.
                       </li>
                       <li>
-                        <strong>Withdraw Consent</strong> – Withdraw your consent
-                        at any time, where processing is based on consent.
+                        <strong>Withdraw Consent</strong> – Withdraw your
+                        consent at any time, where processing is based on
+                        consent.
                       </li>
                     </ul>
                     <p className="text-paragraph dark:text-gray-300">
@@ -1133,9 +1223,9 @@ const Privacy = () => {
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
                       If you believe we have not handled your personal data
-                      appropriately, you have the right to lodge a complaint with
-                      your local supervisory authority. You can find contact
-                      details at:{" "}
+                      appropriately, you have the right to lodge a complaint
+                      with your local supervisory authority. You can find
+                      contact details at:{" "}
                       <a
                         href="https://edpb.europa.eu/about-edpb/board/members_en"
                         target="_blank"

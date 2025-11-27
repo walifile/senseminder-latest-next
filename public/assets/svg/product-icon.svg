@@ -1,0 +1,14 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="product_gradient" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8086F3"/>
+      <stop offset="0.5" stop-color="#4C55F8"/>
+      <stop offset="1" stop-color="#D971FF"/>
+    </linearGradient>
+  </defs>
+  <!-- 2x2 grid of tiles -->
+  <rect x="4.5" y="4.5" width="7" height="7" rx="1.5" stroke="url(#product_gradient)" stroke-width="1.6" fill="none"/>
+  <rect x="12.5" y="4.5" width="7" height="7" rx="1.5" stroke="url(#product_gradient)" stroke-width="1.6" fill="none"/>
+  <rect x="4.5" y="12.5" width="7" height="7" rx="1.5" stroke="url(#product_gradient)" stroke-width="1.6" fill="none"/>
+  <rect x="12.5" y="12.5" width="7" height="7" rx="1.5" stroke="url(#product_gradient)" stroke-width="1.6" fill="none"/>
+</svg>

@@ -1,4 +1,4 @@
-import type { PC } from "@/app/build-smartpc/types";
+import type { PC } from "@/app/build-sensepc/types";
 
 import React, { useState, useCallback } from "react";
 import { assignPC, unassignPC } from "@/api/assignpc";

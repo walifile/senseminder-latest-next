@@ -18,12 +18,22 @@ const RentSmarter: React.FC = () => (
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.6 }}
       >
+        {/* Light mode image */}
         <Image
-          src="/assets/svg/rent-smarter.svg"
+          src="/assets/svg/rent-smarter-light.svg"
           alt="Rent Smarter"
           width={640}
           height={578}
-          className="w-full h-auto"
+          className="w-full h-auto dark:hidden"
+          priority
+        />
+        {/* Dark mode image */}
+        <Image
+          src="/assets/svg/rent-smarter-dark.svg"
+          alt="Rent Smarter"
+          width={640}
+          height={578}
+          className="w-full h-auto hidden dark:block"
           priority
         />
       </motion.div>
@@ -35,7 +45,7 @@ const RentSmarter: React.FC = () => (
         transition={{ duration: 0.6 }}
         className="space-y-4 md:space-y-12"
       >
-        <h4 className="font-space-grotesk font-bold text-2xl md:text-5xl">
+        <h4 className="font-space-grotesk font-bold text-2xl md:text-4xl">
           Why Buy
           <br /> Expensive Hardware When You Can Rent Smarter?
         </h4>

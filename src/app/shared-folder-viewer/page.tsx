@@ -36,9 +36,9 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-import { formatFileSize } from "../dashboard/storage/utils";
+import { formatFileSize } from "../dashboard/sense-cloud/utils";
 
-import type { FileItem } from "../dashboard/storage/types";
+import type { FileItem } from "../dashboard/sense-cloud/types";
 
 const formatDate = (dateString: string) =>
   new Date(dateString).toLocaleDateString();

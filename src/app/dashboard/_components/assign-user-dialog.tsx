@@ -1,6 +1,6 @@
 "use client";
 
-import type { DesktopInstance } from "@/app/build-smartpc/types";
+import type { DesktopInstance } from "@/app/build-sensepc/types";
 
 import { useGetUsersQuery } from "@/api/user";
 import React, { useState, useEffect, useCallback } from "react";

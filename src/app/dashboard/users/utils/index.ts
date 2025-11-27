@@ -1,4 +1,4 @@
-import type { PC } from "@/app/build-smartpc/types";
+import type { PC } from "@/app/build-sensepc/types";
 
 export function getRoleBadgeColor(role: string) {
   switch ((role || "").toLowerCase()) {

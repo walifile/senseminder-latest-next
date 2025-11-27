@@ -1,23 +1,46 @@
-import type { NextRequest} from "next/server";
+import type { NextRequest } from "next/server";
 
 import { NextResponse } from "next/server";
-import { getServerConfig } from "@/config/app-config";
+import appConfig from "@/config/app-config";
 
-const serverEnv = getServerConfig();
+const resolvePingConfig = () => {
+  const pingUrl =
+    appConfig.PING_API_URL || process.env.NEXT_PUBLIC_PING_API_URL;
+  const pingKey =
+    appConfig.PING_API_KEY || process.env.NEXT_PUBLIC_PING_API_KEY;
 
-const REGION_TO_URL: Record<string, string> = {
-  default: serverEnv.PING_API_URL,
-  storage: serverEnv.STORAGE_PING_URL,
+  return { pingUrl, pingKey };
 };
 
 export async function GET(request: NextRequest) {
+  const { pingUrl, pingKey } = resolvePingConfig();
+  if (!pingUrl || !pingKey) {
+    return NextResponse.json(
+      {
+        error: "PING configuration missing",
+        details: { pingUrl: Boolean(pingUrl), pingKey: Boolean(pingKey) },
+      },
+      { status: 500 }
+    );
+  }
+  const REGION_TO_URL: Record<string, string> = {
+    default: pingUrl,
+    storage: pingUrl,
+  };
+
   const searchParams = request.nextUrl.searchParams;
   const target = searchParams.get("target") ?? "default";
   const upstreamUrl = REGION_TO_URL[target];
 
   if (!upstreamUrl) {
     return NextResponse.json(
-      { error: "Unknown ping target" },
+      {
+        error: "Unknown ping target",
+        upstreamUrl,
+        REGION_TO_URL,
+        target,
+        searchParams,
+      },
       { status: 400 }
     );
   }
@@ -26,7 +49,7 @@ export async function GET(request: NextRequest) {
     const response = await fetch(upstreamUrl, {
       cache: "no-store",
       headers: {
-        "x-api-key": serverEnv.PING_API_KEY,
+        "x-api-key": pingKey,
       },
     });
 

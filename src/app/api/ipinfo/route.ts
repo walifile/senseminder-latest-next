@@ -1,12 +1,32 @@
 import { NextResponse } from "next/server";
-import { getServerConfig } from "@/config/app-config";
+import appConfig from "@/config/app-config";
 
-const serverEnv = getServerConfig();
+const resolveIpInfoConfig = () => {
+  const ipinfoUrl = appConfig.IPINFO_URL || process.env.NEXT_PUBLIC_IPINFO_URL;
+
+  const ipinfoToken =
+    appConfig.IPINFO_TOKEN || process.env.NEXT_PUBLIC_IPINFO_TOKEN;
+
+  return { ipinfoUrl, ipinfoToken };
+};
 
 export async function GET() {
   try {
-    const url = new URL(serverEnv.IPINFO_URL);
-    url.searchParams.set("token", serverEnv.IPINFO_TOKEN);
+    const { ipinfoUrl, ipinfoToken } = resolveIpInfoConfig();
+    if (!ipinfoUrl || !ipinfoToken) {
+      return NextResponse.json(
+        {
+          error: "IPINFO configuration missing",
+          details: {
+            ipinfoUrl: Boolean(ipinfoUrl),
+            ipinfoToken: Boolean(ipinfoToken),
+          },
+        },
+        { status: 500 }
+      );
+    }
+    const url = new URL(ipinfoUrl);
+    url.searchParams.set("token", ipinfoToken);
 
     const response = await fetch(url, {
       cache: "no-store",

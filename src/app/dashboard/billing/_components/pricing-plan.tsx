@@ -30,7 +30,7 @@ const PricingPlan = () => {
   const [storageTier, setStorageTier] = useState<number>(1);
   const [selectedServer, setSelectedServer] = useState("us-east");
 
-  const serverLocations = [{ id: "us-east", name: "US East (N. Virginia)" }];
+  const serverLocations = [{ id: "us-east", name: "East Coast" }];
 
   const PRICE_PER_TIER = 0.5;
   const getStorageSizeFromTier = (tier: number) => `${tier * 20} GB`;

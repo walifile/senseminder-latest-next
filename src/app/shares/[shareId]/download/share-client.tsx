@@ -2,8 +2,8 @@
 
  
 import { useGetShareInfoQuery } from "@/api/fileManagerAPI";
-import { buildSharedFileView } from "@/app/dashboard/storage/utils";
-import SharedFileViewer from "@/app/dashboard/storage/_components/shared-file-viewer";
+import { buildSharedFileView } from "@/app/dashboard/sense-cloud/utils";
+import SharedFileViewer from "@/app/dashboard/sense-cloud/_components/shared-file-viewer";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

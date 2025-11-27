@@ -1,3 +1,8 @@
+import type {
+  DuplicateScanResponse,
+  DuplicateMergeResponse,
+} from "@/app/dashboard/sense-cloud/types";
+
 import appConfig from "@/config/app-config";
 
 import { fetchAuthSession } from "aws-amplify/auth";
@@ -15,7 +20,7 @@ const {
   VM_STOP_SESSION_URL,
   VM_EXTEND_SESSION_URL,
   VM_SCHEDULES_URL,
-} = appConfig;
+  } = appConfig;
 
 export const fileManagerAPI = createApi({
   reducerPath: "fileManagerAPI",
@@ -213,6 +218,59 @@ export const fileManagerAPI = createApi({
                 data:
                   data?.message ||
                   "Something went wrong while starting the PC.",
+              },
+            };
+          }
+
+          return { data };
+        } catch (error) {
+          return {
+            error: {
+              status: 500,
+              data: error instanceof Error ? error.message : "Unknown error",
+            },
+          };
+        }
+      },
+      invalidatesTags: ["VM"],
+    }),
+
+    restartVM: builder.mutation({
+      async queryFn(instanceId: string) {
+        try {
+          const session = await fetchAuthSession();
+          const token = session.tokens?.idToken?.toString();
+          if (!token) throw new Error("No ID token found");
+
+          const response = await fetch(VM_MANAGEMENT_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+            body: JSON.stringify({
+              action: "restart",
+              instanceId,
+              region: "us-east-1",
+            }),
+          });
+
+          const text = await response.text();
+          let data;
+
+          try {
+            data = JSON.parse(text);
+          } catch {
+            data = { message: text };
+          }
+
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data:
+                  data?.message ||
+                  "Something went wrong while restarting the PC.",
               },
             };
           }
@@ -585,6 +643,54 @@ export const fileManagerAPI = createApi({
       }),
       invalidatesTags: ["Files"],
     }),
+
+    // Deduplication
+    dedupScan: builder.mutation<
+      DuplicateScanResponse,
+      { userId: string; region: string }
+    >({
+      query: ({ userId, region }) => ({
+        url: "dedup/scan",
+        method: "POST",
+        body: {
+          action: "scan",
+          userId,
+          region,
+          scope: "user",
+          minSizeBytes: 0,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    }),
+    dedupMerge: builder.mutation<
+      DuplicateMergeResponse,
+      {
+        userId: string;
+        region: string;
+        groups: {
+          primaryId: string | undefined;
+          duplicates: (string | undefined)[];
+        }[];
+        deleteFromS3?: boolean;
+      }
+    >({
+      query: ({ userId, region, groups, deleteFromS3 = true }) => ({
+        url: "dedup/merge",
+        method: "POST",
+        body: {
+          action: "merge",
+          userId,
+          region,
+          deleteFromS3,
+          groups,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    }),
   }),
 });
 
@@ -593,6 +699,7 @@ export const {
   useStopVMMutation,
   // useDeleteVMMutation,
   useStartVMMutation,
+  useRestartVMMutation, // 🔹 add this
   useLaunchVMMutation,
   useListFilesQuery,
   useListRemoteDesktopQuery,
@@ -618,4 +725,6 @@ export const {
   useListHierarchyQuery,
   useLazyDownloadFolderQuery,
   usePublicSharedListQuery,
+  useDedupScanMutation,
+  useDedupMergeMutation,
 } = fileManagerAPI;

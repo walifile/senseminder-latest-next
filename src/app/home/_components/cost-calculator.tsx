@@ -3,12 +3,12 @@
 "use client";
 
 import type { RootState } from "@/redux/store";
-import type { FormValues, BaseFormValues } from "@/app/build-smartpc/schema";
+import type { FormValues, BaseFormValues } from "@/app/build-sensepc/schema";
 
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
-import { baseFormSchema } from "@/app/build-smartpc/schema";
+import { baseFormSchema } from "@/app/build-sensepc/schema";
 import { useGetEstimateMutation } from "@/api/fileManagerAPI";
 import { setSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
 import { Logger } from "@/lib/utils/logger";
@@ -16,7 +16,7 @@ import {
   osOptions,
   storageOptions,
   locationOptions,
-} from "@/app/build-smartpc/data";
+} from "@/app/build-sensepc/data";
 import { useGetSmartPcConfigQuery } from "@/api/smartPCConfigAPI";
 
 import { Button } from "@/components/ui/button";
@@ -202,7 +202,7 @@ const CostCalculator = () => {
                         "Fixed fee. Auto-renews. Great for always-on PCs.",
                     },
                     {
-                      label: "SmartStorage",
+                      label: "Sense Cloud",
                       emoji: "💾",
                       color: "text-orange-500",
                       description:

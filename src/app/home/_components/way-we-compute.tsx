@@ -33,8 +33,8 @@ const WayWeCompute = () => {
         className="flex flex-col gap-6 md:gap-12"
       >
         <div className="flex flex-col gap-2.5">
-          <p className="font-space-grotesk font-semibold text-2xl md:text-5xl leading-none tracking-tight">
-            SenseMinder Sense PC—
+          <p className="font-space-grotesk font-semibold text-2xl md:text-4xl leading-none tracking-tight">
+            Sense PC—
             <span className="text-transparent bg-clip-text bg-[linear-gradient(290.5deg,_#8086F3_-80.33%,_#4C55F8_25.08%,_#C421FF_115.42%)]">
               Revolutionizing
             </span>{" "}

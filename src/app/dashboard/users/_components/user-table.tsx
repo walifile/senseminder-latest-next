@@ -1,6 +1,6 @@
 "use client";
 
-import type { PC } from "@/app/build-smartpc/types";
+import type { PC } from "@/app/build-sensepc/types";
 
 import { getAssignments } from "@/api/assignpc";
 import React, { useState, useEffect, useCallback } from "react";

@@ -102,7 +102,7 @@ export default function MfaEmailPage() {
             title: "Logged in",
             description: "MFA verification successful!",
           });
-          router.push("/dashboard/smart-pc");
+          router.push("/dashboard/sense-pc");
         } else {
           throw new Error("Login finalization failed.");
         }

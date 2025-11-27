@@ -52,7 +52,7 @@ const RentSmarterProcess: React.FC = () => {
         transition={{ duration: 0.6 }}
         className="lg:col-span-2 space-y-12"
       >
-        <h4 className="max-w-lg font-space-grotesk font-bold text-2xl md:text-5xl">
+        <h4 className="max-w-lg font-space-grotesk font-bold text-2xl md:text-4xl">
           Why Buy <br /> Expensive Hardware When You Can Rent Smarter?
         </h4>
 

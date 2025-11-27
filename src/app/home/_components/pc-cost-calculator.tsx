@@ -1,17 +1,17 @@
 "use client";
 
 import type { RootState } from "@/redux/store";
-import type { FormValues, BaseFormValues } from "@/app/build-smartpc/schema";
+import type { FormValues, BaseFormValues } from "@/app/build-sensepc/schema";
 
 import Image from "next/image";
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
-import { baseFormSchema } from "@/app/build-smartpc/schema";
+import { baseFormSchema } from "@/app/build-sensepc/schema";
 import { useGetEstimateMutation } from "@/api/fileManagerAPI";
 import { useGetSmartPcConfigQuery } from "@/api/smartPCConfigAPI";
 import { setSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
-import { osOptions, storageOptions, locationOptions } from "@/app/build-smartpc/data";
+import { osOptions, storageOptions, locationOptions } from "@/app/build-sensepc/data";
 
 import { cn } from "@/lib/utils";
 import { Logger } from "@/lib/utils/logger";
@@ -45,7 +45,7 @@ const FEATURES = [
   },
   {
     icon: "storage",
-    title: "SmartStorage",
+    title: "Sense Cloud",
     desc: "First 20GB free. Charges by peak usage tier monthly.",
   },
   {

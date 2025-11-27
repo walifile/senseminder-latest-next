@@ -46,7 +46,11 @@ export function SmartPCUsageHistoryTab() {
 
       {/* History List */}
       <div className="rounded-lg border max-h-[400px] overflow-y-auto divide-y">
-        {filteredHistory.length > 0 ? (
+        {loading ? (
+          <p className="text-center text-muted-foreground py-8">
+            Loading usage history...
+          </p>
+        ) : filteredHistory.length > 0 ? (
           filteredHistory.map((usage) => (
             <div
               key={usage.timestamp}
@@ -74,8 +78,8 @@ export function SmartPCUsageHistoryTab() {
               <div className="flex items-start gap-5 text-xs text-muted-foreground text-right">
                 {/* 💻 Billing Cost Summary */}
                 <div className="leading-tight">
-                  🖥 Instance: {fCurrency(usage.instanceCost)} <br />
-                  💾 Storage: {fCurrency(usage.storageCost)}
+                  🖥 CPU + Mem: {fCurrency(usage.instanceCost)} <br />
+                  💾 SSD: {fCurrency(usage.storageCost)}
                 </div>
 
                 {/* 💸 Deduction Breakdown */}
@@ -104,7 +108,6 @@ export function SmartPCUsageHistoryTab() {
                   </Badge>
                 </div>
               </div>
-
             </div>
           ))
         ) : (

@@ -154,8 +154,8 @@ export default function NewsletterForm({
     >
       <div className={variant === "card" ? "space-y-4" : "space-y-2"}>
         <div>
-          <h3 className="text-base sm:text-lg font-semibold">
-            Subscribe to our newsletter
+          <h3 className="text-base sm:text-sm font-semibold">
+            Subscribe to our newsletter:
           </h3>
           <p className="text-sm text-[#B9C2D5] dark:text-paragraph">
             Get the latest updates on SensePC features and releases.

@@ -60,13 +60,34 @@ export const updateSessionHeartbeat = async () => {
       }),
     });
 
-    if (res.ok) {
-      Logger.log(" Heartbeat updated for session:", sessionId);
-    } else {
-      Logger.warn("Failed to update heartbeat:", await res.text());
+    const rawText = await res.text();
+    let parsed: { message?: string; code?: string } | null = null;
+
+    try {
+      parsed = rawText ? JSON.parse(rawText) : null;
+    } catch {
+      // ignore JSON parse error, rawText will still be logged
     }
+
+    // Hard HTTP error (500/401/etc.)
+    if (!res.ok) {
+      Logger.warn("Failed to update heartbeat:", parsed ?? rawText ?? res.status);
+      return;
+    }
+
+    // Expected business-state: session not active / not claimed yet
+    if (parsed?.code === "SESSION_NOT_ACTIVE") {
+      Logger.log(
+        "Heartbeat skipped: session is not active or not claimed yet.",
+        parsed
+      );
+      return;
+    }
+
+    // Normal success
+    Logger.log("Heartbeat updated for session:", sessionId);
   } catch (err) {
-    Logger.error(" Heartbeat error:", err);
+    Logger.error("Heartbeat error:", err);
   }
 };
 

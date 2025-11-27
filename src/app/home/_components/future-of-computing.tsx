@@ -6,8 +6,6 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { motion } from "framer-motion";
-
 const benefitCards = [
   {
     icon: "/assets/icons/future-of-computing-card-icon-1.svg",
@@ -30,17 +28,12 @@ const benefitCards = [
 ];
 
 const FutureOfComputing = () => (
-  <div className="relative container my-12 md:my-20">
+  <div className="relative container my-12 md:my-30">
     <div className="z-0 absolute left-0 right-0 top-0 w-full h-3/4 opacity-10 dark:opacity-100 blur-[200px] bg-[radial-gradient(ellipse_100%_100%_at_50%_100%,#020816_45.67%,#63189D_79.33%,#2530F0_100%)]" />
 
     <div className="relative space-y-6 md:space-y-12">
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.6 }}
-        className="space-y-2.5 text-center"
-      >
+      {/* Heading block (no animation) */}
+      <div className="space-y-2.5 text-center">
         <p className="font-space-grotesk font-semibold text-2xl md:text-5xl">
           The Future of Computing{" "}
           <span className="bg-[linear-gradient(270deg,_#BA25F0_4.8%,_#2530F0_46.15%,_#8086F3_100%)] bg-clip-text text-transparent">
@@ -51,17 +44,12 @@ const FutureOfComputing = () => (
           Inspire users with a vision of hardware-free computing powered by the
           cloud. Highlighting the eco-friendly benefits
         </p>
-      </motion.div>
+      </div>
 
+      {/* Cards grid (no animation) */}
       <div className="relative grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
         {benefitCards.map((card, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.5, delay: index * 0.2 }}
-          >
+          <div key={index}>
             <Card
               className={cn(
                 "px-4 py-8 md:px-8 md:py-24 rounded-2xl border border-cyan-400/30 bg-cover bg-center bg-no-repeat",
@@ -96,7 +84,7 @@ const FutureOfComputing = () => (
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         ))}
       </div>
     </div>

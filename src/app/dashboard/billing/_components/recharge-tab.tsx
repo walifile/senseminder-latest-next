@@ -50,7 +50,11 @@ export function RechargeHistoryTab() {
 
       {/* History List */}
       <div className="rounded-lg border max-h-[400px] overflow-y-auto divide-y">
-        {filteredHistory.length > 0 ? (
+        {loading ? (
+          <p className="text-center text-muted-foreground py-8">
+            Loading recharge history...
+          </p>
+        ) : filteredHistory.length > 0 ? (
           filteredHistory.map((recharge) => (
             <div
               key={recharge?.txnId}
