@@ -22,7 +22,7 @@ const FileTypeIcon = ({
     >
       <IconComponent
         className="w-full h-full text-primary"
-        style={fileType === "folder" ? { color: "#eab308" } : undefined}
+        style={fileType === "folder" ? { color: "#eab308" } : {color: "#A801BA"}}
       />
     </div>
   );

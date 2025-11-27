@@ -30,7 +30,7 @@ import { Button } from "@/components/ui/button";
 // } from "@/components/ui/tooltip";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsList, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Tooltip,
@@ -39,13 +39,6 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import {
-  Card,
-  CardTitle,
-  CardHeader,
-  CardContent,
-  CardDescription,
-} from "@/components/ui/card";
-import {
   Table,
   TableRow,
   TableBody,
@@ -53,6 +46,13 @@ import {
   TableHead,
   TableHeader,
 } from "@/components/ui/table";
+import {
+  Card,
+  // CardTitle,
+  // CardHeader,
+  CardContent,
+  // CardDescription,
+} from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -74,13 +74,13 @@ import {
   List,
   Copy,
   Users,
-  Earth,
+  Globe,
   Upload,
   Trash2,
   Share2,
   Search,
   Filter,
-  SortAsc,
+  ArrowUpDown,
   Loader2,
   FileText,
   Download,
@@ -838,25 +838,29 @@ const CloudStorage = () => {
 
   return (
     <>
-      <Card className="relative">
-        <CardHeader className="pb-2">
+      <Card className="relative !border-0 gradient-outline-border">
+        {/* <CardHeader className="pb-2">
           <div className="flex justify-between items-center">
             <div>
-              {/* <Button onClick={handleDownloadClick} disabled={isFetching}>
+              // Comment Start -  wali ahmad   5 months ago (June 24th, 2025 10:24 PM) 
+              <Button onClick={handleDownloadClick} disabled={isFetching}>
                 {isFetching ? "Downloading..." : "Download Folder"}
-              </Button> */}
+              </Button>
+              // Comment End -  wali ahmad   5 months ago (June 24th, 2025 10:24 PM)
               <CardTitle>Sense Cloud</CardTitle>
               <CardDescription>Manage your files and folders</CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              {/* <Button
+              // Comment Start - Wali Ahmad   last week (November 18th, 2025 5:42 AM)
+              <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setSyncDialogOpen(true)}
               >
                 <FolderSync className="h-4 w-4 mr-2" />
                 Sync Storage
-              </Button> */}
+              </Button>
+              // Comment End - Wali Ahmad   last week (November 18th, 2025 5:42 AM) 
               <Button
                 variant="outline"
                 size="sm"
@@ -867,7 +871,7 @@ const CloudStorage = () => {
               </Button>
             </div>
           </div>
-        </CardHeader>
+        </CardHeader> */}
         <CardContent className="p-0">
           <div
             className={`flex flex-col md:flex-row min-h-[600px] relative ${
@@ -897,8 +901,8 @@ const CloudStorage = () => {
             />
 
             <div className="flex-1 overflow-hidden flex flex-col">
-              <div className="border-b border-border p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div className="flex items-center gap-4 w-full md:w-auto">
+              <div className="border-b border-border p-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div className="flex items-center gap-4 w-full">
                   {selectedFolder && (
                     <button
                       onClick={handleCloseFolder}
@@ -907,24 +911,44 @@ const CloudStorage = () => {
                       <ArrowLeft className="h-5 w-5 text-muted-foreground" />
                     </button>
                   )}
-                  <h3 className="text-lg font-medium">
+                  <h3 className="flex-shrink-0 text-2xl font-semibold">
                     {selectedFolder
                       ? selectedFolder?.fileName
                       : selectedCategory}
                   </h3>
-                  <div className="flex-1 md:w-64">
-                    <div className="relative">
-                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <div className="relative w-full">
+                    <div className="bg-[#ffffff08] rounded-[1000px] border-[none] relative before:content-[''] before:absolute before:inset-0 before:p-px before:rounded-[1000px] before:[background:linear-gradient(270deg,rgba(168,1,186,0.5)_0%,rgba(37,48,240,0.5)_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:z-[1] before:pointer-events-none">
+                      <Search className="absolute h-10 w-10 top-1/2 left-1.5 -translate-y-1/2 p-2 text-white bg-[#ffffff08] rounded-[23px] border border-solid border-[#ffffff1a]" />
                       <Input
+                        id="searchstorage"
+                        name="searchstorage"
                         placeholder="Search files..."
-                        value={searchQuery}
+                        className="p-3 pl-14 h-auto md:text-base rounded-full"
                         onChange={handleSearchChange}
-                        className="pl-8"
+                        value={searchQuery}
                       />
                     </div>
                   </div>
+                  <Button
+                    variant="outline"
+                    size="default"
+                    onClick={() => refetch()}>
+                    <RefreshCw className="h-4 w-4" />
+                    Sync Storage
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="default"
+                    onClick={() => setShowStoragePlans(true)}
+                  >
+                    <HardDrive className="h-4 w-4 mr-2" />
+                    Storage Plans
+                  </Button>
                 </div>
-                <div className="flex gap-2">
+              </div>
+                
+              <div className="p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div className="flex items-center gap-4 w-full md:w-auto">
                   {selectedFiles.length > 0 && (
                     <>
                       <Button
@@ -945,16 +969,21 @@ const CloudStorage = () => {
                   )}
                   <Button
                     size="sm"
-                    variant="ghost"
+                    variant="outline"
                     onClick={() => setShowNewFolderDialog(true)}
+                    className="text-base [&_svg]:size-5"
                   >
-                    <FolderPlus className="h-4 w-4 mr-2" />
+                    <FolderPlus className="h-5 w-5 mr-1" />
                     New
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button size="sm" variant="ghost">
-                        <Filter className="h-4 w-4 mr-2" />
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-base [&_svg]:size-5 text-[#b8c2d5]"
+                      >
+                        <Filter className="h-5 w-5 mr-1" />
                         Filter
                       </Button>
                     </DropdownMenuTrigger>
@@ -1013,8 +1042,8 @@ const CloudStorage = () => {
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button size="sm" variant="ghost">
-                        <Earth className="h-4 w-4 mr-2" />
+                      <Button size="sm" variant="ghost" className="text-base [&_svg]:size-5 text-[#b8c2d5]">
+                        <Globe className="h-5 w-5 mr-1" />
                         Region
                       </Button>
                     </DropdownMenuTrigger>
@@ -1033,9 +1062,9 @@ const CloudStorage = () => {
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button size="sm" variant="ghost">
+                      <Button size="sm" variant="ghost" className="text-base [&_svg]:size-5 text-[#b8c2d5]">
                         {/* {sortOrder === "asc" ? ( */}
-                        <SortAsc className="h-4 w-4 mr-2" />
+                        <ArrowUpDown className="h-5 w-5 mr-1" />
                         {/* // ) : (
                         //   <SortDesc className="h-4 w-4 mr-2" />
                         // )} */}
@@ -1060,26 +1089,29 @@ const CloudStorage = () => {
                       </DropdownMenuRadioGroup>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                </div>
+                <div className="flex gap-2">
                   <Button
                     size="sm"
                     variant="ghost"
+                    className="text-base [&_svg]:size-5"
                     onClick={() =>
                       setViewMode(viewMode === "list" ? "grid" : "list")
                     }
                   >
                     {viewMode === "list" ? (
-                      <Grid className="h-4 w-4" />
+                      <Grid className="h-5 w-5 mr-1" />
                     ) : (
-                      <List className="h-4 w-4" />
+                      <List className="h-5 w-5 mr-1" />
                     )}
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={() => refetch()}>
-                    <RefreshCw className="h-4 w-4" />
+                  <Button size="sm" variant="ghost" className="text-base [&_svg]:size-5" onClick={() => refetch()}>
+                    <RefreshCw className="h-5 w-5 mr-1" />
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button size="sm" variant="ghost">
-                        <MoreHorizontal className="h-4 w-4" />
+                      <Button size="sm" variant="ghost" className="text-base [&_svg]:size-5">
+                        <MoreHorizontal className="h-5 w-5 mr-1" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -1147,11 +1179,11 @@ const CloudStorage = () => {
               </div>
 
               <Tabs defaultValue="files" className="flex-1 flex flex-col">
-                <TabsList className="border-b px-4">
+                {/* <TabsList className="border-b px-4"> */}
                   {/* <TabsTrigger value="files">Files</TabsTrigger> */}
                   {/* <TabsTrigger value="recent">Recent Activity</TabsTrigger>
                   <TabsTrigger value="shared">Shared with Me</TabsTrigger> */}
-                </TabsList>
+                {/* </TabsList> */}
 
                 <div className="flex-1 overflow-hidden">
                   <TabsContent
@@ -1196,12 +1228,12 @@ const CloudStorage = () => {
                             )}
                           </div>
                         ) : (
-                          <div className="flex flex-col gap-2 justify-between">
+                          <div className="flex flex-col gap-2 justify-between px-8">
                             {viewMode === "list" ? (
                               <Table>
                                 <TableHeader>
-                                  <TableRow>
-                                    <TableHead className="w-[40px]">
+                                  <TableRow className="bg-[#ffffff0f] hover:bg-[#ffffff0f]">
+                                    <TableHead className="w-[40px] rounded-tl-xl border-r-0">
                                       <Checkbox
                                         checked={
                                           visibleFiles.length > 0 &&
@@ -1214,11 +1246,11 @@ const CloudStorage = () => {
                                         }
                                       />
                                     </TableHead>
-                                    <TableHead>Name</TableHead>
+                                    <TableHead className="border-l-0">Name</TableHead>
                                     <TableHead>Size</TableHead>
                                     <TableHead>Uploaded</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead />
+                                    <TableHead className="border-r-0">Status</TableHead>
+                                    <TableHead className="rounded-tr-xl border-l-0" />
                                   </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -1250,7 +1282,7 @@ const CloudStorage = () => {
                                           : undefined
                                       }
                                     >
-                                      <TableCell>
+                                      <TableCell className="border-r-0">
                                         <div className="flex items-center gap-2">
                                           <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
                                           <Checkbox
@@ -1263,7 +1295,7 @@ const CloudStorage = () => {
                                           />
                                         </div>
                                       </TableCell>
-                                      <TableCell>
+                                      <TableCell className="border-l-0">
                                         <div
                                           {...(file.fileType === "folder" && {
                                             title: "Click to open folder",
@@ -1312,7 +1344,7 @@ const CloudStorage = () => {
                                       <TableCell>
                                         {formatDate(file.createdAt)}
                                       </TableCell>
-                                      <TableCell>
+                                      <TableCell className="border-r-0">
                                         {file.shared ? (
                                           <Badge
                                             variant="outline"
@@ -1324,13 +1356,13 @@ const CloudStorage = () => {
                                         ) : (
                                           <Badge
                                             variant="outline"
-                                            className="bg-gray-500/10 text-gray-500 border-gray-500/20"
+                                            className="bg-amber-500/20 text-amber-500 border-0 text-base font-normal px-4"
                                           >
                                             Private
                                           </Badge>
                                         )}
                                       </TableCell>
-                                      <TableCell className="text-right">
+                                      <TableCell className="text-right border-l-0">
                                         <DropdownMenu>
                                           <DropdownMenuTrigger asChild>
                                             <Button

@@ -7,6 +7,7 @@ import {
   Apple,
   Folder,
   Share2,
+  Upload,
   Chrome,
   FileText,
   HardDrive,
@@ -140,7 +141,7 @@ export const mockFiles = [
 
 // File category buttons data
 export const categories = [
-  { name: "All Files", icon: FileText },
+  { name: "All Files", icon: Upload },
   { name: "Folders", icon: Folder },
   { name: "Documents", icon: FileText },
   { name: "Images", icon: ImageIcon },
