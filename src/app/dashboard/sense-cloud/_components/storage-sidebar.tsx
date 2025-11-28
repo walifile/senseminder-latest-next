@@ -106,7 +106,7 @@ export function SidebarPanel({
       {/* ── CATEGORIES ── */}
       <div>
         <h3 className="text-base font-semibold mb-4">Categories</h3>
-        <ScrollArea className="h-[400px] pr-2">
+        <ScrollArea className="pr-2">
           <div className="space-y-2">
             {categories.map((category) => (
               <Button

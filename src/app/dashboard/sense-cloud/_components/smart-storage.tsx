@@ -1334,9 +1334,8 @@ const CloudStorage = () => {
                                               {file.shared ? (
                                                 <Badge
                                                   variant="outline"
-                                                  className="bg-green-500/10 text-green-500 border-green-500/20"
+                                                  className="bg-green-500/10 text-green-500 border-0 text-base font-normal px-4"
                                                 >
-                                                  <Share2 className="h-3 w-3 mr-1" />
                                                   Shared
                                                 </Badge>
                                               ) : (
