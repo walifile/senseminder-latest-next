@@ -1210,8 +1210,9 @@ const CloudStorage = () => {
                             ) : (
                               <div className="flex flex-col gap-2 justify-between px-8">
                                 {viewMode === "list" ? (
-                                  <Table>
-                                    <TableHeader>
+                                  <div className="rounded-2xl border border-[#ffffff1a] overflow-hidden bg-[#ffffff05]">
+                                    <Table>
+                                      <TableHeader>
                                       <TableRow className="bg-[#ffffff0f] hover:bg-[#ffffff0f]">
                                         <TableHead className="w-[40px] rounded-tl-xl border-r-0">
                                           <Checkbox
@@ -1483,7 +1484,8 @@ const CloudStorage = () => {
                                         )
                                       )}
                                     </TableBody>
-                                  </Table>
+                                    </Table>
+                                  </div>
                                 ) : (
                                   <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 p-4">
                                     {(files as FileItem[]).map(
