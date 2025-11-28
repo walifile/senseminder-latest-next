@@ -772,7 +772,7 @@ const CloudStorage = () => {
                   </h3>
 
                   {selectedCategory !== "Duplicates" && (
-                    <div className="relative w-full">
+                    <div className="relative w-full max-w-md">
                       <div className="bg-[#ffffff08] rounded-[1000px] border-[none] relative before:content-[''] before:absolute before:inset-0 before:p-px before:rounded-[1000px] before:[background:linear-gradient(270deg,rgba(168,1,186,0.5)_0%,rgba(37,48,240,0.5)_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:z-[1] before:pointer-events-none">
                         <Search className="absolute h-10 w-10 top-1/2 left-1.5 -translate-y-1/2 p-2 text-white bg-[#ffffff08] rounded-[23px] border border-solid border-[#ffffff1a]" />
                         <Input
@@ -787,18 +787,19 @@ const CloudStorage = () => {
                     </div>
                   )}
 
-                  <Button
+                  {/* <Button
                     variant="outline"
                     size="default"
                     onClick={() => refetch()}
                   >
                     <RefreshCw className="h-4 w-4" />
                     Sync Storage
-                  </Button>
+                  </Button> */}
                   <Button
                     variant="outline"
                     size="default"
                     onClick={() => setShowStoragePlans(true)}
+                    className="md:ml-auto"
                   >
                     <HardDrive className="h-4 w-4 mr-2" />
                     Storage Plans
@@ -1234,7 +1235,6 @@ const CloudStorage = () => {
                                           Status
                                         </TableHead>
                                         <TableHead className="rounded-tr-xl border-l-0" />
-                                        <TableHead />
                                       </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -1270,7 +1270,7 @@ const CloudStorage = () => {
                                                 : undefined
                                             }
                                           >
-                                            <TableCell className="!border-r-0">
+                                            <TableCell className="border-r-0">
                                               <div className="flex items-center gap-2">
                                                 <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
                                                 <Checkbox
@@ -1283,7 +1283,7 @@ const CloudStorage = () => {
                                                 />
                                               </div>
                                             </TableCell>
-                                            <TableCell className="border-r-0">
+                                            <TableCell className="border-l-0">
                                               <div
                                                 {...(file.fileType ===
                                                   "folder" && {
