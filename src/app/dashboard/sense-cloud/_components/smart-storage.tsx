@@ -1270,7 +1270,7 @@ const CloudStorage = () => {
                                                 : undefined
                                             }
                                           >
-                                            <TableCell className="border-r-0">
+                                            <TableCell className="!border-r-0">
                                               <div className="flex items-center gap-2">
                                                 <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
                                                 <Checkbox

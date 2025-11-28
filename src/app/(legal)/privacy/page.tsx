@@ -3,12 +3,13 @@
 import Link from "next/link";
 import React, { useState } from "react";
 import { useGetLegalDocumentsQuery } from "@/api/legalDocumentsAPI";
+import { privacySections } from "../data/sections";
 
 const Privacy = () => {
   const { isLoading } = useGetLegalDocumentsQuery();
 
   const [activeSection, setActiveSection] = useState<string>(
-    "how-we-handle-your-data"
+    privacySections[0].id
   );
 
   const baseLinkClasses =
@@ -29,6 +30,15 @@ const Privacy = () => {
 
   const lastUpdated = "July 22, 2025";
 
+  const handleNavClick = (id: string) => {
+    setActiveSection(id);
+    requestAnimationFrame(() => {
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    });
+  };
+
   return (
     <main className="flex-grow pt-16 md:pt-24 pb-16">
       <div className="container mx-auto px-4 md:px-6">
@@ -41,8 +51,8 @@ const Privacy = () => {
           <span>Privacy Policy</span>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-5">
-          <div className="w-full md:w-1/3 lg:w-1/4">
+        <div className="flex flex-col md:flex-row gap-10 md:items-stretch">
+          <div className="w-full md:w-1/3 lg:w-[35%] flex">
             <div className="glass-card !shadow-none gradient-outline-border !rounded-3xl !border-0">
               <div className="space-y-2 p-8">
                 <p className="font-space-grotesk font-semibold text-2xl md:text-3xl">
@@ -54,132 +64,23 @@ const Privacy = () => {
               </div>
               <hr />
               <div className="space-y-3 py-6 flex flex-col">
-                <a
-                  href="#how-we-handle-your-data"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "how-we-handle-your-data"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("how-we-handle-your-data")}
-                >
-                  How We Handle Your Data
-                </a>
-                <a
-                  href="#personal-information"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "personal-information"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("personal-information")}
-                >
-                  Personal Information We Collect
-                </a>
-                <a
-                  href="#how-we-use-your-information"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "how-we-use-your-information"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() =>
-                    setActiveSection("how-we-use-your-information")
-                  }
-                >
-                  How We Use Your Information
-                </a>
-                <a
-                  href="#how-we-share-your-information"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "how-we-share-your-information"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() =>
-                    setActiveSection("how-we-share-your-information")
-                  }
-                >
-                  How We Share Your Information
-                </a>
-                <a
-                  href="#your-rights-choices"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "your-rights-choices"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("your-rights-choices")}
-                >
-                  Your Rights & Choices
-                </a>
-                <a
-                  href="#data-security"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "data-security" ? activeLinkClasses : ""
-                  }`}
-                  onClick={() => setActiveSection("data-security")}
-                >
-                  Data Security
-                </a>
-                <a
-                  href="#cookies-tracking"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "cookies-tracking"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("cookies-tracking")}
-                >
-                  Cookies & Tracking Technologies
-                </a>
-                <a
-                  href="#do-not-track"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "do-not-track" ? activeLinkClasses : ""
-                  }`}
-                  onClick={() => setActiveSection("do-not-track")}
-                >
-                  Do Not Track (DNT) Signals
-                </a>
-                <a
-                  href="#childrens-privacy"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "childrens-privacy"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("childrens-privacy")}
-                >
-                  Children's Privacy
-                </a>
-                <a
-                  href="#international-transfers"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "international-transfers"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("international-transfers")}
-                >
-                  International Transfers
-                </a>
-                <a
-                  href="#notice-european-users"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "notice-european-users"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("notice-european-users")}
-                >
-                  Notice to European Users (GDPR/UK)
-                </a>
+                {privacySections.map(({ id, label }) => (
+                  <a
+                    key={id}
+                    href={`#${id}`}
+                    className={`${baseLinkClasses} ${
+                      activeSection === id ? activeLinkClasses : ""
+                    }`}
+                    onClick={() => handleNavClick(id)}
+                  >
+                    {label}
+                  </a>
+                ))}
               </div>
             </div>
           </div>
 
-          <div className="w-full md:w-2/3 lg:w-3/4">
+          <div className="w-full md:w-2/3 lg:w-[65%] flex">
             <div className="glass-card !shadow-none gradient-outline-border !rounded-3xl !border-0 space-y-6">
               {/* How We Handle Your Data */}
               {activeSection === "how-we-handle-your-data" && (

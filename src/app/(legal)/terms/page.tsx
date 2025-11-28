@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import React, { useState } from "react";
+import { termsSections } from "../data/sections";
 
 // import { useGetLegalDocumentsQuery } from "@/api/legalDocumentsAPI";
 
 const Terms = () => {
-  const [activeSection, setActiveSection] = useState<string>("introduction");
+  const [activeSection, setActiveSection] = useState<string>(
+    termsSections[0].id
+  );
 
   const baseLinkClasses =
     "relative pr-9 text-black hover:text-white dark:text-white dark:hover:text-white mx-6 p-4 rounded-lg border hover:bg-gradient-to-r hover:from-[#3A29E7] hover:to-[#A601BA]";
@@ -28,6 +31,15 @@ const Terms = () => {
 
   const lastUpdated = "July 22, 2025";
 
+  const handleNavClick = (id: string) => {
+    setActiveSection(id);
+    requestAnimationFrame(() => {
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    });
+  };
+
   return (
     <main className="flex-grow pt-16 md:pt-24 pb-16">
       <div className="container mx-auto px-4 md:px-6">
@@ -39,9 +51,9 @@ const Terms = () => {
           <span>Terms of Service</span>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-5">
-          <div className="w-full md:w-1/3 lg:w-1/4">
-            <div className="glass-card !shadow-none gradient-outline-border !rounded-3xl !border-0">
+        <div className="flex flex-col md:flex-row gap-10 md:items-stretch">
+          <div className="w-full md:w-1/3 lg:w-[35%] flex">
+            <div className="glass-card !shadow-none gradient-outline-border !rounded-3xl !border-0 h-full w-full bg-white dark:bg-[#0B0C12]">
               <div className="space-y-2 p-8">
                 <p className="font-space-grotesk font-semibold text-2xl md:text-3xl">
                   Terms of Service
@@ -52,267 +64,24 @@ const Terms = () => {
               </div>
               <hr />
               <div className="space-y-3 py-6 flex flex-col">
-                <a
-                  href="#introduction"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "introduction" ? activeLinkClasses : ""
-                  }`}
-                  onClick={() => setActiveSection("introduction")}
-                >
-                  Introduction
-                </a>
-                <a
-                  href="#definitions"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "definitions" ? activeLinkClasses : ""
-                  }`}
-                  onClick={() => setActiveSection("definitions")}
-                >
-                  Definitions
-                </a>
-                <a
-                  href="#account-registration-security"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "account-registration-security"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() =>
-                    setActiveSection("account-registration-security")
-                  }
-                >
-                  Account Registration & Security
-                </a>
-                <a
-                  href="#description-of-services"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "description-of-services"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("description-of-services")}
-                >
-                  Description of Services
-                </a>
-                <a
-                  href="#subscription-terms"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "subscription-terms"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("subscription-terms")}
-                >
-                  Subscription Terms
-                </a>
-                <a
-                  href="#fees-and-payment"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "fees-and-payment"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("fees-and-payment")}
-                >
-                  Fees & Payment
-                </a>
-                <a
-                  href="#upgrades-downgrades-add-ons"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "upgrades-downgrades-add-ons"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() =>
-                    setActiveSection("upgrades-downgrades-add-ons")
-                  }
-                >
-                  Upgrades, Downgrades & Add-Ons
-                </a>
-                <a
-                  href="#software-license-usage"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "software-license-usage"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("software-license-usage")}
-                >
-                  Software License & Usage
-                </a>
-                <a
-                  href="#user-content-data"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "user-content-data"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("user-content-data")}
-                >
-                  User Content & Data
-                </a>
-                <a
-                  href="#acceptable-use-code-of-conduct"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "acceptable-use-code-of-conduct"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() =>
-                    setActiveSection("acceptable-use-code-of-conduct")
-                  }
-                >
-                  Acceptable Use / Code of Conduct
-                </a>
-                <a
-                  href="#storage-and-os-licensing"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "storage-and-os-licensing"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("storage-and-os-licensing")}
-                >
-                  Storage & OS Licensing
-                </a>
-                <a
-                  href="#service-availability-maintenance"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "service-availability-maintenance"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() =>
-                    setActiveSection("service-availability-maintenance")
-                  }
-                >
-                  Service Availability & Maintenance
-                </a>
-                <a
-                  href="#geographic-availability"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "geographic-availability"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("geographic-availability")}
-                >
-                  Geographic Availability
-                </a>
-                <a
-                  href="#third-party-services-and-dependencies"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "third-party-services-and-dependencies"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() =>
-                    setActiveSection("third-party-services-and-dependencies")
-                  }
-                >
-                  Third-Party Services & Dependencies
-                </a>
-                <a
-                  href="#termination-and-suspension"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "termination-and-suspension"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("termination-and-suspension")}
-                >
-                  Termination & Suspension
-                </a>
-                <a
-                  href="#intellectual-property"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "intellectual-property"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("intellectual-property")}
-                >
-                  Intellectual Property
-                </a>
-                <a
-                  href="#limitation-of-liability"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "limitation-of-liability"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("limitation-of-liability")}
-                >
-                  Limitation of Liability
-                </a>
-                <a
-                  href="#indemnification"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "indemnification" ? activeLinkClasses : ""
-                  }`}
-                  onClick={() => setActiveSection("indemnification")}
-                >
-                  Indemnification
-                </a>
-                <a
-                  href="#force-majeure"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "force-majeure" ? activeLinkClasses : ""
-                  }`}
-                  onClick={() => setActiveSection("force-majeure")}
-                >
-                  Force Majeure
-                </a>
-                <a
-                  href="#arbitration-and-dispute-resolution"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "arbitration-and-dispute-resolution"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() =>
-                    setActiveSection("arbitration-and-dispute-resolution")
-                  }
-                >
-                  Arbitration & Dispute Resolution
-                </a>
-                <a
-                  href="#modifications-to-terms"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "modifications-to-terms"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("modifications-to-terms")}
-                >
-                  Changes to the Terms
-                </a>
-                <a
-                  href="#communication-and-notices"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "communication-and-notices"
-                      ? activeLinkClasses
-                      : ""
-                  }`}
-                  onClick={() => setActiveSection("communication-and-notices")}
-                >
-                  Communication & Notices
-                </a>
-                <a
-                  href="#miscellaneous"
-                  className={`${baseLinkClasses} ${
-                    activeSection === "miscellaneous" ? activeLinkClasses : ""
-                  }`}
-                  onClick={() => setActiveSection("miscellaneous")}
-                >
-                  Miscellaneous
-                </a>
+                {termsSections.map(({ id, label }) => (
+                  <a
+                    key={id}
+                    href={`#${id}`}
+                    className={`${baseLinkClasses} ${
+                      activeSection === id ? activeLinkClasses : ""
+                    }`}
+                    onClick={() => handleNavClick(id)}
+                  >
+                    {label}
+                  </a>
+                ))}
               </div>
             </div>
           </div>
 
-          <div className="w-full md:w-2/3 lg:w-3/4">
-            <div className="glass-card !shadow-none gradient-outline-border !rounded-3xl !border-0 space-y-6">
+          <div className="w-full md:w-2/3 lg:w-[65%] flex">
+            <div className="glass-card !shadow-none gradient-outline-border !rounded-3xl !border-0 space-y-6 h-full w-full bg-white dark:bg-[#0B0C12]">
               {activeSection === "introduction" && (
                 <div>
                   <div className="space-y-4 p-8">
