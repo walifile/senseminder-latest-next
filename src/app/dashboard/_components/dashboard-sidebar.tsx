@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import React, { useState } from "react";
 import { routes } from "@/constants/routes";
 import { useRouter, usePathname } from "next/navigation";
@@ -19,8 +20,6 @@ import {
   HardDrive,
   CreditCard,
   GraduationCap,
-  ArrowLeftToLine,
-  ArrowRightToLine,
 } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
@@ -145,34 +144,48 @@ const DashboardSidebar = () => {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-0 bottom-0 left-0 z-50 md:relative transition-all duration-300 bg-card border-r border-border",
-          collapsed ? "w-20" : "w-64",
+          "fixed top-0 bottom-0 left-0 z-50 md:relative transition-all duration-300 bg-card border-r-[1px]",
+          collapsed ? "w-20" : "w-64 p-7",
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
+        style={{ borderImage: "linear-gradient(to right, #A801BA, #2530F0) 1" }}
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
-          <div className="relative h-20 px-4 border-b border-border flex items-center">
+          <div className="relative h-[90px] px-4 mb-7 flex items-center">
             {/* Centered logo when expanded */}
             {!collapsed && (
-              <div className="mx-auto transform scale-90">
+              <div className="mx-auto">
                 <Logo />
               </div>
             )}
 
             {/* Right-side controls (collapse + mobile close) */}
-            <div className="absolute inset-y-0 right-0 flex items-center pr-1">
+            <div
+              className={cn("absolute inset-y-0 right-0 flex items-center pr-1",
+                collapsed ? "translate-x-[25px]": "translate-x-[50px]"
+              )}>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={toggleSidebar}
                 className="hidden md:flex hover:bg-primary/10 hover:text-primary transition-colors"
               >
-                {collapsed ? (
+                {/* {collapsed ? (
                   <ArrowRightToLine className="h-5 w-5 transition-transform duration-200" />
                 ) : (
                   <ArrowLeftToLine className="h-5 w-5 transition-transform duration-200" />
-                )}
+                )} */}
+                <div className="w-[50px] h-[50px] relative rounded-[25px] [background:linear-gradient(270deg,_#a801ba,_#2530f0)] flex items-center justify-center p-2.5 box-border">
+                  <div className="h-[30px] w-[30px] relative overflow-hidden shrink-0">
+                    <Image
+                      src="/sidebar-toggle.svg"
+                      alt="Sidebar Toggle"
+                      fill
+                      priority
+                    />
+                  </div>
+                </div>
               </Button>
               <Button
                 variant="ghost"
@@ -184,9 +197,9 @@ const DashboardSidebar = () => {
               </Button>
             </div>
           </div>
-
+          <hr />
           {/* Navigation Links */}
-          <div className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
+          <div className="flex-1 py-8 space-y-1 overflow-y-auto">
             {navItems.map((item) => (
               <Link
                 key={item.path}

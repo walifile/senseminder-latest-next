@@ -1,9 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import React, { useState } from "react";
 import { useGetLegalDocumentsQuery } from "@/api/legalDocumentsAPI";
+
 import { privacySections } from "../data/sections";
+import { Breadcrumb } from "../../home/_components/breadcrumb";
+
 
 const Privacy = () => {
   const { isLoading } = useGetLegalDocumentsQuery();
@@ -42,14 +44,12 @@ const Privacy = () => {
   return (
     <main className="flex-grow pt-16 md:pt-24 pb-16">
       <div className="container mx-auto px-4 md:px-6">
-        {/* Breadcrumb */}
-        <div className="my-8 flex items-center space-x-2 text-sm">
-          <Link href="/" className="text-primary hover:text-primary/80">
-            Home
-          </Link>
-          <span>-</span>
-          <span>Privacy Policy</span>
-        </div>
+        <Breadcrumb
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Privacy Policy" },
+          ]}
+        />
 
         <div className="flex flex-col md:flex-row gap-10 md:items-stretch">
           <div className="w-full md:w-1/3 lg:w-[35%] flex">

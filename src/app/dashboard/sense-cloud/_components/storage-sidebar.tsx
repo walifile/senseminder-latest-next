@@ -68,7 +68,7 @@ export function SidebarPanel({
               <>
                 <Progress
                   value={usagePercentage}
-                  className={`h-2 ${usagePercentage > 90 ? "bg-red-200" : ""}`}
+                  className={`h-2 ${usagePercentage > 90 ? "bg-red-200" : "bg-[#FFFFFF1A]"}`}
                 />
                 {usagePercentage > 90 && (
                   <div className="flex items-center gap-2 mt-2 text-xs text-red-500">

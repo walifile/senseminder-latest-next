@@ -92,11 +92,11 @@ const DashboardHeader = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 h-20 border-b border-border flex items-center justify-between px-4 bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-40 h-20 flex items-center justify-between px-4 bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="md:hidden w-10" />
 
       {sidebarCollapsed && (
-        <Link href="/" className="flex items-center">
+        <Link href="/" className="flex items-center pl-6">
           <Logo />
         </Link>
       )}

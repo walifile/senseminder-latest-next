@@ -24,7 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsList, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Tooltip,
@@ -33,13 +33,6 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import {
-  Card,
-  // CardTitle,
-  // CardHeader,
-  CardContent,
-  // CardDescription,
-} from "@/components/ui/card";
-import {
   Table,
   TableRow,
   TableBody,
@@ -47,6 +40,13 @@ import {
   TableHead,
   TableHeader,
 } from "@/components/ui/table";
+import {
+  Card,
+  // CardTitle,
+  // CardHeader,
+  CardContent,
+  // CardDescription,
+} from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuItem,

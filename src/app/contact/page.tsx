@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
 import React, { useState } from "react";
 import { useSendContactMessageMutation } from "@/api/contactAPI";
@@ -25,6 +24,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Send, Loader2 } from "lucide-react";
 
 import { toast } from "@/hooks/use-toast";
+
+import { Breadcrumb } from "../home/_components/breadcrumb";
 
 const contactFormSchema = z.object({
   name: z.string().min(2, {
@@ -90,13 +91,13 @@ const Contact = () => {
 
         <div className="glass-card !shadow-none gradient-outline-border !rounded-3xl !border-0 px-0 md:px-12 py-12 w-full flex flex-col-reverse md:flex-row gap-8 md:gap-24">
           <div className="w-full md:w-3/4 px-6 md:px-0">
-            <div className="mb-6 flex items-center space-x-2 text-sm font-light text-paragraph dark:text-gray-300">
-              <Link href="/" className="text-primary hover:text-primary/80">
-                Home
-              </Link>
-              <span>-</span>
-              <span>Build Smartpc</span>
-            </div>
+            <Breadcrumb
+              items={[
+                { label: "Home", href: "/" },
+                { label: "Build Smartpc" },
+              ]}
+              className="mt-0 mb-6"
+            />
             <h1 className="w-full font-space-grotesk text-4xl md:text-[50px] font-bold mb-6 leading-[1]">
               Contact Us
             </h1>

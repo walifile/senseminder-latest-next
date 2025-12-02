@@ -3,16 +3,15 @@
 import React from "react";
 import Image from "next/image";
 
-import { Button } from "@/components/ui/button";
-
 import { motion } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
 
-import { useGetStartedNav } from "@/hooks/use-get-started";
+type GetStartedCTAProps = {
+  children: React.ReactNode;
+  gradient?: React.ReactNode;
+  padding?: string;
+};
 
-
-export default function GetStartedCTA() {
-  const onGetStarted = useGetStartedNav();
+export default function GetStartedCTA({ children, padding = "px-4 py-28 md:px-12 md:py-32", gradient }: GetStartedCTAProps) {
   return (
     <section className="relative">
       <div className="relative container my-12 md:my-20">
@@ -21,7 +20,7 @@ export default function GetStartedCTA() {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
-          className="relative rounded-2xl px-4 py-28 md:px-12 md:py-32 overflow-hidden bg-[#F4F1FF] dark:bg-transparent dark:bg-[linear-gradient(276.71deg,rgba(128,134,243,0.5)_-194.99%,rgba(3,10,135,0.25)_-40.44%,rgba(186,37,240,0.5)_248.78%)]"
+          className={`relative rounded-2xl ${padding} overflow-hidden bg-[#F4F1FF] dark:bg-transparent dark:bg-[linear-gradient(276.71deg,rgba(128,134,243,0.5)_-194.99%,rgba(3,10,135,0.25)_-40.44%,rgba(186,37,240,0.5)_248.78%)]`}
           role="img"
           aria-label="Get started background"
         >
@@ -32,16 +31,7 @@ export default function GetStartedCTA() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="relative mx-auto w-fit text-center space-y-4 md:space-y-8"
           >
-            <h3 className="font-space-grotesk font-semibold text-2xl md:text-5xl">
-              Make the Smart Move -
-              <br />
-              Switch to Sense PC!
-            </h3>
-
-            <Button size="lg" className="w-full md:w-fit" onClick={onGetStarted}>
-              Get Started Now
-              <ArrowUpRight />
-            </Button>
+            {children}
           </motion.div>
 
           <Image
@@ -62,10 +52,19 @@ export default function GetStartedCTA() {
             priority
           />
 
-          <div className="z-0 absolute md:-rotate-[11.32deg] left-1/2 -translate-x-1/2 -bottom-20 md:-bottom-60 md:left-[20%] md:translate-x-0 blur-[40px] md:blur-[100px] size-1/2 md:w-[570px] md:h-[320px] opacity-20 bg-[linear-gradient(270deg,#BA25F0_4.8%,#2530F0_46.15%,#8086F3_100%)]" />
+          <div className="pointer-events-none size-1/2 md:w-[561px] md:h-[79px] absolute left-1/2 -translate-x-1/2 bottom-2 md:bottom-0 md:left-[15%] md:translate-x-0">
+              <Image
+                  src="/assets/svg/about/partner-us-shape-2-bg.png"
+                  alt="Gradient"
+                  fill
+                  className="object-contain"
+                  priority
+              />
+          </div>
         </motion.div>
       </div>
 
+      {gradient}
       <div className="z-0 absolute top-1/2 -translate-y-1/2 right-0 blur-[100px] md:blur-[150px] size-24 bg-[#E7ECEF]" />
     </section>
   );

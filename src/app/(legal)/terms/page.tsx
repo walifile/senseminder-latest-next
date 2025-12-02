@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import React, { useState } from "react";
+
 import { termsSections } from "../data/sections";
+import { Breadcrumb } from "../../home/_components/breadcrumb";
 
 // import { useGetLegalDocumentsQuery } from "@/api/legalDocumentsAPI";
 
@@ -43,13 +44,12 @@ const Terms = () => {
   return (
     <main className="flex-grow pt-16 md:pt-24 pb-16">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="my-8 flex items-center space-x-2 text-sm">
-          <Link href="/" className="text-primary hover:text-primary/80">
-            Home
-          </Link>
-          <span>-</span>
-          <span>Terms of Service</span>
-        </div>
+        <Breadcrumb
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Terms of Service" },
+          ]}
+        />
 
         <div className="flex flex-col md:flex-row gap-10 md:items-stretch">
           <div className="w-full md:w-1/3 lg:w-[35%] flex">
