@@ -150,11 +150,11 @@ const DashboardHeader = () => {
                 <div className="relative">
                   <button className="relative rounded-full bg-[#DBDBFC] text-[#2530f0] hover:bg-[#d4d9ff] shadow-none p-3">
                     <Bell className="h-6 w-6" fill="currentColor" />
-                    {/* {hasUnread && (
+                    {hasUnread && (
                       <span className="absolute -top-1 -right-1 min-h-[16px] min-w-[16px] rounded-full bg-[#2f6bff] text-[10px] font-semibold flex items-center justify-center text-white px-[5px]">
                         {unreadCount}
                       </span>
-                    )} */}
+                    )}
                   </button>
                 </div>
               </DropdownMenuTrigger>
