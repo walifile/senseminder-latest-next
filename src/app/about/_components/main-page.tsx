@@ -46,7 +46,8 @@ export default function AboutPage() {
                 gradient={
                     <div className="pointer-events-none absolute w-[680px] h-[680px] top-2/3 left-1/2 -translate-x-1/2 -translate-y-1/2">
                         <Image
-                            src="/assets/svg/about/partner-us-shape-1-bg.png"
+                            // src="/assets/svg/about/partner-us-shape-1-bg.png"
+                            src="/assets/svg/about/partner-us-shape-1.png"
                             alt="Gradient"
                             fill
                             className="object-contain"
@@ -89,7 +90,8 @@ export default function AboutPage() {
             <div className="relative w-full h-1">
                 <div className="pointer-events-none absolute w-full h-80 top-2/3 left-1/2 -translate-x-1/2 -translate-y-1/2">
                     <Image
-                        src="/assets/svg/about/partner-us-shape-3-bg.png"
+                        // src="/assets/svg/about/partner-us-shape-3-bg.png"
+                        src="/assets/svg/about/partner-us-shape-3.png"
                         alt="Gradient"
                         fill
                         className="object-contain"
