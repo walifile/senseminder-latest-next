@@ -144,7 +144,7 @@ const DashboardSidebar = () => {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-0 bottom-0 left-0 z-50 md:relative transition-all duration-300 bg-card border-r-[1px]",
+          "fixed top-0 bottom-0 left-0 z-50 md:relative transition-all duration-300 bg-blue-700/5 dark:bg-card border-r-[1px]",
           collapsed ? "w-20" : "w-64 p-7",
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
@@ -197,17 +197,17 @@ const DashboardSidebar = () => {
               </Button>
             </div>
           </div>
-          <hr />
+          <hr className="border-t dark:border-white/10 border-neutral-900/30" />
           {/* Navigation Links */}
-          <div className="flex-1 py-8 space-y-1 overflow-y-auto">
+          <div className="flex-1 py-8 space-y-[10px] overflow-y-auto">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 href={item.path}
                 className={cn(
-                  "flex items-center px-3 py-2 rounded-md transition-colors",
+                  "flex items-center px-4 py-[10px] rounded-full transition-colors",
                   pathname === item.path
-                    ? "bg-primary/10 text-primary"
+                    ? "bg-blue-700 text-white"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   collapsed && "justify-center px-0"
                 )}
@@ -221,11 +221,11 @@ const DashboardSidebar = () => {
           </div>
 
           {/* Sidebar Footer */}
-          <div className="p-4 border-t border-border">
+          <div className="p-4 border-t dark:border-white/10 border-neutral-900/30">
             <Button
               variant="ghost"
               className={cn(
-                "w-full justify-start",
+                "w-full justify-start text-[#454545]",
                 collapsed && "justify-center"
               )}
               // asChild

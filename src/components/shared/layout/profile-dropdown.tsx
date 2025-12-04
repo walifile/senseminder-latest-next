@@ -88,8 +88,8 @@ const ProfileDropdown = () => {
       <>
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2 px-3">
-              <Avatar className="size-10">
+            <Button variant="ghost" className="flex items-center gap-2 pl-0 pr-3 h-14">
+              <Avatar className="size-14">
                 <AvatarFallback>{getAvatarFallback(user ?? {})}</AvatarFallback>
               </Avatar>
               <div className="hidden md:block text-left">
