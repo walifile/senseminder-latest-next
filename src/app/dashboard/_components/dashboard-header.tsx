@@ -127,29 +127,19 @@ const DashboardHeader = () => {
             <div className="h-7 w-px bg-[rgba(67,67,67,0.10)] dark:bg-white/10" />
             <div className="rounded-full bg-[rgba(37,48,240,0.07)] dark:bg-white/5 flex items-center gap-3 px-2 py-2">
               <button
-                onClick={() => setTheme("dark")}
+                onClick={() => setTheme(resolvedTheme === "light" ? "dark" : "light")}
                 className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center transition-colors",
-                  resolvedTheme === "dark"
-                    ? "bg-[#2530f0] text-[#ffb703] dark:text-white shadow-[0_10px_24px_-12px_rgba(37,48,240,0.65)]"
-                    : "text-[#2f3a50] dark:text-white hover:bg-slate-100/70"
+                  "w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-[#2530f0] text-white shadow-[0_10px_24px_-12px_rgba(37,48,240,0.65)]"
                 )}
-                aria-label="Switch to dark mode"
+                aria-label={
+                  resolvedTheme === "light" ? "Switch to dark mode" : "Switch to light mode"
+                }
               >
-                <Moon className="h-4 w-4" />
-              </button>
-
-              <button
-                onClick={() => setTheme("light")}
-                className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center transition-colors",
-                  resolvedTheme === "light"
-                    ? "bg-[#2530f0] text-[#ffb703] dark:text-white shadow-[0_10px_24px_-12px_rgba(37,48,240,0.65)]"
-                    : "text-[#2f3a50] dark:text-white hover:bg-slate-100/70"
+                {resolvedTheme === "dark" ? (
+                  <Sun className="h-4 w-4" strokeWidth={2.4} />
+                ) : (
+                  <Moon className="h-4 w-4" />
                 )}
-                aria-label="Switch to light mode"
-              >
-                <Sun className="h-4 w-4" strokeWidth={2.4} />
               </button>
             </div>
 
