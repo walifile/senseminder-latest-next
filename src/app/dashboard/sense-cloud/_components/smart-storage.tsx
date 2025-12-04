@@ -706,7 +706,7 @@ const CloudStorage = () => {
 
   return (
     <>
-      <Card className="relative !border-0 gradient-outline-border">
+      <Card className="relative !border-0 gradient-outline-border bg-[rgba(37,48,240,0.07)] dark:bg-[rgba(255,255,255,0.03)]">
         {/* <CardHeader className="pb-2">
           <div className="flex justify-between items-center">
             <div>
