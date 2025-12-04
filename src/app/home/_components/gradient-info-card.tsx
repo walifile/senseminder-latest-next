@@ -22,9 +22,6 @@ export function GradientInfoCard({
 }: GradientInfoCardProps) {
   return (
     <div className={cn("relative h-full", className)}>
-      {/* BACK GLOW */}
-      {/* <div className="pointer-events-none absolute inset-0 rounded-3xl bg-[radial-gradient(circle_at_top,_#5B2FFF_0%,_#0B1020_45%,_transparent_70%)] opacity-70" /> */}
-
       {/* CARD */}
       <div className="relative overflow-hidden flex h-full rounded-[20px] border border-[rgba(37,48,240,0.20)] dark:border-[rgba(255,255,255,0.20)] bg-white dark:bg-[rgba(255,255,255,0.03)] backdrop-blur-[32px] p-6 md:p-8 text-left gap-5">
         <div className="absolute top-6 right-[-120px] w-[300px] h-[120px] opacity-60 bg-[rgba(13,0,255,0.60)] rounded-[300px] blur-[71px] -z-10" />
@@ -44,6 +41,19 @@ export function GradientInfoCard({
           </div>
         </div>
         <div className="absolute bottom-[-90px] left-[-140px] w-[301px] h-[255px] bg-[rgba(77,0,255,0.60)] opacity-60 rounded-[301px] blur-[71px] -z-10" />
+
+        {rightImage && (
+          <div
+            className="pointer-events-none absolute -z-10 w-[568.051px] h-[321.133px] rounded-[568.051px] backdrop-blur-[150px]"
+            style={{
+              background:
+                "linear-gradient(270deg, #BA25F0 4.8%, #2530F0 46.15%, #8086F3 100%)",
+              transform: "rotate(-11.316deg)",
+              bottom: "-120px",
+              left: "-140px",
+            }}
+          />
+        )}
 
         {/* Conditional Rendering of the Right Image */}
         {rightImage && (
