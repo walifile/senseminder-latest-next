@@ -24,7 +24,9 @@ export function GradientInfoCard({
     <div className={cn("relative h-full", className)}>
       {/* CARD */}
       <div className="relative overflow-hidden flex h-full rounded-[20px] border border-[rgba(37,48,240,0.20)] dark:border-[rgba(255,255,255,0.20)] bg-white dark:bg-[rgba(255,255,255,0.03)] backdrop-blur-[32px] p-6 md:p-8 text-left gap-5">
-        <div className="absolute top-6 right-[-120px] w-[300px] h-[120px] opacity-60 bg-[rgba(13,0,255,0.60)] rounded-[300px] blur-[71px] -z-10" />
+        {!rightImage && (
+          <div className="absolute top-6 right-[-120px] w-[300px] h-[120px] opacity-60 bg-[rgba(13,0,255,0.60)] rounded-[300px] blur-[71px] -z-10" />
+        )}
         <div
           className={`relative flex-shrink-0 w-full ${
             rightImage ? "md:w-[55%]" : ""
@@ -40,7 +42,9 @@ export function GradientInfoCard({
             {children}
           </div>
         </div>
-        <div className="absolute bottom-[-90px] left-[-140px] w-[301px] h-[255px] bg-[rgba(77,0,255,0.60)] opacity-60 rounded-[301px] blur-[71px] -z-10" />
+        {!rightImage && (
+          <div className="absolute bottom-[-90px] left-[-140px] w-[301px] h-[255px] bg-[rgba(77,0,255,0.60)] opacity-60 rounded-[301px] blur-[71px] -z-10" />
+        )}
 
         {rightImage && (
           <div
