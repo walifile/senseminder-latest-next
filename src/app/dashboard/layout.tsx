@@ -47,8 +47,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* <DesktopAppDialog /> */}
       {/* Feedback */}
       <FeedbackSlider open={isShow} onClose={handleCloseFeedback} />
-        <div className="absolute top-[-238px] left-[-226px] w-[501.29px] h-[740.39px] origin-top-left rotate-[21.2deg] opacity-50 bg-[#2530F0] rounded-[50%] blur-[255.50px]" />
-        <div className="absolute top-[-146px] right-[-299px] w-[501.29px] h-[740.39px] origin-top-left rotate-[-11.32deg] opacity-50 bg-[#2530F0] rounded-[50%] blur-[255.50px]" />
+      <div className="absolute top-[-238px] left-[-226px] w-[501.29px] h-[740.39px] origin-top-left rotate-[21.2deg] opacity-50 dark:opacity-100 bg-[#2530F0] rounded-[50%] blur-[255.50px]" />
+      <div className="absolute top-[-146px] right-[-299px] w-[501.29px] h-[740.39px] origin-top-left rotate-[-11.32deg] opacity-50 dark:opacity-100 bg-[#2530F0] rounded-[50%] blur-[255.50px]" />
+      <div className="fixed bottom-[-265px] right-[-150px] w-[410px] h-[777px] opacity-40 bg-gradient-to-b from-[#9C05BF] to-[#2E2CEC] rounded-[50%] blur-[200px]" />
     </div>
   );
 }

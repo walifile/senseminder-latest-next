@@ -209,11 +209,11 @@ const DashboardSidebar = () => {
                   pathname === item.path
                     ? "bg-blue-700 text-white"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  collapsed && "justify-center px-0"
+                  collapsed && "justify-center px-0 w-[50%] mx-auto"
                 )}
               >
                 <item.icon
-                  className={cn("h-5 w-5", collapsed ? "mx-auto" : "mr-3")}
+                  className={cn("h-5 w-5", collapsed ? "mx-auto" : "mr-[6px]")}
                 />
                 {!collapsed && <span>{item.name}</span>}
               </Link>
@@ -221,17 +221,17 @@ const DashboardSidebar = () => {
           </div>
 
           {/* Sidebar Footer */}
-          <div className="p-4 border-t dark:border-white/10 border-neutral-900/30">
+          <div className={cn("pt-3 border-t dark:border-white/10 border-neutral-900/30", collapsed ? "text-center pb-3" : "")}>
             <Button
               variant="ghost"
               className={cn(
                 "w-full justify-start text-[#454545]",
-                collapsed && "justify-center"
+                collapsed && "justify-center px-0 w-[50%] mx-auto"
               )}
               // asChild
               onClick={handleLogout}
             >
-              <LogOut className={cn("h-5 w-5", !collapsed && "mr-3")} />
+              <LogOut className={cn("h-5 w-5", !collapsed && "mr-[6px]")} />
               {!collapsed && <span>Logout</span>}
             </Button>
           </div>
