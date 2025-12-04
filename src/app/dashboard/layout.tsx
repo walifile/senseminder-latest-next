@@ -1,8 +1,6 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
-
 import DashboardHeader from "@/app/dashboard/_components/dashboard-header";
 import DashboardSidebar from "@/app/dashboard/_components/dashboard-sidebar";
 import {

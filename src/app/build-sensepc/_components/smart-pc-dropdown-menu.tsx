@@ -29,15 +29,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import {
-  AlertTriangle,
   Cpu,
   Plus,
   Moon,
   Trash2,
   Shield,
-  MoreVertical,
-  CalendarClock,
   RotateCcw,
+  MoreVertical,
+  AlertTriangle,
+  CalendarClock,
 } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";

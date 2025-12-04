@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { useSelector } from "react-redux";
 
-import { Upload, FolderPlus, AlertCircle } from "lucide-react";
+import { Upload, AlertCircle } from "lucide-react";
 
 import { categories } from "../data";
 import { formatBytes } from "../utils";

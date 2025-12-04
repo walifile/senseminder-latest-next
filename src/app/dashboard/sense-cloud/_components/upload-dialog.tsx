@@ -11,6 +11,7 @@ import {
 } from "@/api/fileManagerAPI";
 
 import { Logger } from "@/lib/utils/logger";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectItem,
@@ -31,7 +32,6 @@ import { useSelector } from "react-redux";
 import { X, Check, Upload, Trash2, Loader2 } from "lucide-react";
 
 import { useFeedback } from "@/hooks/use-feedback";
-import { Button } from "@/components/ui/button";
 
 interface UploadDialogProps {
   open: boolean;
