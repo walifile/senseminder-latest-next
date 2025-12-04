@@ -779,7 +779,7 @@ const CloudStorage = () => {
                           id="searchstorage"
                           name="searchstorage"
                           placeholder="Search files..."
-                          className="p-3 pl-14 h-auto md:text-base rounded-full"
+                          className=" pl-14 h-14 md:text-base rounded-full"
                           onChange={handleSearchChange}
                           value={searchQuery}
                         />
