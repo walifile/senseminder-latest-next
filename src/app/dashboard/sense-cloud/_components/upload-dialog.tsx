@@ -31,6 +31,7 @@ import { useSelector } from "react-redux";
 import { X, Check, Upload, Trash2, Loader2 } from "lucide-react";
 
 import { useFeedback } from "@/hooks/use-feedback";
+import { Button } from "@/components/ui/button";
 
 interface UploadDialogProps {
   open: boolean;
@@ -186,7 +187,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
           {/* File upload zone */}
           <label
             htmlFor="file-upload"
-            className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition bg-muted/50 hover:bg-muted ${
+            className={`flex flex-col items-center justify-center w-full h-32 border-[1.3px] border-dashed rounded-lg cursor-pointer transition bg-[rgba(37,48,240,0.07)] hover:bg-[rgba(37,48,240,0.07)] dark:bg-[rgba(255,255,255,0.04)] hover:dark:bg-[rgba(255,255,255,0.04)] border-[rgba(37,48,240,0.10)] dark:border-[rgba(255,255,255,0.20)] ${
               isDragging ? "border-primary bg-gray-100" : ""
             }`}
             onDragOver={(e) => {
@@ -198,11 +199,11 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
           >
             <div className="flex flex-col items-center justify-center pt-5 pb-6">
               <Upload className="h-8 w-8 mb-2 text-muted-foreground" />
-              <p className="mb-2 text-sm text-muted-foreground">
-                <span className="font-semibold">Click to upload</span> or drag
+              <p className="text:[#020816] dark:text-white  mb-2 text-sm text-muted-foreground">
+                <span className="font-semibold ">Click to upload</span> or drag
                 and drop
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-[#454545] dark:text-[#B9C2D5]">
                 Any file type up to 10MB
               </p>
             </div>
@@ -289,16 +290,16 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
           )} */}
 
           {/* Upload button */}
-          <button
+          <Button
             onClick={handleUpload}
             disabled={
               selectedFiles.length === 0 ||
               Object.values(uploadStatus).includes("loading")
             }
-            className="w-full py-2 rounded-lg font-semibold text-white bg-primary hover:bg-primary/90 transition"
+            className="w-full"
           >
             Upload Files
-          </button>
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
