@@ -773,8 +773,8 @@ const CloudStorage = () => {
 
                   {selectedCategory !== "Duplicates" && (
                     <div className="relative w-full max-w-md">
-                      <div className="bg-[#ffffff08] rounded-[1000px] border-[none] relative before:content-[''] before:absolute before:inset-0 before:p-px before:rounded-[1000px] before:[background:linear-gradient(270deg,rgba(168,1,186,0.5)_0%,rgba(37,48,240,0.5)_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:z-[1] before:pointer-events-none">
-                        <Search className="absolute h-10 w-10 top-1/2 left-1.5 -translate-y-1/2 p-2 text-white bg-[#ffffff08] rounded-[23px] border border-solid border-[#ffffff1a]" />
+                      <div className="bg-[rgba(37,48,240,0.07)] dark:bg-[#ffffff08] rounded-[1000px] border-[none] relative before:content-[''] before:absolute before:inset-0 before:p-px before:rounded-[1000px] before:[background:linear-gradient(270deg,rgba(168,1,186,0.5)_0%,rgba(37,48,240,0.5)_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:z-[1] before:pointer-events-none">
+                        <Search className="absolute h-10 w-10 top-1/2 left-1.5 -translate-y-1/2 p-2 text-[#2530F0] dark:text-white bg-[#ced1fc] dark:bg-[rgba(255,255,255,0.03)] rounded-[23px] border border-solid border-[#2530F0] dark:border-[#A801BA]" />
                         <Input
                           id="searchstorage"
                           name="searchstorage"
