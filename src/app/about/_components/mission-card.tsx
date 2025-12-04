@@ -29,7 +29,7 @@ export function MissionCard() {
               />
             }
           >
-            <p className="self-stretch justify-start text-paragraph text-lg font-normal font-['Inter'] leading-8">
+            <p className="self-stretch justify-start text-paragraph text-lg font-normal font-['Inter'] leading-8 text-black dark:text-[#B9C2D5]">
               Senseminder was founded by Ashfak Ahmed, a senior developer and
               operations engineer focused on cloud-native computing, and is
               proudly headquartered in Georgia, USA.
@@ -39,7 +39,7 @@ export function MissionCard() {
               computing through Sense PC — your personal, scalable, on-demand
               desktop that launches instantly from anywhere.
             </p>
-            <p className="font-medium text-white">
+            <p className="font-medium text-[#020816] dark:text-white">
               And the best part?{" "}
               <span className="text-[#7AA2FF]">
                 You only pay for what you use.
@@ -75,7 +75,7 @@ export function MissionCard() {
               </li>
             </ul>
 
-            <p className="font-medium text-white">
+            <p className="font-medium text-[#020816] dark:text-white">
               We’re not patching old models —{" "}
               <span className="text-[#7AA2FF]">
                 You only pay for what you use.
