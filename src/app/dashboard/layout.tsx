@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
+
 import DashboardHeader from "@/app/dashboard/_components/dashboard-header";
 import DashboardSidebar from "@/app/dashboard/_components/dashboard-sidebar";
 import {
@@ -26,7 +28,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen grid-bg">
+    <div className="min-h-screen grid-bg relative">
       {/* Main layout container */}
       <div className="flex h-screen overflow-hidden">
         {/* Sidebar - fixed */}
@@ -47,6 +49,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* <DesktopAppDialog /> */}
       {/* Feedback */}
       <FeedbackSlider open={isShow} onClose={handleCloseFeedback} />
+        <div className="absolute top-[-238px] left-[-226px] w-[501.29px] h-[740.39px] origin-top-left rotate-[21.2deg] opacity-50 bg-[#2530F0] rounded-[50%] blur-[255.50px]" />
+        <div className="absolute top-[-146px] right-[-299px] w-[501.29px] h-[740.39px] origin-top-left rotate-[-11.32deg] opacity-50 bg-[#2530F0] rounded-[50%] blur-[255.50px]" />
     </div>
   );
 }
