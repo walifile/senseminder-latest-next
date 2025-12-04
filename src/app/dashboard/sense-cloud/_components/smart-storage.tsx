@@ -25,7 +25,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Tooltip,
   TooltipContent,
@@ -67,7 +66,6 @@ import {
   Grid,
   List,
   Copy,
-  Users,
   Globe,
   Upload,
   Trash2,
@@ -109,6 +107,8 @@ import FilePreviewDialog from "./file-preview-dialog";
 import StoragePlansDialog from "./storag-plans-dialog";
 import ConfirmDeleteDialog from "./confirm-delete-dialog";
 import ConfirmBulkDeleteDialog from "./confirm-bulk-delete-dialog";
+import RecentActivityPanel from "./recent-activity-panel";
+import SharedFilesPanel from "./shared-files-panel";
 import {
   formatDate,
   formatTimeAgo,
@@ -1630,9 +1630,9 @@ const CloudStorage = () => {
                                               {file.fileType === "folder" &&
                                                 formatDate(file.createdAt)}
                                               <div className="flex items-center gap-1">
-                                                {file.shared && (
+                                                {/* {file.shared && (
                                                   <Share2 className="h-3.5 w-3.5 text-green-500" />
-                                                )}
+                                                )} */}
                                                 {file.starred && (
                                                   <Star className="h-3.5 w-3.5 text-yellow-500" />
                                                 )}
@@ -1756,7 +1756,7 @@ const CloudStorage = () => {
                                             </div>
                                           </div>
 
-                                          {!file?.previewUrl ? null : (
+                                          {/* {!file?.previewUrl ? null : (
                                             <div className="flex items-center justify-center mt-3 w-full h-[76px] overflow-hidden rounded">
                                               {(() => {
                                                 const ext =
@@ -1852,7 +1852,7 @@ const CloudStorage = () => {
                                                 }
                                               })()}
                                             </div>
-                                          )}
+                                          )} */}
                                         </div>
                                       )
                                     )}
@@ -1968,44 +1968,10 @@ const CloudStorage = () => {
                         value="recent"
                         className="h-full m-0 p-0 data-[state=active]:flex flex-col"
                       >
-                        <ScrollArea className="flex-1">
-                          <div className="p-4 space-y-4">
-                            {recentActivity.map((activity) => (
-                              <div
-                                key={activity.id}
-                                className="flex items-start gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
-                              >
-                                <Avatar className="h-10 w-10 flex-shrink-0">
-                                  <AvatarImage src={activity.avatar} />
-                                  <AvatarFallback>
-                                    {activity.user.charAt(0)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="font-medium">
-                                      {activity.user}
-                                    </span>
-                                    <span className="text-muted-foreground">
-                                      {activity.action === "edited" && "edited"}
-                                      {activity.action === "shared" && "shared"}
-                                      {activity.action === "uploaded" &&
-                                        "uploaded"}
-                                      {activity.action === "commented" &&
-                                        "commented on"}
-                                    </span>
-                                    <span className="font-medium truncate">
-                                      {activity.file}
-                                    </span>
-                                  </div>
-                                  <div className="text-xs text-muted-foreground mt-1">
-                                    {formatTimeAgo(activity.timestamp)}
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </ScrollArea>
+                        <RecentActivityPanel
+                          recentActivity={recentActivity}
+                          formatTimeAgo={formatTimeAgo}
+                        />
                       </TabsContent>
 
                       {/* ✅ Shared Files */}
@@ -2013,17 +1979,7 @@ const CloudStorage = () => {
                         value="shared"
                         className="h-full m-0 p-0 data-[state=active]:flex flex-col"
                       >
-                        <ScrollArea className="flex-1">
-                          <div className="flex flex-col items-center justify-center h-[400px] text-center p-4">
-                            <Users className="h-8 w-8 text-muted-foreground mb-4" />
-                            <h3 className="font-medium mb-2">
-                              No shared files
-                            </h3>
-                            <p className="text-sm text-muted-foreground">
-                              Files shared with you will appear here
-                            </p>
-                          </div>
-                        </ScrollArea>
+                        <SharedFilesPanel />
                       </TabsContent>
                     </>
                   )}
