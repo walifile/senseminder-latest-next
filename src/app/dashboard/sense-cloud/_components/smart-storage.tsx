@@ -843,7 +843,7 @@ const CloudStorage = () => {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="text-base [&_svg]:size-5 text-[#b8c2d5]"
+                          className="text-base [&_svg]:size-5 text-[#454545] dark:text-[#B9C2D5]"
                         >
                           <Filter className="h-5 w-5 mr-1" />
                           Filter
@@ -904,7 +904,7 @@ const CloudStorage = () => {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="text-base [&_svg]:size-5 text-[#b8c2d5]"
+                          className="text-base [&_svg]:size-5 text-[#454545] dark:text-[#B9C2D5]"
                         >
                           <Globe className="h-5 w-5 mr-1" />
                           Region
@@ -929,7 +929,7 @@ const CloudStorage = () => {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="text-base [&_svg]:size-5 text-[#b8c2d5]"
+                          className="text-base [&_svg]:size-5 text-[#454545] dark:text-[#B9C2D5]"
                         >
                           {/* {sortOrder === "asc" ? ( */}
                           <ArrowUpDown className="h-5 w-5 mr-1" />
