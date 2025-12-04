@@ -73,13 +73,14 @@ const GridView = ({
   formatFileSize,
   formatDate,
 }: GridViewProps) => (
-  <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 p-4">
-    {(files as FileItem[]).map((file, index) => (
-      <div
-        key={file.id}
-        onDoubleClick={() => {
-          if (file.fileType !== "folder") {
-            setFilePreview(file);
+  <div className="rounded-lg border border-[rgba(37,48,240,0.10)] bg-[rgba(255,255,255,0.30)] dark:bg-[rgba(255,255,255,0.04)] p-4">
+    <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+      {(files as FileItem[]).map((file, index) => (
+        <div
+          key={file.id}
+          onDoubleClick={() => {
+            if (file.fileType !== "folder") {
+              setFilePreview(file);
           }
         }}
         className={`relative group px-4 rounded-lg border border-border hover:bg-muted/50 transition-colors ${
@@ -372,6 +373,7 @@ const GridView = ({
         )}
       </div>
     ))}
+    </div>
   </div>
 );
 
