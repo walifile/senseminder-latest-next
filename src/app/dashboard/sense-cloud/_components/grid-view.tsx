@@ -358,18 +358,16 @@ const GridView = ({
                                             </div>
                                           )} */}
         {file.fileType != "folder" && (
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              {file.shared ? (
-                <button className="h-6 px-2 text-[10px] font-medium text-green-500 rounded bg-[rgba(34,197,94,0.15)]">
-                  Shared
-                </button>
-              ) : (
-                <button className="h-6 px-2 text-[10px] font-medium text-[#F39C12] rounded bg-[rgba(243,156,18,0.15)]">
-                  Private
-                </button>
-              )}
-            </div>
+          <div className="flex items-center gap-1">
+            {file.shared ? (
+              <button className="px-4 py-1.5 w-full text-sm font-medium text-green-600 rounded-full bg-green-100">
+                Shared
+              </button>
+            ) : (
+              <button className="px-4 py-1.5 w-full text-sm font-medium text-[#F39C12] rounded-full bg-[rgba(243,156,18,0.15)]">
+                Private
+              </button>
+            )}
           </div>
         )}
       </div>
