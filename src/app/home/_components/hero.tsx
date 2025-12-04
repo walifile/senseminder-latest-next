@@ -39,10 +39,12 @@ const Hero: React.FC<HeroProps> = ({
       <div className="container z-10 relative mt-[60px] md:mt-[92px]">
         <div className="container flex flex-col-reverse md:grid md:grid-cols-2 gap-4 md:gap-[90px] md:items-center px-0 py-10 md:pt-16 md:pb-32">
           {/* LEFT: TEXT (from parent) */}
-          <div className={`flex flex-col gap-6 md:gap-12 w-full ${textMinWidth === "auto" ? "w-auto" : `w-[${textMinWidth}]`}`}>
-            <div className="flex flex-col gap-2.5 md:gap-3">
-              {children}
-            </div>
+          <div
+            className={`flex flex-col gap-6 md:gap-12 w-full ${
+              textMinWidth === "auto" ? "w-auto" : `w-[${textMinWidth}]`
+            }`}
+          >
+            <div className="flex flex-col gap-2.5 md:gap-3">{children}</div>
 
             <div className="relative md:w-fit">
               <div className="z-0 absolute left-1/2 top-2.5 -translate-x-1/2 w-[50%] h-[40px] blur-[35px] bg-[linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)]" />

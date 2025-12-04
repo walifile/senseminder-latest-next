@@ -72,7 +72,6 @@ import {
   Share2,
   Search,
   Filter,
-  ArrowUpDown,
   Loader2,
   FileText,
   Download,
@@ -82,6 +81,7 @@ import {
   FolderPlus,
   FolderIcon,
   ListFilter,
+  ArrowUpDown,
   ChevronLeft,
   GripVertical,
   ChevronRight,
@@ -92,6 +92,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/useDebounce";
 
+import GridView from "./grid-view";
 import ShareDialog from "./share-dialog";
 import { recentActivity } from "../data";
 import UploadDialog from "./upload-dialog";
@@ -102,14 +103,13 @@ import MoveFilesDialog from "./move-files-dialog";
 import CopyFilesDialog from "./copy-files-dialog";
 import NewFolderDialog from "./new-folder-dialog";
 import BulkShareDialog from "./bulk-share-dialog";
+import SharedFilesPanel from "./shared-files-panel";
 import StorageSyncDialog from "./storage-sync-dialog";
 import FilePreviewDialog from "./file-preview-dialog";
 import StoragePlansDialog from "./storag-plans-dialog";
 import ConfirmDeleteDialog from "./confirm-delete-dialog";
-import ConfirmBulkDeleteDialog from "./confirm-bulk-delete-dialog";
 import RecentActivityPanel from "./recent-activity-panel";
-import SharedFilesPanel from "./shared-files-panel";
-import GridView from "./grid-view";
+import ConfirmBulkDeleteDialog from "./confirm-bulk-delete-dialog";
 import {
   formatDate,
   formatTimeAgo,

@@ -1,36 +1,38 @@
 "use client";
 
 import React from "react";
+
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
+  TooltipProvider,
 } from "@/components/ui/tooltip";
 import {
-  Download,
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+
+import {
   Eye,
+  Star,
+  File,
+  Share2,
+  Trash2,
+  Download,
+  Calendar,
   FolderIcon,
   GripVertical,
   MoreHorizontal,
-  Share2,
-  Star,
-  Trash2,
-  Calendar,
-  Waves,
-  File,
 } from "lucide-react";
 
 import FileTypeIcon from "./file-type-icon";
+
 import type { FileItem } from "../types";
 
 type GridViewProps = {

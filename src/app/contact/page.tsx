@@ -92,10 +92,7 @@ const Contact = () => {
         <div className="glass-card !shadow-none gradient-outline-border !rounded-3xl !border-0 px-0 md:px-12 py-12 w-full flex flex-col-reverse md:flex-row gap-8 md:gap-24">
           <div className="w-full md:w-3/4 px-6 md:px-0">
             <Breadcrumb
-              items={[
-                { label: "Home", href: "/" },
-                { label: "Build Smartpc" },
-              ]}
+              items={[{ label: "Home", href: "/" }, { label: "Build Smartpc" }]}
               className="mt-0 mb-6"
             />
             <h1 className="w-full font-space-grotesk text-4xl md:text-[50px] font-bold mb-6 leading-[1]">
@@ -235,7 +232,7 @@ const Contact = () => {
                     Closed
                   </span>
                 </div>
-                <p className="text-sm font-light text-paragraph dark:text-gray-300 pt-4">
+                <p className="text-sm font-light text-paragraph dark:text-[#7D7D7D] pt-4">
                   * All times are in Eastern Standard Time (EST)
                 </p>
               </div>
