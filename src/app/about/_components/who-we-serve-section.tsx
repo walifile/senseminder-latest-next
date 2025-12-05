@@ -62,7 +62,7 @@ export function WhoWeServeSection() {
 
           {/* What's Next */}
           <section className="w-full">
-            <div className="relative w-full h-full rounded-[16px] outline outline-1 outline-offset-[-1px] outline-white/20 p-4 md:p-7 text-left bg-[linear-gradient(135deg,rgba(28,6,82,0.25)_0%,rgba(18,11,87,1)_80%,rgba(13,9,95,1)_100%)] bg-opacity-50 backdrop-blur-md space-y-4">
+            <div className="relative w-full h-full rounded-[16px] outline outline-1 outline-offset-[-1px] outline-white/20 p-4 md:p-7 text-left bg-white dark:bg-[linear-gradient(135deg,rgba(28,6,82,0.25)_0%,rgba(18,11,87,1)_80%,rgba(13,9,95,1)_100%)] bg-opacity-50 backdrop-blur-md space-y-4">
               {/* Title */}
               <h2 className="font-space-grotesk text-white text-2xl md:text-5xl font-semibold leading-8 md:leading-[56px] mb-4">
                 What’s Next
