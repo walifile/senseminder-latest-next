@@ -22,12 +22,15 @@ export function GradientInfoCard({
 }: GradientInfoCardProps) {
   return (
     <div className={cn("relative h-full", className)}>
-      {/* BACK GLOW */}
-      {/* <div className="pointer-events-none absolute inset-0 rounded-3xl bg-[radial-gradient(circle_at_top,_#5B2FFF_0%,_#0B1020_45%,_transparent_70%)] opacity-70" /> */}
-
       {/* CARD */}
-      <div className="relative flex h-full glass-card !rounded-3xl border border-white/5 p-6 md:p-8 text-left gap-5">
-        <div className="absolute top-0 right-0 w-52 h-52 opacity-70 bg-gradient-to-br from-blue-700 to-sky-300 rounded-full blur-[100px]" />
+      <div
+        className={`relative overflow-hidden flex h-full rounded-[20px] border border-[rgba(37,48,240,0.20)] dark:border-[rgba(255,255,255,0.20)] ${
+          rightImage ? "bg-[#F4F1FF]" : "bg-white"
+        } dark:bg-[rgba(255,255,255,0.03)] backdrop-blur-[32px] p-6 md:p-8 text-left gap-5`}
+      >
+        {!rightImage && (
+          <div className="absolute top-6 right-[-120px] w-[300px] h-[120px] opacity-60 bg-[rgba(13,0,255,0.60)] rounded-[300px] blur-[71px] -z-10" />
+        )}
         <div
           className={`relative flex-shrink-0 w-full ${
             rightImage ? "md:w-[55%]" : ""
@@ -35,15 +38,33 @@ export function GradientInfoCard({
         >
           {icon && <div className="w-20 h-20 mb-4">{icon}</div>}
 
-          <h3 className="mb-3 font-space-grotesk text-2xl font-semibold text-white">
+          <p className="mb-3 font-space-grotesk text-3xl pt-7 font-semibold dark:text-white text-[#020816]">
             {title}
-          </h3>
+          </p>
 
           <div className="space-y-3 text-sm md:text-base text-[#C8D3F5]">
             {children}
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 w-52 h-52 opacity-70 bg-gradient-to-br from-blue-700 to-sky-300 rounded-full blur-[100px]" />
+        {!rightImage && (
+          <div className="absolute bottom-[-90px] left-[-140px] w-[301px] h-[255px] bg-[rgba(77,0,255,0.60)] opacity-60 rounded-[301px] blur-[71px] -z-10" />
+        )}
+
+        {rightImage && (
+          <div
+            className="pointer-events-none absolute -z-10 w-[568.051px] h-[321.133px] rounded-[568.051px] backdrop-blur-[150px] blur-[150px] opacity-25"
+            style={{
+              background:
+                "linear-gradient(270deg, #BA25F0 4.8%, #2530F0 46.15%, #8086F3 100%)",
+              transform: "rotate(-11.316deg)",
+              bottom: "-120px",
+              left: "-140px",
+            }}
+          />
+        )}
+        {rightImage && (
+          <div className="pointer-events-none absolute top-10 right-[150px] w-[313px] h-[313px] rounded-[313px] bg-[rgba(46,45,236,0.53)] backdrop-blur-[100px] -z-10 blur-[100px] opacity-50" />
+        )}
 
         {/* Conditional Rendering of the Right Image */}
         {rightImage && (

@@ -11,7 +11,11 @@ type GetStartedCTAProps = {
   padding?: string;
 };
 
-export default function GetStartedCTA({ children, padding = "px-4 py-28 md:px-12 md:py-32", gradient }: GetStartedCTAProps) {
+export default function GetStartedCTA({
+  children,
+  padding = "px-4 py-28 md:px-12 md:py-32",
+  gradient,
+}: GetStartedCTAProps) {
   return (
     <section className="relative">
       <div className="relative container my-12 md:my-20">
@@ -51,16 +55,18 @@ export default function GetStartedCTA({ children, padding = "px-4 py-28 md:px-12
             className="absolute w-[140px] h-[93px] md:size-80 -bottom-0 md:-bottom-8 right-0"
             priority
           />
+          {/* className="pointer-events-none size-1/2 md:w-[561px] md:h-[79px] absolute left-1/2 -translate-x-1/2 bottom-2 md:bottom-0 md:left-[15%] md:translate-x-0" */}
 
-          <div className="pointer-events-none size-1/2 md:w-[561px] md:h-[79px] absolute left-1/2 -translate-x-1/2 bottom-2 md:bottom-0 md:left-[15%] md:translate-x-0">
-              <Image
-                  // src="/assets/svg/about/partner-us-shape-2-bg.png"
-                  src="/assets/svg/about/partner-us-shape-2.png"
-                  alt="Gradient"
-                  fill
-                  className="object-contain"
-                  priority
-              />
+          <div className="pointer-events-none">
+            <Image
+              // src="/assets/svg/about/partner-us-shape-2-bg.png"
+              // src="/assets/svg/about/partner-us-shape-2.png"
+              src="/assets/svg/about/shape.png"
+              alt="Gradient"
+              fill
+              className="object-contain"
+              priority
+            />
           </div>
         </motion.div>
       </div>
