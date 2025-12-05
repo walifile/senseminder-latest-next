@@ -55,11 +55,13 @@ export default function GetStartedCTA({
             className="absolute w-[140px] h-[93px] md:size-80 -bottom-0 md:-bottom-8 right-0"
             priority
           />
+          {/* className="pointer-events-none size-1/2 md:w-[561px] md:h-[79px] absolute left-1/2 -translate-x-1/2 bottom-2 md:bottom-0 md:left-[15%] md:translate-x-0" */}
 
-          <div className="pointer-events-none size-1/2 md:w-[561px] md:h-[79px] absolute left-1/2 -translate-x-1/2 bottom-2 md:bottom-0 md:left-[15%] md:translate-x-0">
+          <div className="pointer-events-none">
             <Image
               // src="/assets/svg/about/partner-us-shape-2-bg.png"
-              src="/assets/svg/about/partner-us-shape-2.png"
+              // src="/assets/svg/about/partner-us-shape-2.png"
+              src="/assets/svg/about/shape.png"
               alt="Gradient"
               fill
               className="object-contain"

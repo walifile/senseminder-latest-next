@@ -41,13 +41,13 @@ export default function AboutPage() {
       <GetStartedCTA
         padding="px-4 py-20 md:px-6 md:py-16 mb-16 md:mb-32"
         gradient={
-          <div className="pointer-events-none absolute w-[680px] h-[680px] top-2/3 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="pointer-events-none absolute w-[680px] h-[680px] top-2/3 left-1/2 -translatex-1/2 -translate-y-1/2">
             <Image
               // src="/assets/svg/about/partner-us-shape-1-bg.png"
               src="/assets/svg/about/partner-us-shape-1.png"
               alt="Gradient"
               fill
-              className="object-contain"
+              className="object-contain hidden dark:block"
               priority
             />
           </div>
