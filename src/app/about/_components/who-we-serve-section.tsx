@@ -33,9 +33,21 @@ export function WhoWeServeSection() {
         <div className="grid h-full gap-6 md:grid-rows-2 auto-rows-fr">
           {/* Who We Serve */}
           <section className="w-full">
-            <div className="relative w-full h-full rounded-[16px] outline outline-1 outline-offset-[-1px] outline-white/20 p-4 md:p-7 text-left bg-[linear-gradient(135deg,rgba(28,6,82,0.25)_0%,rgba(18,11,87,1)_80%,rgba(13,9,95,1)_100%)] bg-opacity-50 backdrop-blur-md">
+            <div className="relative w-full h-full rounded-[16px] outline outline-1 outline-offset-[-1px] outline-white/20 p-4 md:p-7 text-left bg-white dark:bg-[linear-gradient(135deg,rgba(28,6,82,0.25)_0%,rgba(18,11,87,1)_80%,rgba(13,9,95,1)_100%)] bg-opacity-50 backdrop-blur-md overflow-hidden">
+              <div
+                className="pointer-events-none absolute -z-10 dark:hidden w-[1069.988px] h-[472.7071px] rounded-[32px] backdrop-blur-[300px] bg-opacity-20 blur-[150px]"
+                style={{
+                  background:
+                    "linear-gradient(270deg, #BA25F0 4.8%, #2530F0 46.15%, #8086F3 100%)",
+                  top: "-330px",
+                  left: "-498px",
+                  transform: "rotate(-5.6deg)",
+                  borderRadius: "50%",
+                }}
+              />
+
               {/* Title */}
-              <h2 className="font-space-grotesk text-white text-2xl md:text-5xl font-semibold leading-8 md:leading-[56px] mb-4">
+              <h2 className="font-space-grotesk text-[#020816] dark:text-white text-2xl md:text-5xl font-semibold leading-8 md:leading-[56px] mb-4">
                 Who We Serve
               </h2>
 
@@ -64,14 +76,14 @@ export function WhoWeServeSection() {
           <section className="w-full">
             <div className="relative w-full h-full rounded-[16px] outline outline-1 outline-offset-[-1px] outline-white/20 p-4 md:p-7 text-left bg-white dark:bg-[linear-gradient(135deg,rgba(28,6,82,0.25)_0%,rgba(18,11,87,1)_80%,rgba(13,9,95,1)_100%)] bg-opacity-50 backdrop-blur-md space-y-4">
               {/* Title */}
-              <h2 className="font-space-grotesk text-white text-2xl md:text-5xl font-semibold leading-8 md:leading-[56px] mb-4">
+              <h2 className="font-space-grotesk text-[#020816] dark:text-white text-2xl md:text-5xl font-semibold leading-8 md:leading-[56px] mb-4">
                 What’s Next
               </h2>
               <div className="self-stretch justify-start bg-[linear-gradient(90deg,#D971FF_0%,#4C55FB_45%,#8086F3_100%)] bg-clip-text text-transparent">
                 <span className="text-transparent text-lg md:text-2xl font-normal md:font-semibold font-['Inter'] md:font-['Space_Grotesk'] capitalize leading-8">
                   Sense PC
                 </span>
-                <span className="text-white text-lg md:text-2xl font-normal md:font-semibold font-['Inter'] md:font-['Space_Grotesk'] lowercase md:capitalize leading-8">
+                <span className="text-[#020816] dark:text-white text-lg md:text-2xl font-normal md:font-semibold font-['Inter'] md:font-['Space_Grotesk'] lowercase md:capitalize leading-8">
                   {" "}
                   is just the beginning. We’re building a world where cloud
                   computing is{" "}
