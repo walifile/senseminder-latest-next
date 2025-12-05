@@ -48,7 +48,7 @@ export function GradientInfoCard({
 
         {rightImage && (
           <div
-            className="pointer-events-none absolute -z-10 w-[568.051px] h-[321.133px] rounded-[568.051px] backdrop-blur-[150px]"
+            className="pointer-events-none absolute -z-10 w-[568.051px] h-[321.133px] rounded-[568.051px] backdrop-blur-[150px] blur-[150px] opacity-25"
             style={{
               background:
                 "linear-gradient(270deg, #BA25F0 4.8%, #2530F0 46.15%, #8086F3 100%)",
@@ -57,6 +57,9 @@ export function GradientInfoCard({
               left: "-140px",
             }}
           />
+        )}
+        {rightImage && (
+          <div className="pointer-events-none absolute top-10 right-[150px] w-[313px] h-[313px] rounded-[313px] bg-[rgba(46,45,236,0.53)] backdrop-blur-[100px] -z-10 blur-[100px] opacity-50" />
         )}
 
         {/* Conditional Rendering of the Right Image */}
