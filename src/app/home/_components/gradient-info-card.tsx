@@ -23,7 +23,11 @@ export function GradientInfoCard({
   return (
     <div className={cn("relative h-full", className)}>
       {/* CARD */}
-      <div className="relative overflow-hidden flex h-full rounded-[20px] border border-[rgba(37,48,240,0.20)] dark:border-[rgba(255,255,255,0.20)] bg-white dark:bg-[rgba(255,255,255,0.03)] backdrop-blur-[32px] p-6 md:p-8 text-left gap-5">
+      <div
+        className={`relative overflow-hidden flex h-full rounded-[20px] border border-[rgba(37,48,240,0.20)] dark:border-[rgba(255,255,255,0.20)] ${
+          rightImage ? "bg-[#F4F1FF]" : "bg-white"
+        } dark:bg-[rgba(255,255,255,0.03)] backdrop-blur-[32px] p-6 md:p-8 text-left gap-5`}
+      >
         {!rightImage && (
           <div className="absolute top-6 right-[-120px] w-[300px] h-[120px] opacity-60 bg-[rgba(13,0,255,0.60)] rounded-[300px] blur-[71px] -z-10" />
         )}
