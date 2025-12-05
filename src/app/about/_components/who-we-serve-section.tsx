@@ -35,13 +35,24 @@ export function WhoWeServeSection() {
           <section className="w-full">
             <div className="relative w-full h-full rounded-[16px] outline outline-1 outline-offset-[-1px] outline-white/20 p-4 md:p-7 text-left bg-white dark:bg-[linear-gradient(135deg,rgba(28,6,82,0.25)_0%,rgba(18,11,87,1)_80%,rgba(13,9,95,1)_100%)] bg-opacity-50 backdrop-blur-md overflow-hidden">
               <div
-                className="pointer-events-none absolute -z-10 dark:hidden w-[1069.988px] h-[472.7071px] rounded-[32px] backdrop-blur-[300px] bg-opacity-20 blur-[150px]"
+                className="pointer-events-none absolute -z-10 dark:hidden w-[1069.988px] h-[472.7071px] rounded-[32px] backdrop-blur-[300px] opacity-20 blur-[150px]"
                 style={{
                   background:
                     "linear-gradient(270deg, #BA25F0 4.8%, #2530F0 46.15%, #8086F3 100%)",
                   top: "-330px",
                   left: "-498px",
                   transform: "rotate(-5.6deg)",
+                  borderRadius: "50%",
+                }}
+              />
+              <div
+                className="pointer-events-none absolute -z-10 dark:hidden w-[568.051px] h-[321.133px]  opacity-20 blur-[150px]"
+                style={{
+                  background:
+                    "linear-gradient(270deg, #BA25F0 4.8%, #2530F0 46.15%, #8086F3 100%)",
+                  transform: "rotate(-20.316deg)",
+                  bottom: "-170px",
+                  right: "-140px",
                   borderRadius: "50%",
                 }}
               />
@@ -74,8 +85,30 @@ export function WhoWeServeSection() {
 
           {/* What's Next */}
           <section className="w-full">
-            <div className="relative w-full h-full rounded-[16px] outline outline-1 outline-offset-[-1px] outline-white/20 p-4 md:p-7 text-left bg-white dark:bg-[linear-gradient(135deg,rgba(28,6,82,0.25)_0%,rgba(18,11,87,1)_80%,rgba(13,9,95,1)_100%)] bg-opacity-50 backdrop-blur-md space-y-4">
+            <div className="relative w-full h-full rounded-[16px] outline outline-1 outline-offset-[-1px] outline-white/20 p-4 md:p-7 text-left bg-white dark:bg-[linear-gradient(135deg,rgba(28,6,82,0.25)_0%,rgba(18,11,87,1)_80%,rgba(13,9,95,1)_100%)] bg-opacity-50 backdrop-blur-md space-y-4 overflow-hidden">
               {/* Title */}
+              <div
+                className="pointer-events-none absolute -z-10 dark:hidden w-[1069.988px] h-[472.7071px] rounded-[32px] backdrop-blur-[300px] opacity-20 blur-[150px]"
+                style={{
+                  background:
+                    "linear-gradient(270deg, #BA25F0 4.8%, #2530F0 46.15%, #8086F3 100%)",
+                  top: "-330px",
+                  left: "-498px",
+                  transform: "rotate(-5.6deg)",
+                  borderRadius: "50%",
+                }}
+              />
+              <div
+                className="pointer-events-none absolute -z-10 dark:hidden w-[568.051px] h-[321.133px]  opacity-20 blur-[150px]"
+                style={{
+                  background:
+                    "linear-gradient(270deg, #BA25F0 4.8%, #2530F0 46.15%, #8086F3 100%)",
+                  transform: "rotate(-20.316deg)",
+                  bottom: "-170px",
+                  right: "-140px",
+                  borderRadius: "50%",
+                }}
+              />
               <h2 className="font-space-grotesk text-[#020816] dark:text-white text-2xl md:text-5xl font-semibold leading-8 md:leading-[56px] mb-4">
                 What’s Next
               </h2>
