@@ -54,15 +54,15 @@ export default function AboutPage() {
         }
       >
         {/* Title */}
-        <h2 className="font-space-grotesk bg-clip-text text-transparent bg-gradient-to-l from-indigo-400 via-indigo-600 to-fuchsia-400 text-3xl md:text-5xl font-semibold leading-10 md:leading-[56px]">
+        <h2 className="font-space-grotesk text-[#020816] dark:bg-clip-text dark:text-transparent dark:bg-gradient-to-l dark:from-indigo-400 dark:via-indigo-600 dark:to-fuchsia-400 text-3xl md:text-5xl font-semibold leading-10 md:leading-[56px]">
           Partner With Us
         </h2>
 
         {/* Description */}
-        <div className="mt-6 space-y-4 text-base md:text-lg text-[#C8D3F5] leading-6 md:leading-8 font-normal max-w-[57rem] mx-auto">
+        <div className="mt-6 space-y-4 text-base md:text-lg text-[#7D7D7D] dark:text-[#C8D3F5] leading-6 md:leading-8 font-normal max-w-[57rem] mx-auto">
           <p>
             At{" "}
-            <span className="font-semibold text-white font-space-grotesk">
+            <span className="font-semibold dark:text-white text-[#020816] font-space-grotesk">
               Senseminder
             </span>
             , we believe in growing through collaboration, feedback, and shared
@@ -73,7 +73,7 @@ export default function AboutPage() {
           <p className="max-w-[56rem] mx-auto">
             Whether you're looking to invest, collaborate, or support our
             mission — or simply want to share an idea{" "}
-            <span className="font-semibold text-white font-space-grotesk">
+            <span className="font-semibold dark:text-white text-[#020816] font-space-grotesk">
               — we value your opinion and welcome your suggestions for
               improvement.
             </span>
