@@ -18,14 +18,12 @@ interface SidebarPanelProps {
   selectedCategory: string;
   onSelectCategory: (categoryName: string) => void;
   onUploadClick: () => void;
-  onNewFolderClick: () => void;
 }
 
 export function SidebarPanel({
   selectedCategory,
   onSelectCategory,
   onUploadClick,
-  onNewFolderClick,
 }: SidebarPanelProps) {
   const userId = useSelector((s: RootState) => s.auth.user?.id)!;
   const { data, isLoading, error } = useGetUsageQuery({ userId });

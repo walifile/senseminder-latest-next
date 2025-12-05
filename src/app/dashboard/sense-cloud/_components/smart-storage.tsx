@@ -752,7 +752,6 @@ const CloudStorage = () => {
               selectedCategory={selectedCategory}
               onSelectCategory={handleCategorySelection}
               onUploadClick={handleUpload}
-              onNewFolderClick={() => setShowNewFolderDialog(true)}
             />
 
             <div className="flex-1 overflow-hidden flex flex-col">
@@ -1509,9 +1508,13 @@ const CloudStorage = () => {
                                     setFilePreview={setFilePreview}
                                     handleItemDragStart={handleItemDragStart}
                                     handleFolderDragOver={handleFolderDragOver}
-                                    handleFolderDragLeave={handleFolderDragLeave}
+                                    handleFolderDragLeave={
+                                      handleFolderDragLeave
+                                    }
                                     handleFolderDrop={handleFolderDrop}
-                                    handleFolderSelection={handleFolderSelection}
+                                    handleFolderSelection={
+                                      handleFolderSelection
+                                    }
                                     handleFileSelect={handleFileSelect}
                                     handleShare={handleShare}
                                     cancelShareForObject={cancelShareForObject}
