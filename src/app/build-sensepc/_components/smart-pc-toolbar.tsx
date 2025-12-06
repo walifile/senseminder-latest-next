@@ -35,7 +35,7 @@ const SmartPcToolbar = ({
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
-      <div className="flex items-center border rounded-lg">
+      <div className="flex items-center border rounded-full overflow-hidden">
         <Button
           variant={viewMode === "grid" ? "secondary" : "ghost"}
           size="sm"

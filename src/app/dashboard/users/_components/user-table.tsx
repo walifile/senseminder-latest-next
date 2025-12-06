@@ -86,15 +86,34 @@ const UserTable = ({ loading, filteredUsers }: Props) => {
     <>
       <Table>
         <TableHeader>
-          <TableRow>
-            {headers.map((header, i) => (
-              <TableHead key={i}>{header}</TableHead>
-            ))}
+          <TableRow className="bg-blue-700/10 dark:bg-[#ffffff0f] hover:bg-blue-700/10 dark:hover:bg-[#ffffff0f]">
+            {headers.map((header, i) => {
+              const isFirst = i === 0;
+              const isLast = i === headers.length - 1;
+              const isSecondLast = i === headers.length - 2;
+
+              return (
+                <TableHead
+                  key={i} 
+                  className={cn(
+                    // first column
+                    isFirst && "w-[40px] rounded-tl-xl",
+                    // last column
+                    isLast && "rounded-tr-xl border-l-0",
+                    // middle columns
+                    isSecondLast && "border-r-0"
+                  )}
+                >
+                  {header}
+                </TableHead>
+              );
+            })}
+
           </TableRow>
         </TableHeader>
         <TableBody>
           {loading ? (
-            <TableRow>
+            <TableRow className="hover:bg-muted/50">
               <TableCell
                 colSpan={6}
                 className="text-center py-6 text-muted-foreground"
@@ -104,80 +123,81 @@ const UserTable = ({ loading, filteredUsers }: Props) => {
             </TableRow>
           ) : filteredUsers.length > 0 ? (
             filteredUsers.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">
-                  {user.firstName || user.lastName
-                    ? `${user.firstName} ${user.lastName}`
-                    : user.email}
-                </TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant="secondary"
-                    className={cn("capitalize", getRoleBadgeColor(user.role))}
-                  >
-                    {user.role}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant="secondary"
-                    className={cn("capitalize", getStatusColor(user.status))}
-                  >
-                    {user.status || <>&mdash;</>}
-                  </Badge>
-                </TableCell>
-                {/* ASSIGNED PCS */}
-                <TableCell>
-                  <div className="flex flex-wrap gap-1">
-                    {(assignments[user.id] ?? []).length > 0 ? (
-                      assignments[user.id].map((pc: PC) => (
-                        <Badge
-                          variant="secondary"
-                          className="mr-1 mb-1"
-                          key={pc.instanceId}
-                        >
-                          {pc.systemName || pc.instanceId}
-                        </Badge>
-                      ))
-                    ) : (
-                      <Badge variant="secondary">&mdash;</Badge>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <ActionsMenu
-                    actions={[
-                      ...(user.role === "member"
-                        ? [
-                            {
-                              label: "Manage PC",
-                              icon: Monitor,
-                              onClick: () => handleAssignPC(user),
-                            },
-                          ]
-                        : []),
-                      {
-                        label: "Change Role",
-                        icon: UserCheck,
-                        onClick: () => Logger.log("Change Role clicked"),
-                      },
-                      {
-                        label: "Resend Invite",
-                        icon: Mail,
-                        onClick: () => Logger.log("Resend Invite clicked"),
-                      },
-                      {
-                        label: "Delete",
-                        icon: UserX,
-                        isDestructive: true,
-                        onClick: () => promptDeleteUser(user),
-                      },
-                    ]}
-                  />
-                </TableCell>
-              </TableRow>
-            ))
+                <TableRow key={user.id} className="hover:bg-muted/50">
+                  <TableCell className="font-medium">
+                    {user.firstName || user.lastName
+                      ? `${user.firstName} ${user.lastName}`
+                      : user.email}
+                  </TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="secondary"
+                      className={cn("capitalize", getRoleBadgeColor(user.role))}
+                    >
+                      {user.role}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="secondary"
+                      className={cn("capitalize", getStatusColor(user.status))}
+                    >
+                      {user.status || <>&mdash;</>}
+                    </Badge>
+                  </TableCell>
+                  {/* ASSIGNED PCS */}
+                  <TableCell className="border-r-0">
+                    <div className="flex flex-wrap gap-1">
+                      {(assignments[user.id] ?? []).length > 0 ? (
+                        assignments[user.id].map((pc: PC) => (
+                          <Badge
+                            variant="secondary"
+                            className="mr-1 mb-1"
+                            key={pc.instanceId}
+                          >
+                            {pc.systemName || pc.instanceId}
+                          </Badge>
+                        ))
+                      ) : (
+                        <Badge variant="secondary">&mdash;</Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="border-l-0">
+                    <ActionsMenu
+                      actions={[
+                        ...(user.role === "member"
+                          ? [
+                              {
+                                label: "Manage PC",
+                                icon: Monitor,
+                                onClick: () => handleAssignPC(user),
+                              },
+                            ]
+                          : []),
+                        {
+                          label: "Change Role",
+                          icon: UserCheck,
+                          onClick: () => Logger.log("Change Role clicked"),
+                        },
+                        {
+                          label: "Resend Invite",
+                          icon: Mail,
+                          onClick: () => Logger.log("Resend Invite clicked"),
+                        },
+                        {
+                          label: "Delete",
+                          icon: UserX,
+                          isDestructive: true,
+                          onClick: () => promptDeleteUser(user),
+                        },
+                      ]}
+                    />
+                  </TableCell>
+                </TableRow>
+              )
+            )
           ) : (
             <TableRow>
               <TableCell

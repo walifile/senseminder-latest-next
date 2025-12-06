@@ -1213,7 +1213,7 @@ const CloudStorage = () => {
                                   <div className="rounded-2xl border border-[#ffffff1a] overflow-hidden bg-[#ffffff05]">
                                     <Table>
                                       <TableHeader>
-                                        <TableRow className="bg-[#ffffff0f] hover:bg-[#ffffff0f]">
+                                        <TableRow className="bg-blue-700/10 dark:bg-[#ffffff0f] hover:bg-blue-700/10 dark:hover:bg-[#ffffff0f]">
                                           <TableHead className="w-[40px] rounded-tl-xl border-r-0">
                                             <Checkbox
                                               checked={
