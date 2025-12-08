@@ -56,4 +56,5 @@ export const publicRoutes: string[] = [
   "/auth/password-required",
   "/products/sensepc",
   "/products/sensecloud",
+  "/auth/tst",
 ];

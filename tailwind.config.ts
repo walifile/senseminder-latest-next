@@ -1,3 +1,5 @@
+
+// tailwind.config.ts
 import type { Config } from "tailwindcss";
 
 export default {
@@ -68,12 +70,23 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+
+        "link-primary": "#2530f0",
+        "public-card-bg-light": "#ffffff",
+        "public-card-border-light": "rgba(37,48,240,0.2)",      
+        "public-card-bg-dark": "rgba(255,255,255,0.03)",        
+        "public-card-border-dark": "rgba(113,69,185,0.6)",    
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+
+      boxShadow: {
+        "public-card": "0 12px 48px rgba(37,48,240,0.1)",
+      },
+
       keyframes: {
         "accordion-down": {
           from: {

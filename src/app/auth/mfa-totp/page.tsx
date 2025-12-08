@@ -160,106 +160,106 @@ export default function MfaTotpPage() {
     }
   };
 
-return (
-  <div className="space-y-6">
-    <div className="h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-blue-600 -mx-8 -mt-8 mb-4 rounded-t-2xl" />
-    <div className="flex justify-center mb-2">
-      <Image
-        src="/sensepc-logo.png"
-        alt="SensePC Logo"
-        width={160}
-        height={40}
-        priority
-        className="h-12 w-auto"
-      />
-    </div>
-    <div className="space-y-2 text-center">
-      <h1 className="text-2xl font-semibold tracking-tight">
-        MFA Authenticator Verification
-      </h1>
-      <p className="text-sm text-muted-foreground">
-        Enter the 6-digit code from your authenticator app
-      </p>
-    </div>
-
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="flex justify-center">
-        <InputOTP
-          maxLength={6}
-          value={code}
-          onChange={(val) => setCode(val)}
-          disabled={submitting}
-        >
-          <InputOTPGroup>
-            {[...Array(6)].map((_, i) => (
-              <InputOTPSlot key={i} index={i} />
-            ))}
-          </InputOTPGroup>
-        </InputOTP>
+  return (
+    <div className="space-y-6">
+      <div className="h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-blue-600 -mx-8 -mt-8 mb-4 rounded-t-2xl" />
+      <div className="flex justify-center mb-2">
+        <Image
+          src="/sensepc-logo.png"
+          alt="SensePC Logo"
+          width={160}
+          height={40}
+          priority
+          className="h-12 w-auto"
+        />
+      </div>
+      <div className="space-y-2 text-center">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          MFA Authenticator Verification
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Enter the 6-digit code from your authenticator app
+        </p>
       </div>
 
-      <Button
-        type="submit"
-        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white dark:from-[#0EA5E9] dark:to-[#6366F1] dark:hover:from-[#0284C7] dark:hover:to-[#4F46E5] disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        {submitting ? "Verifying..." : "Continue"}
-      </Button>
-    </form>
-
-    <div className="text-center text-sm text-muted-foreground">
-      Lost access to your Authenticator App?{" "}
-      <button
-        onClick={() => setRecoveryDialogOpen(true)}
-        className="text-blue-600 hover:underline"
-      >
-        Request recovery
-      </button>
-    </div>
-    <p className="text-center text-sm text-muted-foreground">
-      <a href="/auth" className="text-blue-600 hover:underline">
-        Back to Sign in
-      </a>
-    </p>
-
-    <Dialog open={recoveryDialogOpen} onOpenChange={setRecoveryDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Recover Authenticator Access</DialogTitle>
-          <DialogDescription>
-            We'll send a link to disable your Authenticator App to:
-            <br />
-            <span className="font-medium">
-              {loginEmail ? loginEmail : "—"}
-            </span>
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter className="pt-4">
-          <Button
-            variant="ghost"
-            onClick={() => setRecoveryDialogOpen(false)}
-            disabled={recoverySending}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="flex justify-center">
+          <InputOTP
+            maxLength={6}
+            value={code}
+            onChange={(val) => setCode(val)}
+            disabled={submitting}
           >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleTotpRecoveryRequest}
-            disabled={recoverySending || !loginEmail}
-          >
-            {recoverySending ? "Sending..." : "Send Recovery Email"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-        <div className="text-center text-xs text-muted-foreground space-x-2">
-      <Link href={routes.terms} className="hover:underline">
-        Terms of Use
-      </Link>
-      <span>|</span>
-      <Link href={routes.privacy} className="hover:underline">
-        Privacy Policy
-      </Link>
+            <InputOTPGroup>
+              {[...Array(6)].map((_, i) => (
+                <InputOTPSlot key={i} index={i} />
+              ))}
+            </InputOTPGroup>
+          </InputOTP>
+        </div>
+
+        <Button
+          type="submit"
+          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white dark:from-[#0EA5E9] dark:to-[#6366F1] dark:hover:from-[#0284C7] dark:hover:to-[#4F46E5] disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {submitting ? "Verifying..." : "Continue"}
+        </Button>
+      </form>
+
+      <div className="text-center text-sm text-muted-foreground">
+        Lost access to your Authenticator App?{" "}
+        <button
+          onClick={() => setRecoveryDialogOpen(true)}
+          className="text-blue-600 hover:underline"
+        >
+          Request recovery
+        </button>
+      </div>
+      <p className="text-center text-sm text-muted-foreground">
+        <a href="/auth" className="text-blue-600 hover:underline">
+          Back to Sign in
+        </a>
+      </p>
+
+      <Dialog open={recoveryDialogOpen} onOpenChange={setRecoveryDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Recover Authenticator Access</DialogTitle>
+            <DialogDescription>
+              We'll send a link to disable your Authenticator App to:
+              <br />
+              <span className="font-medium">
+                {loginEmail ? loginEmail : "—"}
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="pt-4">
+            <Button
+              variant="ghost"
+              onClick={() => setRecoveryDialogOpen(false)}
+              disabled={recoverySending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleTotpRecoveryRequest}
+              disabled={recoverySending || !loginEmail}
+            >
+              {recoverySending ? "Sending..." : "Send Recovery Email"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <div className="text-center text-xs text-muted-foreground space-x-2">
+        <Link href={routes.terms} className="hover:underline">
+          Terms of Use
+        </Link>
+        <span>|</span>
+        <Link href={routes.privacy} className="hover:underline">
+          Privacy Policy
+        </Link>
+      </div>
     </div>
-  </div>
-);
+  );
 
 }

@@ -1,15 +1,21 @@
+
+// src/app/auth/signup/page.tsx
+
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import Image from "next/image";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSubscribeToNewsletterMutation } from "@/api/newsletterAPI";
 
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { PublicCard } from "@/components/ui/public-card";
 
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, Mail, Lock, User, EyeOff, ArrowUpRight } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
 import useLocation from "@/hooks/use-location";
@@ -17,8 +23,26 @@ import useLocation from "@/hooks/use-location";
 import { handleSignUp } from "@/lib/services/auth";
 
 import SocailLogin from "../_components/socail-login";
+import { OtpVerificationDialog } from "../_components/otp-verification-dialog";
 
-export default function SignUp() {
+type AuthInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
+  hasError?: boolean;
+};
+
+function AuthInput({ className, hasError, ...props }: AuthInputProps) {
+  return (
+    <Input
+      className={cn(
+        "h-[60px] w-full rounded-[10px] text-sm",
+        hasError && "border-red-500",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export default function SignUpPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { userLocation } = useLocation();
@@ -35,22 +59,39 @@ export default function SignUp() {
 
   const [subscribeToNewsletter] = useSubscribeToNewsletterMutation();
 
+  // OTP dialog state
+  const [isOtpOpen, setIsOtpOpen] = useState(false);
+  const [otpEmail, setOtpEmail] = useState<string | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (password !== confirmPassword) {
+      toast({
+        title: "Password mismatch",
+        description: "Password and Confirm Password do not match.",
+      });
+      return;
+    }
+
+    if (!acceptTerms) {
+      toast({
+        title: "Accept Terms",
+        description:
+          "Please accept the Terms of Service and Privacy Policy to continue.",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const data = {
+      const signupPayload = {
         email,
         password,
         firstName,
         lastName,
         acceptedLegal: acceptTerms,
-        // Uncomment and add additional fields as needed
-        // lastName: data.lastName,
-        // country: data.country,
-        // cellphone: data.cellphone,
-        // organization: data.organizationName,
       };
 
       const location = userLocation || {
@@ -59,7 +100,7 @@ export default function SignUp() {
         ip: "unknown",
       };
 
-      const response = await handleSignUp(data);
+      const response = await handleSignUp(signupPayload);
 
       if (response.success) {
         await subscribeToNewsletter({
@@ -67,20 +108,18 @@ export default function SignUp() {
           location,
           signup: true,
         });
-        // Show success toast
+
         toast({
           title: "Success",
           description:
             "Account created successfully! Please verify your email.",
         });
 
-        // Store email for OTP verification
         sessionStorage.setItem("verificationEmail", email);
 
-        // Redirect to OTP verification page
-        router.push("/auth/verify-otp");
+        setOtpEmail(email);
+        setIsOtpOpen(true);
       } else {
-        // Show error toast
         toast({
           title: "Error",
           description: response.error || "Something went wrong!",
@@ -98,210 +137,273 @@ export default function SignUp() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">
-          Create an Account
-        </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Enter your details to create your Sense PC account
-        </p>
+    <>
+      <div className="w-full px-4 md:px-6 pt-10 md:pt-14 lg:pt-[140px] pb-16 md:pb-20">
+        <div className="mx-auto w-full max-w-[1369px]">
+          {/* ✅ Outer card now uses PublicCard for bg + border + glass (same as login) */}
+          <PublicCard
+            className={cn(
+              "relative mx-auto w-full max-w-[1320px]",
+              "min-h-[640px] lg:min-h-[680px] xl:min-h-[710px]",
+            )}
+          >
+            {/* Inner layout: illustration | form */}
+            <div className="relative z-10 grid gap-8 lg:gap-16 pl-6 pr-8 py-6 md:pl-8 md:pr-10 md:py-8 lg:grid-cols-[1fr_0.9fr]">
+              {/* LEFT: signup illustration */}
+              <div className="flex items-center justify-center">
+                <div className="w-full max-w-[622px]">
+                  {/* Light theme illustration */}
+                  <Image
+                    src="/assets/authlayout/light/signup-illustration.svg"
+                    alt="Sense PC signup illustration"
+                    width={640}
+                    height={520}
+                    priority
+                    className="h-auto w-full object-contain dark:hidden"
+                  />
+
+                  {/* Dark theme illustration */}
+                  <Image
+                    src="/assets/authlayout/light/signup-illustration-dark.svg"
+                    alt="Sense PC signup illustration"
+                    width={640}
+                    height={520}
+                    priority
+                    className="h-auto w-full object-contain hidden dark:block dark:opacity-80"
+                  />
+                </div>
+              </div>
+
+              {/* RIGHT: signup form */}
+              <div className="flex items-center">
+                <div className="relative mx-auto w-full max-w-[520px]">
+                  {/* Ellipse 11 glow behind the form area (light only) */}
+                  <Image
+                    src="/assets/authlayout/light/Ellipse 11.svg"
+                    alt=""
+                    width={693}
+                    height={306}
+                    className="pointer-events-none absolute -top-[140px] -right-[80px] h-[306px] w-[693px] opacity-90 dark:hidden"
+                  />
+
+                  {/* Actual form content sits above the glow */}
+                  <div className="relative z-10">
+                    {/* Heading */}
+                    <div className="mb-8 text-center">
+                      <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl">
+                        Create an Account
+                      </h1>
+                      <p className="mt-2 text-[0.95rem] md:text-base text-slate-500 dark:text-slate-300">
+                        Enter your details to create your Sense PC account
+                      </p>
+                    </div>
+
+                    {/* Form */}
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                      {/* First Name */}
+                      <div className="space-y-2">
+                        <div className="relative">
+                          <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                          <AuthInput
+                            id="first-name"
+                            type="text"
+                            placeholder="First name"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            required
+                            className="pl-11"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Last Name */}
+                      <div className="space-y-2">
+                        <div className="relative">
+                          <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                          <AuthInput
+                            id="last-name"
+                            type="text"
+                            placeholder="Last name"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            required
+                            className="pl-11"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Email */}
+                      <div className="space-y-2">
+                        <div className="relative">
+                          <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                          <AuthInput
+                            id="email"
+                            type="email"
+                            placeholder="Enter your email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            className="pl-11"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Password */}
+                      <div className="space-y-2">
+                        <div className="relative">
+                          <Lock className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                          <AuthInput
+                            id="password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            className="pl-11 pr-11"
+                          />
+                          <button
+                            type="button"
+                            className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
+                            onClick={() => setShowPassword((prev) => !prev)}
+                            tabIndex={-1}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-5 w-5" />
+                            ) : (
+                              <Eye className="h-5 w-5" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Confirm Password */}
+                      <div className="space-y-2">
+                        <div className="relative">
+                          <Lock className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                          <AuthInput
+                            id="confirm-password"
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="Confirm Password"
+                            value={confirmPassword}
+                            onChange={(e) =>
+                              setConfirmPassword(e.target.value)
+                            }
+                            required
+                            className="pl-11 pr-11"
+                          />
+                          <button
+                            type="button"
+                            className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
+                            onClick={() =>
+                              setShowConfirmPassword((prev) => !prev)
+                            }
+                            tabIndex={-1}
+                          >
+                            {showConfirmPassword ? (
+                              <EyeOff className="h-5 w-5" />
+                            ) : (
+                              <Eye className="h-5 w-5" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Terms of service */}
+                      <div className="mt-1">
+                        <label className="flex items-start gap-2 text-sm text-slate-500 dark:text-slate-300">
+                          <Checkbox
+                            id="terms"
+                            checked={acceptTerms}
+                            onCheckedChange={(checked) =>
+                              setAcceptTerms(checked === true)
+                            }
+                          />
+
+                          <span>
+                            I accept the{" "}
+                            <Link
+                              href="/terms"
+                              className="font-medium text-link-primary underline"
+                            >
+                              Terms of Service
+                            </Link>{" "}
+                            and{" "}
+                            <Link
+                              href="/privacy"
+                              className="font-medium text-link-primary underline"
+                            >
+                              Privacy Policy
+                            </Link>
+                          </span>
+                        </label>
+                      </div>
+
+                      {/* Submit button – gradient + arrow, like Figma */}
+                      <Button
+                        type="submit"
+                        disabled={isLoading}
+                        size="lg"
+                        className={cn(
+                          "mt-3 w-full rounded-full text-sm font-medium",
+                          "bg-gradient-to-l from-[#a801ba] to-[#2530f0]",
+                          "hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed",
+                        )}
+                      >
+                        {isLoading ? (
+                          "Signing up..."
+                        ) : (
+                          <span className="inline-flex items-center justify-center gap-2">
+                            <span>Sign Up</span>
+                            <ArrowUpRight className="h-4 w-4" />
+                          </span>
+                        )}
+                      </Button>
+                    </form>
+
+                    {/* Social login + footer (outside form) */}
+                    <div className="mt-6 space-y-4">
+                      {/* Divider: Or continue with */}
+                      <div className="flex items-center text-sm">
+                        <span className="h-px flex-1 bg-slate-200/70 dark:bg-white/10" />
+                        <span className="mx-3 text-slate-400 dark:text-slate-300">
+                          Or continue with
+                        </span>
+                        <span className="h-px flex-1 bg-slate-200/70 dark:bg-white/10" />
+                      </div>
+
+                      {/* Google + Apple buttons */}
+                      <SocailLogin />
+
+                      <p className="text-center text-sm text-slate-400 dark:text-slate-300">
+                        Already have an account?{" "}
+                        <button
+                          type="button"
+                          className="font-semibold text-link-primary hover:underline"
+                          onClick={() => router.push("/auth")}
+                        >
+                          Login
+                        </button>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* END right col */}
+            </div>
+          </PublicCard>
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <label
-            className="text-sm font-medium text-gray-700 dark:text-gray-200"
-            htmlFor="first-name"
-          >
-            First Name
-          </label>
-          <Input
-            id="first-name"
-            type="text"
-            placeholder="Enter your first name"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            required
-            className="bg-white/50 border-gray-200 text-gray-900 placeholder:text-gray-500 dark:bg-[#ffffff0f] dark:border-[#ffffff1a] dark:text-white dark:placeholder:text-gray-400"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label
-            className="text-sm font-medium text-gray-700 dark:text-gray-200"
-            htmlFor="last-name"
-          >
-            Last Name
-          </label>
-          <Input
-            id="last-name"
-            type="text"
-            placeholder="Enter your last name"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            required
-            className="bg-white/50 border-gray-200 text-gray-900 placeholder:text-gray-500 dark:bg-[#ffffff0f] dark:border-[#ffffff1a] dark:text-white dark:placeholder:text-gray-400"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label
-            className="text-sm font-medium text-gray-700 dark:text-gray-200"
-            htmlFor="email"
-          >
-            Email
-          </label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="bg-white/50 border-gray-200 text-gray-900 placeholder:text-gray-500 dark:bg-[#ffffff0f] dark:border-[#ffffff1a] dark:text-white dark:placeholder:text-gray-400"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label
-            className="text-sm font-medium text-gray-700 dark:text-gray-200"
-            htmlFor="password"
-          >
-            Password
-          </label>
-          <div className="relative">
-            <Input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="Create a password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="pr-10 bg-white/50 border-gray-200 text-gray-900 placeholder:text-gray-500 dark:bg-[#ffffff0f] dark:border-[#ffffff1a] dark:text-white dark:placeholder:text-gray-400"
-            />
-            <button
-              type="button"
-              className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-              onClick={() => setShowPassword((prev) => !prev)}
-              tabIndex={-1}
-            >
-              {showPassword ? (
-                <EyeOff className="h-5 w-5" />
-              ) : (
-                <Eye className="h-5 w-5" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label
-            className="text-sm font-medium text-gray-700 dark:text-gray-200"
-            htmlFor="confirm-password"
-          >
-            Confirm Password
-          </label>
-          <div className="relative">
-            <Input
-              id="confirm-password"
-              type={showConfirmPassword ? "text" : "password"}
-              placeholder="Confirm your password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              className="pr-10 bg-white/50 border-gray-200 text-gray-900 placeholder:text-gray-500 dark:bg-[#ffffff0f] dark:border-[#ffffff1a] dark:text-white dark:placeholder:text-gray-400"
-            />
-            <button
-              type="button"
-              className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-              onClick={() => setShowConfirmPassword((prev) => !prev)}
-              tabIndex={-1}
-            >
-              {showConfirmPassword ? (
-                <EyeOff className="h-5 w-5" />
-              ) : (
-                <Eye className="h-5 w-5" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="terms"
-            checked={acceptTerms}
-            onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
-            required
-            className="border-gray-200 data-[state=checked]:bg-blue-500 dark:border-[#ffffff1a]"
-          />
-          <label
-            htmlFor="terms"
-            className="text-sm font-medium text-gray-700 dark:text-gray-200"
-          >
-            I accept the{" "}
-            <Link
-              href="/terms"
-              className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link
-              href="/privacy"
-              className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              Privacy Policy
-            </Link>
-          </label>
-        </div>
-
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white dark:from-[#0EA5E9] dark:to-[#6366F1] dark:hover:from-[#0284C7] dark:hover:to-[#4F46E5] disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {isLoading ? "Signing up..." : "Sign up"}
-        </Button>
-      </form>
-
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-gray-200 dark:border-[#ffffff1a]" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white/80 px-2 text-gray-500 dark:bg-[#0A0A1B]/40 dark:text-gray-400">
-            Or continue with
-          </span>
-        </div>
-      </div>
-      <SocailLogin />
-      {/* <div className="grid grid-cols-2 gap-4">
-        <Button
-          variant="outline"
-          className="w-full border-gray-200 bg-white/50 text-gray-700 hover:bg-gray-50 dark:border-[#ffffff1a] dark:bg-[#ffffff0f] dark:text-white dark:hover:bg-[#ffffff1a]"
-        >
-          <FcGoogle className="mr-2 h-4 w-4" />
-          Google
-        </Button>
-        <Button
-          variant="outline"
-          className="w-full border-gray-200 bg-white/50 text-gray-700 hover:bg-gray-50 dark:border-[#ffffff1a] dark:bg-[#ffffff0f] dark:text-white dark:hover:bg-[#ffffff1a]"
-        >
-          <FaApple className="mr-2 h-4 w-4" />
-          Apple
-        </Button>
-      </div> */}
-
-      <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-        Already have an account?{" "}
-        <Link
-          href="/auth"
-          className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-        >
-          Sign in
-        </Link>
-      </p>
-    </div>
+      {/* OTP dialog on top of signup page */}
+      <OtpVerificationDialog
+        isOpen={isOtpOpen}
+        email={otpEmail}
+        onClose={() => setIsOtpOpen(false)}
+        onVerified={() => {
+          setIsOtpOpen(false);
+          router.push("/auth");
+        }}
+      />
+    </>
   );
 }
