@@ -61,28 +61,13 @@ export function GradientInfoCard({
           // Light theme bottom glow
           <div className="absolute top-[270px] left-[-127px] w-[301px] h-[255px] bg-[rgba(77,0,255,0.60)] opacity-[0.3] rounded-[301px] blur-[142px] -z-10 dark:hidden" />
         )}
-        {!rightImage && (
-          // Dark theme bottom circular gradient glow
-          <div
-            className="absolute top-[270px] left-[-127px] w-[310px] h-[310px] opacity-[0.5] rounded-[310px] -z-10 hidden dark:block blur-[100px]"
-            style={{
-              background: "linear-gradient(156deg, #0034EB 0%, #82E1FB 100%)",
-            }}
-          />
-        )}
-
-        {rightImage && (
-          // Dark theme right-image glow
-          <div
-            className="pointer-events-none absolute -z-10 w-[310px] h-[310px] rounded-[310px] border opacity-[0.5] hidden dark:block blur-[100px]"
-            style={{
-              background: "linear-gradient(156deg, #0034EB 0%, #82E1FB 100%)",
-              transform: "rotate(-11.32deg)",
-              bottom: "-90px",
-              left: "-120px",
-            }}
-          />
-        )}
+        {/* // Dark theme bottom circular gradient glow */}
+        <div
+          className="absolute top-[270px] left-[-127px] w-[310px] h-[310px] opacity-[0.5] rounded-[310px] -z-10 hidden dark:block blur-[100px]"
+          style={{
+            background: "linear-gradient(156deg, #0034EB 0%, #82E1FB 100%)",
+          }}
+        />
 
         {rightImage && (
           <div
