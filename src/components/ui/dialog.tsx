@@ -44,7 +44,7 @@ const DialogContent = React.forwardRef<
       {...props}
     >
       {/* Gradient Layer */}
-      <div className="w-[247px] h-[403px] left-[-96px] top-[-202px] absolute dark:hidden bg-blue-700/20 rounded-[50%] blur-3xl overflow-hidden" />
+      <div className="w-[247px] h-[403px] left-[-96px] top-[-202px] absolute dark:hidden bg-blue-700/20 rounded-[50%] blur-3xl overflow-hidden z-[-1]" />
 
       {children}
       <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-100 ring-offset-background transition-opacity hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">

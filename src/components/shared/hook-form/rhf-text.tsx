@@ -143,6 +143,7 @@ export const RHFText = forwardRef<
                     maxLength={maxLength}
                     minLength={minLength}
                     className={cn(
+                      "border-0 outline outline-1 outline-offset-[-1px] outline-blue-700/10 dark:outline-white/20 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none ring-offset-background bg-blue-700/5 dark:bg-white/5 rounded-[10px]",
                       hasError && "border-red-500 focus:border-red-500",
                       Icon && "pl-10",
                       inputClassName
@@ -160,7 +161,7 @@ export const RHFText = forwardRef<
                     maxLength={maxLength}
                     minLength={minLength}
                     className={cn(
-                      "h-11",
+                      "h-11 border-0 outline outline-1 outline-offset-[-1px] outline-blue-700/10 dark:outline-white/20 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none ring-offset-background bg-blue-700/5 dark:bg-white/5 rounded-[10px]",
                       hasError && "border-red-500 focus:border-red-500",
                       Icon && "pl-10",
                       inputClassName

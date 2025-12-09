@@ -170,12 +170,12 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
           <div className="space-y-2">
             <label
               htmlFor="region"
-              className="block self-stretch justify-start text-white text-lg font-semibold font-['Space_Grotesk'] leading-8"
+              className="block self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8"
             >
               Select Region
             </label>
             <Select value={region} onValueChange={setRegion}>
-              <SelectTrigger className="w-full h-auto px-5 py-4 bg-white/5 rounded-[10px] border-0 outline outline-1 outline-offset-[-1px] outline-white/20 focus:ring-2 focus:ring-primary text-paragraph text-base font-normal font-['Inter'] leading-6">
+              <SelectTrigger className="w-full h-auto px-5 py-4 text-paragraph text-base font-normal font-['Inter'] leading-6">
                 <SelectValue placeholder="Select a region" />
               </SelectTrigger>
               <SelectContent>
@@ -198,8 +198,8 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
             onDrop={handleDrop}
           >
             <div className="flex flex-col items-center justify-center">
-              <Upload className="h-8 w-8 mb-2 text-muted-foreground" />
-              <p className="text:[#020816] dark:text-white  mb-2 text-sm text-muted-foreground">
+              <Upload className="h-8 w-8 mb-2 text-[#454545] dark:text-muted-foreground" />
+              <p className="text-[#020816] dark:text-white mb-2 text-sm">
                 <span className="font-semibold ">Click to upload</span> or drag
                 and drop
               </p>

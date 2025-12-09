@@ -91,14 +91,14 @@ const InviteUserDialog = ({ open, onClose }: Props) => {
             name="name"
             label="Name"
             placeholder="John Doe"
-            inputClassName="justify-start h-auto border-0 outline outline-1 outline-offset-[-1px] outline-white/20 px-5 py-4 bg-white/5 rounded-[10px] text-paragraph text-base font-normal placeholder:font-normal font-['Inter'] leading-6"
+            inputClassName="justify-start h-auto px-5 py-4 text-paragraph text-base font-normal placeholder:font-normal font-['Inter'] leading-6"
           />
 
           <Field.Text
             name="email"
             label="Email"
             placeholder="john.doe@example.com"
-            inputClassName="justify-start h-auto border-0 outline outline-1 outline-offset-[-1px] outline-white/20 px-5 py-4 bg-white/5 rounded-[10px] text-paragraph text-base font-normal placeholder:font-normal font-['Inter'] leading-6"
+            inputClassName="justify-start h-auto px-5 py-4 text-paragraph text-base font-normal placeholder:font-normal font-['Inter'] leading-6"
           />
 
           <Field.Select
@@ -106,7 +106,7 @@ const InviteUserDialog = ({ open, onClose }: Props) => {
             label="Role"
             placeholder="Select a role"
             className="gap-2"
-            triggerClassName="h-[52px] rounded-[10px] text-white text-base font-semibold font-['Inter'] leading-6"
+            triggerClassName="h-[52px] text-base font-semibold font-['Inter'] leading-6"
             options={[
               { value: "admin", label: "Admin" },
               { value: "member", label: "Member" },

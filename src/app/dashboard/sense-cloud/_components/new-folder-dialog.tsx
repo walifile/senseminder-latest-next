@@ -87,17 +87,17 @@ const NewFolderDialog: React.FC<NewFolderDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
-          <Label htmlFor="folder-name" className="self-stretch justify-start text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">Folder Name</Label>
+          <Label htmlFor="folder-name" className="self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">Folder Name</Label>
           <Input
             id="folder-name"
             placeholder="Enter your folder name"
             value={folderName}
-            className="justify-start h-auto border-0 outline outline-1 outline-offset-[-1px] outline-white/20 px-5 py-4 bg-white/5 rounded-[10px] text-paragraph text-base font-normal placeholder:font-normal font-['Inter'] leading-6"
+            className="justify-start h-auto border-0 outline outline-1 outline-offset-[-1px] outline-blue-700/10 dark:outline-white/20 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none ring-offset-background px-5 py-4 bg-blue-700/5 dark:bg-white/5 rounded-[10px] text-paragraph text-base font-normal placeholder:font-normal font-['Inter'] leading-6"
             onChange={(e) => setFolderName(e.target.value)}
           />
         </div>
         <DialogFooter>
-          <Button variant="outline" className="w-full text-center text-white text-base font-medium font-['Inter'] leading-6" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" className="w-full text-center text-black dark:text-white text-base font-medium font-['Inter'] leading-6" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button className="w-full text-center text-white text-base font-medium font-['Inter'] leading-6"
