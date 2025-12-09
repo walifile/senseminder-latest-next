@@ -29,7 +29,16 @@ export function GradientInfoCard({
         } dark:bg-[rgba(255,255,255,0.03)] backdrop-blur-[32px] p-6 md:p-8 text-left gap-5`}
       >
         {!rightImage && (
-          <div className="absolute top-0 right-[-120px] w-[300px] h-[120px] opacity-60 bg-[rgba(13,0,255,0.60)] rounded-[300px] blur-[71px] -z-10" />
+          <div className="absolute top-0 right-[-120px] w-[300px] h-[120px] opacity-[0.2] bg-[rgba(13,0,255,0.60)] rounded-[300px] blur-[71px] -z-10 dark:hidden" />
+        )}
+        {!rightImage && (
+          <div
+            className="absolute top-[-81px] right-[-120px] w-[214px] h-[214px] opacity-[0.7] rounded-full -z-10 hidden dark:block blur-[100px]"
+            style={{
+              background:
+                "linear-gradient(156deg, #0034EB 15.46%, rgba(0,52,235,0) 100%)",
+            }}
+          />
         )}
         <div
           className={`relative flex-shrink-0 w-full ${
