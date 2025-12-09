@@ -29,9 +29,11 @@ export function GradientInfoCard({
         } dark:bg-[rgba(255,255,255,0.03)] backdrop-blur-[32px] p-6 md:p-8 text-left gap-5`}
       >
         {!rightImage && (
+          // Light theme pill glow behind content
           <div className="absolute top-0 right-[-120px] w-[300px] h-[120px] opacity-[0.2] bg-[rgba(13,0,255,0.60)] rounded-[300px] blur-[71px] -z-10 dark:hidden" />
         )}
         {!rightImage && (
+          // Dark theme circular gradient glow behind content
           <div
             className="absolute top-[-81px] right-[-120px] w-[214px] h-[214px] opacity-[0.7] rounded-full -z-10 hidden dark:block blur-[100px]"
             style={{
