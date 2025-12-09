@@ -73,13 +73,14 @@ export function GradientInfoCard({
 
         {rightImage && (
           <div
-            className="pointer-events-none absolute -z-10 w-[568.051px] h-[321.133px] rounded-[568.051px] backdrop-blur-[150px] blur-[150px] opacity-25"
+            className="pointer-events-none absolute -z-10 w-[568.051px] h-[321.133px] rounded-[568.051px] backdrop-blur-[150px] blur-[150px] opacity-25 wali"
             style={{
               background:
                 "linear-gradient(270deg, #BA25F0 4.8%, #2530F0 46.15%, #8086F3 100%)",
-              transform: "rotate(-11.316deg)",
-              bottom: "-120px",
-              left: "-140px",
+              transform: "rotate(-11.32deg)",
+              bottom: "-90px",
+              left: "-120px",
+              boxShadow: "0 4px 300px 0 rgba(0, 0, 0, 0.25) inset",
             }}
           />
         )}
