@@ -11,7 +11,10 @@ const socialLinks = [
   { href: "https://www.facebook.com/officialsensepc/", icon: "facebook1" },
   { href: "https://www.instagram.com/sensepcofficial/", icon: "instagram1" },
   { href: "https://x.com/sensepcofficial/", icon: "twitter1" },
-  { href: "https://www.linkedin.com/company/sensepcofficial/", icon: "linkedin1" },
+  {
+    href: "https://www.linkedin.com/company/sensepcofficial/",
+    icon: "linkedin1",
+  },
 ];
 
 const quickLinks = [
@@ -28,6 +31,7 @@ const product = [
 
 const Footer = () => {
   const pathname = usePathname();
+  const isHome = pathname === "/";
   const currentYear = new Date().getFullYear();
 
   if (
@@ -40,29 +44,32 @@ const Footer = () => {
 
   return (
     <footer
-      className="
-        relative text-white overflow-visible
-        min-h-[190px]          /* 💯 ensures SAME height light/dark */
-      "
+      className="relative text-white overflow-visible
+        min-h-[190px]"
       aria-label="Site footer"
     >
+      {/* Glow background layers (home only) */}
+      {isHome && (
+        <>
+          <div
+            className="z-0 absolute -top-10 left-1/2 -translate-x-1/2 md:-top-16 md:left-[10%]
+            blur-[160px] md:blur-[200px] size-1/2 opacity-40 bg-[#4027E5]"
+          />
 
-      {/* Glow background layers */}
-      <div className="z-0 absolute -top-10 left-1/2 -translate-x-1/2 md:-top-16 md:left-[10%]
-      blur-[160px] md:blur-[200px] size-1/2 opacity-40 bg-[#4027E5]" />
-
-      <div className="z-0 absolute -top-10 left-1/2 -translate-x-1/2 md:-top-20 md:right-[10%]
-      blur-[160px] md:blur-[200px] size-1/2 opacity-40 bg-[#9C05BF]" />
+          <div
+            className="z-0 absolute -top-10 left-1/2 -translate-x-1/2 md:-top-20 md:right-[10%]
+            blur-[160px] md:blur-[200px] size-1/2 opacity-40 bg-[#9C05BF]"
+          />
+        </>
+      )}
 
       {/* Background layer — same size in light/dark */}
       <div className="absolute inset-0 bg-[#020817] dark:bg-[#0208176E]" />
 
       {/* Content wrapper — unified spacing */}
       <div className="relative container pt-10 pb-6 space-y-8">
-
         {/* 4-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-4 items-start gap-8">
-
           {/* Brand */}
           <div className="space-y-4">
             <div className="space-y-3">
@@ -74,7 +81,8 @@ const Footer = () => {
                 className="w-[210px] h-[60px] object-contain"
               />
               <p className="text-base max-w-sm">
-                Access your powerful PC from anywhere, with low latency and enterprise-grade security.
+                Access your powerful PC from anywhere, with low latency and
+                enterprise-grade security.
               </p>
             </div>
 
@@ -110,7 +118,10 @@ const Footer = () => {
             <ul className="flex md:flex-col gap-3 flex-wrap">
               {quickLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="flex items-center gap-2 text-link">
+                  <Link
+                    href={link.href}
+                    className="flex items-center gap-2 text-link"
+                  >
                     <Image
                       src={`/assets/svg/${link.icon}.svg`}
                       alt={link.text}
@@ -142,7 +153,7 @@ const Footer = () => {
               {product.map((item, index) => (
                 <li
                   key={index}
-                  className="flex items-center gap-3 ml-0.5" 
+                  className="flex items-center gap-3 ml-0.5"
                   /* ⭐ pushes Sense PC + Cloud slightly right */
                 >
                   <Image
@@ -181,7 +192,6 @@ const Footer = () => {
               <NewsletterForm variant="inline" source="footer" />
             </div>
           </div>
-
         </div>
 
         {/* Bottom bar */}
@@ -190,7 +200,6 @@ const Footer = () => {
             © {currentYear} sensepc. All rights reserved.
           </p>
         </div>
-
       </div>
     </footer>
   );

@@ -32,16 +32,16 @@ export function GradientInfoCard({
           // Light theme pill glow behind content
           <div className="absolute top-0 right-[-120px] w-[300px] h-[120px] opacity-[0.2] bg-[rgba(13,0,255,0.60)] rounded-[300px] blur-[71px] -z-10 dark:hidden" />
         )}
-        {!rightImage && (
-          // Dark theme circular gradient glow behind content
-          <div
-            className="absolute top-[-81px] right-[-120px] w-[214px] h-[214px] opacity-[0.7] rounded-full -z-10 hidden dark:block blur-[100px]"
-            style={{
-              background:
-                "linear-gradient(156deg, #0034EB 15.46%, rgba(0,52,235,0) 100%)",
-            }}
-          />
-        )}
+
+        {/* // Dark theme circular gradient glow behind content */}
+        <div
+          className="absolute top-[-81px] right-[-120px] w-[214px] h-[214px] opacity-[0.7] rounded-full -z-10 hidden dark:block blur-[100px]"
+          style={{
+            background:
+              "linear-gradient(156deg, #0034EB 15.46%, rgba(0,52,235,0) 100%)",
+          }}
+        />
+
         <div
           className={`relative flex-shrink-0 w-full ${
             rightImage ? "md:w-[55%]" : ""
@@ -61,19 +61,17 @@ export function GradientInfoCard({
           // Light theme bottom glow
           <div className="absolute top-[270px] left-[-127px] w-[301px] h-[255px] bg-[rgba(77,0,255,0.60)] opacity-[0.3] rounded-[301px] blur-[142px] -z-10 dark:hidden" />
         )}
-        {!rightImage && (
-          // Dark theme bottom circular gradient glow
-          <div
-            className="absolute top-[270px] left-[-127px] w-[310px] h-[310px] opacity-[0.5] rounded-[310px] -z-10 hidden dark:block blur-[100px]"
-            style={{
-              background: "linear-gradient(156deg, #0034EB 0%, #82E1FB 100%)",
-            }}
-          />
-        )}
+        {/* // Dark theme bottom circular gradient glow */}
+        <div
+          className="absolute top-[270px] left-[-127px] w-[310px] h-[310px] opacity-[0.5] rounded-[310px] -z-10 hidden dark:block blur-[100px]"
+          style={{
+            background: "linear-gradient(156deg, #0034EB 0%, #82E1FB 100%)",
+          }}
+        />
 
         {rightImage && (
           <div
-            className="pointer-events-none absolute -z-10 w-[568.051px] h-[321.133px] rounded-[568.051px] backdrop-blur-[150px] blur-[150px] opacity-25 wali"
+            className="pointer-events-none absolute -z-10 w-[568.051px] h-[321.133px] rounded-[568.051px] backdrop-blur-[150px] blur-[150px] opacity-25 dark:hidden"
             style={{
               background:
                 "linear-gradient(270deg, #BA25F0 4.8%, #2530F0 46.15%, #8086F3 100%)",
@@ -84,6 +82,7 @@ export function GradientInfoCard({
             }}
           />
         )}
+
         {rightImage && (
           <div className="pointer-events-none absolute top-10 right-[150px] w-[313px] h-[313px] rounded-[313px] bg-[rgba(46,45,236,0.53)] backdrop-blur-[100px] -z-10 blur-[100px] opacity-50" />
         )}
