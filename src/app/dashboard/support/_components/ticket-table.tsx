@@ -87,18 +87,18 @@ export default function TicketTable() {
       <div className="p-6 pt-0 space-y-5 border-b border-black/10 dark:border-border">
         <div className="space-y-1">
           <div className="justify-start text-white text-2xl font-bold font-['Space_Grotesk'] leading-8">Sense Cloud</div>
-          <div className="justify-start text-paragraph text-base font-normal font-['Inter'] leading-6">Manage your files and folders</div>
+          <div className="justify-start text-paragraph text-base font-normal font-['Inter'] leading-6">Our support team will respond as soon as possible.</div>
         </div>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Search */}
           <div className="relative w-full max-w-md">
             <div className="bg-[rgba(37,48,240,0.07)] dark:bg-[#ffffff08] rounded-[1000px] border-[none] relative before:content-[''] before:absolute before:inset-0 before:p-px before:rounded-[1000px] before:[background:linear-gradient(270deg,rgba(168,1,186,0.5)_0%,rgba(37,48,240,0.5)_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:z-[1] before:pointer-events-none">
-              <Search className="absolute h-10 w-10 top-1/2 left-1.5 -translate-y-1/2 p-2 text-[#2530F0] dark:text-white bg-[#ced1fc] dark:bg-[rgba(255,255,255,0.03)] rounded-[23px] border border-solid border-[#2530F0] dark:border-[#A801BA]" />
+              <Search className="absolute h-10 w-10 top-1/2 left-1.5 -translate-y-1/2 p-2 text-[#2530F0] dark:text-white bg-blue-700/10 dark:bg-[#FFFFFF08] rounded-[23px] border border-solid border-[#2530F0] dark:border-[#A801BA]" />
               <Input
                 id="support-ticket-search"
                 name="support-ticket-search"
                 placeholder="Search requests"
-                className="pl-14 h-14 md:text-base rounded-full"
+                className="pl-14 h-14 md:text-base rounded-full bg-blue-700/5 dark:bg-[#FFFFFF08] text-black placeholder:text-[#454545] dark:text-[#B8C2D5]"
                 onChange={(e) => setQuery(e.target.value)}
                 value={query}
               />

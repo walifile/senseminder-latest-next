@@ -774,12 +774,12 @@ const CloudStorage = () => {
                   {selectedCategory !== "Duplicates" && (
                     <div className="relative w-full max-w-md">
                       <div className="bg-[rgba(37,48,240,0.07)] dark:bg-[#ffffff08] rounded-[1000px] border-[none] relative before:content-[''] before:absolute before:inset-0 before:p-px before:rounded-[1000px] before:[background:linear-gradient(270deg,rgba(168,1,186,0.5)_0%,rgba(37,48,240,0.5)_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:z-[1] before:pointer-events-none">
-                        <Search className="absolute h-10 w-10 top-1/2 left-1.5 -translate-y-1/2 p-2 text-[#2530F0] dark:text-white bg-[#ced1fc] dark:bg-[rgba(255,255,255,0.03)] rounded-[23px] border border-solid border-[#2530F0] dark:border-[#A801BA]" />
+                        <Search className="absolute h-10 w-10 top-1/2 left-1.5 -translate-y-1/2 p-2 text-[#2530F0] dark:text-white bg-blue-700/10 dark:bg-[#FFFFFF08] rounded-[23px] border border-solid border-[#2530F0] dark:border-[#A801BA]" />
                         <Input
                           id="searchstorage"
                           name="searchstorage"
                           placeholder="Search files..."
-                          className="pl-14 h-14 md:text-base rounded-full"
+                          className="pl-14 h-14 md:text-base rounded-full bg-blue-700/5 dark:bg-[#FFFFFF08] text-black placeholder:text-[#454545] dark:text-[#B8C2D5]"
                           onChange={handleSearchChange}
                           value={searchQuery}
                         />
@@ -801,8 +801,8 @@ const CloudStorage = () => {
                     onClick={() => setShowStoragePlans(true)}
                     className="md:ml-auto"
                   >
-                    <HardDrive className="h-4 w-4 mr-2" />
-                    Storage Plans
+                    <HardDrive className="h-4 w-4" />
+                    <span>Storage Plans</span>
                   </Button>
                 </div>
               </div>
@@ -815,14 +815,14 @@ const CloudStorage = () => {
                           variant="outline"
                           onClick={() => setCopyDialogOpen(true)}
                         >
-                          <Copy className="h-4 w-4 mr-2" />
+                          <Copy className="h-4 w-4" />
                           Copy
                         </Button>
                         <Button
                           variant="outline"
                           onClick={() => setMoveDialogOpen(true)}
                         >
-                          <FolderIcon className="h-4 w-4 mr-2" />
+                          <FolderIcon className="h-4 w-4" />
                           Move
                         </Button>
                       </>
@@ -832,9 +832,9 @@ const CloudStorage = () => {
                       size="sm"
                       variant="outline"
                       onClick={() => setShowNewFolderDialog(true)}
-                      className="text-base [&_svg]:size-5"
+                      className="text-base [&_svg]:size-5 gap-2"
                     >
-                      <FolderPlus className="h-5 w-5 mr-1" />
+                      <FolderPlus className="h-5 w-5" />
                       New
                     </Button>
                     {/* Filter */}
@@ -843,9 +843,9 @@ const CloudStorage = () => {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="text-base [&_svg]:size-5 text-[#454545] dark:text-[#B9C2D5]"
+                          className="text-base [&_svg]:size-5 text-[#454545] dark:text-[#B9C2D5] gap-2"
                         >
-                          <Filter className="h-5 w-5 mr-1" />
+                          <Filter className="h-5 w-5" />
                           Filter
                         </Button>
                       </DropdownMenuTrigger>
@@ -904,9 +904,9 @@ const CloudStorage = () => {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="text-base [&_svg]:size-5 text-[#454545] dark:text-[#B9C2D5]"
+                          className="text-base [&_svg]:size-5 text-[#454545] dark:text-[#B9C2D5] gap-2"
                         >
-                          <Globe className="h-5 w-5 mr-1" />
+                          <Globe className="h-5 w-5" />
                           Region
                         </Button>
                       </DropdownMenuTrigger>
@@ -929,12 +929,12 @@ const CloudStorage = () => {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="text-base [&_svg]:size-5 text-[#454545] dark:text-[#B9C2D5]"
+                          className="text-base [&_svg]:size-5 text-[#454545] dark:text-[#B9C2D5] gap-2"
                         >
                           {/* {sortOrder === "asc" ? ( */}
-                          <ArrowUpDown className="h-5 w-5 mr-1" />
+                          <ArrowUpDown className="h-5 w-5" />
                           {/* // ) : (
-                        //   <SortDesc className="h-4 w-4 mr-2" />
+                        //   <SortDesc className="h-4 w-4" />
                         // )} */}
                           Sort
                         </Button>
@@ -1049,33 +1049,33 @@ const CloudStorage = () => {
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="text-base [&_svg]:size-5"
+                      className="text-base [&_svg]:size-5 gap-2"
                       onClick={() =>
                         setViewMode(viewMode === "list" ? "grid" : "list")
                       }
                     >
                       {viewMode === "list" ? (
-                        <Grid className="h-5 w-5 mr-1" />
+                        <Grid className="h-5 w-5 text-[#2530F0] dark:text-white" />
                       ) : (
-                        <List className="h-5 w-5 mr-1" />
+                        <List className="h-5 w-5 text-[#2530F0] dark:text-white" />
                       )}
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="text-base [&_svg]:size-5"
+                      className="text-base [&_svg]:size-5 gap-2"
                       onClick={() => refetch()}
                     >
-                      <RefreshCw className="h-5 w-5 mr-1" />
+                      <RefreshCw className="h-5 w-5" />
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="text-base [&_svg]:size-5"
+                          className="text-base [&_svg]:size-5 gap-2"
                         >
-                          <MoreHorizontal className="h-5 w-5 mr-1" />
+                          <MoreHorizontal className="h-5 w-5" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
@@ -1088,12 +1088,12 @@ const CloudStorage = () => {
                                   disabled={selectedFiles.length !== 1}
                                   className={
                                     selectedFiles.length !== 1
-                                      ? "cursor-not-allowed opacity-50 pointer-events-none w-full"
-                                      : "w-full"
+                                      ? "cursor-not-allowed opacity-50 pointer-events-none w-full gap-2"
+                                      : "w-full gap-2"
                                   }
                                   // className={"w-full"}
                                 >
-                                  <Share2 className="h-4 w-4 mr-2" />
+                                  <Share2 className="h-4 w-4" />
                                   Share
                                 </DropdownMenuItem>
                               </div>
@@ -1112,29 +1112,30 @@ const CloudStorage = () => {
                           disabled={
                             selectedFiles.length === 0 || isBulkDownloading
                           }
+                          className="gap-2"
                         >
                           {isBulkDownloading ? (
                             <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin text-primary" />
+                              <Loader2 className="h-4 w-4 animate-spin text-primary" />
                               Downloading...
                             </>
                           ) : (
                             <>
-                              <Download className="h-4 w-4 mr-2" />
+                              <Download className="h-4 w-4" />
                               Download
                             </>
                           )}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          className="text-destructive"
+                          className="text-destructive gap-2"
                           onClick={() => {
                             if (selectedFiles.length !== 0) {
                               setBulkDeleteDialogOpen(true);
                             }
                           }}
                         >
-                          <Trash2 className="h-4 w-4 mr-2" />
+                          <Trash2 className="h-4 w-4" />
                           Delete Selected
                         </DropdownMenuItem>
                       </DropdownMenuContent>

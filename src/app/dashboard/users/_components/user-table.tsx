@@ -30,7 +30,7 @@ import { getStatusColor, getRoleBadgeColor } from "../utils";
 
 import type { ApiUser } from "../types";
 
-const headers = ["Name", "Email", "Role", "Status", "Assigned PCs", ""];
+const headers = ["Name", "Email", "Role", "Status", "Assigned PCs", "Actions"];
 
 type Props = {
   loading: boolean;
@@ -90,7 +90,7 @@ const UserTable = ({ loading, filteredUsers }: Props) => {
             {headers.map((header, i) => {
               const isFirst = i === 0;
               const isLast = i === headers.length - 1;
-              const isSecondLast = i === headers.length - 2;
+              const isSecondLast = i === headers.length - 1;
 
               return (
                 <TableHead
@@ -163,7 +163,7 @@ const UserTable = ({ loading, filteredUsers }: Props) => {
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="border-l-0">
+                <TableCell>
                   <ActionsMenu
                     actions={[
                       ...(user.role === "member"

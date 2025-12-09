@@ -109,7 +109,7 @@ export function SidebarPanel({
                 }
                 className={`w-full justify-start ${
                   selectedCategory === category.name
-                    ? "text-[#020816] dark:text-white border border-[#2530F0] bg-[rgba(37,48,240,0.10)] dark:border-[rgba(255,255,255,0.10)] dark:bg-[#ffffff08]"
+                    ? "text-[#020816] dark:text-white hover:text-[#020816]  border border-[#2530F0] bg-[rgba(37,48,240,0.10)] dark:border-[rgba(255,255,255,0.10)] dark:bg-[#ffffff08]"
                     : "text-[#454545] dark:text-[#B9C2D5] hover:text-[#020816] hover:border hover:border-[#2530F0] hover:bg-[rgba(37,48,240,0.10)] dark:hover:text-white dark:hover:border-transparent dark:hover:bg-[#ffffff08]"
                 }`}
                 onClick={() => onSelectCategory(category.name)}
