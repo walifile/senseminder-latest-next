@@ -27,7 +27,7 @@ export default function AboutPage() {
           items={[{ label: "Home", href: "/" }, { label: "About Us" }]}
           className="mb-0"
         />
-        <p className="font-space-grotesk font-bold text-3xl md:text-[70px] leading-[1] my-3 w-full">
+        <p className="font-space-grotesk font-bold text-3xl md:text-[65px] leading-[1] my-3 w-full">
           About SenseMinder
         </p>
         <p className="text-paragraph text-base md:text-2xl md:leading-[2.5rem] w-full">
