@@ -73,7 +73,7 @@ export function GradientInfoCard({
 
         {rightImage && (
           <div
-            className="pointer-events-none absolute -z-10 w-[568.051px] h-[321.133px] rounded-[568.051px] backdrop-blur-[150px] blur-[150px] opacity-25 wali"
+            className="pointer-events-none absolute -z-10 w-[568.051px] h-[321.133px] rounded-[568.051px] backdrop-blur-[150px] blur-[150px] opacity-25 dark:hidden"
             style={{
               background:
                 "linear-gradient(270deg, #BA25F0 4.8%, #2530F0 46.15%, #8086F3 100%)",
@@ -84,6 +84,20 @@ export function GradientInfoCard({
             }}
           />
         )}
+
+        {rightImage && (
+          // Dark theme right-image glow
+          <div
+            className="pointer-events-none absolute -z-10 w-[310px] h-[310px] rounded-[310px] border opacity-[0.5] hidden dark:block blur-[100px]"
+            style={{
+              background: "linear-gradient(156deg, #0034EB 0%, #82E1FB 100%)",
+              transform: "rotate(-11.32deg)",
+              bottom: "-90px",
+              left: "-120px",
+            }}
+          />
+        )}
+
         {rightImage && (
           <div className="pointer-events-none absolute top-10 right-[150px] w-[313px] h-[313px] rounded-[313px] bg-[rgba(46,45,236,0.53)] backdrop-blur-[100px] -z-10 blur-[100px] opacity-50" />
         )}
