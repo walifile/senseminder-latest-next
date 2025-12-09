@@ -47,7 +47,7 @@ const Hero: React.FC<HeroProps> = ({
             <div className="flex flex-col gap-2.5 md:gap-3">{children}</div>
 
             <div className="relative md:w-fit">
-              <div className="z-0 absolute left-1/2 top-2.5 -translate-x-1/2 w-[50%] h-[40px] blur-[35px] bg-[linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)]" />
+              <div className="z-0 absolute left-1/2 top-2.5 -translate-x-1/2 w-[50%] h-[40px] bg-[linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)]" />
               <Button
                 size="lg"
                 className="relative w-full z-10"
