@@ -1,3 +1,4 @@
+
 /* eslint perfectionist/sort-imports: "off" */
 
 "use client";
@@ -5,18 +6,23 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { routes } from "@/constants/routes";
+import { useTheme } from "next-themes";
 
+import { routes } from "@/constants/routes";
 import { useCompleteFirstLoginMutation } from "@/api/first-time-setup";
 import { fetchAuthSession } from "aws-amplify/auth";
 import { handleSignOut } from "@/lib/services/auth";
 import { useEmailFromSession } from "@/hooks/useEmailFromSession";
 
 import { Form } from "@/components/shared/hook-form/form-provider";
-import { RHFText } from "@/components/shared/hook-form/rhf-text";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+
 import { checkOnboarded } from "@/lib/utils/checkOnboarded";
 import { useSubUserInfo } from "@/hooks/use-sub-userInfo";
 import { Logger } from "@/lib/utils/logger";
+import { Info } from "lucide-react";
 
 type WelcomeFormValues = {
   fullName: string;
@@ -24,6 +30,14 @@ type WelcomeFormValues = {
 };
 
 export default function WelcomePage() {
+  // Theme (for logo + card color)
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
+  const logoSrc = isDark
+    ? "/assets/authlayout/dark/sensepc-logo-code-dark.svg"
+    : "/assets/authlayout/light/sensepc-logo-code.svg";
+
   // ---- Redirect if already onboarded ----
   useEffect(() => {
     const check = async () => {
@@ -44,7 +58,7 @@ export default function WelcomePage() {
   // ---- Local state ----
   const [error, setError] = useState("");
   const { isSubUser, organization, role } = useSubUserInfo();
-  
+
   // ---- React Hook Form setup ----
   const methods = useForm<WelcomeFormValues>({
     defaultValues: {
@@ -54,7 +68,7 @@ export default function WelcomePage() {
     mode: "onChange",
   });
 
-  const { handleSubmit, watch, formState } = methods;
+  const { handleSubmit, watch, formState, setValue, register } = methods;
   const acceptTerms = watch("acceptTerms");
   const fullName = watch("fullName");
   const isValid = formState.isValid;
@@ -90,113 +104,164 @@ export default function WelcomePage() {
 
   // ---- UI ----
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-white dark:bg-gray-900">
-      <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 p-8 relative overflow-hidden">
-          {/* Gradient top bar */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-blue-600" />
-
+    <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-[#f5f6ff] dark:bg-[#0A0A1B]">
+      <div className="w-full max-w-[480px]">
+        <div
+          className={`
+            relative overflow-hidden rounded-[24px] px-8 py-10 shadow-xl border
+            ${
+              isDark
+                ? "bg-[#140947] border-[#4F3FF8]/40"
+                : "bg-white border-[#2530F0]/15"
+            }
+          `}
+        >
           {/* Logo */}
-          <div className="flex justify-center mb-6">
+          <div className="mb-6 flex justify-center">
             <Image
-              src="/sensepc-logo.png"
+              src={logoSrc}
               alt="SensePC Logo"
-              width={180}
-              height={48}
+              width={243}
+              height={60}
               priority
-              className="h-18 w-auto"
+              className="h-[60px] w-auto"
             />
           </div>
 
-          {/* Dynamic heading */}
-          <h1 className="text-2xl font-semibold text-center text-gray-900 dark:text-gray-100 mb-6">
-            {isSubUser
-              ? `Setup your account`
-              : "Create your account"}
+          {/* Heading */}
+          <h1
+            className={`mb-3 text-center text-2xl font-semibold ${
+              isDark ? "text-white" : "text-[#020816]"
+            }`}
+          >
+            {isSubUser ? "Setup your account" : "Create your account"}
           </h1>
 
-          {/* Info Banner */}
+          {/* Info banner / notice */}
           {!isSubUser ? (
-            <div className="flex items-start space-x-3 mb-8 rounded-lg border border-blue-100 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20 px-4 py-3">
-              <div className="flex-shrink-0 mt-0.5">
-                <svg
-                  className="h-5 w-5 text-blue-500 dark:text-blue-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
-                  />
-                </svg>
-              </div>
-              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                We were unable to find an existing account. A new account will be
-                created with the email below.
+            <div
+              className={`mb-6 flex items-start gap-3 rounded-xl px-4 py-3 text-xs ${
+                isDark
+                  ? "border border-[#3A3A8F] bg-[#2A2067] text-[#E1E3FF]"
+                  : "bg-[#EEF0FF] text-[#4B4B7D]"
+              }`}
+            >
+              <span
+                className={`mt-[2px] inline-flex h-5 w-5 items-center justify-center rounded-full ${
+                  isDark ? "bg-[#4B3AA8]" : "bg-white/70"
+                }`}
+              >
+                <Info
+                  className={`h-3.5 w-3.5 ${
+                    isDark ? "text-[#F5F5FF]" : "text-[#6E73B2]"
+                  }`}
+                />
+              </span>
+              <p className="leading-relaxed">
+                We were unable to find an existing account. A new account will
+                be created with the email address below.
               </p>
             </div>
           ) : (
             <div className="mb-6 text-center">
-              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+              <p
+                className={`text-sm ${
+                  isDark ? "text-[#D3D5FF]" : "text-slate-600"
+                }`}
+              >
                 {organization ? (
                   <>
                     Complete your setup as{" "}
-                    <strong>{role ? role.toLowerCase() : "member"}</strong> of{" "}
-                    <strong>{organization}</strong>.
+                    <strong>
+                      {role ? role.toLowerCase() : "member"}
+                    </strong>{" "}
+                    of <strong>{organization}</strong>.
                   </>
                 ) : (
                   <>
                     Complete your setup as{" "}
-                    <strong>{role ? role.toLowerCase() : "member"}</strong>.
+                    <strong>
+                      {role ? role.toLowerCase() : "member"}
+                    </strong>
+                    .
                   </>
                 )}
               </p>
             </div>
-
           )}
 
-          {/* Email Display */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          {/* Email Display (non-editable) */}
+          <div className="mb-4">
+            <label
+              className={`mb-1 block text-sm font-medium ${
+                isDark ? "text-[#D3D5FF]" : "text-slate-700"
+              }`}
+            >
               Email
             </label>
-            <div className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 text-sm">
+            <div
+              className={`w-full rounded-xl border px-4 py-3 text-sm ${
+                isDark
+                  ? "border-transparent bg-[#2A2067] text-white"
+                  : "border-slate-200 bg-slate-50 text-slate-700"
+              }`}
+            >
               {emailLoading
                 ? "Loading email..."
                 : emailError
-                ? "Failed to load email"
-                : email || "No email found"}
+                  ? "Failed to load email"
+                  : email || "No email found"}
             </div>
           </div>
 
           {/* Form */}
           <Form methods={methods} onSubmit={handleSubmit(onSubmit)}>
-            <div className="mb-6">
-              <RHFText
-                name="fullName"
-                label="Full Name"
+            {/* Full Name input (shared Input component) */}
+            <div className="mb-4">
+              <label
+                htmlFor="fullName"
+                className={`mb-1 block text-sm font-medium ${
+                  isDark ? "text-[#D3D5FF]" : "text-slate-700"
+                }`}
+              >
+                Full Name
+              </label>
+              <Input
+                id="fullName"
+                autoComplete="name"
                 placeholder="Enter your full name"
-                required
+                {...register("fullName", { required: true })}
+                // only customize dark mode; light mode keeps default Input styles
+                className={`h-12 rounded-xl ${
+                  isDark
+                    ? "border-[#2A2067] bg-[#2A2067] text-white placeholder:text-[#9DA4FF] focus-visible:ring-2 focus-visible:ring-[#7C63FF] focus-visible:ring-offset-0"
+                    : ""
+                }`}
               />
             </div>
 
-            <div className="flex items-start space-x-3 mb-6">
-              <input
-                type="checkbox"
-                {...methods.register("acceptTerms")}
-                className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            {/* Terms checkbox */}
+            <div className="mb-4 flex items-start gap-3">
+              <Checkbox
+                id="terms"
+                checked={acceptTerms}
+                onCheckedChange={(checked) =>
+                  setValue("acceptTerms", checked === true, {
+                    shouldValidate: true,
+                  })
+                }
               />
+
               <label
                 htmlFor="terms"
-                className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed"
+                className={`text-sm leading-relaxed ${
+                  isDark ? "text-[#D3D5FF]" : "text-slate-600"
+                }`}
               >
                 I have read and accept{" "}
                 <a
                   href="/terms"
-                  className="text-blue-600 dark:text-blue-400 underline hover:text-blue-700 dark:hover:text-blue-300"
+                  className="font-medium text-[#7C63FF] hover:underline"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -205,7 +270,7 @@ export default function WelcomePage() {
                 and{" "}
                 <a
                   href="/privacy"
-                  className="text-blue-600 dark:text-blue-400 underline hover:text-blue-700 dark:hover:text-blue-300"
+                  className="font-medium text-[#7C63FF] hover:underline"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -216,39 +281,41 @@ export default function WelcomePage() {
             </div>
 
             {error && (
-              <div className="mb-6 text-center text-sm text-red-600 dark:text-red-400">
+              <div className="mb-4 text-center text-sm text-red-400">
                 {error}
               </div>
             )}
 
-            <button
+            {/* Primary button */}
+            <Button
               type="submit"
-              disabled={!acceptTerms || !fullName.trim() || !isValid || isCompleting}
-              className={`w-full py-3 rounded-lg font-medium text-white text-sm transition 
-              ${
-                acceptTerms && fullName.trim() && isValid && !isCompleting
-                  ? "w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white dark:from-[#0EA5E9] dark:to-[#6366F1] dark:hover:from-[#0284C7] dark:hover:to-[#4F46E5] disabled:opacity-60 disabled:cursor-not-allowed"
-                  : "bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-50"
-              }`}
+              size="lg"
+              disabled={
+                !acceptTerms || !fullName.trim() || !isValid || isCompleting
+              }
+              className="mt-2 w-full rounded-full text-sm font-medium bg-gradient-to-l from-[#A801BA] to-[#2530F0] border-0 hover:opacity-90"
             >
               {isCompleting ? "Creating account..." : "Continue"}
-            </button>
+            </Button>
           </Form>
 
-          <div className="mt-4 text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Already have an account?{" "}
-              <button
-                onClick={handleGoToLogin}
-                className="text-blue-600 dark:text-blue-400 font-medium hover:underline"
-              >
-                Login
-              </button>
-            </p>
+          {/* Footer */}
+          <div
+            className={`mt-5 text-center text-sm ${
+              isDark ? "text-[#B9C2D5]" : "text-slate-500"
+            }`}
+          >
+            Already have an account?{" "}
+            <button
+              type="button"
+              onClick={handleGoToLogin}
+              className="font-semibold text-[#7C63FF] hover:underline"
+            >
+              Login
+            </button>
           </div>
         </div>
       </div>
     </div>
-    
   );
 }

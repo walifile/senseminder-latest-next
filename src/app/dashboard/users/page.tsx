@@ -52,7 +52,9 @@ const UsersManagementPage = () => {
           {/* Header */}
           <div className="flex justify-between items-center p-6 border-b border-black/10 dark:border-border">
             <div className="flex items-center gap-2">
-              <h1 className="justify-start text-black dark:text-white text-3xl font-semibold font-['Space_Grotesk'] leading-10">User Management</h1>
+              <h1 className="justify-start text-black dark:text-white text-3xl font-semibold font-['Space_Grotesk'] leading-10">
+                User Management
+              </h1>
               {/* <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -78,8 +80,12 @@ const UsersManagementPage = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="justify-start text-black dark:text-white text-3xl font-semibold font-['Space_Grotesk'] leading-10">Manage Users</CardTitle>
-                    <CardDescription className="justify-start text-paragraph text-base font-normal font-['Inter'] leading-6">Invite and manage user access</CardDescription>
+                    <CardTitle className="justify-start text-black dark:text-white text-3xl font-semibold font-['Space_Grotesk'] leading-10">
+                      Manage Users
+                    </CardTitle>
+                    <CardDescription className="justify-start text-paragraph text-base font-normal font-['Inter'] leading-6">
+                      Invite and manage user access
+                    </CardDescription>
                   </div>
                   <div className="relative w-64 md:w-[465px]">
                     <div className="bg-[rgba(37,48,240,0.07)] dark:bg-[#ffffff08] rounded-[1000px] border-[none] relative before:content-[''] before:absolute before:inset-0 before:p-px before:rounded-[1000px] before:[background:linear-gradient(270deg,rgba(168,1,186,0.5)_0%,rgba(37,48,240,0.5)_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:z-[1] before:pointer-events-none">

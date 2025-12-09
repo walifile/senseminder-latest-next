@@ -1,3 +1,6 @@
+
+
+
 "use client";
 
 import "../styles/globals.css";
@@ -13,6 +16,8 @@ import { WebSocketProvider } from "@/providers/WebSocketProvider";
 import Navbar from "@/components/shared/layout/navbar";
 import Footer from "@/components/shared/layout/footer";
 import { ThemeWrapper } from "@/components/shared/layout/theme-wrapper";
+import AuthDarkBackground from "@/components/shared/layout/public-pages/dark-bg";
+import AuthLightBackground from "@/components/shared/layout/public-pages/light-bg";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -42,7 +47,7 @@ export default function RootLayout({
     return (
       <html
         lang="en"
-        className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable}  overflow-x-hidden md:overflow-x-visible`}
+        className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable} overflow-x-hidden md:overflow-x-visible`}
       >
         <head>
           <title>SensePC</title>
@@ -82,6 +87,10 @@ export default function RootLayout({
     pathname.startsWith("/welcome") ||
     isLandingProd;
 
+  const isAuth = pathname.startsWith("/auth");
+  const isDashboard = pathname.startsWith("/dashboard");
+
+
   // Body classes — lock only on the pages that need it
   const bodyClass = hideChrome
     ? "h-full overflow-hidden" // viewer/welcome/landing in prod
@@ -90,7 +99,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable}  overflow-x-hidden md:overflow-x-visible`}
+      className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable} overflow-x-hidden md:overflow-x-visible`}
     >
       <head>
         <title>SensePC</title>
@@ -120,22 +129,47 @@ export default function RootLayout({
           <AmplifyProvider>
             <WebSocketProvider>
               <ThemeWrapper>
-                <AuthGuard>
-                  {/* <div className="min-h-screen">{children}</div> */}
-
-                  {hideChrome ? (
-                    <div className="h-full">{children}</div>
-                  ) : (
-                    <div className="flex min-h-screen flex-col">
-                      {/* <div className="flex min-h-screen flex-col overflow-x-hidden"> */}
-                      <Navbar />
-                      {/* <main className="flex-1 min-h-0"> */}
+               <AuthGuard>
+                {hideChrome ? (
+                  // 🔹 Fullscreen pages (pc-viewer, welcome, landing in prod)
+                  <div className="h-full">{children}</div>
+                ) : isAuth || isDashboard ? (
+                  <div className="flex min-h-screen flex-col">
+                    <Navbar />
+                    <main
+                      className={`flex-1 flex flex-col ${
+                        isAuth ? "justify-center" : ""
+                      }`}
+                    >
                       {children}
-                      {/* </main> */}
+                    </main>
+                    <Footer />
+                  </div>
+                ) : (
+                  // 🔹 All other normal pages: apply public light/dark bg
+                  <div className="relative min-h-screen w-full overflow-hidden">
+                    {/* Background layer */}
+                    <div className="pointer-events-none absolute inset-0 z-0">
+                      <div className="block dark:hidden">
+                        <AuthLightBackground />
+                      </div>
+                      <div className="hidden dark:block">
+                        <AuthDarkBackground />
+                      </div>
+                    </div>
+
+                    {/* Content layer */}
+                    <div className="relative z-30 flex min-h-screen flex-col">
+                      <Navbar />
+                      <main className="flex-1 flex flex-col">
+                        {children}
+                      </main>
                       <Footer />
                     </div>
-                  )}
-                </AuthGuard>
+                  </div>
+                )}
+              </AuthGuard>
+
               </ThemeWrapper>
             </WebSocketProvider>
           </AmplifyProvider>
@@ -144,6 +178,7 @@ export default function RootLayout({
     </html>
   );
 }
+
 
 // import "../styles/globals.css";
 

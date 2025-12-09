@@ -1,3 +1,6 @@
+
+
+// src/components/ui/input-otp.tsx
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
@@ -11,11 +14,22 @@ const InputOTP = React.forwardRef<
 >(({ className, containerClassName, ...props }, ref) => (
   <OTPInput
     ref={ref}
+    // Outer visible Figma-style box
     containerClassName={cn(
-      "flex items-center gap-2 has-[:disabled]:opacity-50",
+      "flex items-center justify-center has-[:disabled]:opacity-50",
+      // Figma container size + shape
+      "w-[420px] max-w-full h-[56px]",
+      "rounded-[12px] border-[1.4px] border-[#8086F3]",
+      "bg-[rgba(37,48,240,0.07)]",
+      // clip inner cells so outer corners are curved
+      "overflow-hidden",
       containerClassName
     )}
-    className={cn("disabled:cursor-not-allowed", className)}
+    // inner root – just takes full space; layout is done by Group
+    className={cn(
+      "w-full h-full disabled:cursor-not-allowed",
+      className
+    )}
     {...props}
   />
 ));
@@ -25,7 +39,15 @@ const InputOTPGroup = React.forwardRef<
   React.ElementRef<"div">,
   React.ComponentPropsWithoutRef<"div">
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("flex items-center", className)} {...props} />
+  <div
+    ref={ref}
+    className={cn(
+      // 6 equal cells with separators between them
+      "grid w-full h-full grid-cols-6 divide-x divide-[#8086F3]",
+      className
+    )}
+    {...props}
+  />
 ));
 InputOTPGroup.displayName = "InputOTPGroup";
 
@@ -34,14 +56,18 @@ const InputOTPSlot = React.forwardRef<
   React.ComponentPropsWithoutRef<"div"> & { index: number }
 >(({ index, className, ...props }, ref) => {
   const inputOTPContext = React.useContext(OTPInputContext);
-  const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index];
+  const { char, hasFakeCaret } = inputOTPContext.slots[index];
 
   return (
     <div
       ref={ref}
       className={cn(
-        "relative flex h-10 w-10 items-center justify-center border-y border-r border-input text-sm transition-all first:rounded-l-md first:border-l last:rounded-r-md",
-        isActive && "z-10 ring-2 ring-ring ring-offset-background",
+        // each digit cell: equal width via grid, centered content
+        "relative flex items-center justify-center h-full",
+        // text styling
+        "text-[15.7px] leading-[24px] font-medium",
+        "text-[#454545] dark:text-white",
+        "transition-colors",
         className
       )}
       {...props}
