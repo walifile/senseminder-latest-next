@@ -86,22 +86,21 @@ const NewFolderDialog: React.FC<NewFolderDialogProps> = ({
             {folderPath ? ` located in "${folderPath}"` : ""}
           </DialogDescription>
         </DialogHeader>
-        <div className="py-4 space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="folder-name">Folder Name</Label>
-            <Input
-              id="folder-name"
-              placeholder="Enter folder name"
-              value={folderName}
-              onChange={(e) => setFolderName(e.target.value)}
-            />
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="folder-name" className="self-stretch justify-start text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">Folder Name</Label>
+          <Input
+            id="folder-name"
+            placeholder="Enter your folder name"
+            value={folderName}
+            className="justify-start h-auto border-0 outline outline-1 outline-offset-[-1px] outline-white/20 px-5 py-4 bg-white/5 rounded-[10px] text-paragraph text-base font-normal placeholder:font-normal font-['Inter'] leading-6"
+            onChange={(e) => setFolderName(e.target.value)}
+          />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" className="w-full text-center text-white text-base font-medium font-['Inter'] leading-6" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button
+          <Button className="w-full text-center text-white text-base font-medium font-['Inter'] leading-6"
             onClick={handleCreate}
             disabled={!folderName.trim() || isLoading}
           >

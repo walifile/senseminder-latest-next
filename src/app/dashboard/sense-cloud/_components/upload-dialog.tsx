@@ -166,16 +166,16 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
             {folderPath ? ` to the folder "${folderPath}"` : ""}.
           </DialogDescription>
         </DialogHeader>
-        <div className="py-4 space-y-4">
-          <div className="space-y-1">
+        <div className="space-y-6">
+          <div className="space-y-2">
             <label
               htmlFor="region"
-              className="block text-sm font-medium text-muted-foreground"
+              className="block self-stretch justify-start text-white text-lg font-semibold font-['Space_Grotesk'] leading-8"
             >
               Select Region
             </label>
             <Select value={region} onValueChange={setRegion}>
-              <SelectTrigger className="w-full h-10 text-sm bg-muted border border-input rounded-md focus:ring-2 focus:ring-primary">
+              <SelectTrigger className="w-full h-auto px-5 py-4 bg-white/5 rounded-[10px] border-0 outline outline-1 outline-offset-[-1px] outline-white/20 focus:ring-2 focus:ring-primary text-paragraph text-base font-normal font-['Inter'] leading-6">
                 <SelectValue placeholder="Select a region" />
               </SelectTrigger>
               <SelectContent>
@@ -187,7 +187,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
           {/* File upload zone */}
           <label
             htmlFor="file-upload"
-            className={`flex flex-col items-center justify-center w-full h-32 border-[1.3px] border-dashed rounded-lg cursor-pointer transition bg-[rgba(37,48,240,0.07)] hover:bg-[rgba(37,48,240,0.07)] dark:bg-[rgba(255,255,255,0.04)] hover:dark:bg-[rgba(255,255,255,0.04)] border-[rgba(37,48,240,0.10)] dark:border-[rgba(255,255,255,0.20)] ${
+            className={`flex flex-col items-center justify-center w-full px-10 py-11 h-auto border-[1.3px] border-dashed rounded-lg cursor-pointer transition bg-[rgba(37,48,240,0.07)] hover:bg-[rgba(37,48,240,0.07)] dark:bg-[rgba(255,255,255,0.04)] hover:dark:bg-[rgba(255,255,255,0.04)] border-[rgba(37,48,240,0.10)] dark:border-[rgba(255,255,255,0.20)] ${
               isDragging ? "border-primary bg-gray-100" : ""
             }`}
             onDragOver={(e) => {
@@ -197,7 +197,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
           >
-            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+            <div className="flex flex-col items-center justify-center">
               <Upload className="h-8 w-8 mb-2 text-muted-foreground" />
               <p className="text:[#020816] dark:text-white  mb-2 text-sm text-muted-foreground">
                 <span className="font-semibold ">Click to upload</span> or drag
@@ -226,7 +226,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
               {selectedFiles.map((file, index) => (
                 <div
                   key={file.name}
-                  className="flex items-center justify-between bg-muted px-3 py-2 rounded text-sm"
+                  className="flex items-center justify-between bg-muted px-4 py-2 rounded-lg text-sm"
                 >
                   {/* <span className="truncate w-40">{file.name}</span> */}
                   {file?.name?.length > 10 ? (

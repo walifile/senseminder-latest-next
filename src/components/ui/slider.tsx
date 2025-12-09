@@ -17,9 +17,9 @@ const Slider = React.forwardRef<
     {...props}
   >
     <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-[#2A2067]">
-      <SliderPrimitive.Range className="absolute h-full bg-[#10026d]" />
+      <SliderPrimitive.Range className="absolute h-full bg-gradient-to-l from-fuchsia-700 to-blue-700 rounded-full" />
     </SliderPrimitive.Track>
-    <SliderPrimitive.Thumb className="block h-5 w-5 rounded-full bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)] transition-colors disabled:pointer-events-none disabled:opacity-50" />
+    <SliderPrimitive.Thumb className="block h-2 w-2 rounded-full bg-transparent hover:bg-fuchsia-700 transition-all duration-300 ease-out disabled:pointer-events-none disabled:opacity-50" />
   </SliderPrimitive.Root>
 ));
 Slider.displayName = SliderPrimitive.Root.displayName;

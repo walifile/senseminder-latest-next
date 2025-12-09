@@ -92,40 +92,49 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-2">
-          <div>
-            <h3 className="text-sm font-medium">Storage Tier</h3>
-            <div className="flex justify-between mt-1 mb-2">
-              <span className="text-muted-foreground text-xs">T-1 (20GB)</span>
-              <span className="text-muted-foreground text-xs">
-                T-50 (1000GB)
-              </span>
-            </div>
-            <Slider
-              value={[storageTier]}
-              onValueChange={(value) => setStorageTier(value[0])}
-              min={1}
-              max={50}
-              step={1}
-            />
-            <div className="mt-3 flex justify-between items-center">
-              <span className="text-sm">
-                Selected: <strong>T-{storageTier}</strong> (
-                {getStorageSizeFromTier(storageTier)})
-              </span>
-              <span className="text-l font-semibold">
-                {storageTier === 1 ? "FREE" : `$${price.toFixed(2)}`} / month
-              </span>
+        <div className="space-y-6">
+          <div className="self-stretch flex flex-col justify-start items-start gap-2.5">
+            <h3 className="self-stretch justify-start text-white text-lg font-medium font-['Inter'] leading-7">Storage Tier</h3>
+            <div className="self-stretch flex flex-col justify-start items-end gap-2">
+              <div className="self-stretch inline-flex justify-between items-center">
+                <span className="justify-start text-[#B8C2D5] text-sm font-normal font-['Inter'] leading-5">
+                  T-1 (20GB)
+                </span>
+                <span className="justify-start text-[#B8C2D5] text-sm font-normal font-['Inter'] leading-5">
+                  T-50 (1000GB)
+                </span>
+              </div>
+              <Slider
+                value={[storageTier]}
+                onValueChange={(value) => setStorageTier(value[0])}
+                min={1}
+                max={50}
+                step={1}
+              />
+              <div className="w-full flex justify-between items-center">
+                <span>
+                  <span className="text-white text-base font-semibold font-['Inter'] leading-6">Selected:</span>
+                  <span className="text-[#A3A3A3] text-base font-semibold font-['Inter'] leading-6 ml-1">T-{storageTier} ({ getStorageSizeFromTier(storageTier) })</span>
+                </span>
+                <span>
+                  {storageTier === 1 ? (<span className="text-white text-base font-semibold font-['Inter'] leading-6">FREE</span>) : (
+                    <>
+                      <span className="text-white text-base font-semibold font-['Inter'] leading-6">$ {price.toFixed(2)}</span>
+                      <span className="text-[#A3A3A3] text-base font-semibold font-['Inter'] leading-6"> / month</span>
+                    </>
+                  )}
+                </span>
+              </div>
             </div>
           </div>
 
           <TooltipProvider>
             <div>
               <div className="flex items-center gap-1 mb-2">
-                <h3 className="text-sm font-medium">Data Center Location</h3>
+                <h3 className="justify-start text-[#B8C2D5] text-sm font-normal font-['Inter'] leading-5">Data Center Location</h3>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Info className="h-3.5 w-3.5 text-primary drop-shadow-sm cursor-pointer hover:drop-shadow-md transition-all duration-150" />
+                    <Info className="h-3.5 w-3.5 text-[#B8C2D5] drop-shadow-sm cursor-pointer hover:drop-shadow-md transition-all duration-150" />
                   </TooltipTrigger>
                   <TooltipContent
                     side="top"
@@ -139,7 +148,7 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
               </div>
 
               <Select value={selectedServer} onValueChange={setSelectedServer}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="rounded-[10px] text-white text-base font-semibold font-['Inter'] leading-6">
                   <SelectValue placeholder="Select a region" />
                 </SelectTrigger>
                 <SelectContent>
@@ -150,12 +159,12 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
                           <Server className="h-4 w-4" />
                           <span>{loc.name}</span>
                         </div>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-muted-foreground ml-1">
                           {latencyLoading
                             ? "..."
                             : latencyMap[loc.id] > 0
-                            ? `~${latencyMap[loc.id]}ms`
-                            : "N/A"}
+                              ? `~${latencyMap[loc.id]}ms`
+                              : "N/A"}
                         </span>
                       </div>
                     </SelectItem>
@@ -167,7 +176,7 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
         </div>
 
         <DialogFooter>
-          <Button variant="default" className="w-full" onClick={fetchLatencies}>
+          <Button variant="default" size="lg" className="w-full" onClick={fetchLatencies}>
             Test Latency
           </Button>
         </DialogFooter>

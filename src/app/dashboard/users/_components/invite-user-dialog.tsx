@@ -86,26 +86,34 @@ const InviteUserDialog = ({ open, onClose }: Props) => {
             up their account.
           </DialogDescription>
         </DialogHeader>
-        <Form methods={methods} onSubmit={onSubmit} className="space-y-4">
-          <Field.Text name="name" label="Name" placeholder="John Doe" />
+        <Form methods={methods} onSubmit={onSubmit} className="space-y-2">
+          <Field.Text
+            name="name"
+            label="Name"
+            placeholder="John Doe"
+            inputClassName="justify-start h-auto border-0 outline outline-1 outline-offset-[-1px] outline-white/20 px-5 py-4 bg-white/5 rounded-[10px] text-paragraph text-base font-normal placeholder:font-normal font-['Inter'] leading-6"
+          />
 
           <Field.Text
             name="email"
             label="Email"
             placeholder="john.doe@example.com"
+            inputClassName="justify-start h-auto border-0 outline outline-1 outline-offset-[-1px] outline-white/20 px-5 py-4 bg-white/5 rounded-[10px] text-paragraph text-base font-normal placeholder:font-normal font-['Inter'] leading-6"
           />
 
           <Field.Select
             name="role"
             label="Role"
             placeholder="Select a role"
+            className="gap-2"
+            triggerClassName="h-[52px] rounded-[10px] text-white text-base font-semibold font-['Inter'] leading-6"
             options={[
               { value: "admin", label: "Admin" },
               { value: "member", label: "Member" },
             ]}
           />
-          <DialogFooter>
-            <Button type="submit" disabled={isSubmitting}>
+          <DialogFooter className="!mt-6">
+            <Button variant="default" size="lg" className="w-full" type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Sending..." : "Send Invitation"}
             </Button>
           </DialogFooter>

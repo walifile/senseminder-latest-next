@@ -3,6 +3,7 @@
 import type { Notification } from "@/types/notification";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { useGetCurrentBalanceQuery } from "@/api/billing";
@@ -17,8 +18,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-
-import { Sun, Bell, Moon, Wallet } from "lucide-react";
 
 import { useNotifications } from "@/hooks/useNotifications";
 
@@ -108,7 +107,11 @@ const DashboardHeader = () => {
               className="flex items-center gap-2 ml-5"
             >
               <div>
-                <Wallet className="h-5 w-5" />
+                {resolvedTheme === "dark" ? (
+                  <Image src="/assets/icons/wallet-dark.svg" alt="Wallet Dark Icon" width={24} height={24} />
+                ) : (
+                  <Image src="/assets/icons/wallet.svg" alt="Wallet Icon" width={24} height={24} />
+                )}
               </div>
               <div
                 className={cn(
@@ -136,9 +139,9 @@ const DashboardHeader = () => {
                 }
               >
                 {resolvedTheme === "dark" ? (
-                  <Sun className="h-4 w-4" strokeWidth={2.4} />
+                  <Image src="/assets/icons/sun.svg" alt="Sun Icon" width={24} height={24} />
                 ) : (
-                  <Moon className="h-4 w-4" />
+                  <Image src="/assets/icons/moon.svg" alt="Moon Icon" width={24} height={24} />
                 )}
               </button>
             </div>
@@ -159,7 +162,11 @@ const DashboardHeader = () => {
                     size="icon"
                     className="relative h-[46px] w-[46px] rounded-full bg-gradient-to-b dark:bg-white/5 dark:from-white/5 dark:to-white/5 from-[#e9ecff] to-[#dfe5ff] text-[#2530f0] dark:text-white hover:bg-[#d4d9ff] shadow-none [&_svg]:size-6"
                   >
-                    <Bell className="h-6 w-6" fill="currentColor" />
+                    {resolvedTheme === "dark" ? (
+                      <Image src="/assets/icons/bell-dark.svg" alt="Notifications Dark Bell Icon" width={24} height={24} />
+                    ) : (
+                      <Image src="/assets/icons/bell.svg" alt="Notifications Bell Icon" width={24} height={24} />
+                    )}
                     {hasUnread && (
                       <span className="absolute -top-1 -right-1 min-h-[16px] min-w-[16px] rounded-full bg-[#2f6bff] text-[10px] font-semibold flex items-center justify-center text-white px-[5px]">
                         {unreadCount}
@@ -196,7 +203,11 @@ const DashboardHeader = () => {
                           colourBySeverity(n.severity)
                         )}
                       >
-                        <Bell className="h-4 w-4" />
+                        {resolvedTheme === "dark" ? (
+                          <Image src="/assets/icons/bell-dark.svg" alt="Notifications Dark Bell Icon" width={24} height={24} />
+                        ) : (
+                          <Image src="/assets/icons/bell.svg" alt="Notifications Bell Icon" width={24} height={24} />
+                        )}
                       </div>
                       <div className="flex-1 space-y-0.5">
                         <div className="flex items-center justify-between">
