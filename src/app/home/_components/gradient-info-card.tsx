@@ -32,16 +32,16 @@ export function GradientInfoCard({
           // Light theme pill glow behind content
           <div className="absolute top-0 right-[-120px] w-[300px] h-[120px] opacity-[0.2] bg-[rgba(13,0,255,0.60)] rounded-[300px] blur-[71px] -z-10 dark:hidden" />
         )}
-        {!rightImage && (
-          // Dark theme circular gradient glow behind content
-          <div
-            className="absolute top-[-81px] right-[-120px] w-[214px] h-[214px] opacity-[0.7] rounded-full -z-10 hidden dark:block blur-[100px]"
-            style={{
-              background:
-                "linear-gradient(156deg, #0034EB 15.46%, rgba(0,52,235,0) 100%)",
-            }}
-          />
-        )}
+
+        {/* // Dark theme circular gradient glow behind content */}
+        <div
+          className="absolute top-[-81px] right-[-120px] w-[214px] h-[214px] opacity-[0.7] rounded-full -z-10 hidden dark:block blur-[100px]"
+          style={{
+            background:
+              "linear-gradient(156deg, #0034EB 15.46%, rgba(0,52,235,0) 100%)",
+          }}
+        />
+
         <div
           className={`relative flex-shrink-0 w-full ${
             rightImage ? "md:w-[55%]" : ""
@@ -72,6 +72,19 @@ export function GradientInfoCard({
         )}
 
         {rightImage && (
+          // Dark theme right-image glow
+          <div
+            className="pointer-events-none absolute -z-10 w-[310px] h-[310px] rounded-[310px] border opacity-[0.5] hidden dark:block blur-[100px]"
+            style={{
+              background: "linear-gradient(156deg, #0034EB 0%, #82E1FB 100%)",
+              transform: "rotate(-11.32deg)",
+              bottom: "-90px",
+              left: "-120px",
+            }}
+          />
+        )}
+
+        {rightImage && (
           <div
             className="pointer-events-none absolute -z-10 w-[568.051px] h-[321.133px] rounded-[568.051px] backdrop-blur-[150px] blur-[150px] opacity-25 dark:hidden"
             style={{
@@ -81,19 +94,6 @@ export function GradientInfoCard({
               bottom: "-90px",
               left: "-120px",
               boxShadow: "0 4px 300px 0 rgba(0, 0, 0, 0.25) inset",
-            }}
-          />
-        )}
-
-        {rightImage && (
-          // Dark theme right-image glow
-          <div
-            className="pointer-events-none absolute -z-10 w-[310px] h-[310px] rounded-[310px] border opacity-[0.5] hidden dark:block blur-[100px]"
-            style={{
-              background: "linear-gradient(156deg, #0034EB 0%, #82E1FB 100%)",
-              transform: "rotate(-11.32deg)",
-              bottom: "-90px",
-              left: "-120px",
             }}
           />
         )}
