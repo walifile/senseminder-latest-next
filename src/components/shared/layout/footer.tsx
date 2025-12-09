@@ -31,6 +31,7 @@ const product = [
 
 const Footer = () => {
   const pathname = usePathname();
+  const isHome = pathname === "/";
   const currentYear = new Date().getFullYear();
 
   if (
@@ -47,16 +48,20 @@ const Footer = () => {
         min-h-[190px]"
       aria-label="Site footer"
     >
-      {/* Glow background layers */}
-      <div
-        className="z-0 absolute -top-10 left-1/2 -translate-x-1/2 md:-top-16 md:left-[10%]
-      blur-[160px] md:blur-[200px] size-1/2 opacity-40 bg-[#4027E5]"
-      />
+      {/* Glow background layers (home only) */}
+      {isHome && (
+        <>
+          <div
+            className="z-0 absolute -top-10 left-1/2 -translate-x-1/2 md:-top-16 md:left-[10%]
+            blur-[160px] md:blur-[200px] size-1/2 opacity-40 bg-[#4027E5]"
+          />
 
-      <div
-        className="z-0 absolute -top-10 left-1/2 -translate-x-1/2 md:-top-20 md:right-[10%]
-      blur-[160px] md:blur-[200px] size-1/2 opacity-40 bg-[#9C05BF]"
-      />
+          <div
+            className="z-0 absolute -top-10 left-1/2 -translate-x-1/2 md:-top-20 md:right-[10%]
+            blur-[160px] md:blur-[200px] size-1/2 opacity-40 bg-[#9C05BF]"
+          />
+        </>
+      )}
 
       {/* Background layer — same size in light/dark */}
       <div className="absolute inset-0 bg-[#020817] dark:bg-[#0208176E]" />
