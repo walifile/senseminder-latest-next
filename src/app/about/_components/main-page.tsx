@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 
@@ -14,6 +15,8 @@ import { Breadcrumb } from "../../home/_components/breadcrumb";
 import GetStartedCTA from "../../home/_components/get-started-cta";
 
 export default function AboutPage() {
+  const pathname = usePathname();
+
   return (
     <MainLayout>
       <Hero
@@ -92,18 +95,20 @@ export default function AboutPage() {
           </Button>
         </div>
       </GetStartedCTA>
-      <div className="relative w-full h-1">
-        <div className="pointer-events-none absolute w-full h-80 top-2/3 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <Image
-            // src="/assets/svg/about/partner-us-shape-3-bg.png"
-            src="/assets/svg/about/partner-us-shape-3.png"
-            alt="Gradient"
-            fill
-            className="object-contain"
-            priority
-          />
+      {pathname === "/" && (
+        <div className="relative w-full h-1">
+          <div className="pointer-events-none absolute w-full h-80 top-2/3 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <Image
+              // src="/assets/svg/about/partner-us-shape-3-bg.png"
+              src="/assets/svg/about/partner-us-shape-3.png"
+              alt="Gradient"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
         </div>
-      </div>
+      )}
     </MainLayout>
   );
 }
