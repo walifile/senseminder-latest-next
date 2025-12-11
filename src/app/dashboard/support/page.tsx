@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import React, { useState } from "react";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,10 +23,46 @@ export default function SupportPage() {
                 <h1 className="justify-start text-black dark:text-white text-3xl font-semibold font-['Space_Grotesk'] leading-10">Support Center</h1>
               </div>
               <div className="flex space-x-2">
-                <TabsList className="grid grid-cols-3 w-full md:w-80 h-12 bg-white/5 rounded-full shadow-[6px_16px_50px_6px_rgba(38,57,136,0.06)] border border-fuchsia-700">
-                  <TabsTrigger value="tickets" className="px-4 py-2 rounded-[100px] inline-flex justify-center items-center gap-1.5">My Tickets</TabsTrigger>
-                  <TabsTrigger value="new-ticket" className="px-4 py-2 rounded-[100px] inline-flex justify-center items-center gap-1.5">New Ticket</TabsTrigger>
-                  <TabsTrigger value="faq" className="px-4 py-2 rounded-[100px] inline-flex justify-center items-center gap-1.5">FAQ</TabsTrigger>
+                <TabsList className="grid grid-cols-3 w-full h-12 bg-white/5 rounded-full border border-fuchsia-700">
+                  <TabsTrigger value="tickets" className="h-full px-4 py-2 rounded-[100px] inline-flex justify-center items-center gap-1.5">
+                    <div className="w-4 h-4 relative overflow-hidden">
+                      <Image
+                        src="/assets/svg/support/my-tickets.svg"
+                        alt="My Tickets Icon"
+                        fill
+                        priority
+                      />
+                    </div>
+                    <div className="justify-start text-sm font-medium font-['Inter'] leading-5">
+                      My Tickets
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger value="new-ticket" className="h-full px-4 py-2 rounded-[100px] inline-flex justify-center items-center gap-1.5">
+                    <div className="w-4 h-4 relative overflow-hidden">
+                      <Image
+                        src="/assets/svg/support/new-ticket.svg"
+                        alt="New Ticket Icon"
+                        fill
+                        priority
+                      />
+                    </div>
+                    <div className="justify-start text-sm font-medium font-['Inter'] leading-5">
+                      New Ticket
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger value="faq" className="h-full px-4 py-2 rounded-[100px] inline-flex justify-center items-center gap-1.5">
+                    <div className="w-4 h-4 relative overflow-hidden">
+                      <Image
+                        src="/assets/svg/support/faq.svg"
+                        alt="FAQ Icon"
+                        fill
+                        priority
+                      />
+                    </div>
+                    <div className="justify-start text-sm font-medium font-['Inter'] leading-5">
+                      FAQ
+                    </div>
+                  </TabsTrigger>
                 </TabsList>
               </div>
             </div>

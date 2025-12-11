@@ -15,14 +15,6 @@ import {
   SelectContent,
   SelectTrigger,
 } from "@/components/ui/select";
-import {
-  Card,
-  CardTitle,
-  CardFooter,
-  CardHeader,
-  CardContent,
-  CardDescription,
-} from "@/components/ui/card";
 
 import { useSelector } from "react-redux";
 
@@ -126,28 +118,32 @@ const NewTicket = ({ setActiveTab }: Props) => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Create new support ticket</CardTitle>
-        <CardDescription>
-          Our support team will respond as soon as possible.
-        </CardDescription>
-      </CardHeader>
-      <form onSubmit={handleNewTicket}>
-        <CardContent className="space-y-4">
-          <Input
-            id="subject"
-            placeholder="Subject"
-            value={formState.subject}
-            onChange={handleInputChange}
-          />
-          {subjectError && (
-            <p className="text-sm text-red-500">{subjectError}</p>
-          )}
+    <>
+      <div className="p-[30px] pt-0 space-y-5 border-b border-black/10 dark:border-border">
+        <div className="space-y-1">
+          <div className="justify-start text-black dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8">Create new support ticket</div>
+          <div className="justify-start text-[#454545] dark:text-paragraph text-base font-normal font-['Inter'] leading-6">Our support team will respond as soon as possible.</div>
+        </div>
+      </div>
+      <form onSubmit={handleNewTicket} className="space-y-8 px-[30px]">
+        <div className="space-y-8">
+          <div className="space-y-2.5">
+            <label className="self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">Subject</label>
+            <Input
+              id="subject"
+              placeholder="Type subject"
+              value={formState.subject}
+              onChange={handleInputChange}
+              className="justify-start h-auto px-5 py-4 text-[#454545] dark:text-[#B9C2D5] bg-blue-700/5 text-base font-normal placeholder:font-normal font-['Inter'] leading-6 rounded-[10px]"
+            />
+            {subjectError && (
+              <p className="text-sm text-red-500">{subjectError}</p>
+            )}
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium">Category</label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2.5">
+              <label className="self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">Category</label>
               <Select
                 value={formState.category}
                 onValueChange={(val) => handleSelectChange("category", val)}
@@ -162,8 +158,8 @@ const NewTicket = ({ setActiveTab }: Props) => {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <label className="text-sm font-medium">Priority</label>
+            <div className="space-y-2.5">
+              <label className="self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">Priority</label>
               <PrioritySelectField
                 value={formState.priority}
                 setValue={(val) => handleSelectChange("priority", val)}
@@ -171,24 +167,30 @@ const NewTicket = ({ setActiveTab }: Props) => {
             </div>
           </div>
 
-          <Textarea
-            id="description"
-            placeholder="Describe your issue in detail"
-            value={formState.description}
-            onChange={handleInputChange}
-            className="min-h-[150px]"
-          />
-          {descriptionError && (
-            <p className="text-sm text-red-500">{descriptionError}</p>
-          )}
+          <div className="space-y-2.5">
+            <label className="self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">Description</label>
+            <Textarea
+              id="description"
+              placeholder="Describe you issue in detail"
+              value={formState.description}
+              onChange={handleInputChange}
+              className="min-h-[200px] self-stretch relative bg-blue-700/5 dark:bg-white/5 rounded-[10px] outline outline-1 outline-blue-700/10 dark:outline-white/20"
+            />
+            {descriptionError && (
+              <p className="text-sm text-red-500">{descriptionError}</p>
+            )}
+          </div>
 
-          <AttachmentUploader
-            files={attachments}
-            onUpload={onFileChange}
-            onRemove={removeAttachment}
-          />
-        </CardContent>
-        <CardFooter className="flex justify-end">
+          <div className="space-y-2.5">
+            <label className="self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">Attachments</label>
+            <AttachmentUploader
+              files={attachments}
+              onUpload={onFileChange}
+              onRemove={removeAttachment}
+            />
+          </div>
+        </div>
+        <div className="flex justify-center pb-[40px]">
           <Button
             type="submit"
             disabled={
@@ -201,9 +203,9 @@ const NewTicket = ({ setActiveTab }: Props) => {
           >
             {loading ? "Submitting..." : "Submit Ticket"}
           </Button>
-        </CardFooter>
+        </div>
       </form>
-    </Card>
+    </>
   );
 };
 

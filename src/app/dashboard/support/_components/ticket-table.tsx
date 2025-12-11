@@ -86,8 +86,8 @@ export default function TicketTable() {
     <>
       <div className="p-6 pt-0 space-y-5 border-b border-black/10 dark:border-border">
         <div className="space-y-1">
-          <div className="justify-start text-white text-2xl font-bold font-['Space_Grotesk'] leading-8">Sense Cloud</div>
-          <div className="justify-start text-paragraph text-base font-normal font-['Inter'] leading-6">Our support team will respond as soon as possible.</div>
+          <div className="justify-start text-black dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8">Sense Cloud</div>
+          <div className="justify-start text-[#454545] dark:text-paragraph text-base font-normal font-['Inter'] leading-6">Our support team will respond as soon as possible.</div>
         </div>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Search */}
