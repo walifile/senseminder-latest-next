@@ -185,37 +185,18 @@ const TutorialsPage = () => {
                 <p className="text-base text-[#454545] dark:text-[#B9C2D5] mt-1 line-clamp-2">
                   {tutorial.description}
                 </p>
-                <div className="h-px w-full bg-[#8086F3] mt-5 mb-4" />
-
-                <div className="flex flex-col gap-2 mt-3">
-                  <div className="flex gap-1.5">
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                      {tutorial.category}
-                    </span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary/10 text-secondary">
-                      {tutorial.difficulty}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] text-muted-foreground">
-                        Uploaded:{" "}
-                        {new Date(tutorial.uploadDate).toLocaleDateString()}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">
-                        Updated:{" "}
-                        {new Date(tutorial.lastUpdated).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => window.open(tutorial.youtubeUrl, "_blank")}
-                    >
-                      <Youtube className="h-3 w-3" />
-                    </Button>
-                  </div>
+              </div>
+              <div className="h-px w-full bg-[#8086F3] mt-5 " />
+              <div className="px-4 py-4">
+                <div className="flex items-center justify-between w-full">
+                  <span className="text-[10px] text-muted-foreground">
+                    Uploaded:{" "}
+                    {new Date(tutorial.uploadDate).toLocaleDateString()}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    Updated:{" "}
+                    {new Date(tutorial.lastUpdated).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
             </motion.div>
