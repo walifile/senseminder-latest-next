@@ -11,20 +11,13 @@ import {
   SelectContent,
   SelectTrigger,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogTitle,
-  DialogHeader,
-  DialogContent,
-  DialogTrigger,
-  DialogDescription,
-} from "@/components/ui/dialog";
 
 import { motion } from "framer-motion";
-import { Play, Search, Youtube } from "lucide-react";
+import { Search, Youtube } from "lucide-react";
+import { TutorialDialog, type Tutorial } from "./_components/tutorial-dialog";
 
 // Tutorial data
-const tutorials = [
+const tutorials: Tutorial[] = [
   {
     id: 1,
     title: "Getting Started with Sense PC",
@@ -175,44 +168,16 @@ const TutorialsPage = () => {
         </div>
 
         {/* Tutorials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
           {filteredTutorials.map((tutorial) => (
             <motion.div
               key={tutorial.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="bg-card rounded-lg overflow-hidden border hover:border-primary/50 transition-colors"
+              className="bg-[rgba(255,255,255,0.03)] rounded-lg overflow-hidden border border-[#8086F3] hover:border-[#8086F3] transition-colors"
             >
-              <Dialog>
-                <DialogTrigger asChild>
-                  <div className="relative cursor-pointer group">
-                    {/* Placeholder for video thumbnail */}
-                    <div className="aspect-[16/9] bg-muted flex items-center justify-center">
-                      <Play className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                    <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm px-1.5 py-0.5 rounded text-xs font-medium">
-                      {tutorial.duration}
-                    </div>
-                  </div>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl">
-                  <DialogHeader>
-                    <DialogTitle>{tutorial.title}</DialogTitle>
-                    <DialogDescription>
-                      {tutorial.description}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                    <video
-                      src={tutorial.videoUrl}
-                      controls
-                      className="w-full h-full"
-                    />
-                  </div>
-                </DialogContent>
-              </Dialog>
-
+              <TutorialDialog tutorial={tutorial} />
               <div className="p-3">
                 <h3 className="font-medium text-sm truncate">
                   {tutorial.title}
