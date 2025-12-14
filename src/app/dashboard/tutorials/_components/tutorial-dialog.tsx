@@ -33,7 +33,7 @@ export const TutorialDialog = ({ tutorial }: TutorialDialogProps) => (
     <DialogTrigger asChild>
       <div className="relative cursor-pointer group">
         <div
-          className="relative aspect-[16/9] overflow-hidden bg-center bg-cover"
+          className="relative h-[216px] overflow-hidden bg-center bg-cover"
           style={{
             background: `linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.20) 100%), url(${tutorial.thumbnail}) center/cover no-repeat`,
           }}
