@@ -49,10 +49,16 @@ export const TutorialDialog = ({ tutorial }: TutorialDialogProps) => (
             />
           </div>
           <div
-            className="absolute top-3 right-3 text-white px-4 py-1 rounded-[999999px] text-base font-semibold"
+            className="absolute top-3 right-3 text-white px-4 py-1 rounded-[999999px] text-base font-medium"
             style={{ background: "rgba(0, 0, 0, 0.19)" }}
           >
             {tutorial.duration}
+          </div>
+          <div
+            className="absolute top-3 left-3 text-white px-4 py-1 rounded-[999999px] text-base font-medium"
+            style={{ background: "rgba(0, 0, 0, 0.19)" }}
+          >
+            {tutorial.category}
           </div>
         </div>
       </div>
