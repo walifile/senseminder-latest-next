@@ -185,6 +185,7 @@ const TutorialsPage = () => {
                 <p className="text-base text-[#454545] dark:text-[#B9C2D5] mt-1 line-clamp-2">
                   {tutorial.description}
                 </p>
+                <div className="h-px w-full bg-[#8086F3] mt-5 mb-4" />
 
                 <div className="flex flex-col gap-2 mt-3">
                   <div className="flex gap-1.5">
