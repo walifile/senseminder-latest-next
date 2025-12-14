@@ -168,23 +168,24 @@ const TutorialsPage = () => {
         </div>
 
         {/* Tutorials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-5">
           {filteredTutorials.map((tutorial) => (
             <motion.div
               key={tutorial.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="bg-[rgba(255,255,255,0.03)] rounded-lg overflow-hidden border border-[#8086F3] hover:border-[#8086F3] transition-colors"
+              className="bg-[rgba(255,255,255,0.03)] rounded-3xl overflow-hidden border border-[#8086F3] hover:border-[#8086F3] transition-colors h-full"
             >
               <TutorialDialog tutorial={tutorial} />
-              <div className="p-3">
-                <h3 className="font-medium text-sm truncate">
+              <div className="px-4 py-5">
+                <h3 className="font-semibold text-sm md:text-lg truncate text-[#020816] dark:text-white">
                   {tutorial.title}
                 </h3>
-                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                <p className="text-base text-[#454545] dark:text-[#B9C2D5] mt-1 line-clamp-2">
                   {tutorial.description}
                 </p>
+
                 <div className="flex flex-col gap-2 mt-3">
                   <div className="flex gap-1.5">
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
