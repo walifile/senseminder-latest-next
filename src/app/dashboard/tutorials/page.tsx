@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 
 import { motion } from "framer-motion";
-import { Search, Youtube } from "lucide-react";
+import { Search } from "lucide-react";
 import { TutorialDialog, type Tutorial } from "./_components/tutorial-dialog";
 
 // Tutorial data
@@ -117,7 +117,7 @@ const TutorialsPage = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex flex-col gap-4 mb-6">
+      <div className="flex flex-col gap-4 mb-6 rounded-3xl border border-[#8086F3] bg-white dark:bg-[rgba(255,255,255,0.03)] backdrop-blur-[32px] px-7 py-8">
         <div>
           <h1 className="text-2xl font-bold">Video Tutorials</h1>
           <p className="text-muted-foreground">
@@ -194,14 +194,14 @@ const TutorialsPage = () => {
               <div className="h-px w-full bg-[#8086F3] mt-5 " />
               <div className="px-4 py-4">
                 <div className="flex items-center justify-between w-full">
-                    <span className="text-[14px] text-[#454545] dark:text-[#B9C2D5]">
-                      Uploaded:{" "}
-                      {new Date(tutorial.uploadDate).toLocaleDateString()}
-                    </span>
-                    <span className="text-[14px] text-[#454545] dark:text-[#B9C2D5]">
-                      Updated:{" "}
-                      {new Date(tutorial.lastUpdated).toLocaleDateString()}
-                    </span>
+                  <span className="text-[14px] text-[#454545] dark:text-[#B9C2D5]">
+                    Uploaded:{" "}
+                    {new Date(tutorial.uploadDate).toLocaleDateString()}
+                  </span>
+                  <span className="text-[14px] text-[#454545] dark:text-[#B9C2D5]">
+                    Updated:{" "}
+                    {new Date(tutorial.lastUpdated).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
             </motion.div>
