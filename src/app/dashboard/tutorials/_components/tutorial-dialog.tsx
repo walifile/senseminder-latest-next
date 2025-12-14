@@ -48,7 +48,10 @@ export const TutorialDialog = ({ tutorial }: TutorialDialogProps) => (
               priority
             />
           </div>
-          <div className="absolute top-3 right-3 bg-[#00000030] text-white px-4 py-1 rounded-[999999px] text-base font-semibold backdrop-blur-sm">
+          <div
+            className="absolute top-3 right-3 text-white px-4 py-1 rounded-[999999px] text-base font-semibold"
+            style={{ background: "rgba(0, 0, 0, 0.19)" }}
+          >
             {tutorial.duration}
           </div>
         </div>
