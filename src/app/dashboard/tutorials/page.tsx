@@ -189,14 +189,14 @@ const TutorialsPage = () => {
               <div className="h-px w-full bg-[#8086F3] mt-5 " />
               <div className="px-4 py-4">
                 <div className="flex items-center justify-between w-full">
-                  <span className="text-[10px] text-muted-foreground">
-                    Uploaded:{" "}
-                    {new Date(tutorial.uploadDate).toLocaleDateString()}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">
-                    Updated:{" "}
-                    {new Date(tutorial.lastUpdated).toLocaleDateString()}
-                  </span>
+                    <span className="text-[14px] text-[#454545] dark:text-[#B9C2D5]">
+                      Uploaded:{" "}
+                      {new Date(tutorial.uploadDate).toLocaleDateString()}
+                    </span>
+                    <span className="text-[14px] text-[#454545] dark:text-[#B9C2D5]">
+                      Updated:{" "}
+                      {new Date(tutorial.lastUpdated).toLocaleDateString()}
+                    </span>
                 </div>
               </div>
             </motion.div>
