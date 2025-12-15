@@ -10,7 +10,7 @@ import FAQSection from "./_components/faq-section";
 import TicketTable from "./_components/ticket-table";
 import {
   supportTabs,
-  supportTabIconClass,
+  supportTabIconProps,
   supportTabTriggerClass,
 } from "./utils/tab-config";
 
@@ -36,7 +36,7 @@ export default function SupportPage() {
                       value={tab.value}
                       className={supportTabTriggerClass}
                     >
-                      <div className={supportTabIconClass(tab.icon)} />
+                      <div {...supportTabIconProps(tab.icon)} />
                       <div className="justify-start text-sm font-medium font-['Inter'] leading-5">
                         {tab.label}
                       </div>
