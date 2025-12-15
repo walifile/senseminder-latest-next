@@ -32,9 +32,13 @@ const PricingPlan = () => {
 
   const serverLocations = [{ id: "us-east", name: "East Coast" }];
 
+  const PRICE_TIER_1 = 0.25;
   const PRICE_PER_TIER = 0.5;
+  
   const getStorageSizeFromTier = (tier: number) => `${tier * 20} GB`;
-  const price = storageTier === 1 ? 0 : (storageTier - 1) * PRICE_PER_TIER;
+  
+  const price =
+    storageTier === 1 ? PRICE_TIER_1 : (storageTier - 1) * PRICE_PER_TIER;  
   const { data: storagePricingTierResponse } = useGetStoragePricingTierQuery();
 
   useEffect(() => {
@@ -157,7 +161,7 @@ const PricingPlan = () => {
                     {getStorageSizeFromTier(storageTier)})
                   </span>
                   <span className="text-large font-semibold">
-                    {price === 0 ? "FREE" : `$${price.toFixed(2)}`} / month
+                    ${price.toFixed(2)} / month
                   </span>
                 </div>
               </div>

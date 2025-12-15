@@ -19,7 +19,6 @@ import {
 } from "@/api/fileManagerAPI";
 
 import { Logger } from "@/lib/utils/logger";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -70,7 +69,6 @@ import {
   Upload,
   Trash2,
   Share2,
-  Search,
   Filter,
   Loader2,
   FileText,
@@ -91,6 +89,8 @@ import {
 
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/useDebounce";
+
+import GradientSearchInput from "@/components/shared/inputs/gradient-search-input";
 
 import GridView from "./grid-view";
 import ShareDialog from "./share-dialog";
@@ -772,19 +772,13 @@ const CloudStorage = () => {
                   </h3>
 
                   {selectedCategory !== "Duplicates" && (
-                    <div className="relative w-full max-w-md">
-                      <div className="bg-[rgba(37,48,240,0.07)] dark:bg-[#ffffff08] rounded-[1000px] border-[none] relative before:content-[''] before:absolute before:inset-0 before:p-px before:rounded-[1000px] before:[background:linear-gradient(270deg,rgba(168,1,186,0.5)_0%,rgba(37,48,240,0.5)_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:z-[1] before:pointer-events-none">
-                        <Search className="absolute h-10 w-10 top-1/2 left-1.5 -translate-y-1/2 p-2 text-[#2530F0] dark:text-white bg-blue-700/10 dark:bg-[#FFFFFF08] rounded-[23px] border border-solid border-[#2530F0] dark:border-[#A801BA]" />
-                        <Input
-                          id="searchstorage"
-                          name="searchstorage"
-                          placeholder="Search files..."
-                          className="pl-14 h-14 md:text-base rounded-full bg-blue-700/5 dark:bg-[#FFFFFF08] text-black placeholder:text-[#454545] dark:text-[#B8C2D5]"
-                          onChange={handleSearchChange}
-                          value={searchQuery}
-                        />
-                      </div>
-                    </div>
+                    <GradientSearchInput
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                      placeholder="Search files..."
+                      id="searchstorage"
+                      name="searchstorage"
+                    />
                   )}
 
                   {/* <Button

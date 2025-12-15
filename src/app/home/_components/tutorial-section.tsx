@@ -18,39 +18,30 @@ import { TutorialCard } from "./tutorial-card";
 const tutorials = [
   {
     id: 1,
-    title: "Getting Started With Sense PC",
+    title: "Set Up Your Sense PC",
     duration: "5:30",
-    description: "Learn the basics of setting up your Sense PC environment",
+    description: "A quick guide to get your cloud desktop running the way you need.",
     image: "/assets/images/gettingStartedWithSensePc.png",
     videoUrl: "/videos/getting-started.mp4",
     youtubeUrl: "https://youtube.com/watch?v=example1",
   },
   {
     id: 2,
-    title: "Optimizing Your Cloud PC",
+    title: "Improve Performance",
     duration: "5:30",
-    description: "Tips and tricks for better performance",
+    description: "Practical tips to make your Sense PC faster and more responsive.",
     image: "/assets/images/optimizing.jpg",
     videoUrl: "/videos/optimization.mp4",
     youtubeUrl: "https://youtube.com/watch?v=example2",
   },
   {
     id: 3,
-    title: "Storage Management",
+    title: "Manage Your Storage",
     duration: "5:20",
-    description: "Efficiently manage your cloud storage space",
+    description: "How to organize files and optimize your Sense Cloud.",
     image: "/assets/images/storageManagement.png",
     videoUrl: "/videos/storage.mp4",
     youtubeUrl: "https://youtube.com/watch?v=example3",
-  },
-  {
-    id: 4,
-    title: "Advanced Features",
-    duration: "6:10",
-    description: "Explore advanced features and customization options",
-    image: "/assets/images/storageManagement.png",
-    videoUrl: "/videos/advanced.mp4",
-    youtubeUrl: "https://youtube.com/watch?v=example4",
   },
 ];
 
@@ -141,14 +132,14 @@ const TutorialSection = () => {
             className="max-md:w-full space-y-3 md:space-y-2.5"
           >
             <h4 className="font-space-grotesk font-semibold text-2xl md:text-4xl text-center md:text-left">
-              Learn How to{" "}
+              New to Sense PC? {" "}
               <span className="text-transparent bg-clip-text bg-[linear-gradient(290.5deg,#D971FF_-70.94%,#4C55F8_10.02%,#8086F3_115.42%)]">
-                Get Started
+                Start Here
               </span>
             </h4>
 
             <p className="text-paragraph text-center md:text-left text-base md:text-2xl">
-              Watch our tutorial series to master your Sense PC experience
+              Our tutorial videos show you how to set up and optimize your cloud desktop easily.
             </p>
           </motion.div>
 

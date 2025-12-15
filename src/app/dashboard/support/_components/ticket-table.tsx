@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useGetTicketsQuery } from "@/api/supportAPI";
 import { selectUserId, selectUserEmail } from "@/redux/slices/auth/auth-slice";
 
-import { Input } from "@/components/ui/input";
 import { shortEmail } from "@/lib/utils/format-string";
 import { formatDate, formatRelativeTime } from "@/lib/utils/format-time";
 import {
@@ -26,7 +25,9 @@ import {
 
 import { useSelector } from "react-redux";
 
-import { Search, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUp, ArrowDown } from "lucide-react";
+
+import GradientSearchInput from "@/components/shared/inputs/gradient-search-input";
 
 import TicketTableSkeleton from "./ticket-table-skeleton";
 import { getStatusBadgeClass } from "../utils/get-status-badge-class";
@@ -84,30 +85,31 @@ export default function TicketTable() {
 
   return (
     <>
-      <div className="p-6 pt-0 space-y-5 border-b border-black/10 dark:border-border">
+      <div className="p-6 pt-0 space-y-5">
         <div className="space-y-1">
-          <div className="justify-start text-black dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8">Sense Cloud</div>
-          <div className="justify-start text-[#454545] dark:text-paragraph text-base font-normal font-['Inter'] leading-6">Our support team will respond as soon as possible.</div>
+          <div className="justify-start text-black dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8">
+            Sense Support
+          </div>
+          <div className="justify-start text-[#454545] dark:text-paragraph text-base font-normal font-['Inter'] leading-6">
+            Our support team will respond as soon as possible.
+          </div>
         </div>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Search */}
-          <div className="relative w-full max-w-md">
-            <div className="bg-[rgba(37,48,240,0.07)] dark:bg-[#ffffff08] rounded-[1000px] border-[none] relative before:content-[''] before:absolute before:inset-0 before:p-px before:rounded-[1000px] before:[background:linear-gradient(270deg,rgba(168,1,186,0.5)_0%,rgba(37,48,240,0.5)_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:z-[1] before:pointer-events-none">
-              <Search className="absolute h-10 w-10 top-1/2 left-1.5 -translate-y-1/2 p-2 text-[#2530F0] dark:text-white bg-blue-700/10 dark:bg-[#FFFFFF08] rounded-[23px] border border-solid border-[#2530F0] dark:border-[#A801BA]" />
-              <Input
-                id="support-ticket-search"
-                name="support-ticket-search"
-                placeholder="Search requests"
-                className="pl-14 h-14 md:text-base rounded-full bg-blue-700/5 dark:bg-[#FFFFFF08] text-black placeholder:text-[#454545] dark:text-[#B8C2D5]"
-                onChange={(e) => setQuery(e.target.value)}
-                value={query}
-              />
-            </div>
-          </div>
+          <GradientSearchInput
+            wrapperClassName="w-full max-w-md"
+            id="support-ticket-search"
+            name="support-ticket-search"
+            placeholder="Search requests"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
 
           {/* Status Filter */}
           <div className="flex items-center gap-4">
-            <label className="text-sm text-muted-foreground">Status:</label>
+            <label className="text-sm text-[#454545] dark:text-[#B9C2D5]">
+              Status:
+            </label>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Any" />
@@ -124,92 +126,80 @@ export default function TicketTable() {
         </div>
       </div>
 
-      <div className="p-6 overflow-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-blue-700/10 dark:bg-[#ffffff0f] hover:bg-blue-700/10 dark:hover:bg-[#ffffff0f]">
-              <TableHead
-                className="rounded-tl-xl"
-                onClick={toggleSort}
-              >
-                Created <SortIcon />
-              </TableHead>
-              <TableHead>
-                ID
-              </TableHead>
-              <TableHead>
-                Subject
-              </TableHead>
-              <TableHead>
-                Last activity
-              </TableHead>
-              <TableHead>
-                Status
-              </TableHead>
-              <TableHead>
-                Email
-              </TableHead>
-              <TableHead className="rounded-tr-xl">
-                Role
-              </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-            {filtered.length > 0 ? (
-              filtered.map((ticket) => {
-                const isOwner = ticket.email === userEmail;
-                return (
-                  <TableRow
-                    key={ticket.ticketId}
-                    onClick={() =>
-                      handleTicketClick(ticket.ticketId, ticket.email)
-                    }
-                    className={`border-b ${isOwner
-                      ? "hover:bg-muted/40 cursor-pointer"
-                      : "cursor-not-allowed opacity-70"
-                      }`}
-                  >
-                    <TableCell className="whitespace-nowrap">
-                      {formatDate(ticket.createdAt)} 
-                    </TableCell>
-                    <TableCell className="text-muted-foreground whitespace-nowrap">
-                      #{ticket.ticketId}
-                    </TableCell>
-                    <TableCell className="whitespace-normal break-words max-w-[300px]">
-                      {ticket.subject}
-                    </TableCell>
-                    <TableCell>
-                      {formatRelativeTime(
-                        ticket.lastUpdated || ticket.createdAt
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <span className={getStatusBadgeClass(ticket.status)}>
-                        {ticket.status.charAt(0).toUpperCase() +
-                          ticket.status.slice(1)}
-                      </span>
-                    </TableCell>
-                    <TableCell className="break-all">
-                      {shortEmail(ticket.email)}
-                    </TableCell>
-                    <TableCell className="capitalize">
-                      {ticket.role === "owner" ? "Me" : ticket.role || "—"}
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="text-center py-6 text-muted-foreground"
-                >
-                  No tickets found.
-                </TableCell>
+      <div className="px-6 pb-6">
+        <div className="overflow-hidden rounded-2xl border border-[#2530F033] dark:border-[#ffffff1a]">
+          <Table className="border-separate border-spacing-0">
+            <TableHeader>
+              <TableRow className="bg-blue-700/10 dark:bg-[#ffffff0f] hover:bg-blue-700/10 dark:hover:bg-[#ffffff0f]">
+                <TableHead className="rounded-tl-xl" onClick={toggleSort}>
+                  Created <SortIcon />
+                </TableHead>
+                <TableHead>ID</TableHead>
+                <TableHead>Subject</TableHead>
+                <TableHead>Last activity</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead className="rounded-tr-xl">Role</TableHead>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody style={{ borderSpacing: 0, borderCollapse: "separate" }}>
+              {filtered.length > 0 ? (
+                filtered.map((ticket) => {
+                  const isOwner = ticket.email === userEmail;
+                  return (
+                    <TableRow
+                      key={ticket.ticketId}
+                      onClick={() =>
+                        handleTicketClick(ticket.ticketId, ticket.email)
+                      }
+                      className={`border-b ${
+                        isOwner
+                          ? "hover:bg-muted/40 cursor-pointer"
+                          : "cursor-not-allowed opacity-70"
+                      }`}
+                    >
+                      <TableCell className="whitespace-nowrap">
+                        {formatDate(ticket.createdAt)}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground whitespace-nowrap">
+                        #{ticket.ticketId}
+                      </TableCell>
+                      <TableCell className="whitespace-normal break-words max-w-[300px]">
+                        {ticket.subject}
+                      </TableCell>
+                      <TableCell>
+                        {formatRelativeTime(
+                          ticket.lastUpdated || ticket.createdAt
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <span className={getStatusBadgeClass(ticket.status)}>
+                          {ticket.status.charAt(0).toUpperCase() +
+                            ticket.status.slice(1)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="break-all">
+                        {shortEmail(ticket.email)}
+                      </TableCell>
+                      <TableCell className="capitalize">
+                        {ticket.role === "owner" ? "Me" : ticket.role || "—"}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className="text-center py-6 text-muted-foreground"
+                  >
+                    No tickets found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </>
   );

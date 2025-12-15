@@ -51,9 +51,13 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
     []
   );
 
-  const getStorageSizeFromTier = (tier: number) => `${tier * 20} GB`;
+  const PRICE_TIER_1 = 0.25;
   const PRICE_PER_TIER = 0.5;
-  const price = storageTier === 1 ? 0 : (storageTier - 1) * PRICE_PER_TIER;
+  
+  const getStorageSizeFromTier = (tier: number) => `${tier * 20} GB`;
+  
+  const price =
+    storageTier === 1 ? PRICE_TIER_1 : (storageTier - 1) * PRICE_PER_TIER;  
 
   const fetchLatencies = useCallback(async () => {
     setLatencyLoading(true);
@@ -117,12 +121,13 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
                   <span className="text-[#454545] dark:text-[#A3A3A3] text-base font-semibold font-['Inter'] leading-6 ml-1">T-{storageTier} ({ getStorageSizeFromTier(storageTier) })</span>
                 </span>
                 <span>
-                  {storageTier === 1 ? (<span className="text-[#020816] dark:text-white text-base font-semibold font-['Inter'] leading-6">FREE</span>) : (
-                    <>
-                      <span className="text-[#020816] dark:text-white text-base font-semibold font-['Inter'] leading-6">$ {price.toFixed(2)}</span>
-                      <span className="text-[#454545] dark:text-[#A3A3A3] text-base font-semibold font-['Inter'] leading-6"> / month</span>
-                    </>
-                  )}
+                  <span className="text-[#020816] dark:text-white text-base font-semibold font-['Inter'] leading-6">
+                    $ {price.toFixed(2)}
+                  </span>
+                  <span className="text-[#454545] dark:text-[#A3A3A3] text-base font-semibold font-['Inter'] leading-6">
+                    {" "}
+                    / month
+                  </span>
                 </span>
               </div>
             </div>

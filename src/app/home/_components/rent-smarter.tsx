@@ -47,7 +47,7 @@ const RentSmarter: React.FC = () => (
       >
         <h4 className="font-space-grotesk font-bold text-2xl md:text-4xl">
           Why Buy
-          <br /> Expensive Hardware When You Can Rent Smarter?
+          <br /> Hardware When You Can Run It Into The Cloud?
         </h4>
 
         <div className="space-y-4 md:space-y-5">
@@ -67,7 +67,7 @@ const RentSmarter: React.FC = () => (
             </div>
 
             <p className="text-paragraph text-base md:text-lg">
-              Physical computers are expensive, inflexible, and hard to upgrade.
+              Traditional computers are expensive to maintain, slow to upgrade, and tied to a single device.
             </p>
           </div>
 
@@ -91,8 +91,8 @@ const RentSmarter: React.FC = () => (
             </div>
 
             <p className="text-paragraph text-base md:text-lg">
-              Sense PC offers flexible, cost-effective cloud computing that
-              scales with your needs.
+              Cloud computer that are fast, flexible and you can scale them instantly. 
+              No more paying for hardware you don’t need.
             </p>
           </div>
         </div>

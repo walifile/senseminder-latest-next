@@ -12,24 +12,35 @@ const SelectGroup = SelectPrimitive.Group;
 
 const SelectValue = SelectPrimitive.Value;
 
+type SelectTriggerProps = React.ComponentPropsWithoutRef<
+  typeof SelectPrimitive.Trigger
+> & {
+  variant?: "default" | "pill";
+};
+
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Trigger
-    ref={ref}
-    className={cn(
+  SelectTriggerProps
+>(({ className, children, variant = "pill", ...props }, ref) => {
+  const variants: Record<NonNullable<SelectTriggerProps["variant"]>, string> = {
+    default:
       "bg-blue-700/5 dark:bg-white/5 flex w-full h-[60px] px-5 py-4 items-center justify-between rounded-[10px] text-base font-normal font-['Inter'] leading-6 ring-offset-background placeholder:text-paragraph focus:outline-none outline outline-1 outline-offset-[-1px] outline-blue-700/10 dark:outline-white/20 focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
-      className
-    )}
-    {...props}
-  >
-    {children}
-    <SelectPrimitive.Icon asChild>
-      <ChevronDown className="size-6" />
-    </SelectPrimitive.Icon>
-  </SelectPrimitive.Trigger>
-));
+    pill: "flex w-full h-14 px-5 items-center justify-between rounded-[1000px] text-base font-normal font-['Inter'] leading-6 ring-offset-background placeholder:text-paragraph focus:outline-none border border-[rgba(37,48,240,0.10)] bg-[rgba(37,48,240,0.07)] dark:border-[rgba(255,255,255,0.20)] dark:bg-[rgba(255,255,255,0.04)] focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+  };
+
+  return (
+    <SelectPrimitive.Trigger
+      ref={ref}
+      className={cn(variants[variant], className)}
+      {...props}
+    >
+      {children}
+      <SelectPrimitive.Icon asChild>
+        <ChevronDown className="size-6 text-[#020816] dark:text-[#B9C2D5]" />
+      </SelectPrimitive.Icon>
+    </SelectPrimitive.Trigger>
+  );
+});
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
 const SelectScrollUpButton = React.forwardRef<

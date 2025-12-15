@@ -2,8 +2,6 @@
 
 import React, { useState } from "react";
 
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectItem,
@@ -13,8 +11,10 @@ import {
 } from "@/components/ui/select";
 
 import { motion } from "framer-motion";
-import { Search } from "lucide-react";
-import { TutorialDialog, type Tutorial } from "./_components/tutorial-dialog";
+
+import GradientSearchInput from "@/components/shared/inputs/gradient-search-input";
+
+import { type Tutorial, TutorialDialog } from "./_components/tutorial-dialog";
 
 // Tutorial data
 const tutorials: Tutorial[] = [
@@ -116,27 +116,24 @@ const TutorialsPage = () => {
   ];
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex flex-col gap-4 mb-6 rounded-3xl border border-[#8086F3] bg-white dark:bg-[rgba(255,255,255,0.03)] backdrop-blur-[32px] px-7 py-8">
-        <div>
+    <div className="rounded-3xl border border-[#8086F3] bg-white dark:bg-[rgba(255,255,255,0.03)] backdrop-blur-[32px] ">
+      {/* Filters */}
+      <div className="px-7 py-8">
+        <div className="pb-5">
           <h1 className="text-2xl font-bold">Video Tutorials</h1>
           <p className="text-muted-foreground">
             Learn how to make the most of your Sense PC
           </p>
         </div>
-
-        {/* Filters */}
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search tutorials..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8"
-              />
-            </div>
+            <GradientSearchInput
+              placeholder="Search tutorials..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              name="tutorial-search"
+              id="tutorial-search"
+            />
           </div>
           <div className="flex gap-4">
             <Select
@@ -171,9 +168,13 @@ const TutorialsPage = () => {
             </Select>
           </div>
         </div>
+      </div>
 
-        {/* Tutorials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-5">
+      <div className="w-full h-px bg-[rgba(0,0,0,0.15)] dark:bg-[rgba(255,255,255,0.10)] rounded-full" />
+      {/* Tutorials Grid */}
+
+      <div className="px-7 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredTutorials.map((tutorial) => (
             <motion.div
               key={tutorial.id}
@@ -191,7 +192,7 @@ const TutorialsPage = () => {
                   {tutorial.description}
                 </p>
               </div>
-              <div className="h-px w-full bg-[#8086F3] mt-5 " />
+              <div className="h-px w-full bg-[rgba(37,48,240,0.30)] dark:bg-[rgba(255,255,255,0.10)]" />
               <div className="px-4 py-4">
                 <div className="flex items-center justify-between w-full">
                   <span className="text-[14px] text-[#454545] dark:text-[#B9C2D5]">

@@ -31,27 +31,27 @@ const FEATURES = [
   {
     icon: "clock",
     title: "Hourly Plan",
-    desc: "Pay-as-you-go. Billed per hour. SSD billed continuously.",
+    desc: "Pay only for the time you use Sense PC. SSD is billed continuously.",
   },
   {
     icon: "calender",
     title: "Daily Plan",
-    desc: "Flat daily rate. Billed every 24 hrs regardless of usage.",
+    desc: "Simple flat rate billed every 24 hours. Perfect for consistent daily workflows.",
   },
   {
     icon: "calender-2",
     title: "Monthly Plan",
-    desc: "Fixed fee. Auto-renews. Great for always-on PCs.",
+    desc: "A fixed monthly price that auto-renews. Best for always-on or full-time desktops.",
   },
   {
     icon: "storage",
     title: "Sense Cloud",
-    desc: "First 20GB free. Charges by peak usage tier monthly.",
+    desc: "No fixed plans - pay only for your highest cloud storage tier usage each month",
   },
   {
     icon: "billing",
     title: "Billing Units",
-    desc: "Costs deducted from wallet at each billing cycle.",
+    desc: "All charges are deducted from your Sense PC wallet at each billing cycle.",
   },
 ];
 
@@ -424,8 +424,7 @@ export default function PCCostCalculator() {
                   "Free data transfer",
                   "99.9% uptime SLA",
                   "Security monitoring",
-                  "Automated backups",
-                  "24/7 support",
+                  "Customer support",
                 ].map((b, i) => (
                   <div
                     key={i}

@@ -32,8 +32,13 @@ const StorageCostCalculator = () => {
   );
 
   const getStorageSizeFromTier = (tier: number) => `${tier * 20} GB`;
+  const PRICE_TIER_1 = 0.25;
   const PRICE_PER_TIER = 0.5;
-  const price = storageTier === 1 ? 0 : (storageTier - 1) * PRICE_PER_TIER;
+  // const price = storageTier === 1 ? 0 : (storageTier - 1) * PRICE_PER_TIER;
+  const price =
+    storageTier === 1
+      ? PRICE_TIER_1
+      : (storageTier - 1) * PRICE_PER_TIER;
 
   const fetchLatencies = useCallback(async () => {
     setLatencyLoading(true);
@@ -107,7 +112,7 @@ const StorageCostCalculator = () => {
             </span>
 
             <span className="text-lg md:text-2xl font-semibold">
-              {storageTier === 1 ? "FREE" : `$${price.toFixed(2)}`} / month
+              ${price.toFixed(2)} / month
             </span>
           </div>
         </div>

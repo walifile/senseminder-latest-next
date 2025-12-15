@@ -144,7 +144,7 @@ const DashboardSidebar = () => {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-0 bottom-0 left-0 z-50 md:relative transition-all duration-300 bg-blue-700/5 dark:bg-card border-r-[1px]",
+          "fixed top-0 bottom-0 left-0 z-50 md:relative transition-all duration-300 bg-blue-700/5 dark:bg-[#010526] border-r-[1px]",
           collapsed ? "w-20" : "w-64 p-7",
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
@@ -162,9 +162,11 @@ const DashboardSidebar = () => {
 
             {/* Right-side controls (collapse + mobile close) */}
             <div
-              className={cn("absolute inset-y-0 right-0 flex items-center pr-1",
-                collapsed ? "translate-x-[25px]": "translate-x-[50px]"
-              )}>
+              className={cn(
+                "absolute inset-y-0 right-0 flex items-center pr-1",
+                collapsed ? "translate-x-[25px]" : "translate-x-[50px]"
+              )}
+            >
               <Button
                 variant="ghost"
                 size="icon"
@@ -221,11 +223,16 @@ const DashboardSidebar = () => {
           </div>
 
           {/* Sidebar Footer */}
-          <div className={cn("pt-3 border-t dark:border-white/10 border-neutral-900/30", collapsed ? "text-center pb-3" : "")}>
+          <div
+            className={cn(
+              "pt-3 border-t dark:border-white/10 border-neutral-900/30",
+              collapsed ? "text-center pb-3" : ""
+            )}
+          >
             <Button
               variant="ghost"
               className={cn(
-                "w-full justify-start text-[#454545]",
+                "w-full justify-start text-[#454545] dark:text-white",
                 collapsed && "justify-center px-0 w-[50%] mx-auto"
               )}
               // asChild

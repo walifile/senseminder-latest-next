@@ -28,10 +28,10 @@ const ProductHighlights = () => {
         <div className="space-y-6 md:space-y-9">
           <div className="space-y-2">
             <p className="font-space-grotesk font-semibold text-2xl md:text-3xl">
-              High-Performance Cloud PCs
+              Performance without the Hardware
             </p>
             <p className="text-paragraph text-base md:text-lg">
-              Experience desktop-class performance anywhere, anytime
+              Run demanding applications on a fast, reliable cloud desktop accessible from any device.
             </p>
           </div>
 
@@ -76,10 +76,10 @@ const ProductHighlights = () => {
           />
           <div className="space-y-2">
             <p className="font-space-grotesk font-semibold text-2xl md:text-3xl">
-              Seamless Collaboration
+              Work Together from Anywhere
             </p>
             <p className="text-paragraph text-base md:text-lg">
-              Work together in real-time from anywhere in the world
+              Share the same secure cloud environment and collaborate in real time. No complex setup.
             </p>
           </div>
         </div>
@@ -106,10 +106,10 @@ const ProductHighlights = () => {
         <div className="space-y-6 md:space-y-9">
           <div className="space-y-2">
             <p className="font-space-grotesk font-semibold text-2xl md:text-3xl">
-              Cost-Effective Solutions
+              Only Pay for the Power You Use
             </p>
             <p className="text-paragraph text-base md:text-lg">
-              Pay only for what you use, scale as you grow
+              Scale your computing needs and keep costs low with flexible, usage-based billing.
             </p>
           </div>
 
@@ -154,10 +154,10 @@ const ProductHighlights = () => {
           />
           <div className="space-y-2">
             <p className="font-space-grotesk font-semibold text-2xl md:text-3xl">
-              Secure Data Storage
+              Your Data, Protected By Design
             </p>
             <p className="text-paragraph text-base md:text-lg">
-              Enterprise-grade encryption and backup solutions
+              Encryption and built-in safeguards keep your files secure wherever you work.
             </p>
           </div>
         </div>

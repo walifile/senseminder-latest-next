@@ -16,21 +16,21 @@ const steps = [
     step: "STEP-1",
     icon: "/settings1", // You'll need to add this icon
     title: "Choose Your Configuration",
-    description: "Select your ideal resources (CPU, RAM, Storage).",
+    description: "Pick your CPU, RAM, storage, and OS that fit the way you work.",
   },
   {
     step: "STEP-2",
     icon: "/rocket", // You'll need to add this icon
     title: "Launch Your Sense PC",
     description:
-      "Access your virtual computer instantly via browser or smart monitor.",
+      "Start your cloud computer instantly from any browser or supported device.",
   },
   {
     step: "STEP-3",
     icon: "/computer1", // You'll need to add this icon
     title: "Work, Play, and Create",
     description:
-      "Enjoy seamless performance and flexibility anytime, anywhere.",
+      "Run apps, switch tasks, and stay productive from anywhere with fast, consistent performance.",
   },
 ];
 
@@ -53,7 +53,7 @@ const RentSmarterProcess: React.FC = () => {
         className="lg:col-span-2 space-y-12"
       >
         <h4 className="max-w-lg font-space-grotesk font-bold text-2xl md:text-4xl">
-          Why Buy <br /> Expensive Hardware When You Can Rent Smarter?
+          No More Hardware Just Efficiency
         </h4>
 
         <Button size="lg" className="w-full lg:w-fit" onClick={onBuildPc}>

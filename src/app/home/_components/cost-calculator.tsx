@@ -184,7 +184,7 @@ const CostCalculator = () => {
                       emoji: "⏱",
                       color: "text-primary",
                       description:
-                        "Pay-as-you-go. Billed per hour. SSD billed continuously.",
+                        "Pay only for the time you use Sense PC. SSD is billed continuously.",
                       tag: "Default",
                     },
                     {
@@ -192,28 +192,28 @@ const CostCalculator = () => {
                       emoji: "📅",
                       color: "text-blue-600",
                       description:
-                        "Flat daily rate. Billed every 24 hrs regardless of usage.",
+                        "Simple flat rate billed every 24 hours. Perfect for consistent daily workflows.",
                     },
                     {
                       label: "Monthly Plan",
                       emoji: "📆",
                       color: "text-emerald-600",
                       description:
-                        "Fixed fee. Auto-renews. Great for always-on PCs.",
+                        "A fixed monthly price that auto-renews. Best for always-on or full-time desktops.",
                     },
                     {
                       label: "Sense Cloud",
                       emoji: "💾",
                       color: "text-orange-500",
                       description:
-                        "First 20GB free. Charges by peak usage tier monthly.",
+                        "No fixed plans - pay only for your highest cloud storage tier usage each month",
                     },
                     {
                       label: "Billing Units",
                       emoji: "💳",
                       color: "text-gray-700 dark:text-gray-200",
                       description:
-                        "Costs deducted from wallet at each billing cycle.",
+                        "All charges are deducted from your Sense PC wallet at each billing cycle.",
                     },
                   ].map((plan, index) => (
                     <motion.div
@@ -517,9 +517,8 @@ const CostCalculator = () => {
                     <div className="grid grid-cols-2 gap-1.5">
                       {[
                         "Free data transfer",
-                        "Automated backups",
                         "99.9% uptime SLA",
-                        "24/7 support",
+                        "Customer support",
                         "Security monitoring",
                       ].map((feature, index) => (
                         <div

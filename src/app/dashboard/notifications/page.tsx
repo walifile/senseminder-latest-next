@@ -3,7 +3,7 @@
 import type { Notification } from "@/types/notification";
 
 import { useRouter } from "next/navigation";
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { getNotifications, markNotificationsAsRead } from "@/api/notification";
 
 import { Logger } from "@/lib/utils/logger";
@@ -27,6 +27,13 @@ import { X, Bell, Settings, ChevronRight } from "lucide-react";
 // ─────────────────────────────────────────────────────────
 // helpers
 // ─────────────────────────────────────────────────────────
+function getNotificationId(n: Notification): string | undefined {
+  const maybe = n as unknown as { id?: unknown };
+  return typeof maybe.id === "string" && maybe.id.trim().length > 0
+    ? maybe.id
+    : undefined;
+}
+
 const timeAgo = (iso: string) => {
   const diff = Date.now() - new Date(iso).getTime();
   const min = 60_000;
@@ -43,6 +50,8 @@ const colourBySeverity = (sev: Notification["severity"]) => {
   return "bg-primary/20 text-primary"; // info
 };
 
+const PAGE_SIZE = 30;
+
 // ─────────────────────────────────────────────────────────
 
 const NotificationsPage = () => {
@@ -50,38 +59,88 @@ const NotificationsPage = () => {
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [nextToken, setNextToken] = useState<string | null>(null);
 
   // optional preference toggles (pure UI for now)
   const [prefs, setPrefs] = useState({
-    email: false,
+    email: true,
     push: true,
     system: true,
-    marketing: false,
+    marketing: true,
   });
+
+  const makeKey = useCallback(
+    (n: Notification) =>
+      getNotificationId(n) ?? `${n.timestamp}::${n.title}::${n.content}`,
+    []
+  );  
+
+  const dedupeMerge = useCallback(
+    (prev: Notification[], next: Notification[]) => {
+      const seen = new Set<string>();
+      const out: Notification[] = [];
+      for (const n of [...prev, ...next]) {
+        const k = makeKey(n);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        out.push(n);
+      }
+      return out;
+    },
+    [makeKey]
+  );
+
+  const fetchFirstPage = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await getNotifications({ limit: PAGE_SIZE, nextToken: null });
+      setNotifications(res.notifications);
+      setNextToken(res.nextToken ?? null);
+    } catch (e) {
+      Logger.error(e);
+      toast({
+        title: "Failed to load notifications",
+        description: String(e),
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  const fetchNextPage = useCallback(async () => {
+    if (!nextToken || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await getNotifications({ limit: PAGE_SIZE, nextToken });
+      setNotifications((prev) => dedupeMerge(prev, res.notifications));
+      setNextToken(res.nextToken ?? null);
+    } catch (e) {
+      Logger.error(e);
+      toast({
+        title: "Failed to load more notifications",
+        description: String(e),
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [nextToken, loadingMore, toast, dedupeMerge]);
 
   /*  GET notifications on mount  */
   useEffect(() => {
-    (async () => {
-      try {
-        const data = await getNotifications();
-        setNotifications(data);
-      } catch (e) {
-        Logger.error(e);
-        toast({
-          title: "Failed to load notifications",
-          description: String(e),
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [toast]);
+    fetchFirstPage();
+  }, [fetchFirstPage]);
 
   /*  Helpers  */
-  const unread = notifications.filter((n) => !n.isRead);
-  const alerts = notifications.filter((n) => n.severity !== "info");
+  const unread = useMemo(() => notifications.filter((n) => !n.isRead), [notifications]);
+  const alerts = useMemo(
+    () => notifications.filter((n) => n.severity !== "info"),
+    [notifications]
+  );
 
   const handleMarkAll = async () => {
     if (unread.length === 0) return;
@@ -182,6 +241,9 @@ const NotificationsPage = () => {
             loading={loading}
             onRead={markSingle}
             onNavigate={(route) => router.push(route)}
+            hasMore={!!nextToken}
+            loadingMore={loadingMore}
+            onLoadMore={fetchNextPage}
           />
         </TabsContent>
 
@@ -191,6 +253,9 @@ const NotificationsPage = () => {
             loading={loading}
             onRead={markSingle}
             onNavigate={(route) => router.push(route)}
+            hasMore={!!nextToken}
+            loadingMore={loadingMore}
+            onLoadMore={fetchNextPage}
           />
         </TabsContent>
 
@@ -200,6 +265,9 @@ const NotificationsPage = () => {
             loading={loading}
             onRead={markSingle}
             onNavigate={(route) => router.push(route)}
+            hasMore={!!nextToken}
+            loadingMore={loadingMore}
+            onLoadMore={fetchNextPage}
           />
         </TabsContent>
       </Tabs>
@@ -216,12 +284,19 @@ interface ListProps {
   loading: boolean;
   onRead: (ts: string) => Promise<void>;
   onNavigate: (route: string) => void;
+  hasMore: boolean;
+  loadingMore: boolean;
+  onLoadMore: () => void;
 }
+
 const NotificationList: React.FC<ListProps> = ({
   items,
   loading,
   onRead,
   onNavigate,
+  hasMore,
+  loadingMore,
+  onLoadMore,
 }) => {
   if (loading) return <p className="text-sm text-muted-foreground">Loading…</p>;
   if (items.length === 0)
@@ -231,12 +306,21 @@ const NotificationList: React.FC<ListProps> = ({
     <div className="space-y-4">
       {items.map((n) => (
         <NotificationCard
-          key={n.timestamp}
+          // timestamp can collide; use a composite fallback
+          key={getNotificationId(n) ?? `${n.timestamp}::${n.title}`}
           n={n}
           onRead={onRead}
           onNavigate={onNavigate}
         />
       ))}
+
+      {hasMore && (
+        <div className="flex justify-center pt-2">
+          <Button variant="outline" onClick={onLoadMore} disabled={loadingMore}>
+            {loadingMore ? "Loading more…" : "Load more"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

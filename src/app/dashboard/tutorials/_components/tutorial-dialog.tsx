@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import {
   Dialog,
   DialogTitle,
@@ -8,7 +10,8 @@ import {
   DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
-import Image from "next/image";
+
+import GradientPillBadge from "@/components/shared/gradient-pill-badge";
 
 export type Tutorial = {
   id: number;
@@ -48,17 +51,11 @@ export const TutorialDialog = ({ tutorial }: TutorialDialogProps) => (
               priority
             />
           </div>
-          <div
-            className="absolute top-3 right-3 text-white px-4 py-1 rounded-[999999px] text-base font-medium"
-            style={{ background: "rgba(0, 0, 0, 0.19)" }}
-          >
-            {tutorial.duration}
+          <div className="absolute top-3 right-3">
+            <GradientPillBadge>{tutorial.duration}</GradientPillBadge>
           </div>
-          <div
-            className="absolute top-3 left-3 text-white px-4 py-1 rounded-[999999px] text-base font-medium"
-            style={{ background: "rgba(0, 0, 0, 0.19)" }}
-          >
-            {tutorial.category}
+          <div className="absolute top-3 left-3">
+            <GradientPillBadge>{tutorial.category}</GradientPillBadge>
           </div>
         </div>
       </div>

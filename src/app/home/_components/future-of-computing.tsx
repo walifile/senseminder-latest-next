@@ -9,21 +9,21 @@ import { Card, CardContent } from "@/components/ui/card";
 const benefitCards = [
   {
     icon: "/assets/icons/future-of-computing-card-icon-1.svg",
-    title: "Less E-waste",
+    title: "Impact",
     description:
-      "Reduce electronic waste by eliminating the need for constant hardware upgrades.",
+      "No more hardware updates. Just the performance you need.",
   },
   {
     icon: "/assets/icons/future-of-computing-card-icon-2.svg",
-    title: "Lower Energy Consumption",
+    title: "Energy",
     description:
-      "Optimize resource usage through shared infrastructure and efficient scaling.",
+      "Use energy more efficiently through shared cloud infrastructure.",
   },
   {
     icon: "/assets/icons/future-of-computing-card-icon-3.svg",
-    title: "Sustainable Scalability",
+    title: "Scale",
     description:
-      "Grow your computing needs without increasing your environmental footprint.",
+      "Increase your computing power on demand without adding new hardware.",
   },
 ];
 
@@ -35,14 +35,13 @@ const FutureOfComputing = () => (
       {/* Heading block (no animation) */}
       <div className="space-y-2.5 text-center">
         <p className="font-space-grotesk font-semibold text-2xl md:text-5xl">
-          The Future of Computing{" "}
+          Computing Without{" "}
           <span className="bg-[linear-gradient(270deg,_#BA25F0_4.8%,_#2530F0_46.15%,_#8086F3_100%)] bg-clip-text text-transparent">
-            No Hardware Required
+            The Hardware
           </span>
         </p>
         <p className="text-paragraph text-base md:text-2xl">
-          Inspire users with a vision of hardware-free computing powered by the
-          cloud. Highlighting the eco-friendly benefits
+          Get a powerful cloud computer — no hardware needed. SensePC cuts e-waste, saves energy, and scales easily.
         </p>
       </div>
 

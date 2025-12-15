@@ -17,37 +17,37 @@ const faqItems = [
   {
     question: "What is a Cloud PC?",
     answer:
-      "A Sense PC is a virtual computer that runs in a secure data center and can be accessed from anywhere, on any device. It offers the power and functionality of a high-end desktop without requiring expensive hardware on your end.",
+      "Sense Cloud PC is a virtual desktop computer that can be accessed from anywhere, on any device. You get the high performance of a desktop without the expense.",
   },
   {
-    question: "How is Sense PC different from other cloud computing services?",
+    question: "What makes Sense PC different?",
     answer:
-      "Sense PC offers industry-leading performance with ultra-low latency, enterprise-grade security, and a seamless user experience designed for professionals. Our proprietary technology delivers better responsiveness and visual quality than competitors.",
+      "Unlike other cloud desktop solutions, Sense PC offers the best of both worlds. Features like enterprise-grade security and ultra-low latency create a user experience built for professionals. Also, we are proud to say our proprietary technology offers responsiveness and visual quality you won’t find with other cloud desktop solutions.",
   },
   {
     question: "What kind of internet connection do I need?",
     answer:
-      "For optimal performance, we recommend a broadband connection with at least 15 Mbps download and 5 Mbps upload speeds. Sense PC works with most home and office connections, and our adaptive streaming technology adjusts to your connection quality.",
+      "We recommend a broadband connection with at least 15 Mbps download and 5 Mbps upload speeds. Sense PC works with most home and office connections.",
   },
   {
     question: "Can I install my own software on Sense PC?",
     answer:
-      "Yes! Your Sense PC works just like a regular Windows PC. You have full administrator rights to install, configure, and run any Windows-compatible software you need.",
+      "Yes! Your Sense PC works just like a regular Windows PC. You have full administrator rights to install, configure, and run any software you need.",
   },
   {
-    question: "What happens if I lose internet connection?",
+    question: "What happens if I lose my internet connection?",
     answer:
-      "Your Sense PC session remains active for a short period if you disconnect, allowing you to resume exactly where you left off once your connection is restored. Your data is always safely stored in the cloud.",
+      "Your data is always safely and securely stored with Sense PC. Your Sense PC session remains active after you disconnect.",
   },
   {
     question: "Can I use Sense PC for gaming?",
     answer:
-      "Yes! Our Professional and Enterprise plans include GPU capabilities suitable for gaming. While we optimize for professional workloads, many games run exceptionally well on our platform.",
+      "Yes! Our professional and enterprise plans include GPU capabilities that can power gaming. You have to use SensePC Desktop Application",
   },
   {
     question: "How do I get started with Sense PC?",
     answer:
-      "Simply choose a subscription plan, create your account, and you can be up and running with your new Sense PC in minutes. No complex setup or technical knowledge required.",
+      "Simply sign up, redeem your one-time PROMO (if available) in the billing dashboard, and start building your cloud PC—ready in minutes. No complex setup or technical knowledge required.",
   },
 ];
 
@@ -69,9 +69,9 @@ export default function FAQ() {
             <h2 className="font-space-grotesk font-semibold text-2xl md:text-4xl">
               Frequently Asked Questions
             </h2>
-            <p className="text-paragraph text-2xl">
+            {/* <p className="text-paragraph text-2xl">
               Everything you need to know about Sense PC
-            </p>
+            </p> */}
           </motion.div>
 
           <Image

@@ -39,7 +39,7 @@ export default function SensePCCost() {
               Check Your Sense PC Cost
             </h2>
             <p className="text-paragraph text-base md:text-2xl">
-              Configure your perfect Sense PC and get instant pricing
+              Configure your ideal cloud computer and see real-time pricing.
             </p>
           </div>
         </motion.div>

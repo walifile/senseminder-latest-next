@@ -16,11 +16,40 @@ async function getIdToken(): Promise<string> {
 
 /* ─────────────── Public API ─────────────── */
 
-/** GET /notifications  → latest personal + global notifications */
-export async function getNotifications(): Promise<Notification[]> {
+export type GetNotificationsParams = {
+  limit?: number;
+  nextToken?: string | null;
+};
+
+export type GetNotificationsResponse = {
+  notifications: Notification[];
+  nextToken?: string | null;
+};
+
+/**
+ * GET /notifications
+ *
+ * ✅ Backwards compatible:
+ * - If you call getNotifications() with no args -> returns Notification[]
+ * ✅ New pagination support:
+ * - If you call getNotifications({ limit, nextToken }) -> returns { notifications, nextToken }
+ */
+export async function getNotifications(): Promise<Notification[]>;
+export async function getNotifications(
+  params: GetNotificationsParams
+): Promise<GetNotificationsResponse>;
+export async function getNotifications(
+  params?: GetNotificationsParams
+): Promise<Notification[] | GetNotificationsResponse> {
   const idToken = await getIdToken();
 
-  const res = await fetch(NOTIFICATION_API, {
+  const qs = new URLSearchParams();
+  if (params?.limit) qs.set("limit", String(params.limit));
+  if (params?.nextToken) qs.set("nextToken", params.nextToken);
+
+  const url = `${NOTIFICATION_API}${qs.toString() ? `?${qs.toString()}` : ""}`;
+
+  const res = await fetch(url, {
     method: "GET",
     headers: {
       Authorization: idToken,
@@ -32,10 +61,18 @@ export async function getNotifications(): Promise<Notification[]> {
     throw new Error(`GET /notifications failed: ${res.status} ${msg}`);
   }
 
-  const { notifications } = (await res.json()) as {
-    notifications: Notification[];
+  const data = (await res.json()) as {
+    notifications?: Notification[];
+    nextToken?: string | null;
   };
-  return notifications;
+
+  const notifications = Array.isArray(data?.notifications) ? data.notifications : [];
+  const nextToken = data?.nextToken ?? null;
+
+  // Backward compatible return shape
+  if (!params) return notifications;
+
+  return { notifications, nextToken };
 }
 
 /**
