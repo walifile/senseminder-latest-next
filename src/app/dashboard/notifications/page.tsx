@@ -44,17 +44,19 @@ const timeAgo = (iso: string) => {
   return `${Math.round(diff / day)} day(s) ago`;
 };
 
-// Helper function for generating random color
-const randColor = (...colors: string[]): string => {
-  const randomIndex = Math.floor(Math.random() * colors.length);
-  return colors[randomIndex];
+const bgIconColor = (sev: Notification["severity"]) => {
+  if (sev === "critical") return "bg-red-500";
+  if (sev === "warning") return "bg-[#F39C12]";
+  if (sev === "info") return "bg-green-400";
+  return "bg-green-400"; // info
 };
 
-// const colourBySeverity = (sev: Notification["severity"]) => {
-//   if (sev === "critical") return "bg-destructive/20 text-destructive";
-//   if (sev === "warning") return "bg-orange-500/20 text-orange-500";
-//   return "bg-primary/20 text-primary"; // info
-// };
+const bgDateColor = (sev: Notification["severity"]) => {
+  if (sev === "critical") return "red";
+  if (sev === "warning") return "yellow";
+  if (sev === "info") return "green";
+  return "green"; // info
+};
 
 const PAGE_SIZE = 30;
 
@@ -380,16 +382,6 @@ const NotificationCard: React.FC<CardProps> = ({ n, onRead, onNavigate }) => {
     if (!n.isRead) await onRead(n.timestamp);
   };
 
-  const randomColor = randColor("green", "red", "yellow");
-  const randomBgColor =
-    randomColor === "green"
-      ? "bg-green-400"
-      : randomColor === "red"
-      ? "bg-red-500"
-      : randomColor === "yellow"
-      ? "bg-[#F39C12]"
-      : "";
-
   return (
     <Card
       className={
@@ -410,7 +402,7 @@ const NotificationCard: React.FC<CardProps> = ({ n, onRead, onNavigate }) => {
         <div className="flex gap-3">
           {/* icon circle */}
           <div
-            className={`w-7 h-7 p-1.5 rounded-full flex items-center justify-center ${randomBgColor}`}
+            className={`w-7 h-7 p-1.5 rounded-full flex items-center justify-center ${bgIconColor(n.severity)}`}
           >
             <Bell className="w-4 h-4 text-white" />
           </div>
@@ -442,21 +434,18 @@ const NotificationCard: React.FC<CardProps> = ({ n, onRead, onNavigate }) => {
 
               <div className="flex items-center gap-1">
                 <div
-                  className={`px-4 py-1.5 bg-${randomColor}-500/10 rounded-[60px] inline-flex justify-center items-center gap-2.5`}
+                  className={`px-4 py-1.5 bg-${bgDateColor(n.severity)}-500/10 rounded-[60px] inline-flex justify-center items-center gap-2.5`}
                 >
                   <div
                     className={`justify-start ${
-                      randomColor === "yellow"
+                      bgDateColor(n.severity) === "yellow"
                         ? "text-[#F39C12]"
-                        : `text-${randomColor}-500`
+                        : `text-${bgDateColor(n.severity)}-500`
                     } text-base font-normal font-['Inter'] leading-6`}
                   >
                     {timeAgo(n.timestamp)}
                   </div>
                 </div>
-                {!n.isRead && (
-                  <span className="h-2 w-2 rounded-full bg-primary" />
-                )}
               </div>
             </div>
           </div>
