@@ -393,8 +393,8 @@ const NotificationCard: React.FC<CardProps> = ({ n, onRead, onNavigate }) => {
     <Card
       className={
         n.isRead
-          ? "relative bg-[rgba(255,255,255,0.30)] dark:bg-[rgba(255,255,255,0.04)] border-blue-700/20 md:rounded-[10px]"
-          : "relative bg-[rgba(255,255,255,0.30)] dark:bg-[rgba(255,255,255,0.04)] border-blue-700 md:rounded-[10px]"
+          ? "relative bg-[rgba(255,255,255,0.30)] dark:bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(37,48,240,0.10)] dark:hover:bg-[rgba(128,134,243,0.20)] border-blue-700/20 md:rounded-[10px]"
+          : "relative bg-[rgba(255,255,255,0.30)] dark:bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(37,48,240,0.10)] dark:hover:bg-[rgba(128,134,243,0.20)] border-blue-700 md:rounded-[10px]"
       }
     >
       <Button
