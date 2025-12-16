@@ -341,25 +341,26 @@ const NotificationList: React.FC<ListProps> = ({
     return <p className="text-sm text-muted-foreground">No notifications.</p>;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-      {items.map((n) => (
-        <NotificationCard
-          // timestamp can collide; use a composite fallback
-          key={getNotificationId(n) ?? `${n.timestamp}::${n.title}`}
-          n={n}
-          onRead={onRead}
-          onNavigate={onNavigate}
-        />
-      ))}
-
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {items.map((n) => (
+          <NotificationCard
+            // timestamp can collide; use a composite fallback
+            key={getNotificationId(n) ?? `${n.timestamp}::${n.title}`}
+            n={n}
+            onRead={onRead}
+            onNavigate={onNavigate}
+          />
+        ))}
+      </div>
       {hasMore && (
-        <div className="flex justify-center pt-2">
-          <Button variant="outline" onClick={onLoadMore} disabled={loadingMore}>
+        <div className="flex justify-center pt-5">
+          <Button onClick={onLoadMore} disabled={loadingMore}>
             {loadingMore ? "Loading more…" : "Load more"}
           </Button>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
