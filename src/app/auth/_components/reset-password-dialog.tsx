@@ -418,16 +418,15 @@ export function ResetPasswordDialog({
                 >
                   New Password
                 </label>
-                <Input
+               <Input
                   id="password"
                   type="password"
                   placeholder="Enter new password"
+                  variant="auth"
+                  intent={passwordErrors.password ? "error" : "default"}
                   {...register("password")}
-                  className={cn(
-                    "h-[56px] rounded-[10px]",
-                    passwordErrors.password && "border-red-500"
-                  )}
                 />
+
                 {passwordErrors.password && (
                   <p className="text-sm text-red-600 dark:text-red-500">
                     {passwordErrors.password.message}
@@ -445,16 +444,15 @@ export function ResetPasswordDialog({
                 >
                   Confirm Password
                 </label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Confirm new password"
-                  {...register("confirmPassword")}
-                  className={cn(
-                    "h-[56px] rounded-[10px]",
-                    passwordErrors.confirmPassword && "border-red-500"
-                  )}
-                />
+               <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Confirm new password"
+                variant="auth"
+                intent={passwordErrors.confirmPassword ? "error" : "default"}
+                {...register("confirmPassword")}
+              />
+
                 {passwordErrors.confirmPassword && (
                   <p className="text-sm text-red-600 dark:text-red-500">
                     {passwordErrors.confirmPassword.message}

@@ -62,27 +62,49 @@ export function PaymentMethodDialog() {
       const mapped = mapPaymentMethodsFromAPI(data);
       setSavedPaymentMethods(mapped);
     }
+     
   }, [data]);
 
   const mapPaymentMethodsFromAPI = (
-    apiResponse: PaymentMethodResponse
+    apiResponse: PaymentMethodResponse,
   ): ExtendedPaymentMethod[] => {
     const defaultId = apiResponse.defaultPaymentMethod?.id;
     return apiResponse.paymentMethods.map(
       (pm) =>
-      ({
-        id: pm.id,
-        type: "card",
-        card: {
-          last4: pm.card.last4,
-          exp_month: pm.card.exp_month,
-          exp_year: pm.card.exp_year,
-          brand: pm.card.brand,
-        },
-        isDefault: pm.id === defaultId,
-      } as ExtendedPaymentMethod)
+        ({
+          id: pm.id,
+          type: "card",
+          card: {
+            last4: pm.card.last4,
+            exp_month: pm.card.exp_month,
+            exp_year: pm.card.exp_year,
+            brand: pm.card.brand,
+          },
+          isDefault: pm.id === defaultId,
+        }) as ExtendedPaymentMethod,
     );
   };
+
+
+  const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
+  const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
+
+  const openRemoveConfirm = (paymentMethodId: string) => {
+    setPendingRemoveId(paymentMethodId);
+    setConfirmRemoveOpen(true);
+  };
+
+  const closeRemoveConfirm = () => {
+    setConfirmRemoveOpen(false);
+    setPendingRemoveId(null);
+  };
+
+  const confirmRemove = async () => {
+    if (!pendingRemoveId) return;
+    closeRemoveConfirm();
+    await handleDeletePaymentMethod(pendingRemoveId);
+  };
+
 
   const handleAdd = async () => {
     if (!stripe || !elements || !CardElement) {
@@ -148,8 +170,8 @@ export function PaymentMethodDialog() {
         prev.map((pm) =>
           pm.id === paymentMethodId
             ? { ...pm, isDefault: true }
-            : { ...pm, isDefault: false }
-        )
+            : { ...pm, isDefault: false },
+        ),
       );
       toast({
         title: "Default updated",
@@ -166,9 +188,6 @@ export function PaymentMethodDialog() {
     }
   };
 
-  // Updated per your rules:
-  // - If only one remains after deletion and it's not default → make it default
-  // - If deleting the default while multiple remain → set the latest (last item) as default
   const handleDeletePaymentMethod = async (paymentMethodId: string) => {
     setDeletingId(paymentMethodId);
     try {
@@ -179,7 +198,7 @@ export function PaymentMethodDialog() {
       await detachPaymentMethod({ paymentMethodId }).unwrap();
 
       const updated = savedPaymentMethods.filter(
-        (pm) => pm.id !== paymentMethodId
+        (pm) => pm.id !== paymentMethodId,
       );
       setSavedPaymentMethods(updated);
 
@@ -208,8 +227,8 @@ export function PaymentMethodDialog() {
               prev.map((pm) =>
                 pm.id === candidate.id
                   ? { ...pm, isDefault: true }
-                  : { ...pm, isDefault: false }
-              )
+                  : { ...pm, isDefault: false },
+              ),
             );
             toast({
               title: "Default updated",
@@ -244,243 +263,308 @@ export function PaymentMethodDialog() {
     }
   };
 
-  // 🔹 Theme-aware colors for Stripe CardElement
+  // theme-aware Stripe colors (keep)
   const isDarkMode =
     typeof window !== "undefined" &&
     document.documentElement.classList.contains("dark");
 
-  const cardTextColor = isDarkMode ? "#e5e7eb" : "#0f172a"; // light text on dark, dark text on light
-  const cardPlaceholderColor = isDarkMode ? "#9ca3af" : "#94a3b8";
+  const cardTextColor = isDarkMode ? "#ffffff" : "#454545";
+  const cardPlaceholderColor = isDarkMode ? "#b9c2d5" : "#454545";
 
   return (
     <>
       <Button onClick={() => setOpen(true)} className="gap-2">
         <CreditCard className="h-4 w-4" />
-        Manage Payment
+        Add Payment Method
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="w-full max-w-xl sm:max-w-xl rounded-2xl border bg-white p-0 dark:bg-slate-900 dark:border-slate-800 overflow-y-auto max-h-screen sm:mx-auto mx-2">
-          <DialogHeader className="px-4 pt-4 sm:px-6 sm:pt-6">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-              <DialogTitle className="text-xl font-semibold dark:text-slate-100">
-                Manage Payment Methods
-              </DialogTitle>
-            </div>
-            <DialogDescription className="text-sm text-muted-foreground dark:text-slate-400">
-              We process payments securely via Stripe. Your card details never
-              touch our servers.
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent
+          className="
+            p-0
+            max-w-none sm:max-w-none
+            w-[min(92vw,48rem)]
+            max-h-[calc(100vh-3rem)]
+            overflow-y-auto
+          "
+        >
+          <div
+            className="
+              rounded-2xl
+              bg-white dark:bg-[#140947]
+              px-5 sm:px-8
+              pt-8 sm:pt-10
+              pb-8 sm:pb-9
+              flex flex-col
+              gap-6 sm:gap-7
+            "
+          >
+            {/* Header */}
+            <DialogHeader className="space-y-1 text-left">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-7 w-7 text-[#35D750] dark:text-[#4CC26C]" />
+                <DialogTitle className="font-space-grotesk font-semibold text-xl sm:text-2xl tracking-[-0.02em] text-[#020816] dark:text-white">
+                  Manage Payment Methods
+                </DialogTitle>
+              </div>
 
-          <div className="mx-2 sm:mx-6 mt-3 flex flex-col sm:flex-row items-start sm:items-center gap-2 rounded-lg border bg-gradient-to-r from-emerald-50 to-emerald-100/60 px-3 sm:px-4 py-2.5 text-xs text-emerald-900 dark:from-emerald-900/30 dark:to-emerald-800/20 dark:border-emerald-900/40 dark:text-emerald-200">
-            <Lock className="h-4 w-4" />
-            <span className="font-medium">Bank-grade encryption</span>
-            <span className="mx-2">•</span>
-            <span>PCI DSS Level 1 by Stripe</span>
-            <span className="ml-auto flex items-center gap-2">
-              <span className="text-[11px] text-emerald-800 dark:text-emerald-300">
-                Powered by
-              </span>
-              <Image
-                src="/assets/icons/stripe-Logo.svg"
-                alt="Stripe"
-                width={60}
-                height={18}
-                priority
-                className="opacity-90 dark:opacity-80"
+              <DialogDescription className="font-inter text-sm leading-5 text-[#454545] dark:text-[#A3A3A3]">
+                We process payments securely via Stripe. Your card details never
+                touch our servers.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="h-px w-full bg-black/10 dark:bg-white/15" />
+
+         {/* Security bar (aligned) */}
+          <div className="w-full overflow-hidden rounded-lg bg-[rgba(53,215,80,0.15)] px-4 py-3 dark:bg-[#1C144D]">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+              {/* Left */}
+              <div className="flex items-center gap-2 whitespace-nowrap">
+                <Lock className="h-5 w-5 shrink-0 text-[#35D750] dark:text-[#4CC26C]" />
+                <span className="font-inter text-sm leading-5 text-[#35D750] dark:text-[#4CC26C]">
+                  Bank-grade encryption
+                </span>
+              </div>
+
+              {/* Divider */}
+              <div
+                aria-hidden
+                className="hidden sm:block h-6 w-px shrink-0 bg-[#35D750]/40 dark:bg-[#4CC26C]/40"
               />
-            </span>
+
+              {/* Middle (keeps center aligned) */}
+              <div className="flex min-w-0 flex-1 sm:justify-center">
+                <span className="font-inter text-sm leading-5 text-[#35D750] dark:text-[#4CC26C] whitespace-nowrap">
+                  PCI DSS Level 1 by Stripe
+                </span>
+              </div>
+
+              {/* Divider */}
+              <div
+                aria-hidden
+                className="hidden sm:block h-6 w-px shrink-0 bg-[#35D750]/40 dark:bg-[#4CC26C]/40"
+              />
+
+              {/* Right */}
+              <div className="flex items-center gap-2 whitespace-nowrap sm:ml-auto">
+                <span className="font-inter text-sm leading-5 text-[#35D750] dark:text-[#4CC26C]">
+                  Powered by
+                </span>
+                <Image
+                  src="/assets/icons/stripe-Logo.svg"
+                  alt="Stripe"
+                  width={64}
+                  height={24}
+                  priority
+                  className="block h-6 w-auto shrink-0"
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="px-2 pb-4 sm:px-6 sm:pb-6">
-            <section className="mt-4 sm:mt-6">
-              {!showAddForm && (
-                <Button
-                  variant="outline"
-                  onClick={() => setShowAddForm(true)}
-                  className="w-full rounded-xl dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800"
-                >
-                  + Add Payment Method
-                </Button>
-              )}
+            {/* Add Card */}
+            <section className="flex flex-col gap-4 sm:gap-5">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="font-space-grotesk font-semibold text-lg sm:text-xl text-[#020816] dark:text-white">
+                  Add a New Card
+                </h3>
+
+                {!showAddForm && (
+                  <Button variant="outline" onClick={() => setShowAddForm(true)}>
+                    Add a card
+                  </Button>
+                )}
+              </div>
 
               {showAddForm && (
-                <div className="rounded-xl border bg-white p-3 sm:p-5 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-                  <h4 className="mb-3 text-base font-semibold dark:text-slate-100">
-                    Add a New Card
-                  </h4>
-                  <div className="space-y-3">
-                    <label className="block text-sm font-medium dark:text-slate-200">
+                <div className="flex flex-col gap-5">
+                  {/* Cardholder */}
+                  <div className="flex flex-col gap-2">
+                    <p className="font-inter font-semibold text-sm text-[#020816] dark:text-white">
                       Cardholder name
-                      <Input
-                        placeholder="Name on card"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="mt-1 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100 dark:placeholder:text-slate-500"
-                        autoComplete="cc-name"
-                      />
-                    </label>
-
-                    <label className="block text-sm font-medium dark:text-slate-200">
-                      Card details
-                      <div className="mt-1 rounded-lg border bg-gray-50 p-3 dark:bg-slate-800 dark:border-slate-700">
-                        <CardElement
-                          options={{
-                            style: {
-                              base: {
-                                fontSize: "16px",
-                                color: cardTextColor,
-                                "::placeholder": {
-                                  color: cardPlaceholderColor,
-                                },
-                                fontSmoothing: "antialiased",
-                              },
-                              invalid: { color: "#dc2626" },
-                            },
-                            hidePostalCode: true,
-                          }}
-                        />
-                      </div>
-                    </label>
-
-                    <p className="mt-1 flex items-start gap-2 text-xs text-muted-foreground dark:text-slate-400">
-                      <Info className="mt-0.5 h-3.5 w-3.5" />
-                      We never store your full card number or CVC. Stripe
-                      tokenizes your details.
                     </p>
 
-                    <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                      <Button
-                        disabled={!stripe || loading}
-                        onClick={handleAdd}
-                        className="w-full rounded-xl"
-                      >
-                        {loading ? (
-                          <span className="inline-flex items-center gap-2">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Saving…
-                          </span>
-                        ) : (
-                          "Save Card Securely"
-                        )}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full rounded-xl dark:text-slate-300 dark:hover:bg-slate-800"
-                        onClick={() => setShowAddForm(false)}
-                      >
-                        Cancel
-                      </Button>
+                    <Input
+                      variant="glowing"
+                      // if your Input.tsx supports this, it’ll make the fill match dialog bg
+                      // if not, it’s harmless
+                      wrapperClassName="bg-white dark:bg-[#140947]"
+                      placeholder="Name on card"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      autoComplete="cc-name"
+                    />
+                  </div>
+
+                  {/* Card details */}
+                  <div className="flex flex-col gap-2">
+                    <p className="font-inter font-semibold text-sm text-[#020816] dark:text-white">
+                      Card details
+                    </p>
+
+                    <div
+                      className="
+                        rounded-lg
+                        bg-[rgba(53,215,80,0.15)]
+                        dark:bg-[#2A2067]
+                        px-5 py-4
+                      "
+                    >
+                      <CardElement
+                        options={{
+                          style: {
+                            base: {
+                              fontSize: "16px",
+                              color: cardTextColor,
+                              "::placeholder": { color: cardPlaceholderColor },
+                              fontSmoothing: "antialiased",
+                            },
+                            invalid: { color: "#dc2626" },
+                          },
+                          hidePostalCode: true,
+                        }}
+                      />
                     </div>
+
+                    <div className="mt-1 flex items-start gap-2">
+                      <Info className="mt-0.5 h-4 w-4 opacity-60 text-[#454545] dark:text-[#B9C2D5]" />
+                      <p className="font-inter text-sm leading-5 text-[#454545] dark:text-[#A3A3A3]">
+                        We never store your full card number or CVC. Stripe
+                        tokenizes your details.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Buttons (no custom styling; layout only) */}
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <Button
+                      disabled={!stripe || loading}
+                      onClick={handleAdd}
+                      className="w-full"
+                    >
+                      {loading ? (
+                        <span className="inline-flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Saving…
+                        </span>
+                      ) : (
+                        "Save Card Securely"
+                      )}
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowAddForm(false)}
+                      className="w-full"
+                    >
+                      Cancel
+                    </Button>
                   </div>
                 </div>
               )}
             </section>
 
-            <div className="my-4 sm:my-6 border-t dark:border-slate-800" />
+            <div className="h-px w-full bg-black/10 dark:bg-white/15" />
 
-            <section>
-              <div className="mb-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                <h3 className="text-lg font-semibold dark:text-slate-100">
+            {/* Saved cards */}
+            <section className="flex flex-col gap-4">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="font-space-grotesk font-semibold text-lg sm:text-xl text-[#020816] dark:text-white">
                   Saved Cards
                 </h3>
+
                 {isFetching && (
-                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground dark:text-slate-400">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span className="inline-flex items-center gap-2 text-sm text-[#454545] dark:text-[#A3A3A3]">
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     Refreshing…
                   </span>
                 )}
               </div>
 
-              <div className="max-h-64 space-y-3 overflow-y-auto pr-0 sm:pr-1">
+              <div className="w-full rounded-lg border border-[#8086F3] p-4">
                 {savedPaymentMethods && savedPaymentMethods.length > 0 ? (
-                  savedPaymentMethods.map((method) => (
-                    <div
-                      key={method.id}
-                      className="flex items-center justify-between rounded-lg border p-3 shadow-sm transition hover:bg-gray-50 dark:hover:bg-slate-800 dark:border-slate-800"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-md bg-slate-100 dark:bg-slate-800">
-                          <CreditCard className="h-5 w-5 text-slate-600 dark:text-slate-300" />
-                        </div>
-                        <div className="flex flex-col leading-tight">
-                          <span className="font-medium dark:text-slate-100">
-                            {(method.card?.brand || "Card").toUpperCase()} ••••{" "}
-                            {method.card?.last4}
-                          </span>
-                          <span className="text-sm text-muted-foreground dark:text-slate-400">
-                            Expires {method.card?.exp_month}/
-                            {method.card?.exp_year}
-                          </span>
-                          {method.isDefault && (
-                            <span className="mt-1 inline-flex w-fit items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-                              Default
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                  <div className="space-y-3">
+                    {savedPaymentMethods.map((method) => (
+                      <div
+                        key={method.id}
+                        className="w-full rounded-lg border border-black/10 px-4 py-3 dark:border-white/10"
+                      >
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-black/5 dark:bg-white/5">
+                              <CreditCard className="h-5 w-5 text-[#454545] dark:text-[#B9C2D5]" />
+                            </div>
 
-                      <div className="flex items-center gap-2">
-                        {!method.isDefault && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={makeDefaultId === method.id}
-                            onClick={() =>
-                              handleSetDefaultPaymentMethod(method.id)
-                            }
-                            className="dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800"
-                          >
-                            {makeDefaultId === method.id ? (
-                              <span className="inline-flex items-center gap-1">
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                Updating…
-                              </span>
-                            ) : (
-                              "Make Default"
+                            <div className="flex flex-col">
+                              <p className="font-inter font-semibold text-sm text-[#020816] dark:text-white">
+                                {(method.card?.brand || "Card").toUpperCase()}{" "}
+                                •••• {method.card?.last4}
+                              </p>
+                              <p className="font-inter text-sm text-[#454545] dark:text-[#A3A3A3]">
+                                Expires {method.card?.exp_month}/
+                                {method.card?.exp_year}
+                              </p>
+
+                              {method.isDefault && (
+                                <span className="mt-1 inline-flex w-fit items-center rounded-full bg-[#35D750]/15 px-2 py-0.5 text-xs font-semibold text-[#35D750] dark:text-[#4CC26C]">
+                                  Default
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2 sm:justify-end">
+                            {!method.isDefault && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={makeDefaultId === method.id}
+                                onClick={() =>
+                                  handleSetDefaultPaymentMethod(method.id)
+                                }
+                              >
+                                {makeDefaultId === method.id ? (
+                                  <span className="inline-flex items-center gap-2">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Updating…
+                                  </span>
+                                ) : (
+                                  "Make Default"
+                                )}
+                              </Button>
                             )}
-                          </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={deletingId === method.id}
-                          className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/40 dark:text-red-300 dark:hover:bg-red-900/20"
-                          onClick={() => {
-                            if (
-                              window.confirm(
-                                "Remove this payment method? You can add it again at any time."
-                              )
-                            ) {
-                              handleDeletePaymentMethod(method.id);
-                            }
-                          }}
-                        >
-                          {deletingId === method.id ? (
-                            <span className="inline-flex items-center gap-1">
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                              Deleting…
-                            </span>
-                          ) : (
-                            "Remove"
-                          )}
-                        </Button>
+
+                            {/* Remove matches outline/cancel style */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={deletingId === method.id}
+                              onClick={() => openRemoveConfirm(method.id)}
+
+                            >
+                              {deletingId === method.id ? (
+                                <span className="inline-flex items-center gap-2">
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                  Deleting…
+                                </span>
+                              ) : (
+                                "Remove"
+                              )}
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 ) : (
-                  <div className="rounded-lg border bg-slate-50 p-4 sm:p-6 text-center dark:bg-slate-900 dark:border-slate-800">
-                    <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow dark:bg-slate-800">
-                      <CreditCard className="h-5 w-5 text-slate-600 dark:text-slate-300" />
-                    </div>
-                    <p className="text-sm text-muted-foreground dark:text-slate-400">
+                  <div className="flex flex-col items-center justify-center gap-4 py-8 text-center">
+                    <CreditCard className="h-8 w-8 text-[#454545] dark:text-[#B9C2D5]" />
+                    <p className="font-inter font-semibold text-sm text-[#454545] dark:text-white">
                       No payment methods saved yet.
                     </p>
                     <Button
                       variant="outline"
-                      className="mt-3 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800"
                       onClick={() => setShowAddForm(true)}
                     >
                       Add a card
@@ -488,16 +572,59 @@ export function PaymentMethodDialog() {
                   </div>
                 )}
               </div>
-            </section>
 
-            <div className="mt-4 sm:mt-6 flex items-center justify-center gap-2 text-[11px] text-muted-foreground dark:text-slate-400">
-              <Lock className="h-3.5 w-3.5" />
-              Your information is transmitted securely over TLS and handled by
-              Stripe.
-            </div>
+              <div className="flex items-start gap-2">
+                <Lock className="mt-0.5 h-4 w-4 text-[#454545] dark:text-[#B9C2D5]" />
+                <p className="font-inter text-sm leading-5 text-[#454545] dark:text-[#B9C2D5]">
+                  Your information is transmitted securely over TLS and handled
+                  by Stripe
+                </p>
+              </div>
+            </section>
           </div>
         </DialogContent>
       </Dialog>
+      <Dialog
+  open={confirmRemoveOpen}
+  onOpenChange={(v) => {
+    if (!v) closeRemoveConfirm();
+  }}
+>
+  <DialogContent className="w-[min(92vw,420px)] p-0">
+    <div className="rounded-[16px] bg-white px-5 py-6 dark:bg-[#140947] sm:px-6">
+      <DialogHeader className="space-y-1 text-left">
+        <DialogTitle className="font-space-grotesk text-[18px] font-semibold leading-6 text-[#020816] dark:text-white">
+          Remove payment method?
+        </DialogTitle>
+        <DialogDescription className="font-inter text-[14px] leading-5 text-[#454545] dark:text-[#B9C2D5]">
+          You can add it again at any time.
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
+        <Button variant="outline" onClick={closeRemoveConfirm}>
+          Cancel
+        </Button>
+
+        <Button
+          variant="destructive"
+          disabled={!pendingRemoveId || deletingId === pendingRemoveId}
+          onClick={confirmRemove}
+        >
+          {deletingId === pendingRemoveId ? (
+            <span className="inline-flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Removing…
+            </span>
+          ) : (
+            "Remove"
+          )}
+        </Button>
+      </div>
+    </div>
+  </DialogContent>
+</Dialog>
+
     </>
   );
 }

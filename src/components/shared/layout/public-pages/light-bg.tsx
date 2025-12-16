@@ -1,6 +1,6 @@
 import React from "react";
 
-const AuthLightBackground: React.FC = () => (
+const PublicLightBackground: React.FC = () => (
   <>
     <div className="pointer-events-none absolute max-w-none">
       <img
@@ -71,4 +71,4 @@ const AuthLightBackground: React.FC = () => (
   </>
 );
 
-export default AuthLightBackground;
+export default PublicLightBackground;

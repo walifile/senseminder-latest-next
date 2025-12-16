@@ -1,3 +1,7 @@
+
+
+
+
 /* eslint perfectionist/sort-imports: "off" */
 
 "use client";
@@ -23,6 +27,11 @@ import { useGetSmartPcConfigQuery } from "@/api/smartPCConfigAPI";
 
 import type { FormValues } from "../schema";
 import type { ResizeInitial } from "../types";
+
+/**
+ * Shared field focus border style (matches Figma: #8086F3)
+ * You can import & reuse this in page.tsx or other components if needed.
+ */
 
 interface Props {
   methods: UseFormReturn<FormValues>;
@@ -74,6 +83,7 @@ const SmartPcConfigForm = ({
     isLoading: isConfigLoading,
     isFetching: isConfigFetching,
   } = useGetSmartPcConfigQuery();
+
   const apiCpuOptions = useMemo(
     () =>
       (apiConfig?.cpuOptions || {}) as Record<
@@ -82,13 +92,16 @@ const SmartPcConfigForm = ({
       >,
     [apiConfig?.cpuOptions]
   );
+
   const apiCpuCategories = useMemo(
-    () => (apiConfig?.cpuCategories || {}) as Record<
-      string,
-      Record<string, { value: string; label: string }[]>
-    >,
+    () =>
+      (apiConfig?.cpuCategories || {}) as Record<
+        string,
+        Record<string, { value: string; label: string }[]>
+      >,
     [apiConfig?.cpuCategories]
   );
+
   const configLoading = isConfigLoading || isConfigFetching;
 
   const linuxCategoryCpuOptions = useMemo(
@@ -97,7 +110,8 @@ const SmartPcConfigForm = ({
   );
 
   const cpuOptionsForOS = useMemo(
-    () => (isLinuxOS ? linuxCategoryCpuOptions : apiCpuOptions[selectedOS] || []),
+    () =>
+      isLinuxOS ? linuxCategoryCpuOptions : apiCpuOptions[selectedOS] || [],
     [isLinuxOS, linuxCategoryCpuOptions, apiCpuOptions, selectedOS]
   );
 
@@ -107,6 +121,7 @@ const SmartPcConfigForm = ({
       setValue("linuxCategory", "Ubuntu_24.04_LTS_X64", {
         shouldValidate: true,
       });
+
       const opts = apiCpuOptions?.[selectedOS];
       if (opts && opts.length > 0) {
         setValue("cpu", opts[0].value, {
@@ -149,178 +164,223 @@ const SmartPcConfigForm = ({
     [cpuOptionsForOS]
   );
 
+  const pcNameError = errors.pcName;
+
   return (
     <div
       className={cn(
-        "md:col-span-8 space-y-6",
+        "space-y-8",
         loadingExisting && "opacity-60 pointer-events-none"
       )}
     >
       <Form methods={methods}>
-        {/* Basics */}
-        <section className="rounded-lg border bg-muted/30 p-4 space-y-4">
-          <h4 className="text-sm font-semibold text-muted-foreground">
-            Basics :
-          </h4>
+        <div className="space-y-8">
+          {/* ========== BASIC ========== */}
+          <section className="space-y-4">
+            <p className="text-xs font-medium text-muted-foreground">
+              Basic:
+            </p>
 
-          {/* OS */}
-          <Field.Select
-            name="operatingSystem"
-            label="Select Operating System (OS)"
-            placeholder="Select Operating System"
-            options={osOptions}
-            disabled={isResize || loadingExisting}
-          />
+            {/* OS */}
+            <Field.Select
+              name="operatingSystem"
+              label="Select  Operating System (OS)"
+              placeholder="Select Operating System"
+              options={osOptions}
+              disabled={isResize || loadingExisting}
+              selectVariant="glowingSelector"
 
-          {/* Name */}
-          <div className="space-y-2">
-            <Label>Name of the computer</Label>
-            <Controller
-              control={control}
-              name="pcName"
-              rules={
-                isResize
-                  ? undefined
-                  : {
-                      required: "Computer name is required",
-                      pattern: {
-                        value: /^[a-zA-Z0-9-_ ]{1,30}$/,
-                        message:
-                          "Only letters, numbers, spaces, dash and underscore allowed (max 30)",
-                      },
-                    }
-              }
-              render={({ field }) => (
-                <Input
-                  className={cn(!isResize && errors.pcName && "border-red-500")}
+            />
+
+            {/* Name of the computer */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">
+                Name of the computer
+              </Label>
+
+              <Controller
+                control={control}
+                name="pcName"
+                rules={
+                  isResize
+                    ? undefined
+                    : {
+                        required: "Computer name is required",
+                        pattern: {
+                          value: /^[a-zA-Z0-9-_ ]{1,30}$/,
+                          message:
+                            "Only letters, numbers, spaces, dash and underscore allowed (max 30)",
+                        },
+                      }
+                }
+                render={({ field }) => (
+                  <Input
+                  variant="auth"
+                  className={cn(
+                    "bg-[rgba(37,48,240,0.07)]",
+                    "border border-[#2530F0]/20 dark:border-white/10",
+                    "focus-visible:outline-none focus-visible:border-[#5f4bf6]",
+                    "h-[60px]",
+
+                    !isResize && pcNameError && "border-red-500 focus-visible:border-red-500"
+                  )}
                   placeholder="Enter a name for your computer"
                   {...field}
                   disabled={isLocked("pcName")}
                   data-cancel-drag
                 />
-              )}
-            />
-            {!isResize && errors.pcName && (
-              <div className="flex items-center gap-2 mt-1.5">
-                <AlertCircle className="h-4 w-4 text-yellow-600" />
-                <p className="text-xs text-yellow-700">
-                  {errors.pcName.message}
+
+                )}
+              />
+
+              {/* Helper row: always visible like Figma, message changes on error */}
+              <div className="mt-1.5 flex items-center gap-2">
+                <AlertCircle
+                  className={cn(
+                    "h-4 w-4",
+                    pcNameError
+                      ? "text-yellow-600"
+                      : "text-muted-foreground/80"
+                  )}
+                />
+                <p
+                  className={cn(
+                    "text-xs",
+                    pcNameError
+                      ? "text-yellow-700"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  {pcNameError?.message ?? "PC name is required"}
                 </p>
               </div>
-            )}
-          </div>
-        </section>
+            </div>
+          </section>
 
-        {/* Configuration */}
-        <section className="rounded-lg border bg-muted/20 p-4 space-y-4">
-          <h4 className="text-sm font-semibold text-muted-foreground">
-            Configuration :
-          </h4>
+          {/* ========== CONFIGURATIONS ========== */}
+          <section className="space-y-4">
+            <p className="text-xs font-medium text-muted-foreground">
+              Configurations:
+            </p>
 
-          {/* Linux category */}
-          {isLinuxOS &&
-            (configLoading ? (
-              <div className="space-y-2">
-                <Label>Category</Label>
-                <Skeleton className="h-11 w-full" />
-              </div>
-            ) : (
-              <Field.Select
-                name="linuxCategory"
-                label="Category"
-                placeholder="Select Linux category"
-                options={Object.keys(
-                  (apiCpuCategories?.Linux || {}) as Record<string, unknown>
+            {/* Linux category (only for Linux OS) */}
+            {isLinuxOS &&
+              (configLoading ? (
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Category</Label>
+                  <Skeleton className="h-11 w-full" />
+                </div>
+              ) : (
+                <Field.Select
+                  name="linuxCategory"
+                  label="Category"
+                  placeholder="Select Linux category"
+                  options={Object.keys(
+                    (apiCpuCategories?.Linux || {}) as Record<string, unknown>
+                  )}
+                  disabled={isResize || loadingExisting}
+                  selectVariant="glowingSelector"
+
+                />
+              ))}
+
+            {/* CPU + Memory */}
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Label className="text-sm font-semibold">
+                  CPU +  Memory
+                </Label>
+
+                {isResize && !isStorageOnly && existingCPU && (
+                  <FieldChangePreview
+                    oldValue={cpuLabelFor(existingCPU)}
+                    newValue={cpuLabelFor(cpu)}
+                    hasChanged={cpu !== existingCPU}
+                  />
                 )}
-                disabled={isResize || loadingExisting}
-              />
-            ))}
+              </div>
 
-          {/* CPU */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <Label>CPU + Memory</Label>
-              {isResize && !isStorageOnly && existingCPU && (
-                <FieldChangePreview
-                  oldValue={cpuLabelFor(existingCPU)}
-                  newValue={cpuLabelFor(cpu)}
-                  hasChanged={cpu !== existingCPU}
-                />
-              )}
-            </div>
+              {configLoading ? (
+                <Skeleton className="h-11 w-full" />
+              ) : (
+                <Field.Select
+                  name="cpu"
+                  selectVariant="glowingSelector"
 
-            {configLoading ? (
-              <Skeleton className="h-11 w-full" />
-            ) : (
-              <Field.Select
-                name="cpu"
-                placeholder="Select CPU size"
-                options={cpuOptionsForOS}
-                disabled={
-                  loadingExisting ||
-                  (isResize && isStorageOnly) ||
-                  configLoading
-                }
-                onValueChange={(value) => {
-                  if (value) {
-                    setValue("cpu", value, { shouldValidate: true });
+                  placeholder="Select CPU size"
+                  options={cpuOptionsForOS}
+                  disabled={
+                    loadingExisting ||
+                    (isResize && isStorageOnly) ||
+                    configLoading
                   }
-                }}
-              />
-            )}
-          </div>
-
-          {/* Storage */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <Label>Storage (SSD)</Label>
-              {isResize && isStorageOnly && existingStorage && (
-                <FieldChangePreview
-                  oldValue={`${existingStorage} GB`}
-                  newValue={`${storage} GB`}
-                  hasChanged={Number(storage) !== Number(existingStorage)}
+                  onValueChange={(value) => {
+                    if (value) {
+                      setValue("cpu", value, { shouldValidate: true });
+                    }
+                  }}
                 />
               )}
             </div>
+
+            {/* Storage */}
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Label className="text-sm font-semibold">Storage</Label>
+
+                {isResize && isStorageOnly && existingStorage && (
+                  <FieldChangePreview
+                    oldValue={`${existingStorage} GB`}
+                    newValue={`${storage} GB`}
+                    hasChanged={Number(storage) !== Number(existingStorage)}
+                  />
+                )}
+              </div>
+
+              <Field.Select
+                name="storage"
+                selectVariant="glowingSelector"
+
+                placeholder="Select storage size"
+                options={storageOptions}
+                disabled={isLocked("storage")}
+              />
+            </div>
+
+            {/* Region */}
+            <Field.Select
+              name="region"
+              selectVariant="glowingSelector"
+
+              label="Region"
+              placeholder="Select nearest datacenter"
+              options={locationOptions}
+              tooltipText="Choose your nearest location for the best latency and performance."
+              disabled={isLocked("region")}
+            />
+          </section>
+
+          {/* ========== BILLING ========== */}
+          <section className="space-y-3">
+            <p className="text-xs font-medium text-muted-foreground">
+              Billing Plan:
+            </p>
 
             <Field.Select
-              name="storage"
-              placeholder="Select storage size"
-              options={storageOptions}
-              disabled={isLocked("storage")}
+              name="billingPlan"
+              label="Billing Plan"
+              selectVariant="glowingSelector"
+
+              placeholder="Choose billing plan"
+              disabled={isLocked("billingPlan")}
+              options={[
+                { value: "hourly", label: "Hourly" },
+                { value: "daily", label: "Daily" },
+                { value: "monthly", label: "Monthly" },
+              ]}
             />
-          </div>
-
-          {/* Region */}
-          <Field.Select
-            name="region"
-            label="Location"
-            placeholder="Select nearest datacenter"
-            options={locationOptions}
-            tooltipText="Choose your nearest location for the best latency
-                              and performance."
-            disabled={isLocked("region")}
-          />
-        </section>
-
-        {/* Billing */}
-        <section className="rounded-lg border bg-muted/10 p-4 space-y-3">
-          <h4 className="text-sm font-semibold text-muted-foreground">
-            Billing Plan :
-          </h4>
-
-          <Field.Select
-            name="billingPlan"
-            label="Billing Plan"
-            placeholder="Choose billing plan"
-            disabled={isLocked("billingPlan")}
-            options={[
-              { value: "hourly", label: "Hourly" },
-              { value: "daily", label: "Daily" },
-              { value: "monthly", label: "Monthly" },
-            ]}
-          />
-        </section>
+          </section>
+        </div>
       </Form>
     </div>
   );

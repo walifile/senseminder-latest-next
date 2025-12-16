@@ -29,6 +29,9 @@ const product = [
   { icon: "storage", text: "Sense Cloud", href: "/products/sensecloud" },
 ];
 
+// ✅ routes where we want the footer but WITHOUT the glow blobs
+const noGlowRoutes = ["/build-sensepc"];
+
 const Footer = () => {
   const pathname = usePathname();
   const isHome = pathname === "/";
@@ -42,14 +45,15 @@ const Footer = () => {
     return null;
   }
 
+  const hideGlow = noGlowRoutes.some((route) => pathname?.startsWith(route));
+
   return (
     <footer
-      className="relative text-white overflow-visible
-        min-h-[190px]"
+      className="relative text-white overflow-visible min-h-[190px]"
       aria-label="Site footer"
     >
-      {/* Glow background layers (home only) */}
-      {isHome && (
+      {/* Glow background layers (home only, disabled for some routes) */}
+      {isHome && !hideGlow && (
         <>
           <div
             className="z-0 absolute -top-10 left-1/2 -translate-x-1/2 md:-top-16 md:left-[10%]
@@ -68,7 +72,6 @@ const Footer = () => {
 
       {/* Content wrapper — unified spacing */}
       <div className="relative container pt-10 pb-6 space-y-8">
-        {/* 4-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-4 items-start gap-8">
           {/* Brand */}
           <div className="space-y-4">
@@ -86,7 +89,6 @@ const Footer = () => {
               </p>
             </div>
 
-            {/* Social media icons - pulled to the left */}
             <div className="flex items-center gap-3 -ml-1">
               {socialLinks.map((social, i) => (
                 <a key={i} href={social.href} target="_blank" rel="noreferrer">
@@ -151,11 +153,7 @@ const Footer = () => {
 
             <ul className="space-y-3">
               {product.map((item, index) => (
-                <li
-                  key={index}
-                  className="flex items-center gap-3 ml-0.5"
-                  /* ⭐ pushes Sense PC + Cloud slightly right */
-                >
+                <li key={index} className="flex items-center gap-3 ml-0.5">
                   <Image
                     src={`/assets/svg/${item.icon}.svg`}
                     alt={item.text}
@@ -194,7 +192,6 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom bar */}
         <div className="pt-4 border-t border-[#F8F8F8]">
           <p className="text-center text-[#F8F8F8] text-sm font-poppins">
             © {currentYear} sensepc. All rights reserved.

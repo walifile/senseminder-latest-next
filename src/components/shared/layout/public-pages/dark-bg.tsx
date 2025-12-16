@@ -2,15 +2,15 @@
 import React from "react";
 
 
-const AuthDarkBackground: React.FC = () => (
+const PublicDarkBackground: React.FC = () => (
   <>
-    <div className="pointer-events-none absolute inset-0">
+    {/* <div className="pointer-events-none absolute inset-0">
       <img
         src="/assets/authlayout/dark/slide.svg"
         alt=""
         className="h-full w-full object-cover"
       />
-    </div>
+    </div> */}
 
   <div
     className="
@@ -83,5 +83,5 @@ const AuthDarkBackground: React.FC = () => (
   </>
 );
 
-export default AuthDarkBackground;
+export default PublicDarkBackground;
 

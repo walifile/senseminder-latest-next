@@ -23,7 +23,7 @@ export const billingPlans = [
     features: [
       "Pay only for actual usage",
       "No minimum commitment",
-      "Basic support included",
+      "Support included",
     ],
   },
   {
@@ -36,7 +36,7 @@ export const billingPlans = [
     features: [
       "24-hour continuous access",
       "15% savings vs hourly",
-      "Basic support included",
+      "Support included",
     ],
   },
   {
@@ -49,7 +49,7 @@ export const billingPlans = [
     features: [
       "30-day continuous access",
       "35% savings vs weekly",
-      "Basic support included",
+      "Support included",
     ],
   },
 ];

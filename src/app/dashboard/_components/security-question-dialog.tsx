@@ -139,6 +139,7 @@ export default function SecurityQuestionDialog({
               </p>
               <Input
                 type="password"
+                variant="auth"
                 placeholder="Old Answer"
                 value={oldAnswer}
                 onChange={(e) => setOldAnswer(e.target.value)}
@@ -150,7 +151,7 @@ export default function SecurityQuestionDialog({
             <div className="space-y-2 mt-4">
               <Label>Select a new security question</Label>
               <Select value={newQuestion} onValueChange={setNewQuestion}>
-                <SelectTrigger>
+                <SelectTrigger  variant="glowingSelector">
                   <SelectValue placeholder="Choose a question" />
                 </SelectTrigger>
                 <SelectContent>
@@ -165,6 +166,7 @@ export default function SecurityQuestionDialog({
               <Label className="pt-2">Answer</Label>
               <Input
                 type="password"
+                variant="auth"
                 placeholder="New Answer"
                 value={newAnswer}
                 onChange={(e) => setNewAnswer(e.target.value)}
@@ -174,11 +176,11 @@ export default function SecurityQuestionDialog({
 
           {!loading && hasExistingQuestion && (
             <div className="flex justify-between pt-4">
-              <Button variant="ghost" onClick={() => setShowForgot(true)}>
+              <Button variant="outline" onClick={() => setShowForgot(true)}>
                 I Forgot
               </Button>
               <div className="flex gap-2">
-                <Button variant="ghost" onClick={onClose}>
+                <Button variant="outline" onClick={onClose}>
                   Cancel
                 </Button>
                 <Button onClick={handleSubmit} disabled={submitting}>
@@ -190,7 +192,7 @@ export default function SecurityQuestionDialog({
 
           {!loading && !hasExistingQuestion && (
             <div className="flex justify-end pt-4 gap-2">
-              <Button variant="ghost" onClick={onClose}>
+              <Button variant="outline" onClick={onClose}>
                 Cancel
               </Button>
               <Button onClick={handleSubmit} disabled={submitting}>

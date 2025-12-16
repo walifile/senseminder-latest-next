@@ -1,3 +1,6 @@
+
+
+
 /* eslint perfectionist/sort-imports: "off" */
 
 "use client";
@@ -23,7 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useBoolean } from "@/hooks/use-boolean";
 
 import { formSchema } from "../schema";
-import CostSummary from "./cost-summary";
+import CostSummarySmall from "./cost-summary-small";
 import { fetchEstimate } from "../api/fetch-estimate";
 import SmartPcConfigForm from "./smart-pc-config-form";
 import ConfirmPurchaseDialog from "./confirm-purchase-dialog";
@@ -114,10 +117,6 @@ const SmartPCConfigDialog = ({
   const values = watch();
   const { billingPlan, cpu, region, storage } = values;
 
-  // Fetch API cpuOptions via RTK Query (ensures options populate dynamically)
-  // const { data: apiConfig } = useGetSmartPcConfigQuery();
-  // const apiCpuOptions = apiConfig?.cpuOptions || {};
-
   // Disable STORAGE-only submit when no change
   const isNoStorageChange = useMemo(
     () => storage === existingStorage,
@@ -132,7 +131,6 @@ const SmartPCConfigDialog = ({
 
   // Plan check: CPU resize uses isPlanBlocked; storage increase has its own guard
   const isPlanBlocked = useMemo(
-    // CPU resize (hourly only)
     () => isResize && billingPlan !== "hourly",
     [isResize, billingPlan]
   );
@@ -330,7 +328,7 @@ const SmartPCConfigDialog = ({
           style={{
             transform: `translate(calc(-50% + ${drag.x}px), calc(-50% + ${drag.y}px))`,
           }}
-          className="sm:max-w-[760px] max-h-[95vh] overflow-hidden p-0"
+          className="sm:max-w-[1080px] max-h-[95vh] overflow-hidden p-0"
         >
           {/* Header (drag handle) */}
           <SmartPcConfigDialogHeader
@@ -342,33 +340,36 @@ const SmartPCConfigDialog = ({
 
           {/* Body (scrollable); footer is outside to avoid covering Billing */}
           <div
-            className="grid gap-6 px-6 pt-6 pb-40 md:grid-cols-12 max-h-[calc(95vh-64px)] overflow-y-auto"
+            className="grid items-start gap-6 lg:gap-8 px-6 pt-6 pb-40 md:grid-cols-12 max-h-[calc(95vh-64px)] overflow-y-auto"
             data-cancel-drag
           >
             {/* LEFT: FORM */}
-            <SmartPcConfigForm
-              methods={methods}
-              isResize={isResize}
-              isStorageOnly={isStorageOnly}
-              existingCPU={existingCPU}
-              existingStorage={existingStorage}
-              loadingExisting={loadingExisting}
-            />
+            <div className="md:col-span-7 lg:col-span-8">
+              <SmartPcConfigForm
+                methods={methods}
+                isResize={isResize}
+                isStorageOnly={isStorageOnly}
+                existingCPU={existingCPU}
+                existingStorage={existingStorage}
+                loadingExisting={loadingExisting}
+              />
+            </div>
 
             {/* RIGHT: SUMMARY */}
-            <CostSummary
-              isResize={isResize}
-              billingPlan={billingPlan}
-              handleEstimate={handleEstimate}
-              estimateData={estimateData}
-              isEstimating={isEstimating}
-            />
+            <div className="md:col-span-5 lg:col-span-4">
+              <CostSummarySmall
+                isResize={isResize}
+                billingPlan={billingPlan}
+                handleEstimate={handleEstimate}
+                estimateData={estimateData}
+                isEstimating={isEstimating}
+              />
+            </div>
           </div>
 
           {/* Sticky footer */}
           <div
-            className="sticky bottom-0 inset-x-0 border-t bg-background px-6 py-4"
-            data-cancel-drag
+        className="sticky bottom-0 inset-x-0 border-t px-6 py-4 bg-[#ffffff] dark:bg-[#140947]"            data-cancel-drag
           >
             <DialogFooter className="gap-2">
               <Button

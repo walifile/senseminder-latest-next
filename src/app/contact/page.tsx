@@ -92,8 +92,8 @@ const Contact = () => {
         <div className="glass-card !shadow-none gradient-outline-border !rounded-3xl !border-0 px-0 md:px-12 py-12 w-full flex flex-col-reverse md:flex-row gap-8 md:gap-24">
           <div className="w-full md:w-3/4 px-6 md:px-0">
             <Breadcrumb
-              items={[{ label: "Home", href: "/" }, { label: "Build Smartpc" }]}
-              className="mt-0 mb-6"
+              items={[{ label: "Home", href: "/" }, { label: "Contact" }]}
+              className="mt-0 mb-6 text-sm text-muted-foreground dark:text-muted-foreground [&_a]:text-muted-foreground [&_a]:hover:text-foreground [&_a]:transition-colors [&_span]:text-foreground"
             />
             <h1 className="w-full font-space-grotesk text-4xl md:text-[50px] font-bold mb-6 leading-[1]">
               Contact Us
@@ -118,123 +118,112 @@ const Contact = () => {
         </div>
 
         <div className="glass-card !shadow-none gradient-outline-border !rounded-3xl !border-0 w-full grid grid-cols-1 lg:grid-cols-2 gap-16 mt-8 px-6 md:px-12 py-12">
-          <div className="space-y-8">
-            <p className="font-space-grotesk font-semibold text-3xl mb-3">
-              Contact Information
-            </p>
+          <div className="flex h-full flex-col gap-8">
+            {/* Top content */}
+            <div className="space-y-8">
+              <p className="font-space-grotesk font-semibold text-2xl md:text-3xl tracking-tight text-foreground">
+                Contact Information
+              </p>
 
-            <div className="space-y-6">
-              <div className="flex items-center">
-                <div className="min-w-16 w-16 h-16 md:min-w-20 md:w-20 md:h-20 bg-[#F3DBF5] dark:bg-[#210E39] text-white rounded-full flex items-center justify-center mr-4">
-                  <Image
-                    src="/assets/svg/contact/phone.svg"
-                    alt="Contact Us"
-                    className="h-8 w-8 md:h-10 md:w-10"
-                    width={34}
-                    height={34}
-                    priority
-                  />
+              <div className="space-y-6">
+                {/* Email */}
+                <div className="flex items-center gap-4">
+                  <div className="min-w-16 w-16 h-16 md:min-w-20 md:w-20 md:h-20 bg-[#F3DBF5] dark:bg-[#210E39] text-white rounded-full flex items-center justify-center">
+                    <Image
+                      src="/assets/svg/contact/email.svg"
+                      alt="Email"
+                      className="h-8 w-8 md:h-10 md:w-10"
+                      width={34}
+                      height={34}
+                      priority
+                    />
+                  </div>
+
+                  <div>
+                    <p className="text-foreground text-base md:text-lg font-medium leading-relaxed tracking-[-0.2px]">
+                      <a
+                        href="mailto:contact@sensepc.com"
+                        className="hover:text-primary transition-colors underline-offset-4 hover:underline"
+                      >
+                        contact@sensepc.com
+                      </a>
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-paragraph text-base mb-3">
-                    Phone Number
-                  </h3>
-                  <p className="text-black dark:text-white text-base md:text-xl font-semibold leading-[30px]">
-                    <a
-                      href="tel:+16462265995"
-                      className="hover:text-primary transition-colors"
-                    >
-                      +1 (646) 226-5995
-                    </a>
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <div className="min-w-16 w-16 h-16 md:min-w-20 md:w-20 md:h-20 bg-[#F3DBF5] dark:bg-[#210E39] text-white rounded-full flex items-center justify-center mr-4">
-                  <Image
-                    src="/assets/svg/contact/email.svg"
-                    alt="Contact Us"
-                    className="h-8 w-8 md:h-10 md:w-10"
-                    width={34}
-                    height={34}
-                    priority
-                  />
-                </div>
-                <div>
-                  <h3 className="text-paragraph text-base mb-3">
-                    Email Address
-                  </h3>
-                  <p className="text-black dark:text-white text-base md:text-xl font-semibold leading-[30px]">
-                    <a
-                      href="mailto:info@smartpc.com"
-                      className="hover:text-primary transition-colors"
-                    >
-                      contact@senseminder.com
-                    </a>
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <div className="min-w-16 w-16 h-16 md:min-w-20 md:w-20 md:h-20 bg-[#F3DBF5] dark:bg-[#210E39] text-white rounded-full flex items-center justify-center mr-4">
-                  <Image
-                    src="/assets/svg/contact/location.svg"
-                    alt="Contact Us"
-                    className="h-8 w-8 md:h-10 md:w-10"
-                    width={34}
-                    height={34}
-                    priority
-                  />
-                </div>
-                <div>
-                  <p className="text-black dark:text-white text-base md:text-xl font-semibold leading-[30px]">
-                    Elan Satellite Place 3100 Commerce Avenue NW Duluth, GA
-                    30096, United States
-                  </p>
+
+                {/* Location */}
+                <div className="flex items-center gap-4">
+                  <div className="min-w-16 w-16 h-16 md:min-w-20 md:w-20 md:h-20 bg-[#F3DBF5] dark:bg-[#210E39] text-white rounded-full flex items-center justify-center">
+                    <Image
+                      src="/assets/svg/contact/location.svg"
+                      alt="Location"
+                      className="h-8 w-8 md:h-10 md:w-10"
+                      width={34}
+                      height={34}
+                      priority
+                    />
+                  </div>
+
+                  <div>
+                    <p className="text-foreground text-base md:text-lg font-medium leading-relaxed tracking-[-0.2px]">
+                      1372 Peachtree
+                      <br />
+                      Atlanta, Georgia 30309
+                      <br />
+                      United States of America
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="px-4 py-4 md:px-8 md:py-6 rounded-lg border bg-[#5220DE09] dark:[#ffffff0a]">
-              <h2 className="text-2xl font-semibold mb-6 flex gap-4 items-center">
-                <Image
-                  src="/assets/svg/contact/clock.svg"
-                  alt="Contact Us"
-                  className="h-8 w-8"
-                  width={34}
-                  height={34}
-                  priority
-                />
-                Business Hours
-              </h2>
+            {/* ✅ Push Business Hours down */}
+            <div className="mt-auto">
+              <div className="px-4 py-4 md:px-8 md:py-6 rounded-xl border bg-[#5220DE09] dark:bg-[#ffffff0a]">
+                <h2 className="font-space-grotesk text-xl md:text-2xl font-semibold tracking-tight text-foreground mb-5 flex items-center gap-3">
+                  <Image
+                    src="/assets/svg/contact/clock.svg"
+                    alt="Business Hours"
+                    className="h-6 w-6 md:h-7 md:w-7"
+                    width={34}
+                    height={34}
+                    priority
+                  />
+                  Business Hours
+                </h2>
 
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-paragraph text-xl font-semibold">
-                    Monday - Friday:
-                  </span>
-                  <span className="text-paragraph text-xl font-semibold">
-                    10:00 AM - 4:00 PM
-                  </span>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-6">
+                    <span className="text-sm md:text-base font-medium text-muted-foreground">
+                      Monday – Friday
+                    </span>
+                    <span className="text-sm md:text-base font-semibold text-foreground">
+                      10:00 AM – 4:00 PM
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-6">
+                    <span className="text-sm md:text-base font-medium text-muted-foreground">
+                      Saturday
+                    </span>
+                    <span className="text-sm md:text-base font-semibold text-foreground">
+                      Closed
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-6">
+                    <span className="text-sm md:text-base font-medium text-muted-foreground">
+                      Sunday
+                    </span>
+                    <span className="text-sm md:text-base font-semibold text-foreground">
+                      Closed
+                    </span>
+                  </div>
+
+                  <p className="pt-3 text-xs md:text-sm text-muted-foreground">
+                    * All times are in Eastern Standard Time (EST)
+                  </p>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-paragraph text-xl font-semibold">
-                    Saturday:
-                  </span>
-                  <span className="text-paragraph text-xl font-semibold">
-                    Closed
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-paragraph text-xl font-semibold">
-                    Sunday:
-                  </span>
-                  <span className="text-paragraph text-xl font-semibold">
-                    Closed
-                  </span>
-                </div>
-                <p className="text-sm font-light text-paragraph dark:text-[#7D7D7D] pt-4">
-                  * All times are in Eastern Standard Time (EST)
-                </p>
               </div>
             </div>
           </div>
@@ -265,7 +254,6 @@ const Contact = () => {
                           <Input
                             placeholder="John Doe"
                             {...field}
-                            className="bg-card border-border"
                           />
                         </FormControl>
                         <FormMessage />
@@ -284,7 +272,6 @@ const Contact = () => {
                             type="email"
                             placeholder="john@example.com"
                             {...field}
-                            className="bg-card border-border"
                           />
                         </FormControl>
                         <FormMessage />
@@ -303,7 +290,6 @@ const Contact = () => {
                         <Input
                           placeholder="How can we help you?"
                           {...field}
-                          className="bg-card border-border"
                         />
                       </FormControl>
                       <FormMessage />
@@ -320,7 +306,7 @@ const Contact = () => {
                       <FormControl>
                         <Textarea
                           placeholder="Please provide details about your inquiry..."
-                          className="min-h-[150px] bg-card border-border"
+                          className="min-h-[150px]"
                           {...field}
                         />
                       </FormControl>

@@ -28,14 +28,14 @@ export default function AboutPage() {
       >
         <Breadcrumb
           items={[{ label: "Home", href: "/" }, { label: "About Us" }]}
-          className="mb-0"
+          className="mt-0 mb-6 text-sm text-muted-foreground dark:text-muted-foreground [&_a]:text-muted-foreground [&_a]:hover:text-foreground [&_a]:transition-colors [&_span]:text-foreground"
         />
         <p className="font-space-grotesk font-bold text-3xl md:text-[65px] leading-[1] my-3 w-full">
-          About SenseMinder
+          About SensePC
         </p>
         <p className="text-paragraph text-base md:text-2xl md:leading-[2.5rem] w-full">
-          At SmartPC.Cloud, we’re redefining computing by delivering
-          high-performance, fully managed cloud desktops that remove the need
+          At Sensepc, we’re redefining computing by delivering
+          high-performance, fully managed cloud computer that remove the need
           for traditional hardware.
         </p>
       </Hero>

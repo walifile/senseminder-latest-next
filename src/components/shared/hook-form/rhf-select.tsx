@@ -1,3 +1,7 @@
+
+
+// src/components/shared/hook-form/rhf-select.tsx
+
 import type { ElementType } from "react";
 
 import Image from "next/image";
@@ -27,6 +31,8 @@ export interface SelectOption {
   description?: string;
 }
 
+type RHFSelectVariant = "default" | "form" | "glowingSelector";
+
 export interface RHFSelectProps {
   name: string;
   label?: string;
@@ -41,6 +47,13 @@ export interface RHFSelectProps {
   className?: string;
   labelClassName?: string;
   triggerClassName?: string;
+
+  // ✅ NEW (optional): only affects selects where you pass it
+  selectVariant?: RHFSelectVariant;
+
+  // ✅ NEW (optional): lets you tune dropdown without touching global select.tsx
+  contentClassName?: string;
+
   onValueChange?: (value: string) => void;
 }
 
@@ -60,6 +73,8 @@ export const RHFSelect = forwardRef<HTMLButtonElement, RHFSelectProps>(
       className,
       labelClassName,
       triggerClassName,
+      contentClassName,
+      selectVariant = "default",
       onValueChange,
     },
     ref
@@ -92,9 +107,7 @@ export const RHFSelect = forwardRef<HTMLButtonElement, RHFSelectProps>(
                         )}
                       >
                         {label}
-                        {required && (
-                          <span className="ml-1 text-red-500">*</span>
-                        )}
+                        {required && <span className="ml-1 text-red-500">*</span>}
                       </Label>
                     )}
                     {description && (
@@ -127,26 +140,30 @@ export const RHFSelect = forwardRef<HTMLButtonElement, RHFSelectProps>(
               <Select
                 value={field.value || ""}
                 onValueChange={(val) => {
-                  if (onValueChange) {
-                    onValueChange(val);
-                  } else {
-                    field.onChange(val);
-                  }
+                  if (onValueChange) onValueChange(val);
+                  else field.onChange(val);
                 }}
                 disabled={disabled}
               >
                 <SelectTrigger
                   ref={ref}
                   id={name}
+                  variant={selectVariant}
                   className={cn(
+                    // keep existing error behavior
                     hasError && "border-red-500 focus:border-red-500",
+                    // if using glowingSelector, hide glow overlay on error (only affects new variant)
+                    hasError && selectVariant === "glowingSelector" && "before:opacity-0",
                     triggerClassName
                   )}
                 >
                   <SelectValue placeholder={placeholder} />
                 </SelectTrigger>
 
-                <SelectContent>
+                <SelectContent
+                  variant={selectVariant}
+                  className={contentClassName}
+                >
                   {normalizedOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       <div className="flex items-center gap-2">

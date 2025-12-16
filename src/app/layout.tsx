@@ -16,8 +16,8 @@ import { WebSocketProvider } from "@/providers/WebSocketProvider";
 import Navbar from "@/components/shared/layout/navbar";
 import Footer from "@/components/shared/layout/footer";
 import { ThemeWrapper } from "@/components/shared/layout/theme-wrapper";
-import AuthDarkBackground from "@/components/shared/layout/public-pages/dark-bg";
-import AuthLightBackground from "@/components/shared/layout/public-pages/light-bg";
+import PublicDarkBackground from "@/components/shared/layout/public-pages/dark-bg";
+import PublicLightBackground from "@/components/shared/layout/public-pages/light-bg";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -151,10 +151,10 @@ export default function RootLayout({
                     {/* Background layer */}
                     <div className="pointer-events-none absolute inset-0 z-0">
                       <div className="block dark:hidden">
-                        <AuthLightBackground />
+                        <PublicLightBackground />
                       </div>
                       <div className="hidden dark:block">
-                        <AuthDarkBackground />
+                        <PublicDarkBackground />
                       </div>
                     </div>
 

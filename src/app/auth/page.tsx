@@ -262,10 +262,10 @@ export default function LoginPage() {
                               type="email"
                               placeholder="Enter your email"
                               {...register("email")}
-                              className={cn(
-                                "h-[60px] rounded-[10px] pl-11",
-                                errors.email && "border-red-500",
-                              )}
+                              uiSize="lg"
+                              intent={errors.email ? "error" : "default"}
+                              aria-invalid={!!errors.email}
+                              className="pl-11"
                             />
                           </div>
                           {errors.email && (
@@ -279,16 +279,17 @@ export default function LoginPage() {
                         <div className="space-y-1.5">
                           <div className="relative">
                             <Lock className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                            <Input
+                           <Input
                               id="password"
                               type="password"
                               placeholder="Password"
                               {...register("password")}
-                              className={cn(
-                                "h-[60px] rounded-[10px] pl-11 pr-11",
-                                errors.password && "border-red-500",
-                              )}
+                              uiSize="lg"
+                              intent={errors.password ? "error" : "default"}
+                              aria-invalid={!!errors.password}
+                              className="pl-11 pr-11"
                             />
+
                           </div>
                           {errors.password && (
                             <p className="text-xs text-red-500">

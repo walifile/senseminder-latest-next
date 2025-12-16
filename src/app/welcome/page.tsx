@@ -230,15 +230,11 @@ export default function WelcomePage() {
                 id="fullName"
                 autoComplete="name"
                 placeholder="Enter your full name"
+                variant="glowing"
+                wrapperClassName="bg-white dark:bg-[#2A2067]"
                 {...register("fullName", { required: true })}
-                // only customize dark mode; light mode keeps default Input styles
-                className={`h-12 rounded-xl ${
-                  isDark
-                    ? "border-[#2A2067] bg-[#2A2067] text-white placeholder:text-[#9DA4FF] focus-visible:ring-2 focus-visible:ring-[#7C63FF] focus-visible:ring-offset-0"
-                    : ""
-                }`}
               />
-            </div>
+                          </div>
 
             {/* Terms checkbox */}
             <div className="mb-4 flex items-start gap-3">

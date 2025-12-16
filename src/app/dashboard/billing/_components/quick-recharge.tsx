@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -8,18 +9,13 @@ import {
   useUpdateAutoRechargeMutation,
 } from "@/api/billing";
 
+import { cn } from "@/lib/utils";
 import { Logger } from "@/lib/utils/logger";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { Separator } from "@/components/ui/separator";
-import {
-  Card,
-  CardTitle,
-  CardHeader,
-  CardContent,
-  CardDescription,
-} from "@/components/ui/card";
+import { DashboardCard } from "@/components/ui/dashboard/dashboard-card";
 import {
   Dialog,
   DialogTitle,
@@ -28,7 +24,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-import { PencilLine, RefreshCcw, ArrowUpRight } from "lucide-react";
+import { PencilLine, ArrowUpRight } from "lucide-react";
 
 import { useBoolean } from "@/hooks/use-boolean";
 import { useFeedback } from "@/hooks/use-feedback";
@@ -117,7 +113,6 @@ const QuickRecharge = () => {
         setAutoRechargeAmount(refreshed.autoRechargeAmount);
       }
 
-      // 🎯 New / conditional toasts
       if (options?.showAmountUpdatedToast) {
         toast({
           title: "Auto-recharge amount updated",
@@ -126,8 +121,9 @@ const QuickRecharge = () => {
       } else {
         toast({
           title: "Auto-recharge updated",
-          description: `Auto-recharge has been ${enabled ? `enabled with $${amount}` : "disabled"
-            }.`,
+          description: `Auto-recharge has been ${
+            enabled ? `enabled with $${amount}` : "disabled"
+          }.`,
         });
       }
     } catch (error: unknown) {
@@ -168,7 +164,7 @@ const QuickRecharge = () => {
     setAutoRechargeAmount(tempAutoRechargeAmount);
 
     void setAutoRecharge(true, tempAutoRechargeAmount, {
-      showAmountUpdatedToast: wasEnabled, // show special toast only when updating existing amount
+      showAmountUpdatedToast: wasEnabled,
     });
 
     showAutoRechargeConfig.onFalse();
@@ -176,177 +172,151 @@ const QuickRecharge = () => {
 
   return (
     <>
-      <Card className="relative overflow-hidden border border-border/80 shadow-sm">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/40 via-primary to-primary/40" />
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <ArrowUpRight className="h-5 w-5 text-primary" />
-              <span>Quick Recharge</span>
-            </div>
-            <span className="text-xs text-muted-foreground">
-              Secure • Instant • Stripe
-            </span>
-          </CardTitle>
-          <CardDescription>
-            Add funds to your account instantly
-          </CardDescription>
-        </CardHeader>
+      <DashboardCard className="relative overflow-hidden p-0">
+        {/* Header */}
+        <div className="px-6 pt-5">
+          <div className="space-y-1">
+            <p className="text-[24px] font-bold tracking-[-0.4px] text-foreground">
+              Quick Recharge
+            </p>
+            <p className="text-[16px] tracking-[-0.3px] text-muted-foreground dark:text-[#B9C2D5]">
+              Add funds to your account instantly
+            </p>
+          </div>
+        </div>
 
-        <CardContent>
+        {/* Header divider (Figma line) */}
+        <Separator className="mt-4 bg-[rgba(37,48,240,0.2)] dark:bg-[rgba(255,255,255,0.2)]" />
+
+        <div className="px-6 pb-6 pt-5">
           <div className="space-y-6">
-            {/* Quick recharge presets – pill layout like screenshot */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {quickRechargeAmounts.map(
-                ({ amount, label: _label, description, isRecommended }) => {
-                  const isSelected = selectedAmount === amount;
-                  return (
-                    <Button
-                      key={amount}
-                      variant="outline"
-                      className={`group relative flex h-[76px] w-full items-center justify-between rounded-full border-2 px-6 text-left transition-all
-                        ${isRecommended
-                          ? "border-transparent bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white shadow-lg hover:brightness-105"
-                          : "border-primary/60 bg-transparent text-foreground hover:bg-primary/5"
-                        }
-                        ${isSelected
-                          ? "ring-2 ring-primary/70"
-                          : "hover:border-primary"
-                        }`}
-                      onClick={() => {
-                        setSelectedAmount(amount);
-                        showConfirm.onTrue();
-                      }}
-                    >
-                      <div className="flex flex-col">
-                        <span className="text-2xl font-bold tracking-tight">
-                          ${amount}
-                        </span>
-                        {description && (
-                          <span
-                            className={`mt-1 text-xs ${isRecommended
-                                ? "text-white/80"
-                                : "text-muted-foreground"
-                              }`}
-                          >
-                            {description}
-                          </span>
-                        )}
-                      </div>
-
-                      {isRecommended && (
-                        <span className="inline-flex items-center rounded-full bg-background/80 px-3 py-1 text-xs font-medium text-foreground shadow-sm">
-                          Popular
-                        </span>
-                      )}
-                    </Button>
-                  );
-                }
-              )}
-            </div>
-
-            {/* Divider */}
-            <div className="relative">
-              <Separator />
-              <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 px-2 bg-card">
-                <span className="text-xs text-muted-foreground">
-                  Or enter custom amount
-                </span>
-              </div>
-            </div>
-
-            {/* Custom amount + Add funds */}
-            <div className="space-y-2">
-              <div className="flex flex-col sm:flex-row gap-2">
-                <div className="relative flex-1">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                    $
-                  </div>
-                  <Input
-                    type="number"
-                    placeholder="Enter amount (min $20)"
-                    className="pl-7 text-sm"
-                    value={customAmount ?? ""}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setCustomAmount(
-                        v === "" ? null : parseFloat(e.target.value)
-                      );
-                    }}
-                  />
-                </div>
+            {/* Presets (2x2 like Figma) */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+              {quickRechargeAmounts.map(({ amount, isRecommended }) => (
                 <Button
-                  className="flex-shrink-0 sm:w-36"
-                  disabled={isRecharging}
+                  key={amount}
+                  className="relative"
+                  variant="tinted"
                   onClick={() => {
-                    if (customAmount && customAmount >= 20) {
-                      setSelectedAmount(customAmount);
-                      showConfirm.onTrue();
-                    } else {
-                      toast({
-                        title: "Invalid amount",
-                        description:
-                          "Please enter a valid amount (minimum $20).",
-                        variant: "destructive",
-                      });
-                    }
+                    setSelectedAmount(amount);
+                    showConfirm.onTrue();
                   }}
                 >
-                  {isRecharging ? "Processing..." : "Add Funds"}
+                  <span className="text-[22px] font-medium leading-8 tracking-[-0.3px]">
+                    ${amount}
+                  </span>
+
+                  {/* Popular ribbon (for $50 in Figma) */}
+                  {isRecommended && (
+                    <span className="pointer-events-none absolute -right-1 -top-1 h-[47px] w-[47px] select-none">
+                      <span className="relative block h-full w-full">
+                        <img src="/assets/dashboard/ribbon.svg" alt="" />
+                      </span>
+                    </span>
+                  )}
+                </Button>
+              ))}
+            </div>
+
+
+            {/* Or enter custom amount divider */}
+            <div className="flex items-center gap-3.5">
+              <div className="h-px flex-1 bg-[rgba(37,48,240,0.2)] dark:bg-[rgba(255,255,255,0.2)]" />
+              <span className="text-[16px] tracking-[-0.3px] text-muted-foreground dark:text-[#B9C2D5]">
+                Or enter custom amount
+              </span>
+              <div className="h-px flex-1 bg-[rgba(37,48,240,0.2)] dark:bg-[rgba(255,255,255,0.2)]" />
+            </div>
+
+            {/* Custom amount + Add Funds (like Figma row) */}
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-6">
+              <div className="relative w-full md:flex-1">
+                <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-[22px] font-medium leading-8 tracking-[-0.3px] text-muted-foreground dark:text-[#B9C2D5]">
+                  $
+                </span>
+
+                <Input
+                  type="number"
+                  variant="auth"
+                  placeholder="Enter amount"
+                  value={customAmount ?? ""}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setCustomAmount(v === "" ? null : parseFloat(v));
+                  }}
+                  className={cn(
+                    "h-14 rounded-[10px] pl-12 pr-5 text-[18px] leading-8 tracking-[-0.3px]",
+                    "bg-[rgba(37,48,240,0.07)] dark:bg-[rgba(255,255,255,0.04)]",
+                                    "border border-[#2530F0]/20 dark:border-white/10",
+                                    "focus-visible:outline-none focus-visible:border-[#5f4bf6]",
+                    // Figma: light vs dark field
+                  )}
+                />
+              </div>
+
+              <Button
+                disabled={isRecharging}
+                onClick={() => {
+                  if (customAmount && customAmount >= 20) {
+                    setSelectedAmount(customAmount);
+                    showConfirm.onTrue();
+                  } else {
+                    toast({
+                      title: "Invalid amount",
+                      description: "Please enter a valid amount (minimum $20).",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+                className="h-14 w-full gap-2 rounded-full px-7 md:w-auto"
+              >
+                <span className="text-[16px] font-medium">Add Funds</span>
+                <ArrowUpRight className="h-5 w-5" />
+              </Button>
+            </div>
+
+
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                className="h-5 w-5 rounded-[4px] accent-[#2530F0]"
+                checked={autoRechargeEnabled}
+                onChange={handleAutoRechargeToggle}
+              />
+
+              <span className="text-[16px] tracking-[-0.3px] text-muted-foreground dark:text-[#B9C2D5]">
+                Enable auto-recharge when balance drops below $10
+              </span>
+            </div>
+
+            {autoRechargeEnabled && (
+              <div className="flex flex-wrap items-center gap-2 pl-7 text-sm text-muted-foreground dark:text-[#B9C2D5]">
+                <span>Current auto-recharge amount:</span>
+
+                <span className="inline-flex items-center rounded-full bg-background px-3 py-1 text-sm font-medium border">
+                  ${autoRechargeAmount}
+                </span>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  title="Edit auto-recharge amount"
+                  onClick={() => {
+                    setTempAutoRechargeAmount(autoRechargeAmount);
+                    showAutoRechargeConfig.onTrue();
+                  }}
+                >
+                  <PencilLine className="h-3.5 w-3.5" />
                 </Button>
               </div>
-
-              {/* Auto-recharge config block */}
-              <div className="mt-3 rounded-lg border bg-muted/30 px-3 py-3 space-y-2">
-                <label className="flex items-start gap-2 text-sm font-medium cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="mt-0.5 h-4 w-4 accent-primary"
-                    checked={autoRechargeEnabled}
-                    onChange={handleAutoRechargeToggle}
-                  />
-                  <span className="flex flex-col gap-0.5">
-                    <span>Auto-recharge when balance is low</span>
-                    <span className="text-xs font-normal text-muted-foreground">
-                      When your balance drops below <span>$10</span>, we’ll
-                      automatically add funds so your SensePC never stops
-                      unexpectedly.
-                    </span>
-                  </span>
-                </label>
-
-                {autoRechargeEnabled && (
-                  <div className="flex flex-wrap items-center gap-2 pl-6 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1.5">
-                      {/* 🔄 Auto-recharge icon */}
-                      <RefreshCcw className="h-3.5 w-3.5 text-primary" />
-                      <span>Current auto-recharge amount:</span>
-                    </div>
-
-                    <span className="inline-flex items-center rounded-full bg-background px-3 py-1 text-sm font-medium border">
-                      ${autoRechargeAmount}
-                    </span>
-
-                    {/* Edit button */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      title="Edit auto-recharge amount"
-                      onClick={() => {
-                        setTempAutoRechargeAmount(autoRechargeAmount);
-                        showAutoRechargeConfig.onTrue();
-                      }}
-                    >
-                      <PencilLine className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
+            )}
           </div>
-        </CardContent>
-      </Card>
+
+          </div>
+        </div>
+      </DashboardCard>
 
       {/* Auto-Recharge Configuration Dialog */}
       <Dialog
@@ -375,9 +345,7 @@ const QuickRecharge = () => {
                   className="pl-7"
                   value={tempAutoRechargeAmount}
                   onChange={(e) =>
-                    setTempAutoRechargeAmount(
-                      parseFloat(e.target.value) || 0
-                    )
+                    setTempAutoRechargeAmount(parseFloat(e.target.value) || 0)
                   }
                 />
               </div>
@@ -391,9 +359,7 @@ const QuickRecharge = () => {
             <Button variant="outline" onClick={showAutoRechargeConfig.onFalse}>
               Cancel
             </Button>
-            <Button onClick={confirmAutoRechargeConfig}>
-              Save &amp; Enable
-            </Button>
+            <Button onClick={confirmAutoRechargeConfig}>Save &amp; Enable</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -442,8 +408,8 @@ const QuickRecharge = () => {
           <DialogHeader>
             <DialogTitle>Confirm Recharge</DialogTitle>
             <DialogDescription>
-              Are you sure you want to add{" "}
-              <strong>${selectedAmount ?? 0}</strong> to your wallet?
+              Are you sure you want to add <strong>${selectedAmount ?? 0}</strong>{" "}
+              to your wallet?
             </DialogDescription>
           </DialogHeader>
 
@@ -451,7 +417,7 @@ const QuickRecharge = () => {
             <input
               type="checkbox"
               id="autoRecharge"
-              className="h-4 w-4 accent-primary"
+              className="h-4 w-4 accent-[#2530F0]"
               checked={addFundsAutoRechargeEnabled}
               onChange={() =>
                 setAddFundsAutoRechargeEnabled(!addFundsAutoRechargeEnabled)

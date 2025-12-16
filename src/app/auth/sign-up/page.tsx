@@ -25,22 +25,6 @@ import { handleSignUp } from "@/lib/services/auth";
 import SocailLogin from "../_components/socail-login";
 import { OtpVerificationDialog } from "../_components/otp-verification-dialog";
 
-type AuthInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
-  hasError?: boolean;
-};
-
-function AuthInput({ className, hasError, ...props }: AuthInputProps) {
-  return (
-    <Input
-      className={cn(
-        "h-[60px] w-full rounded-[10px] text-sm",
-        hasError && "border-red-500",
-        className,
-      )}
-      {...props}
-    />
-  );
-}
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -204,15 +188,16 @@ export default function SignUpPage() {
                       <div className="space-y-2">
                         <div className="relative">
                           <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                          <AuthInput
-                            id="first-name"
-                            type="text"
-                            placeholder="First name"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
-                            required
-                            className="pl-11"
-                          />
+                          <Input
+                          id="first-name"
+                          type="text"
+                          placeholder="First name"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          required
+                          uiSize="lg"
+                          className="pl-11"
+                        />
                         </div>
                       </div>
 
@@ -220,15 +205,17 @@ export default function SignUpPage() {
                       <div className="space-y-2">
                         <div className="relative">
                           <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                          <AuthInput
-                            id="last-name"
-                            type="text"
-                            placeholder="Last name"
-                            value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
-                            required
-                            className="pl-11"
-                          />
+                        <Input
+                        id="last-name"
+                        type="text"
+                        placeholder="Last name"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        required
+                        uiSize="lg"
+                        className="pl-11"
+                      />
+
                         </div>
                       </div>
 
@@ -236,15 +223,17 @@ export default function SignUpPage() {
                       <div className="space-y-2">
                         <div className="relative">
                           <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                          <AuthInput
-                            id="email"
-                            type="email"
-                            placeholder="Enter your email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            className="pl-11"
-                          />
+                          <Input
+                          id="email"
+                          type="email"
+                          placeholder="Enter your email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          uiSize="lg"
+                          className="pl-11"
+                        />
+
                         </div>
                       </div>
 
@@ -252,15 +241,17 @@ export default function SignUpPage() {
                       <div className="space-y-2">
                         <div className="relative">
                           <Lock className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                          <AuthInput
+                          <Input
                             id="password"
                             type={showPassword ? "text" : "password"}
                             placeholder="Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            uiSize="lg"
                             className="pl-11 pr-11"
                           />
+
                           <button
                             type="button"
                             className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
@@ -280,17 +271,17 @@ export default function SignUpPage() {
                       <div className="space-y-2">
                         <div className="relative">
                           <Lock className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                          <AuthInput
+                          <Input
                             id="confirm-password"
                             type={showConfirmPassword ? "text" : "password"}
                             placeholder="Confirm Password"
                             value={confirmPassword}
-                            onChange={(e) =>
-                              setConfirmPassword(e.target.value)
-                            }
+                            onChange={(e) => setConfirmPassword(e.target.value)}
                             required
+                            uiSize="lg"
                             className="pl-11 pr-11"
                           />
+
                           <button
                             type="button"
                             className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"

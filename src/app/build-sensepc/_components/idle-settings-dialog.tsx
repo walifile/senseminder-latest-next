@@ -1,3 +1,4 @@
+
 import type { InstanceDetail } from "@/api/realtime";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -52,6 +53,7 @@ const IdleSettingsDialog: React.FC<IdleSettingsDialogProps> = ({
     if (!selectedInstance) return;
     const noneValues = ["", "none", "0"];
     const trimmed = String(selectedIdleTimeout).trim().toLowerCase();
+
     try {
       if (noneValues.includes(trimmed)) {
         await deleteIdleTimeout(selectedInstance.instanceId);
@@ -62,7 +64,7 @@ const IdleSettingsDialog: React.FC<IdleSettingsDialogProps> = ({
       } else {
         await setIdleTimeout(
           selectedInstance.instanceId,
-          Number(selectedIdleTimeout)
+          Number(selectedIdleTimeout),
         );
         toast({
           title: "Idle Timeout Saved",
@@ -85,7 +87,7 @@ const IdleSettingsDialog: React.FC<IdleSettingsDialogProps> = ({
     if (selectedInstance) {
       const selectedPc = realtimePcInfo[selectedInstance.systemName];
       setSelectedIdleTimeout(
-        selectedPc?.idleTimeout ? String(selectedPc.idleTimeout) : "30"
+        selectedPc?.idleTimeout ? String(selectedPc.idleTimeout) : "30",
       );
     }
   }, [realtimePcInfo, selectedInstance]);
@@ -96,24 +98,38 @@ const IdleSettingsDialog: React.FC<IdleSettingsDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
-      <DialogContent className="sm:max-w-[400px]">
-        <DialogHeader>
-          <DialogTitle>Configure Idle Settings</DialogTitle>
-          <DialogDescription>
+      {/* position / outer card is the same as before */}
+      <DialogContent className="sm:max-w-[500px]">
+        {/* HEADER */}
+        <DialogHeader className="space-y-2 text-left">
+          <DialogTitle className="text-[24px] leading-8 tracking-[-0.4px] font-semibold">
+            Configure Idle Settings
+          </DialogTitle>
+
+          <DialogDescription className="text-[14px] leading-5 tracking-[-0.2px]">
             Set the idle timeout duration for {selectedInstance?.systemName}.
             The PC will be suspended after being idle for the specified
             duration.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-2">
-          <Label>Idle Timeout (minutes)</Label>
+
+        {/* thin divider like Vector 80 in Figma */}
+        <div className="mt-2 h-px w-full bg-black/10 dark:bg-white/15" />
+
+        {/* FIELD BLOCK */}
+        <div className="mt-4 space-y-3">
+          <Label className="text-[16px] leading-6 tracking-[-0.3px] font-semibold">
+            Idle Timeout (minutes)
+          </Label>
+
           <Select
+           
             value={selectedIdleTimeout}
             onValueChange={setSelectedIdleTimeout}
           >
-            <SelectTrigger>
-              <SelectValue placeholder="Select timeout duration" />
-            </SelectTrigger>
+           <SelectTrigger variant="glowingSelector">
+            <SelectValue placeholder="Select timeout duration" />
+          </SelectTrigger>
 
             <SelectContent>
               {timeOptions.map((opt) => (
@@ -124,11 +140,36 @@ const IdleSettingsDialog: React.FC<IdleSettingsDialogProps> = ({
             </SelectContent>
           </Select>
         </div>
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={closeDialog}>
+
+        {/* BUTTONS ROW */}
+        <DialogFooter className="mt-6 flex w-full flex-col-reverse gap-4 sm:flex-row sm:justify-end sm:gap-5">
+          {/* Cancel button: outlined pill with purple border */}
+          <Button
+            variant="outline"
+            onClick={closeDialog}
+            className="
+              w-[170px]
+              rounded-full
+              border-[#a801ba]
+              bg-transparent
+            "
+          >
             Cancel
           </Button>
-          <Button disabled={!selectedInstance} onClick={handleSaveIdleSettings}>
+
+          {/* Save Changes: gradient pill, flex-grow */}
+          <Button
+            disabled={!selectedInstance}
+            onClick={handleSaveIdleSettings}
+            className="
+              flex-1
+              rounded-full
+              border-0
+              bg-gradient-to-l from-[#a801ba] to-[#2530f0]
+              text-white
+              hover:opacity-90
+            "
+          >
             Save Changes
           </Button>
         </DialogFooter>

@@ -203,24 +203,20 @@ export function ForgotPasswordDialog({
             >
               <div className="space-y-2">
                 <label
-                  htmlFor="email"
-                  className={cn(
-                    "text-sm font-medium",
-                    isDark ? "text-[#E5E7EB]" : "text-slate-700"
-                  )}
-                >
-                  Email
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  {...register("email")}
-                  className={cn(
-                    "h-[56px] rounded-[10px]",
-                    errors.email && "border-red-500"
-                  )}
-                />
+                htmlFor="email"
+                className="text-sm font-medium text-slate-700 dark:text-[#E5E7EB]"
+              >
+                Email
+              </label>
+               <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                variant="auth"
+                intent={errors.email ? "error" : "default"}
+                {...register("email")}
+              />
+
 
                 {errors.email && (
                   <p className="text-sm text-red-600 dark:text-red-500">
@@ -236,10 +232,7 @@ export function ForgotPasswordDialog({
                 className="
                   w-full
                   rounded-full
-                  bg-gradient-to-l from-[#A801BA] to-[#2530F0]
-                  hover:opacity-90
                   text-sm font-medium
-                  border-0
                 "
               >
                 {isSubmitting ? "Sending..." : "Confirm reset request"}

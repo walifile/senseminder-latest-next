@@ -1,3 +1,5 @@
+
+
 import * as React from "react";
 
 import { Slot } from "@radix-ui/react-slot";
@@ -16,13 +18,26 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline: "outline-border",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         sidebar:
           "bg-[#ffffff0f] rounded-[100px] border border-solid border-[#ffffff1a] text-white hover:bg-[#ffffff1a] hover:text-white",
+
+        // ✅ NEW: white button (same in light + dark mode)
+        white:
+          "bg-white text-[#0B0F1A] border border-black/10 hover:bg-white/90",
+
+          tinted:
+      "rounded-[10px] border border-[rgba(37,48,240,0.07)] bg-[rgba(37,48,240,0.10)] text-[#020816] " +
+      "text-[22px] leading-[32px] tracking-[-0.3px] " +
+      "hover:bg-[rgba(37,48,240,0.14)] " +
+      "dark:border-[rgba(255,255,255,0.20)] dark:bg-[rgba(255,255,255,0.04)] dark:text-white " +
+      "dark:hover:bg-[rgba(255,255,255,0.06)]",
+  
       },
+
+      
       size: {
         default: "h-12 px-7 py-3 [&_svg]:size-6",
         sm: "h-10 px-4 text-sm",
@@ -34,6 +49,7 @@ const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
+    
   }
 );
 
@@ -46,6 +62,7 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
+
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
