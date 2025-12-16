@@ -178,7 +178,7 @@ const DashboardHeader = () => {
 
               <DropdownMenuContent
                 align="end"
-                className="w-80 max-h-96 overflow-auto"
+                className="relative w-80 pb-10 pr-0"
               >
                 <DropdownMenuLabel>Notifications</DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -187,6 +187,7 @@ const DashboardHeader = () => {
                     No notifications
                   </p>
                 )}
+                <div className="space-y-1 max-h-72 overflow-y-auto">
                 {notifications.map((n) => (
                   <button
                     key={n.timestamp}
@@ -233,13 +234,15 @@ const DashboardHeader = () => {
                     </div>
                   </button>
                 ))}
-                <DropdownMenuSeparator />
-                <Link
-                  href="/dashboard/notifications"
-                  className="block text-sm text-center text-primary hover:underline py-2"
-                >
-                  See all notifications
-                </Link>
+                </div>
+                <div className="fixed bottom-0 right-0 left-0 border-t border-[#7E808F] dark:border-[#2A2067] bg-[#F2EFFF] dark:bg-[#191748]">
+                  <Link
+                    href="/dashboard/notifications"
+                    className="block text-sm text-center text-primary hover:underline py-2"
+                  >
+                    See all notifications
+                  </Link>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

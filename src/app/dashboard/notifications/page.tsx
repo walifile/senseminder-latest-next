@@ -22,7 +22,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-import { X, Bell, Settings, ChevronRight } from "lucide-react";
+import { X, Bell, Settings } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────
 // helpers
@@ -44,11 +44,17 @@ const timeAgo = (iso: string) => {
   return `${Math.round(diff / day)} day(s) ago`;
 };
 
-const colourBySeverity = (sev: Notification["severity"]) => {
-  if (sev === "critical") return "bg-destructive/20 text-destructive";
-  if (sev === "warning") return "bg-orange-500/20 text-orange-500";
-  return "bg-primary/20 text-primary"; // info
+// Helper function for generating random color
+const randColor = (...colors: string[]): string => {
+  const randomIndex = Math.floor(Math.random() * colors.length);
+  return colors[randomIndex];
 };
+
+// const colourBySeverity = (sev: Notification["severity"]) => {
+//   if (sev === "critical") return "bg-destructive/20 text-destructive";
+//   if (sev === "warning") return "bg-orange-500/20 text-orange-500";
+//   return "bg-primary/20 text-primary"; // info
+// };
 
 const PAGE_SIZE = 30;
 
@@ -76,7 +82,7 @@ const NotificationsPage = () => {
     (n: Notification) =>
       getNotificationId(n) ?? `${n.timestamp}::${n.title}::${n.content}`,
     []
-  );  
+  );
 
   const dedupeMerge = useCallback(
     (prev: Notification[], next: Notification[]) => {
@@ -178,99 +184,113 @@ const NotificationsPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* ─── Page header ──────────────────────────────── */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Notifications</h1>
+      <Card className="relative !border-0 gradient-outline-border bg-[rgba(37,48,240,0.07)] dark:bg-[rgba(255,255,255,0.03)]">
+        <CardContent className="p-0 space-y-6">
+          {/* Header */}
+          <div className="flex justify-between items-center p-6 border-b border-black/10 dark:border-border">
+            <div className="flex flex-col items-left gap-2">
+              <h1 className="justify-start text-black dark:text-white text-3xl font-semibold font-['Space_Grotesk'] leading-10">
+                Notifications
+              </h1>
+              <p className="text-muted-foreground">Manage your Cloud Computer</p>
+            </div>
+            <div className="flex space-x-2">
+              {/* Preferences modal */}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="lg" className="gap-2">
+                    <Settings className="h-4 w-4" />
+                    Preferences
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] rounded-2xl border border-border/40 bg-gradient-to-b from-background/90 to-muted/40 shadow-2xl backdrop-blur-xl transition-all">
+                  <DialogHeader className="space-y-2 pb-2">
+                    <DialogTitle className="text-2xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">
+                      Notification Preferences
+                    </DialogTitle>
+                    <DialogDescription>
+                      Toggle channels you’d like to receive.
+                    </DialogDescription>
+                  </DialogHeader>
 
-        {/* Preferences modal */}
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              Preferences
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Notification Preferences</DialogTitle>
-              <DialogDescription>
-                Toggle channels you’d like to receive.
-              </DialogDescription>
-            </DialogHeader>
+                  {[
+                    ["email", "Email Notifications"],
+                    ["push", "Push Notifications"],
+                    ["system", "System Alerts"],
+                    ["marketing", "Marketing Updates"],
+                  ].map(([key, label]) => (
+                    <div
+                      key={key}
+                      className="flex items-center justify-between space-x-4 py-2"
+                    >
+                      <div className="flex-1 space-y-1">
+                        <Label htmlFor={key}>{label}</Label>
+                      </div>
+                      <Switch
+                        id={key}
+                        checked={prefs[key as keyof typeof prefs]}
+                        onCheckedChange={() => togglePref(key as keyof typeof prefs)}
+                      />
+                    </div>
+                  ))}
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
 
-            {[
-              ["email", "Email Notifications"],
-              ["push", "Push Notifications"],
-              ["system", "System Alerts"],
-              ["marketing", "Marketing Updates"],
-            ].map(([key, label]) => (
-              <div
-                key={key}
-                className="flex items-center justify-between space-x-4 py-2"
-              >
-                <div className="flex-1 space-y-1">
-                  <Label htmlFor={key}>{label}</Label>
-                </div>
-                <Switch
-                  id={key}
-                  checked={prefs[key as keyof typeof prefs]}
-                  onCheckedChange={() => togglePref(key as keyof typeof prefs)}
-                />
+          <div className="p-6 pt-0">
+            {/* ─── Tabs & list ──────────────────────────────── */}
+            <Tabs defaultValue="all" className="w-full">
+              <div className="flex items-center justify-between mb-4">
+                <TabsList className="inline-flex justify-start items-center bg-transparent gap-2">
+                  <TabsTrigger value="all" variant="gradient">All</TabsTrigger>
+                  <TabsTrigger value="unread" variant="gradient">Unread</TabsTrigger>
+                  <TabsTrigger value="alerts" variant="gradient">Alerts</TabsTrigger>
+                </TabsList>
+                <Button variant="link" size="sm" onClick={handleMarkAll} className="text-black dark:text-white hover:text-secondary-foreground underline">
+                  Mark all as read
+                </Button>
               </div>
-            ))}
-          </DialogContent>
-        </Dialog>
-      </div>
 
-      {/* ─── Tabs & list ──────────────────────────────── */}
-      <Tabs defaultValue="all" className="w-full">
-        <div className="flex items-center justify-between mb-4">
-          <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="unread">Unread</TabsTrigger>
-            <TabsTrigger value="alerts">Alerts</TabsTrigger>
-          </TabsList>
-          <Button variant="ghost" size="sm" onClick={handleMarkAll}>
-            Mark all as read
-          </Button>
-        </div>
+              <TabsContent value="all">
+                <NotificationList
+                  items={listAll}
+                  loading={loading}
+                  onRead={markSingle}
+                  onNavigate={(route) => router.push(route)}
+                  hasMore={!!nextToken}
+                  loadingMore={loadingMore}
+                  onLoadMore={fetchNextPage}
+                />
+              </TabsContent>
 
-        <TabsContent value="all">
-          <NotificationList
-            items={listAll}
-            loading={loading}
-            onRead={markSingle}
-            onNavigate={(route) => router.push(route)}
-            hasMore={!!nextToken}
-            loadingMore={loadingMore}
-            onLoadMore={fetchNextPage}
-          />
-        </TabsContent>
+              <TabsContent value="unread">
+                <NotificationList
+                  items={listUnread}
+                  loading={loading}
+                  onRead={markSingle}
+                  onNavigate={(route) => router.push(route)}
+                  hasMore={!!nextToken}
+                  loadingMore={loadingMore}
+                  onLoadMore={fetchNextPage}
+                />
+              </TabsContent>
 
-        <TabsContent value="unread">
-          <NotificationList
-            items={listUnread}
-            loading={loading}
-            onRead={markSingle}
-            onNavigate={(route) => router.push(route)}
-            hasMore={!!nextToken}
-            loadingMore={loadingMore}
-            onLoadMore={fetchNextPage}
-          />
-        </TabsContent>
-
-        <TabsContent value="alerts">
-          <NotificationList
-            items={listAlerts}
-            loading={loading}
-            onRead={markSingle}
-            onNavigate={(route) => router.push(route)}
-            hasMore={!!nextToken}
-            loadingMore={loadingMore}
-            onLoadMore={fetchNextPage}
-          />
-        </TabsContent>
-      </Tabs>
+              <TabsContent value="alerts">
+                <NotificationList
+                  items={listAlerts}
+                  loading={loading}
+                  onRead={markSingle}
+                  onNavigate={(route) => router.push(route)}
+                  hasMore={!!nextToken}
+                  loadingMore={loadingMore}
+                  onLoadMore={fetchNextPage}
+                />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
@@ -303,7 +323,7 @@ const NotificationList: React.FC<ListProps> = ({
     return <p className="text-sm text-muted-foreground">No notifications.</p>;
 
   return (
-    <div className="space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
       {items.map((n) => (
         <NotificationCard
           // timestamp can collide; use a composite fallback
@@ -341,56 +361,64 @@ const NotificationCard: React.FC<CardProps> = ({ n, onRead, onNavigate }) => {
     if (!n.isRead) await onRead(n.timestamp);
   };
 
+  const randomColor = randColor("green", "red", "yellow");
+  const randomBgColor = 
+    randomColor === "green"
+      ? "bg-green-400"
+      : randomColor === "red"
+      ? "bg-red-500"
+      : randomColor === "yellow"
+      ? "bg-[#F39C12]"
+      : "";
+
   return (
-    <Card className={n.isRead ? "" : "border-primary/20 bg-primary/5"}>
+    <Card className={n.isRead ? "relative bg-white/30 dark:bg-white/5 border-blue-700/20 md:rounded-[10px]" : "relative bg-blue-700/10 dark:bg-[#8086F333] border-blue-700 md:rounded-[10px]"}>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="absolute top-3.5 right-3.5 h-auto p-0"
+        onClick={handleDismiss}
+      >
+        <X className="h-4 w-4" />
+      </Button>
       <CardContent className="p-4 md:p-6">
-        <div className="flex gap-4">
+        <div className="flex gap-3">
           {/* icon circle */}
           <div
-            className={`h-10 w-10 rounded-full flex items-center justify-center ${colourBySeverity(
-              n.severity
-            )}`}
+            className={`w-7 h-7 p-1.5 rounded-full flex items-center justify-center ${randomBgColor}`}
           >
-            <Bell className="h-5 w-5" />
+            <Bell className="w-4 h-4 text-white" />
           </div>
 
           <div className="flex-1 space-y-1">
             <div className="flex items-start justify-between gap-2">
-              <h3 className={`font-medium ${n.isRead ? "" : "text-primary"}`}>
+              <h3 className={`text-lg font-medium font-['Inter'] leading-7 ${n.isRead ? "" : "text-primary"}`}>
                 {n.title}
               </h3>
+            </div>
+
+            <p className="text-[#454545] dark:text-[#A3A3A3] text-sm font-normal font-['Inter'] leading-5">{n.content}</p>
+
+            <div className="pt-2 flex justify-between">
+              <Button
+                variant="link"
+                size="sm"
+                className="h-8 px-0 text-[#454545] dark:text-[#A3A3A3] hover:text-muted-foreground underline"
+                onClick={handleView}
+              >
+                <span>View Details</span>
+              </Button>
 
               <div className="flex items-center gap-1">
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  {timeAgo(n.timestamp)}
-                </span>
+                <div className={`px-4 py-1.5 bg-${randomColor}-500/10 rounded-[60px] inline-flex justify-center items-center gap-2.5`}>
+                <div className={`justify-start ${randomColor === "yellow" ? "text-[#F39C12]" : `text-${randomColor}-500`} text-base font-normal font-['Inter'] leading-6`}>
+                    {timeAgo(n.timestamp)}
+                  </div>
+                </div>
                 {!n.isRead && (
                   <span className="h-2 w-2 rounded-full bg-primary" />
                 )}
               </div>
-            </div>
-
-            <p className="text-sm text-muted-foreground">{n.content}</p>
-
-            <div className="pt-2 flex justify-between">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2"
-                onClick={handleView}
-              >
-                <span>View Details</span>
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={handleDismiss}
-              >
-                <X className="h-4 w-4" />
-              </Button>
             </div>
           </div>
         </div>
@@ -400,3 +428,4 @@ const NotificationCard: React.FC<CardProps> = ({ n, onRead, onNavigate }) => {
 };
 
 export default NotificationsPage;
+
