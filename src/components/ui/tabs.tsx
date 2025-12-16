@@ -6,7 +6,7 @@ import * as TabsPrimitive from "@radix-ui/react-tabs";
 
 import { cn } from "@/lib/utils";
 
-type TabsVariant = "default" | "glowing";
+type TabsVariant = "default" | "glowing" | "gradient";
 
 type TabsVariantContextValue = {
   variant: TabsVariant;
@@ -34,6 +34,10 @@ const Tabs = ({
 
 const tabsListVariants: Record<TabsVariant, string> = {
   default: cn(
+    "inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground"
+  ),
+
+  gradient: cn(
     "inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground"
   ),
 
@@ -81,6 +85,18 @@ const tabsTriggerVariants: Record<TabsVariant, string> = {
     "data-[state=active]:bg-[#2530F0] data-[state=active]:shadow-sm"
   ),
 
+  gradient: cn(
+    "inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-1.5 text-base font-normal",
+    "ring-offset-background transition-all",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+    "disabled:pointer-events-none disabled:opacity-50",
+    "text-[#71758A] bg-blue-700/5 hover:bg-blue-700/10",
+    "dark:text-[#91939B] dark:bg-white/10 dark:hover:bg-white/20",
+    "data-[state=active]:font-medium data-[state=active]:bg-gradient-to-l",
+    "data-[state=active]:from-blue-700 data-[state=active]:to-fuchsia-700",
+    "data-[state=active]:text-white dark:data-[state=active]:text-white"
+  ),
+
   glowing: cn(
     "relative z-[2]",
     "rounded-full px-4 py-1.5",
@@ -115,6 +131,11 @@ TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
 
 const tabsContentVariants: Record<TabsVariant, string> = {
   default: cn(
+    "mt-2 ring-offset-background",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+  ),
+
+  gradient: cn(
     "mt-2 ring-offset-background",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
   ),

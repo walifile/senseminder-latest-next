@@ -142,7 +142,10 @@ const NotificationsPage = () => {
   }, [fetchFirstPage]);
 
   /*  Helpers  */
-  const unread = useMemo(() => notifications.filter((n) => !n.isRead), [notifications]);
+  const unread = useMemo(
+    () => notifications.filter((n) => !n.isRead),
+    [notifications]
+  );
   const alerts = useMemo(
     () => notifications.filter((n) => n.severity !== "info"),
     [notifications]
@@ -192,7 +195,9 @@ const NotificationsPage = () => {
               <h1 className="justify-start text-black dark:text-white text-3xl font-semibold font-['Space_Grotesk'] leading-10">
                 Notifications
               </h1>
-              <p className="text-muted-foreground">Manage your Cloud Computer</p>
+              <p className="text-muted-foreground">
+                Manage your Cloud Computer
+              </p>
             </div>
             <div className="flex space-x-2">
               {/* Preferences modal */}
@@ -229,7 +234,9 @@ const NotificationsPage = () => {
                       <Switch
                         id={key}
                         checked={prefs[key as keyof typeof prefs]}
-                        onCheckedChange={() => togglePref(key as keyof typeof prefs)}
+                        onCheckedChange={() =>
+                          togglePref(key as keyof typeof prefs)
+                        }
                       />
                     </div>
                   ))}
@@ -243,11 +250,22 @@ const NotificationsPage = () => {
             <Tabs defaultValue="all" className="w-full">
               <div className="flex items-center justify-between mb-4">
                 <TabsList className="inline-flex justify-start items-center bg-transparent gap-2">
-                  <TabsTrigger value="all" variant="gradient">All</TabsTrigger>
-                  <TabsTrigger value="unread" variant="gradient">Unread</TabsTrigger>
-                  <TabsTrigger value="alerts" variant="gradient">Alerts</TabsTrigger>
+                  <TabsTrigger value="all" variant="gradient">
+                    All
+                  </TabsTrigger>
+                  <TabsTrigger value="unread" variant="gradient">
+                    Unread
+                  </TabsTrigger>
+                  <TabsTrigger value="alerts" variant="gradient">
+                    Alerts
+                  </TabsTrigger>
                 </TabsList>
-                <Button variant="link" size="sm" onClick={handleMarkAll} className="text-black dark:text-white hover:text-secondary-foreground underline">
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={handleMarkAll}
+                  className="text-black dark:text-white hover:text-secondary-foreground underline"
+                >
                   Mark all as read
                 </Button>
               </div>
@@ -362,7 +380,7 @@ const NotificationCard: React.FC<CardProps> = ({ n, onRead, onNavigate }) => {
   };
 
   const randomColor = randColor("green", "red", "yellow");
-  const randomBgColor = 
+  const randomBgColor =
     randomColor === "green"
       ? "bg-green-400"
       : randomColor === "red"
@@ -372,7 +390,13 @@ const NotificationCard: React.FC<CardProps> = ({ n, onRead, onNavigate }) => {
       : "";
 
   return (
-    <Card className={n.isRead ? "relative bg-white/30 dark:bg-white/5 border-blue-700/20 md:rounded-[10px]" : "relative bg-blue-700/10 dark:bg-[#8086F333] border-blue-700 md:rounded-[10px]"}>
+    <Card
+      className={
+        n.isRead
+          ? "relative bg-white/30 dark:bg-white/5 border-blue-700/20 md:rounded-[10px]"
+          : "relative bg-blue-700/10 dark:bg-[#8086F333] border-blue-700 md:rounded-[10px]"
+      }
+    >
       <Button
         variant="ghost"
         size="sm"
@@ -392,12 +416,18 @@ const NotificationCard: React.FC<CardProps> = ({ n, onRead, onNavigate }) => {
 
           <div className="flex-1 space-y-1">
             <div className="flex items-start justify-between gap-2">
-              <h3 className={`text-lg font-medium font-['Inter'] leading-7 ${n.isRead ? "" : "text-primary"}`}>
+              <h3
+                className={`text-lg font-medium font-['Inter'] leading-7 ${
+                  n.isRead ? "" : "text-primary"
+                }`}
+              >
                 {n.title}
               </h3>
             </div>
 
-            <p className="text-[#454545] dark:text-[#A3A3A3] text-sm font-normal font-['Inter'] leading-5">{n.content}</p>
+            <p className="text-[#454545] dark:text-[#A3A3A3] text-sm font-normal font-['Inter'] leading-5">
+              {n.content}
+            </p>
 
             <div className="pt-2 flex justify-between">
               <Button
@@ -410,8 +440,16 @@ const NotificationCard: React.FC<CardProps> = ({ n, onRead, onNavigate }) => {
               </Button>
 
               <div className="flex items-center gap-1">
-                <div className={`px-4 py-1.5 bg-${randomColor}-500/10 rounded-[60px] inline-flex justify-center items-center gap-2.5`}>
-                <div className={`justify-start ${randomColor === "yellow" ? "text-[#F39C12]" : `text-${randomColor}-500`} text-base font-normal font-['Inter'] leading-6`}>
+                <div
+                  className={`px-4 py-1.5 bg-${randomColor}-500/10 rounded-[60px] inline-flex justify-center items-center gap-2.5`}
+                >
+                  <div
+                    className={`justify-start ${
+                      randomColor === "yellow"
+                        ? "text-[#F39C12]"
+                        : `text-${randomColor}-500`
+                    } text-base font-normal font-['Inter'] leading-6`}
+                  >
                     {timeAgo(n.timestamp)}
                   </div>
                 </div>
@@ -428,4 +466,3 @@ const NotificationCard: React.FC<CardProps> = ({ n, onRead, onNavigate }) => {
 };
 
 export default NotificationsPage;
-
