@@ -121,14 +121,20 @@ const NewTicket = ({ setActiveTab }: Props) => {
     <>
       <div className="p-[30px] pt-0 space-y-5 border-b border-black/10 dark:border-border">
         <div className="space-y-1">
-          <div className="justify-start text-black dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8">Create new support ticket</div>
-          <div className="justify-start text-[#454545] dark:text-paragraph text-base font-normal font-['Inter'] leading-6">Our support team will respond as soon as possible.</div>
+          <div className="justify-start text-black dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8">
+            Create new support ticket
+          </div>
+          <div className="justify-start text-[#454545] dark:text-paragraph text-base font-normal font-['Inter'] leading-6">
+            Our support team will respond as soon as possible.
+          </div>
         </div>
       </div>
       <form onSubmit={handleNewTicket} className="space-y-8 px-[30px]">
         <div className="space-y-8">
           <div className="space-y-2.5">
-            <label className="self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">Subject</label>
+            <label className="self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">
+              Subject
+            </label>
             <Input
               id="subject"
               placeholder="Type subject"
@@ -143,12 +149,14 @@ const NewTicket = ({ setActiveTab }: Props) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2.5">
-              <label className="self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">Category</label>
+              <label className="self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">
+                Category
+              </label>
               <Select
                 value={formState.category}
                 onValueChange={(val) => handleSelectChange("category", val)}
               >
-                <SelectTrigger>
+                <SelectTrigger variant="default">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -159,7 +167,9 @@ const NewTicket = ({ setActiveTab }: Props) => {
               </Select>
             </div>
             <div className="space-y-2.5">
-              <label className="self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">Priority</label>
+              <label className="self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">
+                Priority
+              </label>
               <PrioritySelectField
                 value={formState.priority}
                 setValue={(val) => handleSelectChange("priority", val)}
@@ -168,7 +178,9 @@ const NewTicket = ({ setActiveTab }: Props) => {
           </div>
 
           <div className="space-y-2.5">
-            <label className="self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">Description</label>
+            <label className="self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">
+              Description
+            </label>
             <Textarea
               id="description"
               placeholder="Describe you issue in detail"
@@ -182,7 +194,9 @@ const NewTicket = ({ setActiveTab }: Props) => {
           </div>
 
           <div className="space-y-2.5">
-            <label className="self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">Attachments</label>
+            <label className="self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">
+              Attachments
+            </label>
             <AttachmentUploader
               files={attachments}
               onUpload={onFileChange}

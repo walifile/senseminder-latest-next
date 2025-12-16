@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import type { Category } from "../types";
 import { CATEGORIES } from "../data";
 import GradientSearchInput from "@/components/shared/inputs/gradient-search-input";
-import { supportTabIconClass } from "../utils/tab-config";
+import { supportTabIconProps } from "../utils/tab-config";
 
 export default function FAQSection() {
   const lastUpdated = "Updated Oct 1, 2025";
@@ -95,7 +95,7 @@ export default function FAQSection() {
               className="text-[#020816] dark:text-white"
             >
               <div
-                className={supportTabIconClass(
+                {...supportTabIconProps(
                   "/assets/svg/support/expand.svg",
                   "w-6 h-6"
                 )}
@@ -109,7 +109,7 @@ export default function FAQSection() {
               className="text-[#020816] dark:text-white"
             >
               <div
-                className={supportTabIconClass(
+                {...supportTabIconProps(
                   "/assets/svg/support/collapse.svg",
                   "w-6 h-6"
                 )}

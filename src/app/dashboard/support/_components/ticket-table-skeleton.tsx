@@ -7,8 +7,12 @@ export default function TicketTableSkeleton() {
     <>
       <div className="p-6 pt-0 space-y-5 border-b border-black/10 dark:border-border">
         <div className="space-y-1">
-          <div className="justify-start text-white text-2xl font-bold font-['Space_Grotesk'] leading-8">Sense Cloud</div>
-          <div className="justify-start text-paragraph text-base font-normal font-['Inter'] leading-6">Our support team will respond as soon as possible.</div>
+          <div className="justify-start text-[#020816] dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8">
+            Sense Cloud
+          </div>
+          <div className="justify-start text-[#454545] dark:text-[#B9C2D5] text-base font-normal font-['Inter'] leading-6">
+            Our support team will respond as soon as possible.
+          </div>
         </div>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Search */}
@@ -40,7 +44,7 @@ export default function TicketTableSkeleton() {
               ].map((header, i) => (
                 <th
                   key={i}
-                  className="px-4 py-3 text-left border-b border-gray-200"
+                  className="px-4 py-3 text-left border-b border-[#2530F033] dark:border-[#ffffff1a]"
                 >
                   <Skeleton className="h-4 w-24" />
                 </th>
@@ -49,11 +53,11 @@ export default function TicketTableSkeleton() {
           </thead>
           <tbody>
             {[...Array(5)].map((_, rowIdx) => (
-              <tr key={rowIdx} className="border-b border-gray-200">
+              <tr key={rowIdx} className="border-b border-[#2530F033] dark:border-[#ffffff1a]">
                 {Array.from({ length: 7 }).map((_, colIdx) => (
                   <td
                     key={colIdx}
-                    className="px-4 py-4 border-b border-gray-100"
+                    className="px-4 py-4 border-b border-[#2530F01a] dark:border-[#ffffff0d]"
                   >
                     <Skeleton className="h-4 w-full" />
                   </td>
