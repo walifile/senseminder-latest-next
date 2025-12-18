@@ -119,12 +119,12 @@ const HeroRightCard = () => (
       </div>
 
       {/* Storage card */}
-      <div className="w-full overflow-hidden rounded-[16px] bg-[#E6EEFF] p-6">
+      <div className="w-full overflow-hidden rounded-[16px] bg-[#E6EEFF] p-6 dark:bg-[#1A1244]">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-base leading-7 tracking-[-0.3px] font-semibold text-[#0B1220]">
+          <p className="text-base leading-7 tracking-[-0.3px] font-semibold text-[#0B1220] dark:text-white">
             Workspace-Storage-01
           </p>
-          <div className="inline-flex items-center gap-2 text-[#2530F0]">
+          <div className="inline-flex items-center gap-2 text-[#2530F0] dark:text-[#13E1EA]">
             <span className="relative h-5 w-5 shrink-0">
               <img
                 alt=""
@@ -145,20 +145,22 @@ const HeroRightCard = () => (
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-between text-[16px] leading-6 tracking-[-0.2px] text-[#454545]">
+        <div className="mt-6 flex items-center justify-between text-[16px] leading-6 tracking-[-0.2px] text-[#454545] dark:text-[#C7C9D3]">
           <span>Used</span>
-          <span className="font-semibold text-[#454545]">320 GB / 1 TB</span>
+          <span className="font-semibold text-[#454545] dark:text-[#E2E4ED]">
+            320 GB / 1 TB
+          </span>
         </div>
 
         <div className="mt-3">
-          <div className="relative h-[14px] w-full rounded-full bg-[#C9D7FF]">
+          <div className="relative h-[14px] w-full rounded-full bg-[#C9D7FF] dark:bg-[#2B2756]">
             <div className="absolute left-0 top-0 h-full w-[32%] rounded-full bg-[#2530F0]" />
             <div className="absolute left-[32%] top-1/2 h-6 w-6 -translate-y-1/2 -translate-x-1/2 rounded-full bg-[#2530F0]" />
           </div>
         </div>
 
-        <p className="mt-4 text-[14px] leading-6 tracking-[-0.2px] text-[#52555F]">
-          Auto-tiering enabled ? monitoring growth and adjusting billing
+        <p className="mt-4 text-[14px] leading-6 tracking-[-0.2px] text-[#52555F] dark:text-[#AEB2C5]">
+          Auto-tiering enabled - monitoring growth and adjusting billing
           accordingly.
         </p>
       </div>
