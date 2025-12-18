@@ -44,7 +44,7 @@ export default function GetStartedCTA({
               alt="FAQ Illustration"
               width={320}
               height={320}
-              className="absolute w-[140px] h-[93px] md:size-80 top-0 md:-top-5 left-0 -z-10 -z-[1px]"
+              className="absolute w-[140px] h-[93px] md:size-80 top-0 md:-top-5 left-0"
               priority
             />
           </div>
@@ -55,7 +55,7 @@ export default function GetStartedCTA({
               alt="FAQ Illustration"
               width={320}
               height={320}
-              className="absolute w-[140px] h-[93px] md:size-80 -bottom-0 md:-bottom-8 right-0 -z-[1px]"
+              className="absolute w-[140px] h-[93px] md:size-80 -bottom-0 md:-bottom-8 right-0"
               priority
             />
           </div>
@@ -69,7 +69,7 @@ export default function GetStartedCTA({
               className="absolute bottom-0 left-48 h-[79px]"
               priority
             /> */}
-            <div className="w-[620.02px] h-96 bottom-[-378px] left-[135px] absolute origin-top-left rotate-[-11.32deg] bg-gradient-to-l from-fuchsia-600 via-blue-700 to-indigo-400 rounded-[50%] blur-[150px] -z-[1px]" />
+            <div className="w-[620.02px] h-96 bottom-[-378px] left-[135px] absolute origin-top-left rotate-[-11.32deg] bg-gradient-to-l from-fuchsia-600 via-blue-700 to-indigo-400 rounded-[50%] blur-[150px]" />
           </div>
         </motion.div>
       </div>
