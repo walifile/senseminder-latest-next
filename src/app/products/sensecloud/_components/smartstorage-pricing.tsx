@@ -51,9 +51,9 @@ const SmartStoragePricing = () => (
     <div className="container mx-auto px-4 md:px-6">
       <div className="grid gap-6 lg:grid-cols-[1.2fr,0.8fr]">
         <div className="space-y-4">
-          <div className="rounded-[16px] border border-[#8086F3] bg-[rgba(37,48,240,0.10)] p-6 md:p-8 dark:border-[#8086F3] dark:bg-[linear-gradient(163deg,_#170D44_11.73%,_rgba(23,13,68,0.61)_98.26%)]">
+          <div className="rounded-[16px] bg-[rgba(37,48,240,0.10)] p-6 md:p-8 dark:bg-[linear-gradient(163deg,_#170D44_11.73%,_rgba(23,13,68,0.61)_98.26%)]">
             <div className="space-y-3">
-              <h2 className="font-[var(--font-space-grotesk)] text-[24px] font-semibold leading-[32px] text-[#0B1220] dark:text-white md:text-[32px] md:leading-[40px]">
+              <h2 className="font-[var(--font-space-grotesk)] text-[32px] font-semibold leading-[40px] text-[#0B1220] dark:text-white md:text-[48px] md:leading-[56px]">
                 SmartStorage Pricing & Plans
               </h2>
               <p className="text-[14px] leading-6 text-[#454545] dark:text-[#B9C2D5] md:text-[16px]">
@@ -68,7 +68,7 @@ const SmartStoragePricing = () => (
               {planCards.map((plan) => (
                 <div
                   key={plan.tag}
-                  className="rounded-[8px] border border-[#A801BA] bg-transparent p-4 text-left dark:border-[#A801BA] dark:bg-transparent"
+                  className="relative rounded-[8px] bg-transparent p-4 text-left before:absolute before:inset-0 before:rounded-[8px] before:p-px before:content-[''] before:[background:linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:pointer-events-none"
                 >
                   <span className="inline-flex items-center rounded-full bg-[#E7E7FF] px-2 py-1 text-[10px] font-semibold tracking-[0.4px] text-[#2530F0] dark:bg-[#1F1A4A] dark:text-[#13E1EA]">
                     {plan.tag}
@@ -84,7 +84,7 @@ const SmartStoragePricing = () => (
             </div>
           </div>
 
-          <div className="flex items-center justify-center rounded-[16px] bg-[rgba(255,255,255,0.07)] p-6">
+          <div className="flex items-center justify-center rounded-[16px] bg-[rgba(37,48,240,0.10)] p-6 dark:bg-[rgba(255,255,255,0.07)]">
             <Image
               src="/assets/svg/product/pricing.svg"
               alt="SenseCloud storage illustration"
@@ -97,7 +97,7 @@ const SmartStoragePricing = () => (
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-[16px] border border-[#A801BA] bg-transparent p-5 dark:border-[#A801BA] dark:bg-transparent">
+          <div className="relative rounded-[16px] bg-transparent p-5 before:absolute before:inset-0 before:rounded-[16px] before:p-px before:content-[''] before:[background:linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:pointer-events-none">
             <div className="flex items-center gap-2">
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#E7E7FF] text-[#2530F0] dark:bg-[#1F1A4A] dark:text-[#13E1EA]">
                 <Sparkles className="h-4 w-4" />
@@ -118,7 +118,7 @@ const SmartStoragePricing = () => (
             </ul>
           </div>
 
-          <div className="rounded-[16px] border border-[#A801BA] bg-transparent p-5 dark:border-[#A801BA] dark:bg-transparent">
+          <div className="relative rounded-[16px] bg-transparent p-5 before:absolute before:inset-0 before:rounded-[16px] before:p-px before:content-[''] before:[background:linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:pointer-events-none">
             <div className="flex items-center gap-2">
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#E7E7FF] text-[#2530F0] dark:bg-[#1F1A4A] dark:text-[#13E1EA]">
                 <ShieldCheck className="h-4 w-4" />
@@ -139,7 +139,7 @@ const SmartStoragePricing = () => (
             </ul>
           </div>
 
-          <div className="rounded-[16px] border border-[#A801BA] bg-transparent p-5 dark:border-[#A801BA] dark:bg-transparent">
+          <div className="relative rounded-[16px] bg-transparent p-5 before:absolute before:inset-0 before:rounded-[16px] before:p-px before:content-[''] before:[background:linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:pointer-events-none">
             <div className="flex items-center gap-2">
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#E7E7FF] text-[#2530F0] dark:bg-[#1F1A4A] dark:text-[#13E1EA]">
                 <Link2 className="h-4 w-4" />
