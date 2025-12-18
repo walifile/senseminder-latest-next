@@ -6,6 +6,7 @@ import RealWorld from "./real-world-use";
 import GetStartedCTA from "./get-started-cta";
 import WhyTeamsChoose from "./why-teams-choose";
 import RentSmarterProcess from "./how-it-works";
+import FAQ from "@/app/home/_components/faq";
 
 const SensePCPage = () => (
   <MainLayout>
@@ -13,6 +14,7 @@ const SensePCPage = () => (
     <WhyTeamsChoose />
     <RentSmarterProcess />
     <RealWorld />
+    <FAQ />
     <GetStartedCTA />
   </MainLayout>
 );
