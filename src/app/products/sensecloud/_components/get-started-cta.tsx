@@ -10,13 +10,8 @@ import { ArrowUpRight } from "lucide-react";
 
 import { useGetStartedNav } from "@/hooks/use-get-started";
 
-type GetStartedCTAProps = {
-  gradient?: React.ReactNode;
-};
 
-export default function GetStartedCTA({
-  gradient,
-}: GetStartedCTAProps) {
+export default function GetStartedCTA() {
   const onGetStarted = useGetStartedNav();
   
   return (
@@ -82,14 +77,22 @@ export default function GetStartedCTA({
               priority
             />
           </div>
-
+            {/* <Image
+              src="/assets/svg/home2/abc.png"
+              alt="Gradient"
+              width={568}
+              height={321}
+              className="absolute bottom-0 left-48 h-[79px]"
+              priority
+            /> */}
           <div className="pointer-events-none">
             <div className="w-[620.02px] h-96 bottom-[-378px] left-[135px] absolute origin-top-left rotate-[-11.32deg] bg-gradient-to-l from-fuchsia-600 via-blue-700 to-indigo-400 rounded-[50%] blur-[150px] -z-[1px]" />
           </div>
         </motion.div>
       </div>
 
-      {gradient}
+      <div className="absolute w-[340xp] h-[340px] md:w-[681px] md:h-[681px] -left-[8%] md-left-[15.5%] top-1/2 -translate-y-1/2 rotate-[-11.32deg] bg-gradient-to-l from-fuchsia-700 to-blue-700 rounded-full blur-[250px] opacity-50" />
+      <div className="absolute w-[340px] h-[340px] md:w-[681px] md:h-[681px] -right-[8%] md:-right-[15.5%] top-1/2 -translate-y-1/2 rotate-[-11.32deg] bg-gradient-to-l from-fuchsia-700 to-blue-700 rounded-full blur-[250px] opacity-50" />
       <div className="z-0 absolute top-1/2 -translate-y-1/2 right-0 blur-[100px] md:blur-[150px] size-24 bg-[#E7ECEF]" />
     </section>
   );
