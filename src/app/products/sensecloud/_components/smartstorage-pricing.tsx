@@ -95,7 +95,7 @@ const SmartStoragePricing = () => (
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-[16px] border border-[#A801BA] bg-[#F7F6FF] p-5 dark:border-[#A801BA] dark:bg-[#141036]">
+          <div className="rounded-[16px] border border-[#A801BA] bg-transparent p-5 dark:border-[#A801BA] dark:bg-transparent">
             <div className="flex items-center gap-2">
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#E7E7FF] text-[#2530F0] dark:bg-[#1F1A4A] dark:text-[#13E1EA]">
                 <Sparkles className="h-4 w-4" />
@@ -116,7 +116,7 @@ const SmartStoragePricing = () => (
             </ul>
           </div>
 
-          <div className="rounded-[16px] border border-[#A801BA] bg-[#F7F6FF] p-5 dark:border-[#A801BA] dark:bg-[#141036]">
+          <div className="rounded-[16px] border border-[#A801BA] bg-transparent p-5 dark:border-[#A801BA] dark:bg-transparent">
             <div className="flex items-center gap-2">
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#E7E7FF] text-[#2530F0] dark:bg-[#1F1A4A] dark:text-[#13E1EA]">
                 <ShieldCheck className="h-4 w-4" />
@@ -137,7 +137,7 @@ const SmartStoragePricing = () => (
             </ul>
           </div>
 
-          <div className="rounded-[16px] border border-[#A801BA] bg-[#F7F6FF] p-5 dark:border-[#A801BA] dark:bg-[#141036]">
+          <div className="rounded-[16px] border border-[#A801BA] bg-transparent p-5 dark:border-[#A801BA] dark:bg-transparent">
             <div className="flex items-center gap-2">
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#E7E7FF] text-[#2530F0] dark:bg-[#1F1A4A] dark:text-[#13E1EA]">
                 <Link2 className="h-4 w-4" />
