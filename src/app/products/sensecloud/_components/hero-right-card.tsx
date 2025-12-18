@@ -118,58 +118,49 @@ const HeroRightCard = () => (
         </div>
       </div>
 
-      {/* Window */}
-      <div className="w-full overflow-hidden rounded-[8px]">
-        {/* Window header bar */}
-        <div
-          className={cn(
-            "flex h-8 items-center justify-between px-5 py-1",
-            "text-[14px] leading-5 tracking-[-0.2px] text-[#B9C2D5]",
-            // light
-            "bg-[#2530F0]",
-            // dark
-            "dark:bg-[#000624]"
-          )}
-        >
-          <span>SensePC-Workspace</span>
-          <span className="text-[#B9C2D5]">
-            <span className="font-medium text-[#74FFFF]">Connected</span>
-            <span>{` · 12 ms`}</span>
-          </span>
-        </div>
-
-        {/* Window body */}
-        <div
-          className={cn(
-            "flex items-center justify-center",
-            "px-8 py-10 sm:px-10 lg:px-[107px] lg:py-[58px]",
-            // light
-            "bg-[#E4EDFF]",
-            // dark
-            "dark:bg-[#160E47]"
-          )}
-        >
-          <div className="flex w-[254px] flex-col items-center gap-4 text-center">
-            <div className="relative h-[70px] w-[70px] overflow-hidden">
+      {/* Storage card */}
+      <div className="w-full overflow-hidden rounded-[16px] bg-[#E6EEFF] p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-base leading-7 tracking-[-0.3px] font-semibold text-[#0B1220]">
+            Workspace-Storage-01
+          </p>
+          <div className="inline-flex items-center gap-2 text-[#2530F0]">
+            <span className="relative h-5 w-5 shrink-0">
               <img
                 alt=""
                 aria-hidden="true"
-                src={LIGHT.cloudComputing}
+                src={LIGHT.cloud}
                 className="block h-full w-full dark:hidden"
               />
               <img
                 alt=""
                 aria-hidden="true"
-                src={DARK.cloudComputing}
+                src={DARK.cloud}
                 className="hidden h-full w-full dark:block"
               />
-            </div>
-
-            <p className="text-[18px] leading-8 tracking-[-0.3px] text-[#020816] dark:text-white">
-              Stream a full desktop from the cloud — instantly.
-            </p>
+            </span>
+            <span className="text-[16px] leading-6 tracking-[-0.2px] font-semibold">
+              Attached to SensePC
+            </span>
           </div>
         </div>
+
+        <div className="mt-6 flex items-center justify-between text-[16px] leading-6 tracking-[-0.2px] text-[#3B3F4A]">
+          <span>Used</span>
+          <span className="font-semibold text-[#3B3F4A]">320 GB / 1 TB</span>
+        </div>
+
+        <div className="mt-3">
+          <div className="relative h-[14px] w-full rounded-full bg-[#C9D7FF]">
+            <div className="absolute left-0 top-0 h-full w-[32%] rounded-full bg-[#2530F0]" />
+            <div className="absolute left-[32%] top-1/2 h-6 w-6 -translate-y-1/2 -translate-x-1/2 rounded-full bg-[#2530F0]" />
+          </div>
+        </div>
+
+        <p className="mt-4 text-[14px] leading-6 tracking-[-0.2px] text-[#52555F]">
+          Auto-tiering enabled ? monitoring growth and adjusting billing
+          accordingly.
+        </p>
       </div>
 
       {/* Bottom mini cards (shell-only reusable component) */}
