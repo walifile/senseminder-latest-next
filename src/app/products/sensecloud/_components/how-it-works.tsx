@@ -1,32 +1,31 @@
 "use client";
 
 import React from "react";
+import { StepCard } from "@/app/home/_components/step-card";
 
 import { Button } from "@/components/ui/button";
 
 import { motion } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
 
-import { StepCard } from "@/app/home/_components/step-card";
 
 const steps = [
   {
     step: "STEP-1",
-    icon: "/cloudserver",
+    icon: "connection_x",
     title: "Connect the Cloud & Your PC",
     description:
       "Simply attach Sense Cloud storage to your SmartPC and select your capacity and tier.",
   },
   {
     step: "STEP-2",
-    icon: "/circular",
+    icon: "settings_x",
     title: " Store & Sync ",
     description:
       "Use your Sense PC or APIs and integrations to save work, assets, and backups directly to Sense Cloud.",
   },
   {
     step: "STEP-3",
-    icon: "/computer1",
+    icon: "Union_x",
     title: "Auto-Scale and Optimize ",
     description:
       "Capacity and billing adjust automatically as your storage needs grow.",
@@ -66,7 +65,7 @@ const RentSmarterProcess: React.FC = () => (
           transition={{ duration: 0.6 }}
           className="lg:col-span-2 space-y-12"
         >
-          <h4 className="max-w-lg font-space-grotesk font-bold text-2xl md:text-4xl">
+          <h4 className="max-w-lg font-space-grotesk font-bold text-2xl md:text-5xl">
             How Sense Cloud Works
           </h4>
         </motion.div>
