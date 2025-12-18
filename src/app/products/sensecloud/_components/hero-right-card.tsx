@@ -75,7 +75,7 @@ const HeroRightCard = () => (
       </div>
     </div>
 
-    <div className="relative z-10 flex flex-col gap-5 lg:min-h-[470px]">
+    <div className="relative z-10 flex flex-col gap-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
@@ -145,9 +145,9 @@ const HeroRightCard = () => (
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-between text-[16px] leading-6 tracking-[-0.2px] text-[#3B3F4A]">
+        <div className="mt-6 flex items-center justify-between text-[16px] leading-6 tracking-[-0.2px] text-[#454545]">
           <span>Used</span>
-          <span className="font-semibold text-[#3B3F4A]">320 GB / 1 TB</span>
+          <span className="font-semibold text-[#454545]">320 GB / 1 TB</span>
         </div>
 
         <div className="mt-3">
