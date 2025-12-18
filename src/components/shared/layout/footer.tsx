@@ -34,7 +34,6 @@ const noGlowRoutes = ["/build-sensepc"];
 
 const Footer = () => {
   const pathname = usePathname();
-  const isHome = pathname === "/";
   const currentYear = new Date().getFullYear();
 
   if (
@@ -53,16 +52,13 @@ const Footer = () => {
       aria-label="Site footer"
     >
       {/* Glow background layers (home only, disabled for some routes) */}
-      {isHome && !hideGlow && (
+      {!hideGlow && (
         <>
           <div
-            className="z-0 absolute -top-10 left-1/2 -translate-x-1/2 md:-top-16 md:left-[10%]
-            blur-[160px] md:blur-[200px] size-1/2 opacity-40 bg-[#4027E5]"
+            className="h-[150px] w-[400px] md:h-[248px] md:w-[995px] z-0 absolute -top-10 left-0 md:top-[-95px] md:left-48 bg-[#4027E5] rounded-[50%] blur-[160px] md:blur-[200px] opacity-40"
           />
-
           <div
-            className="z-0 absolute -top-10 left-1/2 -translate-x-1/2 md:-top-20 md:right-[10%]
-            blur-[160px] md:blur-[200px] size-1/2 opacity-40 bg-[#9C05BF]"
+            className="h-[150px] w-[400px] md:h-[248px] md:w-[995px] z-0 absolute -top-20 right-0 md:top-[-165px] md:right-48 bg-[#9C05BF] rounded-[50%] blur-[160px] md:blur-[200px] opacity-40"
           />
         </>
       )}
