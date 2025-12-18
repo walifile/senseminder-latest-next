@@ -83,7 +83,7 @@ const WhyTeamsChoose = () => (
     <div className="relative z-10 container mx-auto px-4 md:px-6">
       <div className="flex flex-col items-center gap-[50px]">
         <h2 className="w-full text-center font-[var(--font-space-grotesk)] text-[36px] font-semibold leading-[44px] tracking-[-1px] capitalize text-[#020816] dark:text-white md:text-[48px] md:leading-[56px]">
-          Why teams choose SensePC
+          Why Sense Cloud for Storage
         </h2>
 
         <div className="grid w-full gap-5 sm:grid-cols-2 lg:grid-cols-4">
