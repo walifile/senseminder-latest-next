@@ -13,7 +13,7 @@ const Hero = () => (
 
     {/* Content */}
     <div className="relative z-10 container mx-auto px-4 md:px-6 pt-16 md:pt-28 pb-16 md:pb-20">
-      <div className="grid items-center gap-10 lg:grid-cols-[1.15fr,0.85fr]">
+      <div className="grid items-center gap-10 lg:grid-cols-[1.15fr,1fr]">
         {/* LEFT */}
         <div className="flex flex-col items-start gap-6">
           <div className="w-full space-y-3">
@@ -29,7 +29,7 @@ const Hero = () => (
                 <span className="bg-gradient-to-l from-[#BA25F0] from-[4.798%] via-[#2530F0] via-[46.154%] to-[#8086F3] bg-clip-text text-transparent">
                   SenseCloud –
                 </span>
-                <span>{`Storage That Lives With Your Cloud PCs.`}</span>
+                <span>{` Storage That Lives With Your Cloud PCs.`}</span>
               </span>
             </h1>
             <p className="max-w-2xl text-[#454545] dark:text-[#B9C2D5] tracking-[-0.4px] text-[16px] leading-7 md:text-[24px] md:leading-[40px]">
