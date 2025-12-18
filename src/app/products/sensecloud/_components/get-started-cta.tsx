@@ -91,7 +91,7 @@ export default function GetStartedCTA() {
         </motion.div>
       </div>
 
-      <div className="absolute w-[340xp] h-[340px] md:w-[681px] md:h-[681px] -left-[8%] md-left-[15.5%] top-1/2 -translate-y-1/2 rotate-[-11.32deg] bg-gradient-to-l from-fuchsia-700 to-blue-700 rounded-full blur-[250px] opacity-50" />
+      <div className="absolute w-[340px] h-[340px] md:w-[681px] md:h-[681px] -left-[8%] md-left-[15.5%] top-1/2 -translate-y-1/2 rotate-[-11.32deg] bg-gradient-to-l from-fuchsia-700 to-blue-700 rounded-full blur-[250px] opacity-50" />
       <div className="absolute w-[340px] h-[340px] md:w-[681px] md:h-[681px] -right-[8%] md:-right-[15.5%] top-1/2 -translate-y-1/2 rotate-[-11.32deg] bg-gradient-to-l from-fuchsia-700 to-blue-700 rounded-full blur-[250px] opacity-50" />
       <div className="z-0 absolute top-1/2 -translate-y-1/2 right-0 blur-[100px] md:blur-[150px] size-24 bg-[#E7ECEF]" />
     </section>
