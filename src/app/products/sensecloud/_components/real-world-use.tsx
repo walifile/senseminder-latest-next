@@ -155,8 +155,7 @@ const REAL_WORLD_ITEMS: RealWorldItem[] = [
   },
 ];
 
-const RealWorld = () => {
-  return (
+const RealWorld = () => (
     <section className="relative py-16 md:py-20">
       {/* Background glows (slightly down from top, left & right) */}
        <div className="pointer-events-none absolute left-0 top-[-70%] z-0">
@@ -217,7 +216,6 @@ const RealWorld = () => {
         </FeatureCards>
       </div>
     </section>
-  );
-};
+);
 
 export default RealWorld;

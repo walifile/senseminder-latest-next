@@ -33,8 +33,7 @@ const steps = [
   },
 ];
 
-const RentSmarterProcess: React.FC = () => {
-  return (
+const RentSmarterProcess: React.FC = () => (
     <section className="relative">
       {/* Light mode ellipses (positioned like Figma: upper-mid, clipped at edges) */}
       <div className="pointer-events-none absolute left-0 z-0 -translate-y-1/2 -translate-x-1/5">
@@ -173,7 +172,6 @@ const RentSmarterProcess: React.FC = () => {
         </motion.div>
       </div>
     </section>
-  );
-};
+);
 
 export default RentSmarterProcess;
