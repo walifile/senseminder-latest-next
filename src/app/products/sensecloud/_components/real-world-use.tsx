@@ -116,25 +116,25 @@ const REAL_WORLD_ITEMS: RealWorldItem[] = [
     title: "Project & Workspace Storage",
     description:
       "Keep each project or team workspace backed by its own storage namespace, with predictable access patterns and cost.",
-    imageSrc: "/assets/product/remote.svg",
+    imageSrc: "/assets/product/sensecloud/frame(3).svg",
   },
   {
     title: "Backups & Snapshots",
     description:
       "Use SenseCloud as the backbone for desktop snapshots, file backups, and long-term archives.",
-    imageSrc: "/assets/product/team.svg",
+    imageSrc: "/assets/product/sensecloud/frame.svg",
   },
   {
     title: "Media & Asset Libraries",
     description:
       "Store large design files, marketing assets, and media libraries centrally so they’re always available from any SensePC.",
-    imageSrc: "/assets/product/developer.svg",
+    imageSrc: "/assets/product/sensecloud/frame(1).svg",
   },
   {
     title: "Data for Analytics & AI ",
     description:
       "Give your analytics or AI workloads a consistent place to read from and write to, alongside your SensePC compute.",
-    imageSrc: "/assets/product/student.svg",
+    imageSrc: "/assets/product/sensecloud/frame(2).svg",
   },
 ];
 

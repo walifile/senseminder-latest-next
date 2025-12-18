@@ -1,6 +1,5 @@
 export const routes = {
   home: "/",
-  home2: "/home2",
   auth: "/auth",
   signIn: "/auth",
   signUp: "/auth/sign-up",
@@ -27,7 +26,6 @@ export const routes = {
 
 export const publicRoutes: string[] = [
   routes.home,
-  routes.home2,
   routes.signIn,
   routes.signUp,
   routes.forgotPassword,
@@ -39,7 +37,6 @@ export const publicRoutes: string[] = [
   routes.terms,
   routes.privacy,
   "/home",
-  "/home2",
   "/login",
   "/index",
   "/shared-folder-viewer",
