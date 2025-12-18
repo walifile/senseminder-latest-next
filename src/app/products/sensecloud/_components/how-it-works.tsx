@@ -1,8 +1,3 @@
-
-
-
-
-
 "use client";
 
 import React from "react";
@@ -12,38 +7,33 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 
-import { useBuildPcNav } from "@/hooks/use-get-started";
-
 import { StepCard } from "@/app/home/_components/step-card";
 
 const steps = [
   {
     step: "STEP-1",
     icon: "/cloudserver",
-    title: "Build Your SensePC",
+    title: "Connect the Cloud & Your PC",
     description:
-      "Choose CPU, memory, storage, and OS. Set schedules and idle timeout so your SensePC fits your lifestyle and budget.",
+      "Simply attach Sense Cloud storage to your SmartPC and select your capacity and tier.",
   },
   {
     step: "STEP-2",
     icon: "/circular",
-    title: "Connect in Seconds",
+    title: " Store & Sync ",
     description:
-      "Launch directly from the browser with our remote desktop viewer. Your apps, files, and sessions stay in the cloud.",
+      "Use your Sense PC or APIs and integrations to save work, assets, and backups directly to Sense Cloud.",
   },
   {
     step: "STEP-3",
     icon: "/computer1",
-    title: "Scale as You Grow",
+    title: "Auto-Scale and Optimize ",
     description:
-      "Upgrade, pause, or create new SensePCs as your needs evolve. Perfect for individuals, teams, or entire organizations.",
+      "Capacity and billing adjust automatically as your storage needs grow.",
   },
 ];
 
-const RentSmarterProcess: React.FC = () => {
-  const onBuildPc = useBuildPcNav();
-
-  return (
+const RentSmarterProcess: React.FC = () => (
     <section className="relative">
       {/* Light mode ellipses (positioned like Figma: upper-mid, clipped at edges) */}
       <div className="pointer-events-none absolute left-0 z-0 -translate-y-1/2 -translate-x-1/5">
@@ -77,7 +67,7 @@ const RentSmarterProcess: React.FC = () => {
           className="lg:col-span-2 space-y-12"
         >
           <h4 className="max-w-lg font-space-grotesk font-bold text-2xl md:text-4xl">
-            How SensePC works
+            How Sense Cloud Works
           </h4>
         </motion.div>
 
@@ -182,7 +172,6 @@ const RentSmarterProcess: React.FC = () => {
         </motion.div>
       </div>
     </section>
-  );
-};
+);
 
 export default RentSmarterProcess;

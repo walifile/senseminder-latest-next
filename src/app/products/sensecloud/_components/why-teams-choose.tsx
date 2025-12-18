@@ -14,30 +14,30 @@ type Feature = {
 
 const FEATURES: Feature[] = [
   {
-    title: "Cloud PCs in Minutes",
+    title: "Native to Sense PC",
     description:
-      "Spin up a high-performance Windows or Linux desktop in just a few clicks. No hardware to buy, no drivers to manage.",
+      "Your files live in the same environment as your cloud desktops. They are fast, secure, and always in sync.",
     iconSrc: "/assets/product/flash.svg",
     iconAlt: "Flash",
   },
   {
-    title: "Access from Any Device",
+    title: "Built for Organization",
     description:
-      "Use your laptop, tablet, or even a basic machine to connect to your SensePC — your real work happens in the cloud.",
+      "Keep everything structured with tagging, metadata, and clean workspace-level organization.",
     iconSrc: "/assets/product/Union.svg",
     iconAlt: "Union",
   },
   {
-    title: "Pay Only for What You Use",
+    title: "Scales Instantly",
     description:
-      "Hourly, daily, and monthly plans with transparent billing and wallet-based payments designed for real-world usage.",
+      "Grow from gigabytes to terabytes without lifting a finger. No migrations. No downtime.",
     iconSrc: "/assets/product/cardunion.svg",
     iconAlt: "Card Union",
   },
   {
-    title: "Secure by Design",
+    title: "Safe by Default",
     description:
-      "Isolated cloud desktops, encrypted storage, strict access controls, and audit-friendly logs built in from day one.",
+      "Versioning and recovery tools make it easy to reverse mistakes and protect your data. ",
     iconSrc: "/assets/product/cyber.svg",
     iconAlt: "Cyber Security",
   },
@@ -83,7 +83,7 @@ const WhyTeamsChoose = () => (
     <div className="relative z-10 container mx-auto px-4 md:px-6">
       <div className="flex flex-col items-center gap-[50px]">
         <h2 className="w-full text-center font-[var(--font-space-grotesk)] text-[36px] font-semibold leading-[44px] tracking-[-1px] capitalize text-[#020816] dark:text-white md:text-[48px] md:leading-[56px]">
-          Why teams choose SensePC
+          Why Sense Cloud for Storage
         </h2>
 
         <div className="grid w-full gap-5 sm:grid-cols-2 lg:grid-cols-4">
