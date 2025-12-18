@@ -13,7 +13,18 @@ import {
 
 import { motion } from "framer-motion";
 
-const faqItems = [
+type FAQItem = {
+  question: string;
+  answer: string;
+};
+
+type FAQProps = {
+  items?: FAQItem[];
+  title?: string;
+  subtitle?: string;
+};
+
+const defaultFaqItems: FAQItem[] = [
   {
     question: "What is a Cloud PC?",
     answer:
@@ -51,7 +62,11 @@ const faqItems = [
   },
 ];
 
-export default function FAQ() {
+export default function FAQ({
+  items = defaultFaqItems,
+  title = "Frequently Asked Questions",
+  subtitle,
+}: FAQProps) {
   const [value, setValue] = React.useState<string | undefined>("item-2");
 
   return (
@@ -67,11 +82,13 @@ export default function FAQ() {
             className="space-y-2.5"
           >
             <h2 className="font-space-grotesk font-semibold text-2xl md:text-4xl">
-              Frequently Asked Questions
+              {title}
             </h2>
-            {/* <p className="text-paragraph text-2xl">
-              Everything you need to know about Sense PC
-            </p> */}
+            {subtitle ? (
+              <p className="text-2xl text-[#454545] dark:text-[#B9C2D5]">
+                {subtitle}
+              </p>
+            ) : null}
           </motion.div>
 
           <Image
@@ -93,7 +110,7 @@ export default function FAQ() {
             onValueChange={setValue}
             className="space-y-4 md:space-y-5"
           >
-            {faqItems.map((item, idx) => {
+            {items.map((item, idx) => {
               const id = `item-${idx + 1}`;
               const open = value === id;
               return (
