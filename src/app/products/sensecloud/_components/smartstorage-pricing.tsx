@@ -50,45 +50,47 @@ const SmartStoragePricing = () => (
   <section className="relative py-16 md:py-20">
     <div className="container mx-auto px-4 md:px-6">
       <div className="grid gap-6 lg:grid-cols-[1.2fr,0.8fr]">
-        <div className="rounded-[20px] border border-[#CFCBFF] bg-[#E9E8FF] p-6 md:p-8 dark:border-[#2A215F] dark:bg-[#0F0B2E]">
-          <div className="space-y-3">
-            <h2 className="font-[var(--font-space-grotesk)] text-[24px] font-semibold leading-[32px] text-[#0B1220] dark:text-white md:text-[32px] md:leading-[40px]">
-              SmartStorage Pricing & Plans
-            </h2>
-            <p className="text-[14px] leading-6 text-[#454545] dark:text-[#B9C2D5] md:text-[16px]">
-              SenseCloud follows the SensePC billing philosophy: simple,
-              transparent, and wallet-driven. Auto-tiered plans help optimize
-              cost, while dedicated storage plans give you predictable pricing
-              and reserved capacity when you need it.
-            </p>
+        <div className="space-y-4">
+          <div className="rounded-[16px] border border-[#8086F3] bg-[rgba(37,48,240,0.10)] p-6 md:p-8 dark:border-[#8086F3] dark:bg-[linear-gradient(163deg,_#170D44_11.73%,_rgba(23,13,68,0.61)_98.26%)]">
+            <div className="space-y-3">
+              <h2 className="font-[var(--font-space-grotesk)] text-[24px] font-semibold leading-[32px] text-[#0B1220] dark:text-white md:text-[32px] md:leading-[40px]">
+                SmartStorage Pricing & Plans
+              </h2>
+              <p className="text-[14px] leading-6 text-[#454545] dark:text-[#B9C2D5] md:text-[16px]">
+                SenseCloud follows the SensePC billing philosophy: simple,
+                transparent, and wallet-driven. Auto-tiered plans help optimize
+                cost, while dedicated storage plans give you predictable pricing
+                and reserved capacity when you need it.
+              </p>
+            </div>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              {planCards.map((plan) => (
+                <div
+                  key={plan.tag}
+                  className="rounded-[8px] border border-[#A801BA] bg-transparent p-4 text-left dark:border-[#A801BA] dark:bg-transparent"
+                >
+                  <span className="inline-flex items-center rounded-full bg-[#E7E7FF] px-2 py-1 text-[10px] font-semibold tracking-[0.4px] text-[#2530F0] dark:bg-[#1F1A4A] dark:text-[#13E1EA]">
+                    {plan.tag}
+                  </span>
+                  <h3 className="mt-3 text-[14px] font-semibold text-[#0B1220] dark:text-white">
+                    {plan.title}
+                  </h3>
+                  <p className="mt-2 text-[12px] leading-5 text-[#454545] dark:text-[#B9C2D5]">
+                    {plan.description}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            {planCards.map((plan) => (
-              <div
-                key={plan.tag}
-                className="rounded-[12px] border border-[#D6D2FF] bg-[#F6F5FF] p-4 text-left dark:border-[#2A215F] dark:bg-[#16113B]"
-              >
-                <span className="inline-flex items-center rounded-full bg-[#E7E7FF] px-2 py-1 text-[10px] font-semibold tracking-[0.4px] text-[#2530F0] dark:bg-[#1F1A4A] dark:text-[#13E1EA]">
-                  {plan.tag}
-                </span>
-                <h3 className="mt-3 text-[14px] font-semibold text-[#0B1220] dark:text-white">
-                  {plan.title}
-                </h3>
-                <p className="mt-2 text-[12px] leading-5 text-[#454545] dark:text-[#B9C2D5]">
-                  {plan.description}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 flex items-center justify-center rounded-[16px] bg-[#E0DEFF] p-6 dark:bg-[#160F3D]">
+          <div className="flex items-center justify-center rounded-[20px] border border-[#CFCBFF] bg-[#E9E8FF] p-6 dark:border-[#2A215F] dark:bg-[#0F0B2E]">
             <Image
               src="/assets/svg/storage.svg"
               alt="SmartStorage illustration"
-              width={320}
-              height={220}
-              className="h-auto w-full max-w-[320px]"
+              width={360}
+              height={240}
+              className="h-auto w-full max-w-[360px]"
               priority={false}
             />
           </div>
