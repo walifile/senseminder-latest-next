@@ -20,8 +20,7 @@ const planCards = [
   {
     tag: "UNIFIED BILLING",
     title: "One wallet, all usage",
-    description:
-      "Storage and compute usage flow into a single SensePC wallet.",
+    description: "Storage and compute usage flow into a single SensePC wallet.",
   },
 ];
 
@@ -48,6 +47,7 @@ const integrationHighlights = [
 
 const SmartStoragePricing = () => (
   <section className="relative py-16 md:py-20">
+    <div className="pointer-events-none absolute -left-[346px] bottom-[-140px] h-[680px] w-[680px] rotate-[-11.316deg] rounded-[680px] bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)] opacity-50 blur-[250px]" />
     <div className="container mx-auto px-4 md:px-6">
       <div className="grid gap-6 lg:grid-cols-[1.2fr,0.8fr]">
         <div className="space-y-4">
@@ -84,13 +84,13 @@ const SmartStoragePricing = () => (
             </div>
           </div>
 
-          <div className="flex items-center justify-center rounded-[20px] border border-[#CFCBFF] bg-[#E9E8FF] p-6 dark:border-[#2A215F] dark:bg-[#0F0B2E]">
+          <div className="flex items-center justify-center rounded-[16px] bg-[rgba(255,255,255,0.07)] p-6">
             <Image
-              src="/assets/svg/storage.svg"
-              alt="SmartStorage illustration"
-              width={360}
-              height={240}
-              className="h-auto w-full max-w-[360px]"
+              src="/assets/svg/product/pricing.svg"
+              alt="SenseCloud storage illustration"
+              width={420}
+              height={320}
+              className="h-auto w-full max-w-[420px]"
               priority={false}
             />
           </div>
