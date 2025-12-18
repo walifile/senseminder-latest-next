@@ -22,7 +22,7 @@ export default function TicketTableSkeleton() {
             </div>
           </div>
           {/* Status Filter */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center self-end gap-4">
             <label className="text-sm text-muted-foreground">Status:</label>
             <Skeleton className="h-9 w-[150px] rounded-md" />
           </div>

@@ -78,8 +78,8 @@ const UsersManagementPage = () => {
           <div className="p-6 pt-0">
             <Card className="bg-white/5 rounded-[20px] border border-indigo-400 backdrop-blur-[32px]">
               <CardHeader className="space-y-5">
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+                  <div className="w-full md:w-auto">
                     <CardTitle className="justify-start text-black dark:text-white text-3xl font-semibold font-['Space_Grotesk'] leading-10">
                       Manage Users
                     </CardTitle>
@@ -87,7 +87,7 @@ const UsersManagementPage = () => {
                       Invite and manage user access
                     </CardDescription>
                   </div>
-                  <div className="relative w-64 md:w-[465px]">
+                  <div className="relative self-end w-64 md:w-[465px]">
                     <div className="bg-[rgba(37,48,240,0.07)] dark:bg-[#ffffff08] rounded-[1000px] border-[none] relative before:content-[''] before:absolute before:inset-0 before:p-px before:rounded-[1000px] before:[background:linear-gradient(270deg,rgba(168,1,186,0.5)_0%,rgba(37,48,240,0.5)_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:z-[1] before:pointer-events-none">
                       <Search className="absolute h-10 w-10 top-1/2 left-1.5 -translate-y-1/2 p-2 text-[#2530F0] dark:text-white bg-blue-700/10 dark:bg-[#FFFFFF08] rounded-[23px] border border-solid border-[#2530F0] dark:border-[#A801BA]" />
                       <Input

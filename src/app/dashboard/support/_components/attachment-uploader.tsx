@@ -48,7 +48,7 @@ export default function AttachmentUploader({
         onChange={onUpload}
         className="hidden"
       />
-      <div className="mt-2 flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-wrap p-2">
         {files.map((file, idx) => (
           <div
             key={idx}

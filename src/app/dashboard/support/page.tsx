@@ -22,13 +22,13 @@ export default function SupportPage() {
       <Card className="relative !border-0 gradient-outline-border bg-[rgba(37,48,240,0.07)] dark:bg-[rgba(255,255,255,0.03)]">
         <CardContent className="p-0 space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <div className="flex justify-between items-center p-6 border-b border-black/10 dark:border-border">
-              <div className="flex items-center gap-2">
-                <h1 className="justify-start text-black dark:text-white text-3xl font-semibold font-['Space_Grotesk'] leading-10">
+            <div className="flex flex-col md:flex-row justify-between items-center p-6 border-b border-black/10 dark:border-border gap-3">
+              <div className="w-full md:w-auto flex items-center gap-2">
+                <h1 className="justify-start text-black dark:text-white text-3xl font-semibold font-['Space_Grotesk'] whitespace-nowrap leading-10">
                   Support Center
                 </h1>
               </div>
-              <div className="flex space-x-2">
+              <div className="flex self-end space-x-2">
                 <TabsList className="grid grid-cols-3 w-full h-12 bg-white/5 rounded-full border border-[#A801BA]">
                   {supportTabs.map((tab) => (
                     <TabsTrigger

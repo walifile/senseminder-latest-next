@@ -22,7 +22,7 @@ import { Logger } from "@/lib/utils/logger";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
+// import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
   Tooltip,
@@ -1039,7 +1039,7 @@ const CloudStorage = () => {
                       </DropdownMenuContent>
                     </DropdownMenu> */}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex w-full justify-self-end gap-2">
                     <Button
                       size="sm"
                       variant="ghost"
@@ -1175,7 +1175,8 @@ const CloudStorage = () => {
                             </p>
                           </div>
                         ) : (
-                          <ScrollArea className="flex-1 h-full">
+                          // <ScrollArea className="flex-1 h-full">
+                          <div className="flex-1 h-full">
                             {error || files.length === 0 ? (
                               <div className="flex flex-col items-center justify-center h-[400px] text-center p-4">
                                 <FileText className="h-8 w-8 text-muted-foreground mb-4" />
@@ -1328,10 +1329,10 @@ const CloudStorage = () => {
                                                   </div>
                                                 </div>
                                               </TableCell>
-                                              <TableCell>
+                                              <TableCell className="whitespace-nowrap">
                                                 {formatFileSize(file?.size)}
                                               </TableCell>
-                                              <TableCell>
+                                              <TableCell className="whitespace-nowrap">
                                                 {formatDate(file.createdAt)}
                                               </TableCell>
                                               <TableCell className="border-r-0">
@@ -1526,8 +1527,8 @@ const CloudStorage = () => {
                                 )}
 
                                 {/* ✅ Pagination */}
-                                <div className="flex items-center justify-between px-4 py-4">
-                                  <div className="text-sm text-muted-foreground">
+                                <div className="flex flex-col md:flex-row items-center justify-between px-4 py-4">
+                                  <div className="w-full md:w-auto text-sm text-muted-foreground">
                                     Showing{" "}
                                     {pagination.total === 0
                                       ? 0
@@ -1542,7 +1543,7 @@ const CloudStorage = () => {
                                     of {pagination.total} files
                                   </div>
 
-                                  <div className="flex items-center space-x-4">
+                                  <div className="w-full md:w-auto flex items-center space-x-4">
                                     <DropdownMenu>
                                       <DropdownMenuTrigger asChild>
                                         <Button size="sm" variant="ghost">
@@ -1625,7 +1626,7 @@ const CloudStorage = () => {
                                 </div>
                               </div>
                             )}
-                          </ScrollArea>
+                          </div>
                         )}
                       </TabsContent>
 

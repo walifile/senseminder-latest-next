@@ -106,7 +106,7 @@ export default function TicketTable() {
           />
 
           {/* Status Filter */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center self-end gap-4">
             <label className="text-sm text-[#454545] dark:text-[#B9C2D5]">
               Status:
             </label>
@@ -131,7 +131,7 @@ export default function TicketTable() {
           <Table className="border-separate border-spacing-0">
             <TableHeader>
               <TableRow className="bg-blue-700/10 dark:bg-[#ffffff0f] hover:bg-blue-700/10 dark:hover:bg-[#ffffff0f]">
-                <TableHead className="rounded-tl-xl" onClick={toggleSort}>
+                <TableHead className="rounded-tl-xl whitespace-nowrap" onClick={toggleSort}>
                   Created <SortIcon />
                 </TableHead>
                 <TableHead>ID</TableHead>

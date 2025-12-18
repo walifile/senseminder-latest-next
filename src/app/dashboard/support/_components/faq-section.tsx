@@ -87,7 +87,7 @@ export default function FAQSection() {
           />
 
           {/* Status Filter */}
-          <div className="flex gap-4">
+          <div className="flex self-end gap-4">
             <Button
               variant="outline"
               size="lg"
