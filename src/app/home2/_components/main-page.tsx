@@ -15,7 +15,9 @@ export default function HomePage() {
   return (
     <MainLayout>
       <div className="px-4 md:px-6 pt-20 md:pt-32 pb-16 md:pb-24 max-w-7xl mx-auto flex flex-col items-center text-center" />
-      <GetStartedCTA>
+      <GetStartedCTA
+        padding="px-4 py-12 md:px-12 md:py-20"
+      >
         <div className="max-w-[48.50rem] flex flex-col mx-auto gap-[30px]">
           <div className="space-y-3">
             <h3 className="self-stretch text-center justify-start text-white text-3xl md:text-5xl font-semibold font-['Space_Grotesk'] leading-10 md:leading-[56px]">

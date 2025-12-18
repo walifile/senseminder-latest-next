@@ -38,33 +38,38 @@ export default function GetStartedCTA({
             {children}
           </motion.div>
 
-          <Image
-            src="/assets/svg/home2/get-started-cta-top.svg"
-            alt="FAQ Illustration"
-            width={320}
-            height={320}
-            className="absolute w-[140px] h-[93px] md:size-80 top-0 md:-top-5 left-0"
-            priority
-          />
+          <div className="pointer-events-none">
+            <Image
+              src="/assets/svg/home2/get-started-cta-top.svg"
+              alt="FAQ Illustration"
+              width={320}
+              height={320}
+              className="absolute w-[140px] h-[93px] md:size-80 top-0 md:-top-5 left-0 -z-10 -z-[1px]"
+              priority
+            />
+          </div>
 
-          <Image
-            src="/assets/svg/home2/get-started-cta-bottom.svg"
-            alt="FAQ Illustration"
-            width={320}
-            height={320}
-            className="absolute w-[140px] h-[93px] md:size-80 -bottom-0 md:-bottom-8 right-0"
-            priority
-          />
-          {/* className="pointer-events-none size-1/2 md:w-[561px] md:h-[79px] absolute left-1/2 -translate-x-1/2 bottom-2 md:bottom-0 md:left-[15%] md:translate-x-0" */}
+          <div className="pointer-events-none">
+            <Image
+              src="/assets/svg/home2/get-started-cta-bottom.svg"
+              alt="FAQ Illustration"
+              width={320}
+              height={320}
+              className="absolute w-[140px] h-[93px] md:size-80 -bottom-0 md:-bottom-8 right-0 -z-[1px]"
+              priority
+            />
+          </div>
 
           <div className="pointer-events-none">
             {/* <Image
               src="/assets/svg/home2/abc.png"
               alt="Gradient"
-              fill
-              className="object-contain"
+              width={568}
+              height={321}
+              className="absolute bottom-0 left-48 h-[79px]"
               priority
             /> */}
+            <div className="w-[620.02px] h-96 bottom-[-378px] left-[135px] absolute origin-top-left rotate-[-11.32deg] bg-gradient-to-l from-fuchsia-600 via-blue-700 to-indigo-400 rounded-[50%] blur-[150px] -z-[1px]" />
           </div>
         </motion.div>
       </div>
