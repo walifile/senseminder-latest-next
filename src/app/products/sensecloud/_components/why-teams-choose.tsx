@@ -1,7 +1,3 @@
-
-
-
-
 "use client";
 
 import React from "react";
@@ -47,12 +43,11 @@ const FEATURES: Feature[] = [
   },
 ];
 
-const WhyTeamsChoose = () => {
-  return (
-    <section className="relative py-16 md:py-20">
-      {/* Background glows */}
-      {/* Left glow: Ellipse 7 */}
-      {/* <div className="pointer-events-none absolute left-0 top-1/2 z-0 -translate-y-1/2">
+const WhyTeamsChoose = () => (
+  <section className="relative py-16 md:py-20">
+    {/* Background glows */}
+    {/* Left glow: Ellipse 7 */}
+    {/* <div className="pointer-events-none absolute left-0 top-1/2 z-0 -translate-y-1/2">
         <img
           src="/assets/product/Ellipse 7.svg"
           alt=""
@@ -68,61 +63,58 @@ const WhyTeamsChoose = () => {
         />
       </div> */}
 
+    <div className="pointer-events-none absolute left-0 top-1/2 z-0 -translate-y-1/2 hidden dark:block">
+      <img
+        src="/assets/product/Ellipse 7.svg"
+        alt=""
+        className="block h-auto w-auto max-w-none select-none"
+      />
+    </div>
 
-      <div className="pointer-events-none absolute left-0 top-1/2 z-0 -translate-y-1/2 hidden dark:block">
-  <img
-    src="/assets/product/Ellipse 7.svg"
-    alt=""
-    className="block h-auto w-auto max-w-none select-none"
-  />
-</div>
+    <div className="pointer-events-none absolute right-0 top-1/2 z-0 -translate-y-1/2 hidden dark:block">
+      <img
+        src="/assets/product/Ellipse 2.svg"
+        alt=""
+        className="block h-auto w-auto max-w-none select-none"
+      />
+    </div>
 
-<div className="pointer-events-none absolute right-0 top-1/2 z-0 -translate-y-1/2 hidden dark:block">
-  <img
-    src="/assets/product/Ellipse 2.svg"
-    alt=""
-    className="block h-auto w-auto max-w-none select-none"
-  />
-</div>
+    {/* Content */}
+    <div className="relative z-10 container mx-auto px-4 md:px-6">
+      <div className="flex flex-col items-center gap-[50px]">
+        <h2 className="w-full text-center font-[var(--font-space-grotesk)] text-[36px] font-semibold leading-[44px] tracking-[-1px] capitalize text-[#020816] dark:text-white md:text-[48px] md:leading-[56px]">
+          Why teams choose SensePC
+        </h2>
 
-
-      {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 md:px-6">
-        <div className="flex flex-col items-center gap-[50px]">
-          <h2 className="w-full text-center font-[var(--font-space-grotesk)] text-[36px] font-semibold leading-[44px] tracking-[-1px] capitalize text-[#020816] dark:text-white md:text-[48px] md:leading-[56px]">
-            Why teams choose SensePC
-          </h2>
-
-          <div className="grid w-full gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {FEATURES.map((feature) => (
-              <ProductFeatureCard key={feature.title} className="w-full">
-                <div className="flex w-full flex-col gap-6">
-                  <div className="relative h-[55px] w-[55px]">
-                    <Image
-                      src={feature.iconSrc}
-                      alt={feature.iconAlt}
-                      fill
-                      className="object-contain"
-                      priority={feature.title === "Cloud PCs in Minutes"}
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2 tracking-[-0.3px]">
-                    <h3 className="font-[var(--font-space-grotesk)] text-[18px] font-semibold leading-8 text-[#020816] dark:text-white">
-                      {feature.title}
-                    </h3>
-                    <p className="text-[16px] leading-6 text-[#454545] dark:text-[#B9C2D5]">
-                      {feature.description}
-                    </p>
-                  </div>
+        <div className="grid w-full gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {FEATURES.map((feature) => (
+            <ProductFeatureCard key={feature.title} className="w-full">
+              <div className="flex w-full flex-col gap-6">
+                <div className="relative h-[55px] w-[55px]">
+                  <Image
+                    src={feature.iconSrc}
+                    alt={feature.iconAlt}
+                    fill
+                    className="object-contain"
+                    priority={feature.title === "Cloud PCs in Minutes"}
+                  />
                 </div>
-              </ProductFeatureCard>
-            ))}
-          </div>
+
+                <div className="flex flex-col gap-2 tracking-[-0.3px]">
+                  <h3 className="font-[var(--font-space-grotesk)] text-[18px] font-semibold leading-8 text-[#020816] dark:text-white">
+                    {feature.title}
+                  </h3>
+                  <p className="text-[16px] leading-6 text-[#454545] dark:text-[#B9C2D5]">
+                    {feature.description}
+                  </p>
+                </div>
+              </div>
+            </ProductFeatureCard>
+          ))}
         </div>
       </div>
-    </section>
-  );
-};
+    </div>
+  </section>
+);
 
 export default WhyTeamsChoose;
