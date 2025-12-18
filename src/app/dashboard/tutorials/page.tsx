@@ -140,7 +140,7 @@ const TutorialsPage = () => {
               value={selectedCategory}
               onValueChange={setSelectedCategory}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px]" variant="pill">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
@@ -155,7 +155,7 @@ const TutorialsPage = () => {
               value={selectedDifficulty}
               onValueChange={setSelectedDifficulty}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px]" variant="pill">
                 <SelectValue placeholder="Difficulty" />
               </SelectTrigger>
               <SelectContent>

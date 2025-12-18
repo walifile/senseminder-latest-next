@@ -14,7 +14,7 @@ interface Props {
 
 const PrioritySelectField = ({ value, setValue, disabled = false }: Props) => (
   <Select value={value} onValueChange={setValue} disabled={disabled}>
-    <SelectTrigger variant="default">
+    <SelectTrigger variant="glowingSelector">
       <SelectValue placeholder="Select priority" />
     </SelectTrigger>
     <SelectContent>

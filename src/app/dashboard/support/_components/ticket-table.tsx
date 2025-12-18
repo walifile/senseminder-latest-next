@@ -111,7 +111,7 @@ export default function TicketTable() {
               Status:
             </label>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[150px]">
+              <SelectTrigger className="w-[150px]" variant="pill">
                 <SelectValue placeholder="Any" />
               </SelectTrigger>
               <SelectContent>
