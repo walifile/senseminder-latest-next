@@ -47,6 +47,15 @@ const Duplicates: React.FC<DuplicatesProps> = ({
   const [dedupScan] = useDedupScanMutation();
   const [dedupMerge] = useDedupMergeMutation();
 
+  const panelClasses =
+    "rounded-lg border border-[rgba(37,48,240,0.12)] bg-[rgba(37,48,240,0.07)] dark:border-[#ffffff1a] dark:bg-[#ffffff0a]";
+  const cardClasses =
+    "rounded-md border border-[rgba(37,48,240,0.12)] bg-[rgba(37,48,240,0.04)] dark:border-[#ffffff14] dark:bg-[#ffffff08]";
+  const headingText = "text-[#020816] dark:text-white";
+  const mutedText = "text-[#454545] dark:text-[#B9C2D5]";
+  const pillClasses =
+    "inline-flex items-center rounded-full bg-[rgba(37,48,240,0.12)] px-2 py-0.5 text-[10px] font-medium text-[#020816] dark:bg-[#ffffff12] dark:text-white";
+
   // Pagination
   const [page, setPage] = useState(1);
   const pageSize = DEFAULT_PAGE_SIZE;
@@ -81,7 +90,7 @@ const Duplicates: React.FC<DuplicatesProps> = ({
     }
   };
 
-  // 🔹 Load duplicates
+  // dY"1 Load duplicates
   const fetchDuplicates = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
@@ -107,9 +116,9 @@ const Duplicates: React.FC<DuplicatesProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [userId, region]);
+  }, [userId, region, dedupScan]);
 
-  // 🔹 Merge selected duplicates
+  // dY"1 Merge selected duplicates
   const handleMerge = async () => {
     if (!scan || selected.length === 0) {
       toast({
@@ -166,7 +175,7 @@ const Duplicates: React.FC<DuplicatesProps> = ({
     }
   };
 
-  // 🔹 Select toggle for a single group
+  // dY"1 Select toggle for a single group
   const toggleGroup = (key: string) => {
     setSelected((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
@@ -182,18 +191,20 @@ const Duplicates: React.FC<DuplicatesProps> = ({
       <div className="p-4">
         <div className="mx-auto flex max-w-5xl flex-col gap-4">
           {/* Header card */}
-          <div className="flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm">
+          <div className={`flex flex-col gap-4 p-4 shadow-sm ${panelClasses}`}>
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                    <Copy className="h-4 w-4 text-primary" />
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[rgba(37,48,240,0.12)] dark:bg-[#ffffff12]">
+                    <Copy className="h-4 w-4 text-[#2530F0] dark:text-white" />
                   </span>
                   <div>
-                    <h3 className="text-base font-semibold leading-none">
+                    <h3
+                      className={`text-base font-semibold leading-none ${headingText}`}
+                    >
                       Duplicate files
                     </h3>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className={`mt-1 text-xs ${mutedText}`}>
                       Find and clean up files with identical names and sizes.
                       The original is kept, duplicates are removed.
                     </p>
@@ -202,24 +213,26 @@ const Duplicates: React.FC<DuplicatesProps> = ({
 
                 {/* Select all + pagination summary */}
                 {totalGroups > 0 && (
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                  <div
+                    className={`flex flex-wrap items-center gap-3 text-xs ${mutedText}`}
+                  >
                     <button
                       type="button"
-                      className="inline-flex items-center gap-2 rounded-full border bg-background px-2.5 py-1 transition-colors hover:bg-accent"
+                      className="inline-flex items-center gap-2 rounded-full border border-[rgba(37,48,240,0.22)] bg-[rgba(37,48,240,0.10)] px-2.5 py-1 transition-colors hover:bg-[rgba(37,48,240,0.16)] dark:border-[#ffffff26] dark:bg-[#ffffff12] dark:hover:bg-[#ffffff1f]"
                       onClick={toggleSelectAllOnPage}
                     >
                       <Checkbox
                         checked={allOnPageSelected}
                         onCheckedChange={toggleSelectAllOnPage}
-                        className="h-3 w-3"
+                        className="h-3 w-3 border-[rgba(37,48,240,0.5)] dark:border-[#ffffff3d] data-[state=checked]:border-[#2530F0] data-[state=checked]:bg-[#2530F0] dark:data-[state=checked]:border-white dark:data-[state=checked]:bg-white"
                       />
-                      <span className="font-medium">
+                      <span className="font-medium text-[#020816] dark:text-white">
                         Select all groups on this page
                       </span>
                     </button>
-                    <span className="text-[11px]">
-                      Page {page} of {totalPages} • showing {pageGroups.length}{" "}
-                      of {totalGroups} duplicate groups
+                    <span className={`text-[11px] ${mutedText}`}>
+                      Page {page} of {totalPages} - showing {pageGroups.length} of {" "}
+                      {totalGroups} duplicate groups
                     </span>
                   </div>
                 )}
@@ -235,7 +248,7 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Scanning…
+                      Scanning...
                     </>
                   ) : (
                     <>
@@ -252,7 +265,7 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                   {merging ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Merging…
+                      Merging...
                     </>
                   ) : (
                     <>
@@ -266,7 +279,7 @@ const Duplicates: React.FC<DuplicatesProps> = ({
 
             {/* High-level stats inline with header for quick glance */}
             {scan?.stats && (
-              <div className="mt-2 flex flex-wrap gap-2 rounded-md bg-muted/40 p-3 text-xs">
+              <div className="mt-2 flex flex-wrap gap-2 rounded-md bg-[rgba(37,48,240,0.08)] p-3 text-xs text-[#020816] dark:bg-[#ffffff0a] dark:text-[#B9C2D5]">
                 {formatDuplicateStats(scan.stats)}
               </div>
             )}
@@ -281,26 +294,32 @@ const Duplicates: React.FC<DuplicatesProps> = ({
 
           {/* Main content: loading / empty / list */}
           {loading && (
-            <div className="flex h-[260px] flex-col items-center justify-center gap-2 rounded-lg border bg-card text-xs text-muted-foreground">
+            <div
+              className={`flex h-[260px] flex-col items-center justify-center gap-2 text-xs ${panelClasses} ${mutedText}`}
+            >
               <Loader2 className="h-5 w-5 animate-spin" />
-              <p className="font-medium">
-                Scanning your storage for duplicates…
+              <p className={`font-medium ${headingText}`}>
+                Scanning your storage for duplicates...
               </p>
-              <p className="max-w-xs text-center text-[11px] text-muted-foreground">
+              <p className={`max-w-xs text-center text-[11px] ${mutedText}`}>
                 This may take a moment if you have a large number of files.
               </p>
             </div>
           )}
 
           {!loading && scan && scan.groups.length === 0 && (
-            <div className="flex h-[260px] flex-col items-center justify-center gap-3 rounded-lg border bg-card text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                <FileText className="h-6 w-6 text-muted-foreground" />
+            <div
+              className={`flex h-[260px] flex-col items-center justify-center gap-3 text-center ${panelClasses}`}
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(37,48,240,0.08)] dark:bg-[#ffffff12]">
+                <FileText className="h-6 w-6 text-[#2530F0] dark:text-white" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold">No duplicates found</h3>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  All your files are unique — nothing to clean up right now.
+                <h3 className={`text-sm font-semibold ${headingText}`}>
+                  No duplicates found
+                </h3>
+                <p className={`mt-1 text-xs ${mutedText}`}>
+                  All your files are unique - nothing to clean up right now.
                 </p>
               </div>
             </div>
@@ -308,18 +327,18 @@ const Duplicates: React.FC<DuplicatesProps> = ({
 
           {/* Duplicate groups with pagination */}
           {!loading && scan && scan.groups.length > 0 && (
-            <div className="flex flex-col gap-3 rounded-lg border bg-card/60 p-3">
+            <div className={`flex flex-col gap-3 p-3 ${panelClasses}`}>
               {/* List header summary */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-2 text-[11px] text-muted-foreground border-b">
+              <div
+                className={`flex flex-wrap items-center justify-between gap-2 border-b border-[rgba(37,48,240,0.12)] pb-2 text-[11px] ${mutedText} dark:border-[#ffffff14]`}
+              >
                 <span>
-                  Showing groups {startIndex + 1}–
-                  {Math.min(endIndex, totalGroups)} of {totalGroups}
+                  Showing groups {startIndex + 1}-{Math.min(endIndex, totalGroups)} of {" "}
+                  {totalGroups}
                 </span>
                 <span>
-                  Selected groups:{" "}
-                  <span className="font-semibold">
-                    {selected.length.toString()}
-                  </span>
+                  Selected groups: {" "}
+                  <span className="font-semibold">{selected.length.toString()}</span>
                 </span>
               </div>
 
@@ -334,7 +353,7 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                   return (
                     <div
                       key={key}
-                      className="rounded-md border bg-background/60 p-3 text-xs shadow-sm transition-colors hover:bg-accent/40"
+                      className={`${cardClasses} p-3 text-xs shadow-sm transition-colors hover:bg-[rgba(37,48,240,0.08)] dark:hover:bg-[#ffffff10]`}
                     >
                       {/* Group header row */}
                       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -342,57 +361,63 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                           <Checkbox
                             checked={selectedFlag}
                             onCheckedChange={() => toggleGroup(key)}
-                            className="mt-1"
+                            className="mt-1 border-[rgba(37,48,240,0.5)] dark:border-[#ffffff3d] data-[state=checked]:border-[#2530F0] data-[state=checked]:bg-[#2530F0] dark:data-[state=checked]:border-white dark:data-[state=checked]:bg-white"
                           />
                           <div className="min-w-0 space-y-1">
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className="truncate text-sm font-medium">
+                              <span
+                                className={`truncate text-sm font-semibold ${headingText}`}
+                              >
                                 {group.groupKey.fileName}
                               </span>
                               <Badge
                                 variant="outline"
-                                className="border-dashed text-[10px]"
+                                className="border-dashed border-[rgba(37,48,240,0.4)] text-[10px] text-[#2530F0] dark:border-[#ffffff33] dark:text-white"
                               >
                                 {count} copies
                               </Badge>
                             </div>
-                            <div className="flex flex-wrap gap-3 text-[11px] text-muted-foreground">
+                            <div
+                              className={`flex flex-wrap gap-3 text-[11px] ${mutedText}`}
+                            >
                               <span>
-                                Each:{" "}
+                                Each: {" "}
                                 {formatFileSize(group.groupKey.sizeBytes ?? 0)}
                               </span>
                               {group.totalBytes && (
                                 <span>
-                                  Total space used:{" "}
+                                  Total space used: {" "}
                                   {formatFileSize(group.totalBytes)}
                                 </span>
                               )}
                             </div>
                             <div className="mt-1">
-                              <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-foreground/80">
+                              <span className={`${pillClasses} gap-1`}>
                                 <span className="mr-1 opacity-70">
                                   Primary location:
                                 </span>
                                 <span className="font-mono text-[10px]">
-                                  {primaryFolder === "/"
-                                    ? "/"
-                                    : `/${primaryFolder}`}
+                                  {primaryFolder === "/" ? "/" : `/${primaryFolder}`}
                                 </span>
                               </span>
                             </div>
                           </div>
                         </div>
 
-                        <div className="text-right text-[11px] text-muted-foreground">
+                        <div className={`text-right text-[11px] ${mutedText}`}>
                           <span className="font-medium">Keeping original</span>
-                          <div className="mt-0.5 max-w-[220px] truncate text-xs font-medium text-foreground">
+                          <div
+                            className={`mt-0.5 max-w-[220px] truncate text-xs font-medium ${headingText}`}
+                          >
                             {group.primary.fileName}
                           </div>
                         </div>
                       </div>
 
                       {/* Duplicates list */}
-                      <div className="mt-3 border-t pt-2 pl-7 space-y-1 text-[11px] text-muted-foreground">
+                      <div
+                        className={`mt-3 space-y-1 border-t border-[rgba(37,48,240,0.12)] pt-2 pl-7 text-[11px] ${mutedText} dark:border-[#ffffff14]`}
+                      >
                         {group.duplicates.map((dup) => {
                           const dupFolder = getFolderForItem(dup, userId);
                           return (
@@ -403,11 +428,11 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                               <div className="flex min-w-0 flex-col">
                                 <div className="flex items-center gap-1">
                                   <Trash2 className="h-3 w-3 opacity-70" />
-                                  <span className="truncate">
+                                  <span className={`truncate ${headingText}`}>
                                     {dup.fileName}
                                   </span>
                                 </div>
-                                <span className="mt-0.5 inline-flex w-fit items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-foreground/80">
+                                <span className={`mt-0.5 w-fit ${pillClasses}`}>
                                   <span className="mr-1 opacity-70">
                                     Will be deleted from:
                                   </span>
@@ -416,7 +441,7 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                                   </span>
                                 </span>
                               </div>
-                              <span className="whitespace-nowrap">
+                              <span className={`whitespace-nowrap ${headingText}`}>
                                 {formatFileSize(
                                   dup.sizeBytes ?? group.groupKey.sizeBytes
                                 )}
@@ -432,10 +457,12 @@ const Duplicates: React.FC<DuplicatesProps> = ({
 
               {/* Pagination controls */}
               {totalPages > 1 && (
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t pt-2 text-[11px] text-muted-foreground">
+                <div
+                  className={`mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[rgba(37,48,240,0.12)] pt-2 text-[11px] ${mutedText} dark:border-[#ffffff14]`}
+                >
                   <span>
-                    Showing {startIndex + 1}–{Math.min(endIndex, totalGroups)}{" "}
-                    of {totalGroups} groups
+                    Showing {startIndex + 1}-{Math.min(endIndex, totalGroups)} of {" "}
+                    {totalGroups} groups
                   </span>
                   <div className="flex items-center gap-2">
                     <Button
@@ -468,9 +495,7 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                       size="sm"
                       className="h-7 px-2"
                       disabled={page >= totalPages}
-                      onClick={() =>
-                        setPage((p) => Math.min(totalPages, p + 1))
-                      }
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     >
                       Next
                     </Button>

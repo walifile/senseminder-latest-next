@@ -156,7 +156,7 @@ const NewTicket = ({ setActiveTab }: Props) => {
                 value={formState.category}
                 onValueChange={(val) => handleSelectChange("category", val)}
               >
-                <SelectTrigger variant="default">
+                <SelectTrigger variant="glowingSelector">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
