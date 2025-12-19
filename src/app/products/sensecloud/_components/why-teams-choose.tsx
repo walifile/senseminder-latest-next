@@ -17,28 +17,28 @@ const FEATURES: Feature[] = [
     title: "Native to Sense PC",
     description:
       "Your files live in the same environment as your cloud desktops. They are fast, secure, and always in sync.",
-    iconSrc: "/assets/product/flash.svg",
+    iconSrc: "/assets/product/sensecloud/cloud-data.svg",
     iconAlt: "Flash",
   },
   {
     title: "Built for Organization",
     description:
       "Keep everything structured with tagging, metadata, and clean workspace-level organization.",
-    iconSrc: "/assets/product/Union.svg",
+    iconSrc: "/assets/product/sensecloud/data-searching.svg",
     iconAlt: "Union",
   },
   {
     title: "Scales Instantly",
     description:
       "Grow from gigabytes to terabytes without lifting a finger. No migrations. No downtime.",
-    iconSrc: "/assets/product/cardunion.svg",
+    iconSrc: "/assets/product/sensecloud/full-screen.svg",
     iconAlt: "Card Union",
   },
   {
     title: "Safe by Default",
     description:
       "Versioning and recovery tools make it easy to reverse mistakes and protect your data. ",
-    iconSrc: "/assets/product/cyber.svg",
+    iconSrc: "/assets/product/sensecloud/data-recovery.svg",
     iconAlt: "Cyber Security",
   },
 ];
@@ -82,7 +82,7 @@ const WhyTeamsChoose = () => (
     {/* Content */}
     <div className="relative z-10 container mx-auto px-4 md:px-6">
       <div className="flex flex-col items-center gap-[50px]">
-        <h2 className="w-full text-center font-[var(--font-space-grotesk)] text-[36px] font-semibold leading-[44px] tracking-[-1px] capitalize text-[#020816] dark:text-white md:text-[48px] md:leading-[56px]">
+        <h2 className="w-full text-center font-['Space_Grotesk'] text-[36px] font-semibold leading-[44px] tracking-[-1px] capitalize text-[#020816] dark:text-white md:text-[48px] md:leading-[56px]">
           Why Sense Cloud for Storage
         </h2>
 
@@ -101,7 +101,7 @@ const WhyTeamsChoose = () => (
                 </div>
 
                 <div className="flex flex-col gap-2 tracking-[-0.3px]">
-                  <h3 className="font-[var(--font-space-grotesk)] text-[18px] font-semibold leading-8 text-[#020816] dark:text-white">
+                  <h3 className="font-['Space_Grotesk'] text-[18px] font-semibold leading-8 text-[#020816] dark:text-white">
                     {feature.title}
                   </h3>
                   <p className="text-[16px] leading-6 text-[#454545] dark:text-[#B9C2D5]">
