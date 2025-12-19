@@ -47,16 +47,17 @@ const integrationHighlights = [
 
 const SmartStoragePricing = () => (
   <section className="relative py-16 md:py-20">
-    <div className="pointer-events-none absolute -left-[346px] bottom-[-140px] h-[680px] w-[680px] rotate-[-11.316deg] rounded-[680px] bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)] opacity-50 blur-[250px]" />
+    <div className="pointer-events-none absolute -left-[346px] bottom-[-140px] h-[680px] w-[680px] rotate-[-11.316deg] rounded-[680px] bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)] opacity-30 blur-[250px] dark:hidden" />
+    <div className="pointer-events-none absolute -left-[346px] bottom-[-140px] hidden h-[680px] w-[680px] rotate-[-11.316deg] rounded-[680px] bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)] opacity-50 blur-[250px] dark:block" />
     <div className="container mx-auto px-4 md:px-6">
       <div className="grid gap-6 lg:grid-cols-[1.2fr,0.8fr]">
         <div className="space-y-4">
-          <div className="rounded-[16px] bg-[rgba(37,48,240,0.10)] p-6 md:p-8 dark:bg-[linear-gradient(163deg,_#170D44_11.73%,_rgba(23,13,68,0.61)_98.26%)]">
+          <div className="rounded-[16px] bg-[rgba(37,48,240,0.10)] p-[30px] dark:bg-[linear-gradient(163deg,_#170D44_11.73%,_rgba(23,13,68,0.61)_98.26%)]">
             <div className="space-y-3">
               <h2 className="font-[var(--font-space-grotesk)] text-[32px] font-semibold leading-[40px] text-[#0B1220] dark:text-white md:text-[48px] md:leading-[56px]">
                 SmartStorage Pricing & Plans
               </h2>
-              <p className="text-[14px] leading-6 text-[#454545] dark:text-[#B9C2D5] md:text-[16px]">
+              <p className="text-[24px] leading-[32px] text-[#454545] dark:text-[#B9C2D5]">
                 SenseCloud follows the SensePC billing philosophy: simple,
                 transparent, and wallet-driven. Auto-tiered plans help optimize
                 cost, while dedicated storage plans give you predictable pricing
@@ -68,7 +69,7 @@ const SmartStoragePricing = () => (
               {planCards.map((plan) => (
                 <div
                   key={plan.tag}
-                  className="relative rounded-[8px] bg-transparent p-4 text-left before:absolute before:inset-0 before:rounded-[8px] before:p-px before:content-[''] before:[background:linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:pointer-events-none"
+                  className="relative rounded-[8px] bg-transparent p-3 text-left before:absolute before:inset-0 before:rounded-[8px] before:p-px before:content-[''] before:[background:linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:pointer-events-none"
                 >
                   <span className="inline-flex items-center rounded-full bg-[#E7E7FF] px-2 py-1 text-[10px] font-semibold tracking-[0.4px] text-[#2530F0] dark:bg-[#1F1A4A] dark:text-[#13E1EA]">
                     {plan.tag}
