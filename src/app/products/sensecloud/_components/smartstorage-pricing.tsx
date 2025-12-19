@@ -128,6 +128,9 @@ const SmartStoragePricing = () => (
                 Durability & Availability
               </h3>
             </div>
+            <p className="mt-2 text-[13px] leading-5 text-[#454545] dark:text-white">
+              Sense Cloud is built to keep your files safe and easy to access.
+            </p>
             <ul className="mt-4 space-y-2 text-[13px] leading-5 text-[#454545] dark:text-[#B9C2D5]">
               {durabilityHighlights.map((item) => (
                 <li key={item} className="flex gap-2">
@@ -149,6 +152,9 @@ const SmartStoragePricing = () => (
                 SensePC Integration
               </h3>
             </div>
+            <p className="mt-2 text-[13px] leading-5 text-[#454545] dark:text-white">
+              Sense Cloud works naturally with your cloud desktops.
+            </p>
             <ul className="mt-4 space-y-2 text-[13px] leading-5 text-[#454545] dark:text-[#B9C2D5]">
               {integrationHighlights.map((item) => (
                 <li key={item} className="flex gap-2">
