@@ -65,7 +65,7 @@ const RentSmarterProcess: React.FC = () => (
           transition={{ duration: 0.6 }}
           className="lg:col-span-2 space-y-12"
         >
-          <h4 className="max-w-lg font-space-grotesk font-bold text-2xl md:text-5xl">
+          <h4 className="max-w-lg font-['Space_Grotesk'] font-bold text-2xl md:text-5xl">
             How Sense Cloud Works
           </h4>
         </motion.div>
