@@ -1,25 +1,29 @@
 "use client";
 
 import React from "react";
+
 import { cn } from "@/lib/utils";
+
 import ProductMiniInfoCard from "./product-mini-info-card";
 
 const ProductInfoCard = ProductMiniInfoCard;
 
 const DARK = {
   ellipse: "/assets/product/hero-rightcard-ellipse-dark.svg",
-  cloud: "/assets/product/hero-rightcard-cloud-dark.svg",
+  storage: "/assets/product/sensecloud/hero_server-storage_dark.svg",
+  cloud: "/assets/product/sensecloud/hero_cloud_dark.svg",
   cloudComputing: "/assets/product/hero-rightcard-cloud-computing-dark.svg",
-  computer: "/assets/product/hero-rightcard-performance-computer-dark.svg",
-  shield: "/assets/product/hero-rightcard-security-shield-dark.svg",
+  computer: "/assets/product/sensecloud/hero_computer_dark.svg",
+  shield: "/assets/product/sensecloud/hero_shield_dark.svg",
 } as const;
 
 const LIGHT = {
   ellipse: "/assets/product/hero-rightcard-ellipse-light.svg",
-  cloud: "/assets/product/hero-rightcard-cloud-light.svg",
+  storage: "/assets/product/sensecloud/hero_server-storage_light.svg",
+  cloud: "/assets/product/sensecloud/hero_cloud_light.svg",
   cloudComputing: "/assets/product/hero-rightcard-cloud-computing-light.svg",
-  computer: "/assets/product/hero-rightcard-performance-computer-light.svg",
-  shield: "/assets/product/hero-rightcard-security-shield-light.svg",
+  computer: "/assets/product/sensecloud/hero_computer_light.svg",
+  shield: "/assets/product/sensecloud/hero_shield_light.svg",
 } as const;
 
 const HeroRightCard = () => (
@@ -102,13 +106,13 @@ const HeroRightCard = () => (
             <img
               alt=""
               aria-hidden="true"
-              src={LIGHT.cloud}
+              src={LIGHT.storage}
               className="block h-full w-full dark:hidden"
             />
             <img
               alt=""
               aria-hidden="true"
-              src={DARK.cloud}
+              src={DARK.storage}
               className="hidden h-full w-full dark:block"
             />
           </span>
