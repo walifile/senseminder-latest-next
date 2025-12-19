@@ -9,40 +9,40 @@ const planCards = [
     tag: "AUTO-TIERED",
     title: "Adaptive billing",
     description:
-      "Monthly billing based on maximum reserved usage in the period.",
+      "Your monthly charge reflects the highest storage usage during the billing period. ",
   },
   {
     tag: "DEDICATED PLANS",
     title: "Reserved capacity",
     description:
-      "Locked-in capacity and pricing for workloads with predictable storage needs.",
+      "Lock in storage you need with consistent pricing for stable, long-running workloads. ",
   },
   {
     tag: "UNIFIED BILLING",
-    title: "One wallet, all usage",
-    description: "Storage and compute usage flow into a single SensePC wallet.",
+    title: "One wallet for everything",
+    description:
+      "Storage and compute charges flow into a single SensepC wallet and invoice history.",
   },
 ];
 
 const billingHighlights = [
-  "Auto-tiered pricing based on your highest usage in the billing window.",
-  "Dedicated storage plans for predictable workloads and reserved capacity.",
-  "Unified wallet and billing with SensePC, no separate invoices.",
-  "Transparent usage history with exportable records for compliance.",
+  "Auto-tiered pricing",
+  "Dedicated capacity plans",
+  "Unified billing across storage",
+  "Clear usage history",
 ];
 
 const durabilityHighlights = [
-  "Backed by highly durable cloud object storage primitives.",
-  "Multi-AZ awareness and fault-tolerant design at the platform layer.",
-  "Data integrity checks and monitoring for silent corruption risks.",
-  "Planned future support for cross-region backup and disaster recovery.",
+  "Durability—Your files won’t get lost. Sense Cloud keeps extra copies, so nothing disappears.",
+  "Availability: your files are ready even if one system has a problem.",
+  "Sense Cloud automatically checks your data to ensure nothing is damaged.",
 ];
 
 const integrationHighlights = [
-  "Storage feels native to your cloud desktops.",
-  "Attach storage to SmartPCs with clear visibility of size and cost.",
-  "Future-friendly design for snapshots, lifecycle policies, and backup workflows.",
-  "Centralized management across compute and storage from a single dashboard.",
+  "Your files show up inside your Sense PC just like they’re a part of your desktop.",
+  "You can attach storage easily and see how much space you’re using.",
+  "It’s designed to support more helpful features in the future, like snapshots.",
+  "You can manage both your cloud desktops and storage from a single dashboard.",
 ];
 
 const SmartStoragePricing = () => (
@@ -55,13 +55,13 @@ const SmartStoragePricing = () => (
           <div className="rounded-[16px] bg-[rgba(37,48,240,0.10)] p-[30px] dark:bg-[linear-gradient(163deg,_#170D44_11.73%,_rgba(23,13,68,0.61)_98.26%)]">
             <div className="space-y-3">
               <h2 className="font-[var(--font-space-grotesk)] text-[32px] font-semibold leading-[40px] text-[#0B1220] dark:text-white md:text-[48px] md:leading-[56px]">
-                SmartStorage Pricing & Plans
+                Sense Cloud Pricing & Plans
               </h2>
               <p className="text-[24px] leading-[32px] text-[#454545] dark:text-[#B9C2D5]">
-                SenseCloud follows the SensePC billing philosophy: simple,
-                transparent, and wallet-driven. Auto-tiered plans help optimize
-                cost, while dedicated storage plans give you predictable pricing
-                and reserved capacity when you need it.
+                Sense Cloud uses the same simple, transparent, and wallet-based
+                billing system as Sense PC. Auto-tiered plans adjust to your
+                usage, while dedicated plans give you predictable pricing and
+                reserved capacity when you need it.
               </p>
             </div>
 
