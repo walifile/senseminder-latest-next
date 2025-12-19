@@ -10,18 +10,21 @@ const planCards = [
     title: "Adaptive billing",
     description:
       "Your monthly charge reflects the highest storage usage during the billing period. ",
+    icon: Sparkles,
   },
   {
     tag: "DEDICATED PLANS",
     title: "Reserved capacity",
     description:
       "Lock in storage you need with consistent pricing for stable, long-running workloads. ",
+    icon: ShieldCheck,
   },
   {
     tag: "UNIFIED BILLING",
     title: "One wallet for everything",
     description:
       "Storage and compute charges flow into a single SensepC wallet and invoice history.",
+    icon: Link2,
   },
 ];
 
@@ -71,10 +74,11 @@ const SmartStoragePricing = () => (
                   key={plan.tag}
                   className="relative rounded-[8px] bg-transparent p-3 text-left before:absolute before:inset-0 before:rounded-[8px] before:p-px before:content-[''] before:[background:linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:pointer-events-none"
                 >
-                  <span className="inline-flex items-center rounded-full bg-[#E7E7FF] px-2 py-1 text-[10px] font-semibold tracking-[0.4px] text-[#2530F0] dark:bg-[#1F1A4A] dark:text-[#13E1EA]">
+                  <span className="inline-flex items-center text-[14px] font-semibold tracking-[0.4px] text-[#2530F0] dark:text-[#13E1EA]">
+                    <plan.icon className="mr-1 h-4 w-4" />
                     {plan.tag}
                   </span>
-                  <h3 className="mt-3 text-[14px] font-semibold text-[#0B1220] dark:text-white">
+                  <h3 className="mt-3 text-[18px] font-semibold text-[#020816] dark:text-white">
                     {plan.title}
                   </h3>
                   <p className="mt-2 text-[12px] leading-5 text-[#454545] dark:text-[#B9C2D5]">
