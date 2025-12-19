@@ -2,7 +2,9 @@
 
 import React from "react";
 import Image from "next/image";
-import { Check, Link2, ShieldCheck, Sparkles } from "lucide-react";
+
+import { Check } from "lucide-react";
+
 
 const planCards = [
   {
@@ -10,21 +12,21 @@ const planCards = [
     title: "Adaptive billing",
     description:
       "Your monthly charge reflects the highest storage usage during the billing period. ",
-    icon: Sparkles,
+    icon: "/assets/product/sensecloud/sec-5-sync-dark.svg",
   },
   {
     tag: "DEDICATED PLANS",
     title: "Reserved capacity",
     description:
       "Lock in storage you need with consistent pricing for stable, long-running workloads. ",
-    icon: ShieldCheck,
+    icon: "/assets/product/sensecloud/sec-5-verified-dark.svg",
   },
   {
     tag: "UNIFIED BILLING",
     title: "One wallet for everything",
     description:
       "Storage and compute charges flow into a single SensepC wallet and invoice history.",
-    icon: Link2,
+    icon: "/assets/product/sensecloud/sec-5-billing-dark.svg",
   },
 ];
 
@@ -52,15 +54,17 @@ const SmartStoragePricing = () => (
   <section className="relative py-16 md:py-20">
     <div className="pointer-events-none absolute -left-[346px] bottom-[-140px] h-[680px] w-[680px] rotate-[-11.316deg] rounded-[680px] bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)] opacity-30 blur-[250px] dark:hidden" />
     <div className="pointer-events-none absolute -left-[346px] bottom-[-140px] hidden h-[680px] w-[680px] rotate-[-11.316deg] rounded-[680px] bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)] opacity-50 blur-[250px] dark:block" />
+    <div className="pointer-events-none absolute -right-[200px] bottom-[-140px] h-[680px] w-[680px] rotate-[-11.316deg] rounded-[680px] bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)] opacity-30 blur-[250px] dark:hidden" />
+    <div className="pointer-events-none absolute -right-[200px] bottom-[-140px] hidden h-[680px] w-[680px] rotate-[-11.316deg] rounded-[680px] bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)] opacity-50 blur-[250px] dark:block" />
     <div className="container mx-auto px-4 md:px-6">
-      <div className="grid gap-6 lg:grid-cols-[1.2fr,0.8fr]">
-        <div className="space-y-4">
+      <div className="grid gap-[30px] lg:grid-cols-[1.2fr,0.8fr]">
+        <div className="space-y-[23px]">
           <div className="rounded-[16px] bg-[rgba(37,48,240,0.10)] p-[30px] dark:bg-[linear-gradient(163deg,_#170D44_11.73%,_rgba(23,13,68,0.61)_98.26%)]">
             <div className="space-y-3">
-              <h2 className="font-[var(--font-space-grotesk)] text-[32px] font-semibold leading-[40px] text-[#0B1220] dark:text-white md:text-[48px] md:leading-[56px]">
+              <h2 className="font-['Space_Grotesk'] text-[28px] md:text-[36px] lg:text-[44px] font-semibold leading-[40px] text-[#0B1220] dark:text-white md:leading-[56px]">
                 Sense Cloud Pricing & Plans
               </h2>
-              <p className="text-[24px] leading-[32px] text-[#454545] dark:text-[#B9C2D5]">
+              <p className="text-[#454545] dark:text-[#B9C2D5] text-2xl font-normal font-['Inter'] leading-10">
                 Sense Cloud uses the same simple, transparent, and wallet-based
                 billing system as Sense PC. Auto-tiered plans adjust to your
                 usage, while dedicated plans give you predictable pricing and
@@ -75,13 +79,18 @@ const SmartStoragePricing = () => (
                   className="relative rounded-[8px] bg-transparent p-3 text-left before:absolute before:inset-0 before:rounded-[8px] before:p-px before:content-[''] before:[background:linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:pointer-events-none"
                 >
                   <span className="inline-flex items-center text-[14px] font-semibold tracking-[0.4px] text-[#2530F0] dark:text-[#13E1EA]">
-                    <plan.icon className="mr-1 h-4 w-4" />
+                    <img
+                      alt=""
+                      aria-hidden="true"
+                      src={plan.icon}
+                      className="mr-1 h-4 w-4"
+                    />
                     {plan.tag}
                   </span>
-                  <h3 className="mt-3 text-[18px] font-semibold text-[#020816] dark:text-white">
+                  <h3 className="justify-start text-base font-semibold font-['Space_Grotesk'] leading-8 text-[#020816] dark:text-white">
                     {plan.title}
                   </h3>
-                  <p className="mt-2 text-[14px] leading-5 text-[#454545] dark:text-[#B9C2D5]">
+                  <p className="self-stretch justify-start text-sm font-normal font-['Inter'] leading-5 text-[#454545] dark:text-[#B9C2D5]">
                     {plan.description}
                   </p>
                 </div>
@@ -101,21 +110,26 @@ const SmartStoragePricing = () => (
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="relative rounded-[16px] bg-transparent p-5 before:absolute before:inset-0 before:rounded-[16px] before:p-px before:content-[''] before:[background:linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:pointer-events-none">
+        <div className="space-y-[30px]">
+          <div className="relative rounded-[16px] bg-transparent flex flex-col px-6 py-[20px] gap-4 before:absolute before:inset-0 before:rounded-[16px] before:p-px before:content-[''] before:[background:linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:pointer-events-none">
             <div className="flex items-center gap-2">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#E7E7FF] text-[#2530F0] dark:bg-[#1F1A4A] dark:text-[#13E1EA]">
-                <Sparkles className="h-4 w-4" />
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#2530F0] dark:text-[#13E1EA]">
+                <img
+                  alt=""
+                  aria-hidden="true"
+                  src="/assets/product/sensecloud/sec-5-Union-b-dark.svg"
+                  className="h-8 w-8"
+                />
               </span>
-              <h3 className="text-[16px] font-semibold text-[#0B1220] dark:text-white">
+              <h3 className="justify-start text-2xl font-semibold font-['Space_Grotesk'] capitalize leading-8text-[#0B1220] dark:text-white">
                 Storage Billing Highlights
               </h3>
             </div>
-            <ul className="mt-4 space-y-2 text-[13px] leading-5 text-[#454545] dark:text-[#B9C2D5]">
+            <ul className="space-y-3 text-base font-normal font-['Inter'] leading-6 text-[#454545] dark:text-[#B9C2D5]">
               {billingHighlights.map((item) => (
                 <li key={item} className="flex gap-2">
-                  <span className="mt-[2px] inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#13E1EA]">
-                    <Check className="h-3 w-3 text-white" />
+                  <span className="mt-[2px] inline-flex h-5 w-5 min-w-5 items-center justify-center rounded-full bg-[#13E1EA]">
+                    <Check className="h-3 !w-3 text-white" />
                   </span>
                   <span>{item}</span>
                 </li>
@@ -123,23 +137,31 @@ const SmartStoragePricing = () => (
             </ul>
           </div>
 
-          <div className="relative rounded-[16px] bg-transparent p-5 before:absolute before:inset-0 before:rounded-[16px] before:p-px before:content-[''] before:[background:linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:pointer-events-none">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#E7E7FF] text-[#2530F0] dark:bg-[#1F1A4A] dark:text-[#13E1EA]">
-                <ShieldCheck className="h-4 w-4" />
-              </span>
-              <h3 className="text-[16px] font-semibold text-[#0B1220] dark:text-white">
-                Durability & Availability
-              </h3>
+          <div className="relative rounded-[16px] bg-transparent flex flex-col px-6 py-[20px] gap-4 before:absolute before:inset-0 before:rounded-[16px] before:p-px before:content-[''] before:[background:linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:pointer-events-none">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#2530F0] dark:text-[#13E1EA]">
+                  <img
+                    alt=""
+                    aria-hidden="true"
+                    src="/assets/product/sensecloud/sec-5-verified-b-dark.svg"
+                    className="h-8 w-8"
+                  />
+                </span>
+                <h3 className="justify-start text-2xl font-semibold font-['Space_Grotesk'] capitalize leading-8text-[#0B1220] dark:text-white">
+                  Durability & Availability
+                </h3>
+              </div>
+              <p className="mt-2 self-stretch justify-start text-White text-sm font-normal font-['Inter'] leading-5 text-[#454545] dark:text-white">
+                Sense Cloud is built to keep your files safe and easy to access.
+              </p>
             </div>
-            <p className="mt-2 text-[13px] leading-5 text-[#454545] dark:text-white">
-              Sense Cloud is built to keep your files safe and easy to access.
-            </p>
-            <ul className="mt-4 space-y-2 text-[13px] leading-5 text-[#454545] dark:text-[#B9C2D5]">
+            <hr />
+            <ul className="space-y-3 text-base font-normal font-['Inter'] leading-6 text-[#454545] dark:text-[#B9C2D5]">
               {durabilityHighlights.map((item) => (
                 <li key={item} className="flex gap-2">
-                  <span className="mt-[2px] inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#13E1EA]">
-                    <Check className="h-3 w-3 text-white" />
+                  <span className="mt-[2px] inline-flex h-5 w-5 min-w-5 items-center justify-center rounded-full bg-[#13E1EA]">
+                    <Check className="h-3 !w-3 text-white" />
                   </span>
                   <span>{item}</span>
                 </li>
@@ -147,23 +169,31 @@ const SmartStoragePricing = () => (
             </ul>
           </div>
 
-          <div className="relative rounded-[16px] bg-transparent p-5 before:absolute before:inset-0 before:rounded-[16px] before:p-px before:content-[''] before:[background:linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:pointer-events-none">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#E7E7FF] text-[#2530F0] dark:bg-[#1F1A4A] dark:text-[#13E1EA]">
-                <Link2 className="h-4 w-4" />
-              </span>
-              <h3 className="text-[16px] font-semibold text-[#0B1220] dark:text-white">
-                SensePC Integration
-              </h3>
+          <div className="relative rounded-[16px] bg-transparent flex flex-col px-6 py-[20px] gap-4 before:absolute before:inset-0 before:rounded-[16px] before:p-px before:content-[''] before:[background:linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:pointer-events-none">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#2530F0] dark:text-[#13E1EA]">
+                  <img
+                    alt=""
+                    aria-hidden="true"
+                    src="/assets/product/sensecloud/sec-5-sync-b-dark.svg"
+                    className="h-8 w-8"
+                  />
+                </span>
+                <h3 className="justify-start text-2xl font-semibold font-['Space_Grotesk'] capitalize leading-8text-[#0B1220] dark:text-white">
+                  SensePC Integration
+                </h3>
+              </div>
+              <p className="mt-2 self-stretch justify-start text-White text-sm font-normal font-['Inter'] leading-5 text-[#454545] dark:text-white">
+                Sense Cloud works naturally with your cloud desktops.
+              </p>
             </div>
-            <p className="mt-2 text-[13px] leading-5 text-[#454545] dark:text-white">
-              Sense Cloud works naturally with your cloud desktops.
-            </p>
-            <ul className="mt-4 space-y-2 text-[13px] leading-5 text-[#454545] dark:text-[#B9C2D5]">
+            <hr />
+            <ul className="space-y-3 text-base font-normal font-['Inter'] leading-6 text-[#454545] dark:text-[#B9C2D5]">
               {integrationHighlights.map((item) => (
                 <li key={item} className="flex gap-2">
-                  <span className="mt-[2px] inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#13E1EA]">
-                    <Check className="h-3 w-3 text-white" />
+                  <span className="mt-[2px] inline-flex h-5 w-5 min-w-5 items-center justify-center rounded-full bg-[#13E1EA]">
+                    <Check className="h-3 !w-3 text-white" />
                   </span>
                   <span>{item}</span>
                 </li>

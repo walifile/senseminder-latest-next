@@ -2,9 +2,11 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowUpRight, Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+
+import { Check, ArrowUpRight } from "lucide-react";
+
 import HeroRightCard from "./hero-right-card";
 
 const Hero = () => (
@@ -24,7 +26,7 @@ const Hero = () => (
               <span>{` ·  SenseStorage for SensePC`}</span>
             </p>
 
-            <h1 className="font-[var(--font-space-grotesk)] font-semibold tracking-[-1px] text-[#020816] dark:text-white">
+            <h1 className=" font-['Space_Grotesk'] font-semibold tracking-[-1px] text-[#020816] dark:text-white">
               <span className="block text-[34px] leading-[42px] md:text-[48px] md:leading-[56px]">
                 <span className="bg-gradient-to-l from-[#BA25F0] from-[4.798%] via-[#2530F0] via-[46.154%] to-[#8086F3] bg-clip-text text-transparent">
                   SenseCloud –
