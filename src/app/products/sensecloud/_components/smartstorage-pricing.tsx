@@ -81,7 +81,7 @@ const SmartStoragePricing = () => (
                   <h3 className="mt-3 text-[18px] font-semibold text-[#020816] dark:text-white">
                     {plan.title}
                   </h3>
-                  <p className="mt-2 text-[12px] leading-5 text-[#454545] dark:text-[#B9C2D5]">
+                  <p className="mt-2 text-[14px] leading-5 text-[#454545] dark:text-[#B9C2D5]">
                     {plan.description}
                   </p>
                 </div>
