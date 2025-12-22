@@ -97,6 +97,7 @@ import {
 
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/useDebounce";
+import { usePaginationItems } from "@/hooks/usePaginationItems";
 
 import GradientSearchInput from "@/components/shared/inputs/gradient-search-input";
 
@@ -255,40 +256,10 @@ const CloudStorage = () => {
 
   const files = data?.files || [];
   const pagination = data?.pagination || {};
-  const buildPaginationItems = (current: number, total: number) => {
-    if (!total || total <= 1) return total === 1 ? [1] : [];
-    if (total <= 5) {
-      return Array.from({ length: total }, (_, i) => i + 1);
-    }
-
-    const items: Array<number | "ellipsis"> = [];
-    const showLeftEllipsis = current > 3;
-    const showRightEllipsis = current < total - 2;
-
-    items.push(1);
-
-    if (showLeftEllipsis) {
-      items.push("ellipsis");
-    }
-
-    const start = Math.max(2, current - 1);
-    const end = Math.min(total - 1, current + 1);
-    for (let i = start; i <= end; i += 1) {
-      items.push(i);
-    }
-
-    if (showRightEllipsis) {
-      items.push("ellipsis");
-    }
-
-    items.push(total);
-    return items;
-  };
-
-  const paginationItems = buildPaginationItems(
-    pagination.page || page,
-    pagination.pages || 0
-  );
+  const paginationItems = usePaginationItems({
+    currentPage: pagination.page || page,
+    totalPages: pagination.pages || 0,
+  });
 
   const [triggerDownloadFile] = useLazyDownloadFileQuery();
   const [triggerFolderDownload] = useLazyDownloadFolderQuery();
