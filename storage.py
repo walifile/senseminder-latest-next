@@ -780,7 +780,7 @@ def handle_list(event):
                 and '/' not in f['id'][len(base_prefix):].strip('/')
             ]
 
-        if filter_type:
+        if filter_type and not folder:
             ft = filter_type.lower()
             if 'image' in ft:
                 files = [f for f in files if f.get('fileType', '').startswith('image/')]
@@ -792,8 +792,7 @@ def handle_list(event):
                 files = [f for f in files if f.get('fileType', '').startswith('application/')]
             elif 'folder' in ft:
                 # If a folder is selected, show all items inside it (not just folders).
-                if not folder:
-                    files = [f for f in files if f.get('fileType') == 'folder']
+                files = [f for f in files if f.get('fileType') == 'folder']
             elif 'starred' in ft:
                 files = [f for f in files if f.get('starred', False)]
             elif 'share' in ft:
@@ -1314,16 +1313,9 @@ def handle_star(event, starred=True):
         key += '/'
 
     keys_to_update = []
-    if is_folder:
-        scan = file_metadata_table.scan(
-            FilterExpression=boto3.dynamodb.conditions.Attr('id').begins_with(key)
-        )
-        items = scan.get('Items', [])
-        keys_to_update = [i['id'] for i in items if not i.get('isDeleted')]
+    if item and not item.get('isDeleted'):
+        # Only update the selected item (no recursive star/unstar).
         keys_to_update.append(key)
-    else:
-        if item and not item.get('isDeleted'):
-            keys_to_update.append(key)
 
     for k in keys_to_update:
         try:
@@ -1336,7 +1328,7 @@ def handle_star(event, starred=True):
             print(f"Error updating starred for {k}: {e}")
 
     return response(200, {
-        'message': f"{'Folder and contents' if is_folder else 'File'} {'starred' if starred else 'unstarred'} successfully",
+        'message': f"{'Folder' if is_folder else 'File'} {'starred' if starred else 'unstarred'} successfully",
         'updatedItems': keys_to_update
     })
 
