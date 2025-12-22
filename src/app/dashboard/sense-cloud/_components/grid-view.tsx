@@ -29,6 +29,7 @@ import {
   FolderIcon,
   GripVertical,
   MoreHorizontal,
+  Pencil,
 } from "lucide-react";
 
 import FileTypeIcon from "./file-type-icon";
@@ -53,6 +54,7 @@ type GridViewProps = {
   setSelectedFilesToDelete: React.Dispatch<React.SetStateAction<string[]>>;
   setDeleteDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleDownload: (file: FileItem) => void;
+  handleRenameSelected: (file: FileItem) => void;
   formatFileSize: (size?: number | string) => string;
   formatDate: (date: string) => string;
 };
@@ -75,6 +77,7 @@ const GridView = ({
   setSelectedFilesToDelete,
   setDeleteDialogOpen,
   handleDownload,
+  handleRenameSelected,
   formatFileSize,
   formatDate,
 }: GridViewProps) => (
@@ -250,6 +253,10 @@ const GridView = ({
                   <DropdownMenuItem onClick={() => handleStar(file)}>
                     <Star className="h-4 w-4 mr-2" />
                     {file.starred ? "Unstar" : "Star"}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleRenameSelected(file)}>
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Rename
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   {file.fileType !== "folder" && (

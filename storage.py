@@ -368,11 +368,10 @@ def _ttl_from_iso(iso_str: str, days: int = TTL_DAYS) -> int:
     return int((base + timedelta(days=days)).timestamp())
 
 
-def _active_share_keys_for_user(user_id: str) -> set:
-    """Return a set of object keys with ACTIVE, non-expired shares for this owner.
-    Includes both with and without trailing slash to simplify membership checks.
-    """
-    keys = set()
+def _active_share_keys_for_user(user_id: str):
+    """Return (exact_keys, folder_prefixes) for ACTIVE, non-expired shares."""
+    exact = set()
+    prefixes = set()
     try:
         now_epoch = int(datetime.now(timezone.utc).timestamp())
         # Scan by owner; for scale, add a GSI on ownerUserId
@@ -397,12 +396,14 @@ def _active_share_keys_for_user(user_id: str) -> set:
             if not ok:
                 continue
             base = ok.rstrip('/')
-            keys.add(base)
-            keys.add(base + '/')
-            keys.add(ok)
+            exact.add(ok)
+            exact.add(base)
+            share_type = (it.get('type') or '').strip().lower()
+            if share_type == 'folder' or ok.endswith('/'):
+                prefixes.add(base + '/')
     except Exception as e:
         print(f"_active_share_keys_for_user error for {user_id}: {e}")
-    return keys
+    return exact, prefixes
 
 
 def _has_active_share_for_key(folder_key: str) -> bool:
@@ -479,6 +480,8 @@ def lambda_handler(event, context):
             return handle_move_or_copy(event, operation="move")
         elif route_key == "POST /copy":
             return handle_move_or_copy(event, operation="copy")
+        elif route_key == "POST /rename":
+            return handle_rename(event)
         elif route_key == "GET /usage":
             return handle_usage(event)
         elif route_key == "GET /download-folder":
@@ -739,14 +742,14 @@ def handle_list(event):
 
         # Derive accurate 'shared' based on active share records (covers cancel/expiry)
         try:
-            active_share_keys = _active_share_keys_for_user(user_id)
+            active_share_keys, active_share_prefixes = _active_share_keys_for_user(user_id)
             def _is_shared_key(k: str) -> bool:
                 if not k:
                     return False
-                if k in active_share_keys:
+                if k in active_share_keys or k.rstrip('/') in active_share_keys:
                     return True
-                for sk in active_share_keys:
-                    if sk.endswith('/') and k.startswith(sk):
+                for sk in active_share_prefixes:
+                    if k.startswith(sk):
                         return True
                 return False
             for it in files:
@@ -758,7 +761,29 @@ def handle_list(event):
         except Exception as e:
             print(f"derive shared failed: {e}")
 
-        if filter_type:
+        # Apply folder scoping when a folder is selected, even with filters.
+        if folder:
+            folder = folder.strip('/') + '/'
+            folder_prefix = f"{user_id}/uploads/{folder}"
+            folder_id = folder_prefix
+            if recursive:
+                files = [f for f in files if f['id'].startswith(folder_prefix) and f['id'] != folder_id]
+            else:
+                files = [
+                    f for f in files
+                    if f['id'].startswith(folder_prefix)
+                    and f['id'] != folder_id
+                    and '/' not in f['id'][len(folder_prefix):].strip('/')
+                ]
+        elif not filter_type:
+            base_prefix = f"{user_id}/uploads/"
+            files = [
+                f for f in files
+                if f['id'].startswith(base_prefix)
+                and '/' not in f['id'][len(base_prefix):].strip('/')
+            ]
+
+        if filter_type and not folder:
             ft = filter_type.lower()
             if 'image' in ft:
                 files = [f for f in files if f.get('fileType', '').startswith('image/')]
@@ -769,6 +794,7 @@ def handle_list(event):
             elif 'document' in ft:
                 files = [f for f in files if f.get('fileType', '').startswith('application/')]
             elif 'folder' in ft:
+                # If a folder is selected, show all items inside it (not just folders).
                 files = [f for f in files if f.get('fileType') == 'folder']
             elif 'starred' in ft:
                 files = [f for f in files if f.get('starred', False)]
@@ -787,27 +813,6 @@ def handle_list(event):
             elif 'month' in ft:
                 thirty_days_ago = now_utc - timedelta(days=30)
                 files = _filter_items_by_created(files, lambda created: created > thirty_days_ago)
-        else:
-            if folder:
-                folder = folder.strip('/') + '/'
-                folder_prefix = f"{user_id}/uploads/{folder}"
-                folder_id = folder_prefix
-                if recursive:
-                    files = [f for f in files if f['id'].startswith(folder_prefix) and f['id'] != folder_id]
-                else:
-                    files = [
-                        f for f in files
-                        if f['id'].startswith(folder_prefix)
-                        and f['id'] != folder_id
-                        and '/' not in f['id'][len(folder_prefix):].strip('/')
-                    ]
-            else:
-                base_prefix = f"{user_id}/uploads/"
-                files = [
-                    f for f in files
-                    if f['id'].startswith(base_prefix)
-                    and '/' not in f['id'][len(base_prefix):].strip('/')
-                ]
 
         if modified_filter:
             if 'today' in modified_filter:
@@ -1311,16 +1316,9 @@ def handle_star(event, starred=True):
         key += '/'
 
     keys_to_update = []
-    if is_folder:
-        scan = file_metadata_table.scan(
-            FilterExpression=boto3.dynamodb.conditions.Attr('id').begins_with(key)
-        )
-        items = scan.get('Items', [])
-        keys_to_update = [i['id'] for i in items if not i.get('isDeleted')]
+    if item and not item.get('isDeleted'):
+        # Only update the selected item (no recursive star/unstar).
         keys_to_update.append(key)
-    else:
-        if item and not item.get('isDeleted'):
-            keys_to_update.append(key)
 
     for k in keys_to_update:
         try:
@@ -1333,7 +1331,7 @@ def handle_star(event, starred=True):
             print(f"Error updating starred for {k}: {e}")
 
     return response(200, {
-        'message': f"{'Folder and contents' if is_folder else 'File'} {'starred' if starred else 'unstarred'} successfully",
+        'message': f"{'Folder' if is_folder else 'File'} {'starred' if starred else 'unstarred'} successfully",
         'updatedItems': keys_to_update
     })
 
@@ -2044,6 +2042,204 @@ def handle_move_or_copy(event, operation):
     return response(200, {'message': f'Files {operation}d successfully', 'movedFiles': moved})
 
 # ----------------------------------------------------------------
+
+def handle_rename(event):
+    body = json.loads(event.get('body', '{}'))
+    region = body.get('region')
+    user_id = body.get('userId')
+    new_name = (body.get('newName') or '').strip()
+    raw_key = (body.get('key') or '').strip()
+    file_name = body.get('fileName')
+    folder = body.get('folder')
+
+    if not region or not user_id or not new_name:
+        return response(400, {'message': 'region, userId, and newName are required.'})
+
+    if '/' in new_name:
+        return response(400, {'message': 'newName must not contain "/".'})
+
+    # Resolve source key
+    if raw_key:
+        key = raw_key
+    else:
+        if not file_name:
+            return response(400, {'message': 'key or fileName is required.'})
+        key = f"{user_id}/uploads/{(folder.strip('/') + '/' if folder else '')}{file_name}"
+
+    # Fetch metadata (folders may have trailing slash)
+    item = file_metadata_table.get_item(Key={'id': key}).get('Item')
+    if not item and not key.endswith('/'):
+        key = f"{key}/"
+        item = file_metadata_table.get_item(Key={'id': key}).get('Item')
+
+    if not item or item.get('isDeleted'):
+        return response(404, {'message': 'Item not found'})
+
+    is_folder = item.get('fileType') == 'folder'
+    current_name = item.get('fileName') or key.rstrip('/').split('/')[-1]
+    if new_name == current_name:
+        return response(200, {'message': 'No change', 'newKey': key, 'newName': current_name})
+
+    bucket_resp = bucket_table.get_item(Key={'region': region})
+    if 'Item' not in bucket_resp:
+        return response(404, {'message': f'No bucket found for region: {region}'})
+    bucket_name = bucket_resp['Item']['bucketName']
+
+    def _update_share_keys(old_prefix: str, new_prefix: str):
+        """Update active share records from old key/prefix to new key/prefix."""
+        try:
+            scan = shares_table.scan(
+                FilterExpression=(
+                    boto3.dynamodb.conditions.Attr('ownerUserId').eq(user_id) &
+                    boto3.dynamodb.conditions.Attr('status').eq('active')
+                )
+            )
+            for it in scan.get('Items', []) or []:
+                ok = (it.get('objectKey') or '').strip()
+                if not ok:
+                    continue
+                if ok == old_prefix:
+                    new_key = new_prefix
+                elif old_prefix.endswith('/') and ok.startswith(old_prefix):
+                    new_key = f"{new_prefix}{ok[len(old_prefix):]}"
+                else:
+                    continue
+                try:
+                    shares_table.update_item(
+                        Key={'shareId': it['shareId']},
+                        UpdateExpression="SET objectKey = :k",
+                        ExpressionAttributeValues={':k': new_key}
+                    )
+                except Exception as e:
+                    print(f"[rename] Failed to update share {it.get('shareId')}: {e}")
+        except Exception as e:
+            print(f"[rename] Share update scan failed: {e}")
+
+    if is_folder:
+        src_root = key if key.endswith('/') else key + '/'
+        parent_prefix = src_root.rstrip('/').rsplit('/', 1)[0] + '/'
+        dest_root_name, dest_root_key = _ensure_unique_folder_key(bucket_name, parent_prefix, new_name)
+        if dest_root_key == src_root:
+            return response(200, {'message': 'No change', 'newKey': src_root, 'newName': dest_root_name})
+
+        try:
+            s3.put_object(Bucket=bucket_name, Key=dest_root_key)
+        except Exception as e:
+            print(f"[rename] Failed to create folder marker {dest_root_key}: {e}")
+
+        new_folder_meta = {
+            **item,
+            'id': dest_root_key,
+            'fileName': dest_root_name,
+            'createdAt': _iso_now(),
+            'isDeleted': False,
+            'deletedAt': None
+        }
+        file_metadata_table.put_item(Item=new_folder_meta)
+
+        scan_result = file_metadata_table.scan(
+            FilterExpression=boto3.dynamodb.conditions.Attr('id').begins_with(src_root)
+        )
+        for ch in scan_result.get('Items', []):
+            if ch.get('isDeleted'):
+                continue
+            rel_path = ch['id'][len(src_root):]
+            dest_child_key = f"{dest_root_key}{rel_path}"
+
+            if ch.get('fileType') == 'folder':
+                if not dest_child_key.endswith('/'):
+                    dest_child_key += '/'
+                try:
+                    s3.put_object(Bucket=bucket_name, Key=dest_child_key)
+                except Exception as e:
+                    print(f"[rename] Failed to create sub-folder marker {dest_child_key}: {e}")
+
+                new_meta = {
+                    **ch,
+                    'id': dest_child_key,
+                    'fileName': dest_child_key.rstrip('/').split('/')[-1],
+                    'createdAt': _iso_now(),
+                    'isDeleted': False,
+                    'deletedAt': None
+                }
+                file_metadata_table.put_item(Item=new_meta)
+
+                try:
+                    s3.delete_object(Bucket=bucket_name, Key=ch['id'])
+                except Exception as e:
+                    print(f"[rename] Failed to delete src folder marker {ch['id']}: {e}")
+                _soft_delete_item(ch)
+            else:
+                try:
+                    s3.copy_object(
+                        Bucket=bucket_name,
+                        CopySource={'Bucket': bucket_name, 'Key': ch['id']},
+                        Key=dest_child_key
+                    )
+                except Exception as e:
+                    print(f"[rename] Failed S3 copy {ch['id']} -> {dest_child_key}: {e}")
+                    continue
+
+                new_meta = {
+                    **ch,
+                    'id': dest_child_key,
+                    'fileName': dest_child_key.split('/')[-1],
+                    'createdAt': _iso_now(),
+                    'isDeleted': False,
+                    'deletedAt': None
+                }
+                file_metadata_table.put_item(Item=new_meta)
+
+                try:
+                    s3.delete_object(Bucket=bucket_name, Key=ch['id'])
+                except Exception as e:
+                    print(f"[rename] Failed S3 delete {ch['id']}: {e}")
+                _soft_delete_item(ch)
+
+        _soft_delete_item(item)
+        try:
+            s3.delete_object(Bucket=bucket_name, Key=src_root)
+        except Exception as e:
+            print(f"[rename] Failed to delete src folder marker {src_root}: {e}")
+
+        _update_share_keys(src_root, dest_root_key)
+        return response(200, {'message': 'Folder renamed', 'newKey': dest_root_key, 'newName': dest_root_name})
+
+    # File rename
+    source_key = key
+    parent_prefix = source_key.rsplit('/', 1)[0] + '/'
+    final_name, dest_key = _ensure_unique_file_key(bucket_name, parent_prefix, new_name)
+    if dest_key == source_key:
+        return response(200, {'message': 'No change', 'newKey': source_key, 'newName': final_name})
+
+    try:
+        s3.copy_object(
+            Bucket=bucket_name,
+            CopySource={'Bucket': bucket_name, 'Key': source_key},
+            Key=dest_key
+        )
+    except Exception as e:
+        print(f"[rename] Failed S3 copy {source_key} -> {dest_key}: {e}")
+        return response(500, {'message': 'Rename failed'})
+
+    new_meta = {
+        **item,
+        'id': dest_key,
+        'fileName': final_name,
+        'createdAt': _iso_now(),
+        'isDeleted': False,
+        'deletedAt': None
+    }
+    file_metadata_table.put_item(Item=new_meta)
+
+    try:
+        s3.delete_object(Bucket=bucket_name, Key=source_key)
+    except Exception as e:
+        print(f"[rename] Failed S3 delete {source_key}: {e}")
+    _soft_delete_item(item)
+
+    _update_share_keys(source_key, dest_key)
+    return response(200, {'message': 'File renamed', 'newKey': dest_key, 'newName': final_name})
 
 def _json_default(o):
     try:
