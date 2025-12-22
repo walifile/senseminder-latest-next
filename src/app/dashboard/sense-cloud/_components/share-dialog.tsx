@@ -31,7 +31,7 @@ import {
 
 import { useSelector } from "react-redux";
 
-import { Copy, Download } from "lucide-react";
+import { Copy, Download, Loader2 } from "lucide-react";
 
 // import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
@@ -61,6 +61,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
   const [sharePassword, setSharePassword] = useState("");
   const [shareLink, setShareLink] = useState("");
   const [downloadUrl, setDownloadUrl] = useState("");
+  const [isDownloadingShare, setIsDownloadingShare] = useState(false);
   const [shareId, setShareId] = useState<string | null>(null);
 
   const userId = useSelector((state: RootState) => state.auth.user?.id);
@@ -71,6 +72,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
     if (!open) {
       setShareLink("");
       setDownloadUrl("");
+      setIsDownloadingShare(false);
       setShareId(null);
       setSharePermissions("view");
       setShareExpiry("7days");
@@ -211,6 +213,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                     size="sm"
                     onClick={async () => {
                       try {
+                        setIsDownloadingShare(true);
                         const response = await fetch(downloadUrl || shareLink);
                         const blob = await response.blob();
                         const blobUrl = window.URL.createObjectURL(blob);
@@ -230,11 +233,23 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                             "Could not download the file. Try again later.",
                           variant: "destructive",
                         });
+                      } finally {
+                        setIsDownloadingShare(false);
                       }
                     }}
+                    disabled={isDownloadingShare}
                   >
-                    <Download className="h-4 w-4 mr-2" />
-                    Download
+                    {isDownloadingShare ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Downloading...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </>
+                    )}
                   </Button>
                 )}
                 {shareId && (
