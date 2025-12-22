@@ -4,8 +4,8 @@ import type { Notification } from "@/types/notification";
 
 import Link from "next/link";
 import Image from "next/image";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import React, { useState, useEffect } from "react";
 import { useGetCurrentBalanceQuery } from "@/api/billing";
 import { markNotificationsAsRead } from "@/api/notification";
 
@@ -21,12 +21,12 @@ import {
 
 import { useNotifications } from "@/hooks/useNotifications";
 
-import { Logo } from "@/components/shared/layout/Logo";
+// import { Logo } from "@/components/shared/layout/Logo";
 import { useTheme } from "@/components/shared/layout/theme-provider";
 import ProfileDropdown from "@/components/shared/layout/profile-dropdown";
 
 const DashboardHeader = () => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { notifications, hasUnread, fetchNotifications } = useNotifications();
   const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
@@ -61,22 +61,22 @@ const DashboardHeader = () => {
     if (n.route) router.push(n.route);
   };
 
-  useEffect(() => {
-    const handleSidebarCollapse = (event: CustomEvent) => {
-      setSidebarCollapsed(event.detail.collapsed);
-    };
+  // useEffect(() => {
+  //   // const handleSidebarCollapse = (event: CustomEvent) => {
+  //   //   setSidebarCollapsed(event.detail.collapsed);
+  //   // };
 
-    window.addEventListener(
-      "sidebarCollapse",
-      handleSidebarCollapse as EventListener
-    );
-    return () => {
-      window.removeEventListener(
-        "sidebarCollapse",
-        handleSidebarCollapse as EventListener
-      );
-    };
-  }, []);
+  //   // window.addEventListener(
+  //   //   "sidebarCollapse",
+  //   //   handleSidebarCollapse as EventListener
+  //   // );
+  //   // return () => {
+  //   //   window.removeEventListener(
+  //   //     "sidebarCollapse",
+  //   //     handleSidebarCollapse as EventListener
+  //   //   );
+  //   // };
+  // }, []);
 
   useEffect(() => {
     fetchNotifications();
@@ -94,7 +94,7 @@ const DashboardHeader = () => {
     >
       <div className="md:hidden w-10" />
 
-      {sidebarCollapsed && (
+      {/* {sidebarCollapsed && (
         <Link
           data-testid="dashboard-header-logo-link"
           href="/"
@@ -102,7 +102,7 @@ const DashboardHeader = () => {
         >
           <Logo />
         </Link>
-      )}
+      )} */}
 
       <div className="flex-1" />
 

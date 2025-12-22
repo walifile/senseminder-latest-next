@@ -122,7 +122,7 @@ const DashboardSidebar = () => {
   return (
     <>
       {/* Mobile Menu Toggle */}
-      <div className="fixed top-4 left-4 z-50 md:hidden">
+      <div className="fixed top-4 left-4 z-50 flex gap-4 md:hidden">
         <Button
           data-testid="dashboard-sidebar-mobile-toggle"
           variant="outline"
@@ -132,6 +132,13 @@ const DashboardSidebar = () => {
         >
           <Menu className="h-5 w-5" />
         </Button>
+        <Link
+          data-testid="dashboard-header-logo-link"
+          href="/"
+          className="flex items-center"
+        >
+          <Logo />
+        </Link>
       </div>
 
       {/* Mobile Overlay */}
@@ -157,21 +164,23 @@ const DashboardSidebar = () => {
           {/* Sidebar Header */}
           <div
             data-testid="dashboard-sidebar-header"
-            className="relative h-[90px] px-4 mb-7 flex items-center"
+            className={cn("relative h-[90px] px-4 flex items-center"
+              , collapsed ? "my-3.5 justify-center" : "mb-7 justify-between"
+            )}
           >
             {/* Centered logo when expanded */}
-            {!collapsed && (
+            {/* {!collapsed && ( */}
               <div data-testid="dashboard-sidebar-logo" className="mx-auto">
-                <Logo />
+                <Logo sign={collapsed} />
               </div>
-            )}
+            {/* )} */}
 
             {/* Right-side controls (collapse + mobile close) */}
             <div
               data-testid="dashboard-sidebar-controls"
               className={cn(
-                "absolute inset-y-0 right-0 flex items-center pr-1",
-                collapsed ? "translate-x-[25px]" : "translate-x-[50px]"
+                "absolute inset-y-0 right-0 flex items-center pr-0.5 md:pr-1",
+                collapsed ? "translate-x-[25px] translate-y-2/3 transition-transform duration-200" : "translate-x-[50px] transition-transform duration-200"
               )}
             >
               <Button
@@ -197,15 +206,16 @@ const DashboardSidebar = () => {
                   </div>
                 </div>
               </Button>
-              <Button
+              <div
                 data-testid="dashboard-sidebar-mobile-close"
-                variant="ghost"
-                size="icon"
                 onClick={toggleMobileSidebar}
-                className="md:hidden"
+                className={cn(
+                  "md:hidden h-10 w-10 rounded-full [background:linear-gradient(270deg,_#a801ba,_#2530f0)] items-center justify-center box-border",
+                  !mobileOpen ? "hidden" : "flex"
+                )}
               >
                 <X className="h-5 w-5" />
-              </Button>
+              </div>
             </div>
           </div>
           <hr className="border-t dark:border-white/10 border-neutral-900/30" />

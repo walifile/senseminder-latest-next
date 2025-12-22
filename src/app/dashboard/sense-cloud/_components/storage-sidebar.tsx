@@ -39,7 +39,7 @@ export function SidebarPanel({
   return (
     <div
       data-testid="dashboard-sense-cloud-sidebar"
-      className="w-full md:w-[265px] p-6 pr-4 border-b md:border-0 md:border-r border-border"
+      className="w-full lg:w-[265px] p-6 pr-4 border-b md:border-0 md:border-r border-border"
     >
       <header className="inline-flex flex-col items-start gap-1 mb-12">
         <h1 className="w-fit font-space-grotesk font-bold text-2xl md:text-3xl mt-[-1.00px] text-[#020816] dark:text-white whitespace-nowrap">

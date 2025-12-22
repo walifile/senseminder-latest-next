@@ -418,9 +418,8 @@ const CloudStorage = () => {
       }).unwrap();
 
       toast({
-        title: `${fileNames.length} ${
-          fileNames.length === 1 ? "item" : "items"
-        } deleted`,
+        title: `${fileNames.length} ${fileNames.length === 1 ? "item" : "items"
+          } deleted`,
         description: "The selected files and folders have been moved to trash.",
         variant: "destructive",
       });
@@ -453,9 +452,8 @@ const CloudStorage = () => {
 
       toast({
         title: file.starred ? "Unstarred" : "Starred",
-        description: `"${file.fileName}" was ${
-          file.starred ? "removed from" : "added to"
-        } your starred items`,
+        description: `"${file.fileName}" was ${file.starred ? "removed from" : "added to"
+          } your starred items`,
       });
     } catch (err) {
       Logger.error("Star/unstar error:", err);
@@ -603,9 +601,8 @@ const CloudStorage = () => {
 
         toast({
           title: `Files ${operation === "copy" ? "Copied" : "Moved"}`,
-          description: `${fileIds.length} file(s) ${
-            operation === "copy" ? "copied" : "moved"
-          } successfully`,
+          description: `${fileIds.length} file(s) ${operation === "copy" ? "copied" : "moved"
+            } successfully`,
         });
 
         setSelectedFiles([]);
@@ -733,9 +730,8 @@ const CloudStorage = () => {
         <CardContent className="p-0">
           <div
             data-testid="dashboard-sense-cloud-content"
-            className={`flex flex-col md:flex-row min-h-[600px] relative ${
-              isDragging ? "bg-muted/50" : ""
-            }`}
+            className={`flex flex-col lg:flex-row min-h-[600px] relative ${isDragging ? "bg-muted/50" : ""
+              }`}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -760,7 +756,7 @@ const CloudStorage = () => {
 
             <div className="flex-1 overflow-hidden flex flex-col">
               <div className="border-b border-border p-6 flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div className="flex items-center gap-4 w-full">
+                <div className="flex items-center gap-4 w-full overflow-x-auto scrollbar-hide">
                   {selectedFolder && (
                     <button
                       onClick={handleCloseFolder}
@@ -797,7 +793,7 @@ const CloudStorage = () => {
                     variant="outline"
                     size="default"
                     onClick={() => setShowStoragePlans(true)}
-                    className="md:ml-auto"
+                    className="md:ml-auto h-[-webkit-fill-available]"
                   >
                     <HardDrive className="h-4 w-4" />
                     <span>Storage Plans</span>
@@ -805,22 +801,26 @@ const CloudStorage = () => {
                 </div>
               </div>
               {selectedCategory !== "Duplicates" && (
-                <div className="p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
-                  <div className="flex items-center gap-4 w-full md:w-auto">
+                <div className="p-4 flex flex-col lg:flex-row gap-4 items-center justify-between overflow-x-auto scrollbar-hide">
+                  <div className="flex items-center gap-4 w-full lg:w-auto">
                     {selectedFiles.length > 0 && (
                       <>
                         <Button
+                          size="sm"
                           variant="outline"
                           onClick={() => setCopyDialogOpen(true)}
+                          className="text-base [&_svg]:size-5 gap-2"
                         >
-                          <Copy className="h-4 w-4" />
+                          <Copy className="h-5 w-5" />
                           Copy
                         </Button>
                         <Button
+                          size="sm"
                           variant="outline"
                           onClick={() => setMoveDialogOpen(true)}
+                          className="text-base [&_svg]:size-5 gap-2"
                         >
-                          <FolderIcon className="h-4 w-4" />
+                          <FolderIcon className="h-5 w-5" />
                           Move
                         </Button>
                       </>
@@ -1043,7 +1043,7 @@ const CloudStorage = () => {
                       </DropdownMenuContent>
                     </DropdownMenu> */}
                   </div>
-                  <div className="flex w-full justify-self-end gap-2">
+                  <div className="flex w-full justify-end gap-2">
                     <Button
                       size="sm"
                       variant="ghost"
@@ -1089,7 +1089,7 @@ const CloudStorage = () => {
                                       ? "cursor-not-allowed opacity-50 pointer-events-none w-full gap-2"
                                       : "w-full gap-2"
                                   }
-                                  // className={"w-full"}
+                                // className={"w-full"}
                                 >
                                   <Share2 className="h-4 w-4" />
                                   Share
@@ -1245,11 +1245,10 @@ const CloudStorage = () => {
                                           (file, index) => (
                                             <TableRow
                                               key={file.id}
-                                              className={`hover:bg-muted/50 ${
-                                                dragOverFolderId === file.id
+                                              className={`hover:bg-muted/50 ${dragOverFolderId === file.id
                                                   ? "bg-muted ring-2 ring-primary"
                                                   : ""
-                                              }`}
+                                                }`}
                                               draggable
                                               onDragStart={(e) =>
                                                 handleItemDragStart(e, file.id)
@@ -1257,9 +1256,9 @@ const CloudStorage = () => {
                                               onDragOver={(e) =>
                                                 file.fileType === "folder"
                                                   ? handleFolderDragOver(
-                                                      e,
-                                                      file.id
-                                                    )
+                                                    e,
+                                                    file.id
+                                                  )
                                                   : undefined
                                               }
                                               onDragLeave={(e) =>
@@ -1293,11 +1292,10 @@ const CloudStorage = () => {
                                                     title:
                                                       "Click to open folder",
                                                   })}
-                                                  className={`flex items-center gap-2 ${
-                                                    file.fileType ===
-                                                      "folder" &&
+                                                  className={`flex items-center gap-2 ${file.fileType ===
+                                                    "folder" &&
                                                     "cursor-pointer"
-                                                  }`}
+                                                    }`}
                                                   onClick={() => {
                                                     if (
                                                       file.fileType === "folder"
@@ -1400,7 +1398,7 @@ const CloudStorage = () => {
                                                           }}
                                                         >
                                                           {downloadingFile ===
-                                                          file.fileName ? (
+                                                            file.fileName ? (
                                                             <>
                                                               <Loader2 className="h-4 w-4 mr-2 animate-spin text-primary" />
                                                               Downloading...
@@ -1433,11 +1431,11 @@ const CloudStorage = () => {
 
                                                         {selectedFiles.length !==
                                                           1 && (
-                                                          <TooltipContent side="left">
-                                                            You can only share
-                                                            one file at a time
-                                                          </TooltipContent>
-                                                        )}
+                                                            <TooltipContent side="left">
+                                                              You can only share
+                                                              one file at a time
+                                                            </TooltipContent>
+                                                          )}
                                                       </Tooltip>
                                                     </TooltipProvider>
 
@@ -1466,17 +1464,17 @@ const CloudStorage = () => {
                                                     <DropdownMenuSeparator />
                                                     {file.fileType !==
                                                       "folder" && (
-                                                      <DropdownMenuItem
-                                                        onClick={() =>
-                                                          handleMoveSelected(
-                                                            file
-                                                          )
-                                                        }
-                                                      >
-                                                        <FolderIcon className="h-4 w-4 mr-2" />
-                                                        Move Selected
-                                                      </DropdownMenuItem>
-                                                    )}
+                                                        <DropdownMenuItem
+                                                          onClick={() =>
+                                                            handleMoveSelected(
+                                                              file
+                                                            )
+                                                          }
+                                                        >
+                                                          <FolderIcon className="h-4 w-4 mr-2" />
+                                                          Move Selected
+                                                        </DropdownMenuItem>
+                                                      )}
                                                     <DropdownMenuItem
                                                       className="text-destructive"
                                                       onClick={() => {
@@ -1531,14 +1529,14 @@ const CloudStorage = () => {
                                 )}
 
                                 {/* ✅ Pagination */}
-                                <div className="flex flex-col md:flex-row items-center justify-between px-4 py-4">
-                                  <div className="w-full md:w-auto text-sm text-muted-foreground">
+                                <div className="flex flex-col md:flex-row items-center justify-between overflow-x-auto scrollbar-hide px-4 py-4 gap-4">
+                                  <div className="w-full md:w-auto text-sm text-muted-foreground whitespace-nowrap">
                                     Showing{" "}
                                     {pagination.total === 0
                                       ? 0
                                       : (pagination.page - 1) *
-                                          pagination.limit +
-                                        1}{" "}
+                                      pagination.limit +
+                                      1}{" "}
                                     to{" "}
                                     {Math.min(
                                       pagination.page * pagination.limit,
@@ -1760,8 +1758,8 @@ const CloudStorage = () => {
         folderPath={folderPath}
         prefillFiles={droppedFiles}
         prefillToken={dropSession}
-        // handleFileUpload={handleFileUpload}
-        // uploadProgress={uploadProgress}
+      // handleFileUpload={handleFileUpload}
+      // uploadProgress={uploadProgress}
       />
 
       {/* Storage Sync Dialog */}
@@ -1780,7 +1778,7 @@ const CloudStorage = () => {
         open={showNewFolderDialog}
         onOpenChange={setShowNewFolderDialog}
         folderPath={folderPath}
-        // onCreate={handleCreateFolder}
+      // onCreate={handleCreateFolder}
       />
     </>
   );
