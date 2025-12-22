@@ -203,7 +203,8 @@ const CloudStorage = () => {
     }
   };
 
-  const folderPath = path.map((f) => f.fileName).join("/");
+  const folderPath =
+    path.length > 0 ? getRelativePath(path[path.length - 1].id) : "";
 
   Logger.log({ ">>>>>>>>>>>>": folderPath, path });
 

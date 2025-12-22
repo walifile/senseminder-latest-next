@@ -758,6 +758,28 @@ def handle_list(event):
         except Exception as e:
             print(f"derive shared failed: {e}")
 
+        # Apply folder scoping when a folder is selected, even with filters.
+        if folder:
+            folder = folder.strip('/') + '/'
+            folder_prefix = f"{user_id}/uploads/{folder}"
+            folder_id = folder_prefix
+            if recursive:
+                files = [f for f in files if f['id'].startswith(folder_prefix) and f['id'] != folder_id]
+            else:
+                files = [
+                    f for f in files
+                    if f['id'].startswith(folder_prefix)
+                    and f['id'] != folder_id
+                    and '/' not in f['id'][len(folder_prefix):].strip('/')
+                ]
+        elif not filter_type:
+            base_prefix = f"{user_id}/uploads/"
+            files = [
+                f for f in files
+                if f['id'].startswith(base_prefix)
+                and '/' not in f['id'][len(base_prefix):].strip('/')
+            ]
+
         if filter_type:
             ft = filter_type.lower()
             if 'image' in ft:
@@ -769,7 +791,9 @@ def handle_list(event):
             elif 'document' in ft:
                 files = [f for f in files if f.get('fileType', '').startswith('application/')]
             elif 'folder' in ft:
-                files = [f for f in files if f.get('fileType') == 'folder']
+                # If a folder is selected, show all items inside it (not just folders).
+                if not folder:
+                    files = [f for f in files if f.get('fileType') == 'folder']
             elif 'starred' in ft:
                 files = [f for f in files if f.get('starred', False)]
             elif 'share' in ft:
@@ -787,27 +811,6 @@ def handle_list(event):
             elif 'month' in ft:
                 thirty_days_ago = now_utc - timedelta(days=30)
                 files = _filter_items_by_created(files, lambda created: created > thirty_days_ago)
-        else:
-            if folder:
-                folder = folder.strip('/') + '/'
-                folder_prefix = f"{user_id}/uploads/{folder}"
-                folder_id = folder_prefix
-                if recursive:
-                    files = [f for f in files if f['id'].startswith(folder_prefix) and f['id'] != folder_id]
-                else:
-                    files = [
-                        f for f in files
-                        if f['id'].startswith(folder_prefix)
-                        and f['id'] != folder_id
-                        and '/' not in f['id'][len(folder_prefix):].strip('/')
-                    ]
-            else:
-                base_prefix = f"{user_id}/uploads/"
-                files = [
-                    f for f in files
-                    if f['id'].startswith(base_prefix)
-                    and '/' not in f['id'][len(base_prefix):].strip('/')
-                ]
 
         if modified_filter:
             if 'today' in modified_filter:
