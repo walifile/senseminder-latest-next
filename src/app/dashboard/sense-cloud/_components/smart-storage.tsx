@@ -325,6 +325,11 @@ const CloudStorage = () => {
     setMoveDialogOpen(true);
   };
 
+  const handleCopySelected = (file: FileItem) => {
+    setSelectedFiles([file.id]);
+    setCopyDialogOpen(true);
+  };
+
   const handleRenameSelected = (file: FileItem) => {
     setFileToRename(file);
     setRenameDialogOpen(true);
@@ -1484,17 +1489,30 @@ const CloudStorage = () => {
                                                     <DropdownMenuSeparator />
                                                     {file.fileType !==
                                                       "folder" && (
-                                                        <DropdownMenuItem
-                                                          onClick={() =>
-                                                            handleMoveSelected(
-                                                              file
-                                                            )
-                                                          }
-                                                        >
-                                                          <FolderIcon className="h-4 w-4 mr-2" />
-                                                          Move Selected
-                                                        </DropdownMenuItem>
-                                                      )}
+                                                      <DropdownMenuItem
+                                                        onClick={() =>
+                                                          handleMoveSelected(
+                                                            file
+                                                          )
+                                                        }
+                                                      >
+                                                        <FolderIcon className="h-4 w-4 mr-2" />
+                                                        Move Selected
+                                                      </DropdownMenuItem>
+                                                    )}
+                                                    {file.fileType !==
+                                                      "folder" && (
+                                                      <DropdownMenuItem
+                                                        onClick={() =>
+                                                          handleCopySelected(
+                                                            file
+                                                          )
+                                                        }
+                                                      >
+                                                        <Copy className="h-4 w-4 mr-2" />
+                                                        Copy Selected
+                                                      </DropdownMenuItem>
+                                                    )}
                                                     <DropdownMenuItem
                                                       className="text-destructive"
                                                       onClick={() => {
@@ -1538,6 +1556,7 @@ const CloudStorage = () => {
                                     cancelShareForObject={cancelShareForObject}
                                     handleStar={handleStar}
                                     handleMoveSelected={handleMoveSelected}
+                                    handleCopySelected={handleCopySelected}
                                     setSelectedFilesToDelete={
                                       setSelectedFilesToDelete
                                     }

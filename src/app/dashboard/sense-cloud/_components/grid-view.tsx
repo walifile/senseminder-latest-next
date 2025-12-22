@@ -30,6 +30,7 @@ import {
   GripVertical,
   MoreHorizontal,
   Pencil,
+  Copy,
 } from "lucide-react";
 
 import FileTypeIcon from "./file-type-icon";
@@ -51,6 +52,7 @@ type GridViewProps = {
   cancelShareForObject: (key: string) => void;
   handleStar: (file: FileItem) => void;
   handleMoveSelected: (file: FileItem) => void;
+  handleCopySelected: (file: FileItem) => void;
   setSelectedFilesToDelete: React.Dispatch<React.SetStateAction<string[]>>;
   setDeleteDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleDownload: (file: FileItem) => void;
@@ -74,6 +76,7 @@ const GridView = ({
   cancelShareForObject,
   handleStar,
   handleMoveSelected,
+  handleCopySelected,
   setSelectedFilesToDelete,
   setDeleteDialogOpen,
   handleDownload,
@@ -263,6 +266,12 @@ const GridView = ({
                     <DropdownMenuItem onClick={() => handleMoveSelected(file)}>
                       <FolderIcon className="h-4 w-4 mr-2" />
                       Move Selected
+                    </DropdownMenuItem>
+                  )}
+                  {file.fileType !== "folder" && (
+                    <DropdownMenuItem onClick={() => handleCopySelected(file)}>
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy Selected
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem
