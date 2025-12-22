@@ -60,6 +60,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
   const [sharePasswordEnabled, setSharePasswordEnabled] = useState(false);
   const [sharePassword, setSharePassword] = useState("");
   const [shareLink, setShareLink] = useState("");
+  const [downloadUrl, setDownloadUrl] = useState("");
   const [shareId, setShareId] = useState<string | null>(null);
 
   const userId = useSelector((state: RootState) => state.auth.user?.id);
@@ -69,6 +70,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
   useEffect(() => {
     if (!open) {
       setShareLink("");
+      setDownloadUrl("");
       setShareId(null);
       setSharePermissions("view");
       setShareExpiry("7days");
@@ -103,15 +105,18 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
       }).unwrap();
 
       let link = result.shareLink;
+      let downloadLink = "";
+      const newShareId = result?.id ? String(result.id) : null;
 
       // capture shareId for cancellable shares (files and folders)
-      if (result?.id) {
-        setShareId(String(result.id));
+      if (newShareId) {
+        setShareId(newShareId);
       }
 
-      // Prefer a friendly front-end link for file shares: {origin}/share/{id}
-      if (shareId && isFolder === false && typeof window !== "undefined") {
-        link = `${window.location.origin}/shared-file/${shareId}`;
+      // Prefer a friendly front-end link for file shares: {origin}/shares/{id}/download
+      if (newShareId && isFolder === false && typeof window !== "undefined") {
+        link = `${window.location.origin}/shares/${newShareId}/download`;
+        downloadLink = `${window.location.origin}/api/share/${newShareId}`;
       } else if (!/^https?:\/\//i.test(link)) {
         // Fallback: build absolute URL for other cases
         const base =
@@ -120,6 +125,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
       }
 
       setShareLink(link);
+      setDownloadUrl(downloadLink || link);
 
       toast({
         title: `${isFolder ? "Folder" : "File"} Shared`,
@@ -205,7 +211,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                     size="sm"
                     onClick={async () => {
                       try {
-                        const response = await fetch(shareLink);
+                        const response = await fetch(downloadUrl || shareLink);
                         const blob = await response.blob();
                         const blobUrl = window.URL.createObjectURL(blob);
 

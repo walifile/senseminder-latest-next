@@ -1,6 +1,6 @@
 "use client";
 
- 
+import { useState } from "react";
 import { useGetShareInfoQuery } from "@/api/fileManagerAPI";
 import { buildSharedFileView } from "@/app/dashboard/sense-cloud/utils";
 import SharedFileViewer from "@/app/dashboard/sense-cloud/_components/shared-file-viewer";
@@ -15,10 +15,11 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 
-import { Download as DownloadIcon } from "lucide-react";
+import { Download as DownloadIcon, Loader2 } from "lucide-react";
 
 export default function Client({ shareId }: { shareId: string }) {
   const { data, isLoading, isError } = useGetShareInfoQuery({ shareId });
+  const [isDownloading, setIsDownloading] = useState(false);
 
   if (isLoading) {
     return (
@@ -65,6 +66,12 @@ export default function Client({ shareId }: { shareId: string }) {
     data.expiresAt
   );
 
+  const handleDownload = () => {
+    setIsDownloading(true);
+    window.location.href = downloadUrl;
+    window.setTimeout(() => setIsDownloading(false), 3000);
+  };
+
   return (
     <div className="container mx-auto max-w-6xl pt-32 pb-12">
       <Card className="overflow-hidden border-border/50 shadow-sm">
@@ -84,11 +91,23 @@ export default function Client({ shareId }: { shareId: string }) {
               Public link • {expires ? `Expires ${expires}` : "No expiry"}
             </CardDescription>
           </div>
-          <Button asChild size="lg" className="shrink-0">
-            <a href={downloadUrl}>
-              <DownloadIcon className="h-4 w-4 mr-2" />
-              Download
-            </a>
+          <Button
+            size="lg"
+            className="shrink-0"
+            onClick={handleDownload}
+            disabled={isDownloading}
+          >
+            {isDownloading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Downloading...
+              </>
+            ) : (
+              <>
+                <DownloadIcon className="h-4 w-4 mr-2" />
+                Download
+              </>
+            )}
           </Button>
         </CardHeader>
         <CardContent>

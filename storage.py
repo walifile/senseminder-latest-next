@@ -368,11 +368,10 @@ def _ttl_from_iso(iso_str: str, days: int = TTL_DAYS) -> int:
     return int((base + timedelta(days=days)).timestamp())
 
 
-def _active_share_keys_for_user(user_id: str) -> set:
-    """Return a set of object keys with ACTIVE, non-expired shares for this owner.
-    Includes both with and without trailing slash to simplify membership checks.
-    """
-    keys = set()
+def _active_share_keys_for_user(user_id: str):
+    """Return (exact_keys, folder_prefixes) for ACTIVE, non-expired shares."""
+    exact = set()
+    prefixes = set()
     try:
         now_epoch = int(datetime.now(timezone.utc).timestamp())
         # Scan by owner; for scale, add a GSI on ownerUserId
@@ -397,12 +396,14 @@ def _active_share_keys_for_user(user_id: str) -> set:
             if not ok:
                 continue
             base = ok.rstrip('/')
-            keys.add(base)
-            keys.add(base + '/')
-            keys.add(ok)
+            exact.add(ok)
+            exact.add(base)
+            share_type = (it.get('type') or '').strip().lower()
+            if share_type == 'folder' or ok.endswith('/'):
+                prefixes.add(base + '/')
     except Exception as e:
         print(f"_active_share_keys_for_user error for {user_id}: {e}")
-    return keys
+    return exact, prefixes
 
 
 def _has_active_share_for_key(folder_key: str) -> bool:
@@ -739,14 +740,14 @@ def handle_list(event):
 
         # Derive accurate 'shared' based on active share records (covers cancel/expiry)
         try:
-            active_share_keys = _active_share_keys_for_user(user_id)
+            active_share_keys, active_share_prefixes = _active_share_keys_for_user(user_id)
             def _is_shared_key(k: str) -> bool:
                 if not k:
                     return False
-                if k in active_share_keys:
+                if k in active_share_keys or k.rstrip('/') in active_share_keys:
                     return True
-                for sk in active_share_keys:
-                    if sk.endswith('/') and k.startswith(sk):
+                for sk in active_share_prefixes:
+                    if k.startswith(sk):
                         return True
                 return False
             for it in files:
