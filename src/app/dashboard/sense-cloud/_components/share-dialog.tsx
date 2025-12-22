@@ -159,7 +159,10 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[640px]">
+      <DialogContent
+        data-testid="dashboard-sense-cloud-share-dialog"
+        className="sm:max-w-[640px]"
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             Share {file?.fileName}

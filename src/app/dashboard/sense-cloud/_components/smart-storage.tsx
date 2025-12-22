@@ -707,7 +707,10 @@ const CloudStorage = () => {
 
   return (
     <>
-      <Card className="relative !border-0 gradient-outline-border bg-[rgba(37,48,240,0.07)] dark:bg-[rgba(255,255,255,0.03)]">
+      <Card
+        data-testid="dashboard-sense-cloud-smart-storage"
+        className="relative !border-0 gradient-outline-border bg-[rgba(37,48,240,0.07)] dark:bg-[rgba(255,255,255,0.03)]"
+      >
         {/* <CardHeader className="pb-2">
           <div className="flex justify-between items-center">
             <div>
@@ -729,6 +732,7 @@ const CloudStorage = () => {
 
         <CardContent className="p-0">
           <div
+            data-testid="dashboard-sense-cloud-content"
             className={`flex flex-col md:flex-row min-h-[600px] relative ${
               isDragging ? "bg-muted/50" : ""
             }`}

@@ -122,7 +122,10 @@ export default function SecurityQuestionDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent
+          data-testid="dashboard-security-question-dialog"
+          className="sm:max-w-[500px]"
+        >
           <DialogHeader>
             <DialogTitle>
               {hasExistingQuestion
@@ -206,7 +209,10 @@ export default function SecurityQuestionDialog({
       {/* Optional: I Forgot Dialog */}
       {showForgot && (
         <Dialog open={showForgot} onOpenChange={setShowForgot}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent
+            data-testid="dashboard-security-question-forgot-dialog"
+            className="sm:max-w-md"
+          >
             <DialogHeader>
               <DialogTitle>Forgot Your Answer?</DialogTitle>
             </DialogHeader>

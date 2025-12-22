@@ -78,7 +78,10 @@ const NewFolderDialog: React.FC<NewFolderDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        data-testid="dashboard-sense-cloud-new-folder-dialog"
+        className="sm:max-w-[425px]"
+      >
         <DialogHeader>
           <DialogTitle>Create New Folder</DialogTitle>
           <DialogDescription>

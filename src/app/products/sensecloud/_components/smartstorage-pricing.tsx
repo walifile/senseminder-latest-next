@@ -79,11 +79,19 @@ const SmartStoragePricing = () => (
                   className="relative rounded-[8px] bg-transparent p-3 text-left before:absolute before:inset-0 before:rounded-[8px] before:p-px before:content-[''] before:[background:linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:pointer-events-none"
                 >
                   <span className="inline-flex items-center text-[14px] font-semibold tracking-[0.4px] text-[#2530F0] dark:text-[#13E1EA]">
-                    <img
-                      alt=""
+                    <span
                       aria-hidden="true"
-                      src={plan.icon}
-                      className="mr-1 h-4 w-4"
+                      className="mr-1 h-4 w-4 bg-[#2530F0] dark:bg-[#13E1EA]"
+                      style={{
+                        maskImage: `url(${plan.icon})`,
+                        WebkitMaskImage: `url(${plan.icon})`,
+                        maskRepeat: "no-repeat",
+                        WebkitMaskRepeat: "no-repeat",
+                        maskSize: "contain",
+                        WebkitMaskSize: "contain",
+                        maskPosition: "center",
+                        WebkitMaskPosition: "center",
+                      }}
                     />
                     {plan.tag}
                   </span>

@@ -68,7 +68,7 @@ const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent data-testid="dashboard-sense-cloud-confirm-delete-dialog">
         <DialogHeader>
           <DialogTitle>
             Delete {isFolder ? "folder" : "file"} "{file.fileName}"?

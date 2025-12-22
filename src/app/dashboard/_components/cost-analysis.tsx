@@ -140,7 +140,7 @@ const CostAnalysis = () => {
   const projectedMonthly = (dailyAverage * daysInMonth).toFixed(2);
 
   return (
-    <Card className="w-full">
+    <Card data-testid="dashboard-cost-analysis" className="w-full">
       <CardHeader>
         <CardTitle className="text-lg">Cost Analysis & Optimization</CardTitle>
         <CardDescription>

@@ -49,7 +49,10 @@ const FolderHierarchy: React.FC<FolderHierarchyProps> = ({
   );
 
   return (
-    <div className="mt-5 flex items-center gap-2">
+    <div
+      data-testid="dashboard-sense-cloud-folder-hierarchy"
+      className="mt-5 flex items-center gap-2"
+    >
       {path.length <= 2 ? (
         <>
           {StoragePath}

@@ -1,29 +1,15 @@
-
-
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
 type UiInputSize = "sm" | "md" | "lg" | "form";
 type InputIntent = "default" | "error";
-
-/**
- * default: existing app input
- * auth: auth flows (forgot password / reset password) from Figma nodes:
- *  - dark: 51389:14109
- *  - light: 51389:52857
- *
- * glowing: gradient border only (wrapper + mask) from Figma border colors:
- *  - #8086F3 → #4C55F8 → #D971FF
- */
 type InputVariant = "default" | "auth" | "glowing";
 
 export interface InputProps extends React.ComponentProps<"input"> {
-  uiSize?: UiInputSize; // ✅ no conflict with native HTML `size`
+  uiSize?: UiInputSize;
   intent?: InputIntent;
   variant?: InputVariant;
-
-  /** Only used for variants that render a wrapper (currently: glowing) */
   wrapperClassName?: string;
 }
 
@@ -35,8 +21,9 @@ const uiSizeClasses: Record<UiInputSize, string> = {
 };
 
 const intentClasses: Record<InputIntent, string> = {
-  default: "focus-visible:border-[#5f4bf6]",
-  error: "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500",
+  default: "focus-visible:border-input-focus",
+  error:
+    "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500",
 };
 
 const baseInputClasses = cn(
@@ -66,7 +53,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <div
           className={cn(
             "relative w-full rounded-[8px]",
-            "bg-[#F4F1FF] dark:bg-[#2A2067]",
+            "bg-input-surface dark:bg-input-surface-dark",
             isError && "border border-red-500",
             wrapperClassName
           )}
@@ -78,7 +65,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 "pointer-events-none absolute inset-0 rounded-[8px]",
                 "before:content-[''] before:absolute before:inset-0",
                 "before:p-px before:rounded-[8px]",
-                "before:[background:linear-gradient(135deg,#8086F3,#4C55F8,#D971FF)]",
+                "before:bg-input-glow",
                 "before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)]",
                 "before:[-webkit-mask-composite:xor]",
                 "before:[mask-composite:exclude]"
@@ -93,8 +80,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               baseInputClasses,
               "relative z-[2] border-none bg-transparent",
               "min-h-[54px] rounded-[8px] px-[20px] py-[15px]",
-              "text-slate-900 placeholder:text-[#454545]",
-              "dark:text-white dark:placeholder:text-[#B9C2D5]",
+              "text-slate-900 placeholder:text-input-placeholder",
+              "dark:text-white dark:placeholder:text-input-placeholder-dark",
               isError &&
                 "focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-0",
               className
@@ -105,19 +92,19 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       );
     }
 
-    const shouldApplySize = variant !== "auth"; // auth defines its own size/padding
+    const shouldApplySize = variant !== "auth";
 
     const variantClasses =
       variant === "auth"
         ? cn(
             "min-h-[54px] rounded-[8px] px-[20px] py-[15px]",
-            "bg-[#F4F1FF] text-slate-900 placeholder:text-[#454545]",
-            "dark:bg-[#2A2067] dark:text-white dark:placeholder:text-[#B9C2D5]",
+            "bg-input-surface text-slate-900 placeholder:text-input-placeholder",
+            "dark:bg-input-surface-dark dark:text-white dark:placeholder:text-input-placeholder-dark",
             "border border-transparent focus-visible:outline-none"
           )
         : cn(
-            "border border-[#2530F0]/20 bg-[#F4F1FF] text-slate-900 placeholder:text-slate-400",
-            "dark:border-[#ffffff1a] dark:bg-[#ffffff0f] dark:text-white dark:placeholder:text-slate-300",
+            "border border-input-border-brand/20 bg-input-surface text-slate-900 placeholder:text-slate-400",
+            "dark:border-input-border-dark dark:bg-input-bg-dark dark:text-white dark:placeholder:text-slate-300",
             "focus-visible:outline-none"
           );
 
@@ -127,7 +114,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         type={type}
         className={cn(
           baseInputClasses,
-          // default spacing baseline (auth overrides with px/py)
           "px-3 py-2",
           shouldApplySize && uiSizeClasses[uiSize],
           variantClasses,

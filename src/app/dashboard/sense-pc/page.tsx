@@ -243,7 +243,10 @@ const CloudPCPage = () => {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-x-hidden">
+    <div
+      data-testid="dashboard-sense-pc-page"
+      className="flex h-full flex-col overflow-x-hidden"
+    >
       <DashboardCard
         className={cn(
           "flex-1 flex flex-col",

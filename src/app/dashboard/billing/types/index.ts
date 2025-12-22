@@ -31,12 +31,47 @@ export interface UsageHistory {
   balanceDeduction: string;
 }
 
+export type RechargeEventType =
+  | "RECHARGE_WALLET"
+  | "REFUND_PROCESSED"
+  | "CASHBACK_ADDED"
+  | "PROMO_BALANCE_ADDED";
+
 export interface Recharge {
-  txnId: string;
+  userId: string;
+  eventTimestamp: string;
+  eventType: RechargeEventType;
   amount: string;
-  date: string;
-  status: "completed" | "failed";
-  paymentMethod: string;
+  details: {
+    // RECHARGE_WALLET
+    paymentIntentId?: string;
+    paymentMethodId?: string;
+    paymentMethodDisplay?: string;
+    // REFUND_PROCESSED
+    reason?: string;
+    amountProcessed?: string;
+    refundId?: string;
+    processedBy?: string;
+    processedByName?: string;
+    chargeId?: string | null;
+    idempotencyKey?: string;
+    providerResponse?: {
+      ok: boolean;
+      error: string | null;
+    };
+    // CASHBACK_ADDED
+    basis?: string;
+    cashback_earned?: string;
+    billing_start_date?: string;
+    billing_end_date?: string;
+    job_id?: string;
+    posted_at?: string;
+    // PROMO_BALANCE_ADDED
+    campaign?: string;
+    // Common
+    amount?: string;
+    user_id?: string;
+  };
 }
 
 export interface UsageHistory {
@@ -121,13 +156,7 @@ export type UsageHistoryResponse = {
 };
 
 export type RechargeHistoryResponse = {
-  history?: Array<{
-    txnId: string;
-    amount: string;
-    date: string;
-    status: "completed" | "failed";
-    paymentMethod: string;
-  }>;
+  history?: Recharge[];
   hasMore?: boolean;
   hasNextPage?: boolean;
   lastEvaluatedKey?: string | Record<string, unknown>;

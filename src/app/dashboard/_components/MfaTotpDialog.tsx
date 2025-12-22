@@ -318,7 +318,7 @@ export default function MfaTotpDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent data-testid="dashboard-mfa-totp-dialog">
         <DialogHeader>
           <DialogTitle>Setup Authenticator App</DialogTitle>
           <DialogDescription>

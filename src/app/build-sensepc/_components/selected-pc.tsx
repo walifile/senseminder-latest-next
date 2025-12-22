@@ -46,16 +46,10 @@ import type { PC, SelectedPcProps } from "../types";
 
 const { INSTANCE_DETAILS_URL } = appConfig;
 
-// Shared styles for the small glass cards (metrics + specs + assigned user + billing)
-// const STAT_CARD_BASE =
-//   "rounded-[10px] p-4 text-sm bg-[rgba(37,48,240,0.1)] text-[#020816] " + // light
-//   "dark:bg-[rgba(255,255,255,0.04)] dark:text-white"; // dark
-
-
 
 const STAT_CARD_BASE =
-  "rounded-[10px] p-4 text-sm bg-[rgba(37,48,240,0.1)] text-[#020816] " + // light
-  "dark:bg-[rgba(255,255,255,0.04)] dark:text-white"; // dark
+  "rounded-[10px] p-4 text-sm bg-[rgba(37,48,240,0.1)] text-[#020816] " +
+  "dark:bg-[rgba(255,255,255,0.04)] dark:text-white";
 
 const SelectedPc: React.FC<SelectedPcProps> = ({
   selectedPCs,

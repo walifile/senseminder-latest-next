@@ -17,7 +17,10 @@ type Props = {
 
 const FeedbackDialog = ({ open, onClose }: Props) => (
   <Dialog open={open} onOpenChange={onClose}>
-    <DialogContent className="sm:max-w-[425px]">
+    <DialogContent
+      data-testid="dashboard-feedback-dialog"
+      className="sm:max-w-[425px]"
+    >
       <DialogHeader>
         <DialogTitle>Share Your Feedback</DialogTitle>
         <DialogDescription>

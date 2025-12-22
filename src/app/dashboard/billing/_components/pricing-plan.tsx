@@ -93,6 +93,7 @@ const PricingPlan = () => {
 
   return (
     <DashboardCard
+      data-testid="dashboard-billing-pricing-plan"
       className={cn(
         "relative overflow-hidden p-0 rounded-[20px]",
         "backdrop-blur-[32px] backdrop-filter"

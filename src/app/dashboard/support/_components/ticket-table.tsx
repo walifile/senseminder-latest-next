@@ -128,7 +128,10 @@ export default function TicketTable() {
 
       <div className="px-6 pb-6">
         <div className="overflow-hidden rounded-2xl border border-[#2530F033] dark:border-[#ffffff1a]">
-          <Table className="border-separate border-spacing-0">
+          <Table
+            data-testid="dashboard-support-ticket-table"
+            className="border-separate border-spacing-0"
+          >
             <TableHeader>
               <TableRow className="bg-blue-700/10 dark:bg-[#ffffff0f] hover:bg-blue-700/10 dark:hover:bg-[#ffffff0f]">
                 <TableHead className="rounded-tl-xl whitespace-nowrap" onClick={toggleSort}>

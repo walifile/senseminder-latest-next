@@ -1,10 +1,8 @@
 
-
-
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useMemo, useState, useEffect } from "react";
 import { getUserProfile, updateUserProfile } from "@/api/profileManagement";
 
 import { cn } from "@/lib/utils";
@@ -49,9 +47,10 @@ const ProfilePage = () => {
   const searchParams = useSearchParams();
   const defaultTab = searchParams.get("tab") || "account";
 
+  const [activeTab, setActiveTab] = useState(defaultTab);
+
   const orgInputRef = useRef<HTMLInputElement>(null);
 
-  // ===== Profile & Org Data Fetch/Sync =====
   useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true);
@@ -62,6 +61,7 @@ const ProfilePage = () => {
         const first = (data.firstName || "").trim();
         const last = (data.lastName || "").trim();
         const name = [first, last].filter(Boolean).join(" ");
+
         setFullName(name);
         setCountry(data.country || "");
         setOrgInput(data.organization || "");
@@ -79,7 +79,6 @@ const ProfilePage = () => {
     };
 
     fetchProfile();
-    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
@@ -89,11 +88,9 @@ const ProfilePage = () => {
     }
   }, [orgEditing]);
 
-  // ===== Permission Computed Value =====
   const canEditOrg = profile?.role === "owner";
 
-  // ===== Avatar Initials =====
-  const fallbackInitials = (() => {
+  const fallbackInitials = useMemo(() => {
     if (!profile) return "JD";
     const parts = [profile.firstName, profile.lastName].filter(Boolean);
     return (
@@ -102,13 +99,9 @@ const ProfilePage = () => {
         .join("")
         .slice(0, 2) || "JD"
     );
-  })();
+  }, [profile]);
 
-  // ===== Full Name (for API) Processing =====
-  function parseNameForApi(raw: string): {
-    firstName: string;
-    lastName: string;
-  } {
+  function parseNameForApi(raw: string): { firstName: string; lastName: string } {
     const trimmed = raw.trim().replace(/\s+/, " ");
     if (!trimmed) return { firstName: "", lastName: "" };
     const [first, ...rest] = trimmed.split(/\s+/);
@@ -117,8 +110,6 @@ const ProfilePage = () => {
       lastName: rest.join(" ") || "",
     };
   }
-
-  // ===== Profile Save =====
   const handleSave = async () => {
     setSaving(true);
 
@@ -134,11 +125,11 @@ const ProfilePage = () => {
       payload.organization = orgInput ?? "";
     }
 
-    Object.keys(payload).forEach(
-      (k) =>
-        (payload as Record<string, unknown>)[k] === "" &&
-        delete (payload as Record<string, unknown>)[k]
-    );
+    Object.keys(payload).forEach((k) => {
+      if ((payload as Record<string, unknown>)[k] === "") {
+        delete (payload as Record<string, unknown>)[k];
+      }
+    });
 
     if (Object.keys(payload).length === 0) {
       setSaving(false);
@@ -147,6 +138,7 @@ const ProfilePage = () => {
         description: "No new values to update.",
         variant: "destructive",
       });
+      return;
     }
 
     try {
@@ -154,7 +146,7 @@ const ProfilePage = () => {
 
       toast({
         title: "Profile Updated",
-        description: `Your profile changes have been saved.`,
+        description: "Your profile changes have been saved.",
       });
 
       const data = await getUserProfile();
@@ -174,12 +166,11 @@ const ProfilePage = () => {
         title: "Error updating profile",
         description: message,
       });
+    } finally {
+      setSaving(false);
     }
-
-    setSaving(false);
   };
 
-  // ===== Org Inline Save =====
   const handleOrgSave = async () => {
     if (!canEditOrg) return;
     setSaving(true);
@@ -203,120 +194,131 @@ const ProfilePage = () => {
         title: "Error updating organization",
         description: message,
       });
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
-  // ===== Org Inline Cancel =====
   const handleOrgCancel = () => {
     setOrgEditing(false);
     setOrgInput(profile?.organization || "");
   };
 
-  // ===== Prevent Default Submit =====
   function prevent(e: React.FormEvent) {
     e.preventDefault();
   }
 
+  const headerTitleClass =
+    "text-[32px] font-semibold leading-[42px] tracking-[-0.5px]";
+  const headerDescClass =
+    "text-[16px] leading-[24px] tracking-[-0.3px] text-muted-foreground";
+
   return (
     <DashboardCard
+      data-testid="dashboard-profile-page"
       className={cn(
         "relative overflow-hidden p-0",
-        // keep same glass in both modes
-        "bg-[rgba(255,255,255,0.03)] dark:bg-[rgba(255,255,255,0.03)]"
+        "bg-public-card-bg-dark"
       )}
     >
-     <Tabs defaultValue={defaultTab} className="w-full" variant="glowing">
-        {/* Header */}
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => {
+          setActiveTab(v);
+          if (v !== "security") setOrgEditing(false);
+        }}
+        className="w-full"
+        variant="glowing"
+      >
         <div className="px-6 pt-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            {/* Organization (left) */}
-            <div className="flex min-w-0 items-center gap-3">
-              {orgEditing ? (
-                <form
-                  onSubmit={prevent}
-                  className="flex w-full flex-wrap items-center gap-2"
-                >
-                  <Input
-                    ref={orgInputRef}
-                    value={orgInput}
-                    onChange={(e) => setOrgInput(e.target.value)}
-                    disabled={saving}
-                    className="max-w-xs text-[24px] font-bold leading-8 tracking-[-0.4px]"
-                    data-testid="org-input"
-                  />
-
-                  <Button
-                    size="sm"
-                    onClick={handleOrgSave}
-                    disabled={saving || !orgInput.trim()}
-                    data-testid="org-save"
-                  >
-                    Save
-                  </Button>
-
-                  <Button
-                    size="sm"
-                    type="button"
-                    variant="secondary"
-                    onClick={handleOrgCancel}
-                    disabled={saving}
-                    data-testid="org-cancel"
-                  >
-                    Cancel
-                  </Button>
-                </form>
-              ) : (
-                <>
-                  <span
-                    className="truncate text-[24px] font-bold leading-8 tracking-[-0.4px]"
-                    data-testid="org-label"
-                  >
-                    {profile?.organization || (
-                      <span className="text-muted">Organization</span>
-                    )}
-                  </span>
-
-                  {canEditOrg && (
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="shrink-0"
-                      aria-label="Edit Organization"
-                      onClick={() => setOrgEditing(true)}
-                      data-testid="org-edit"
+            <div className="min-w-0">
+              {activeTab === "security" ? (
+                <div className="flex min-w-0 items-center gap-3">
+                  {orgEditing ? (
+                    <form
+                      onSubmit={prevent}
+                      className="flex w-full flex-wrap items-center gap-2"
                     >
-                      <Edit2 className="h-5 w-5" />
-                    </Button>
+                      <Input
+                        ref={orgInputRef}
+                        value={orgInput}
+                        onChange={(e) => setOrgInput(e.target.value)}
+                        disabled={saving}
+                        className="max-w-xs text-[24px] font-bold leading-8 tracking-[-0.4px]"
+                        data-testid="org-input"
+                      />
+
+                      <Button
+                        size="sm"
+                        onClick={handleOrgSave}
+                        disabled={saving || !orgInput.trim()}
+                        data-testid="org-save"
+                        type="button"
+                      >
+                        Save
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="secondary"
+                        onClick={handleOrgCancel}
+                        disabled={saving}
+                        data-testid="org-cancel"
+                      >
+                        Cancel
+                      </Button>
+                    </form>
+                  ) : (
+                    <>
+                      <span
+                        className="truncate text-[24px] font-bold leading-8 tracking-[-0.4px]"
+                        data-testid="org-label"
+                      >
+                        {profile?.organization || "Organization"}
+                      </span>
+
+                      {canEditOrg && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="shrink-0"
+                          aria-label="Edit Organization"
+                          onClick={() => setOrgEditing(true)}
+                          data-testid="org-edit"
+                          type="button"
+                        >
+                          <Edit2 className="h-5 w-5" />
+                        </Button>
+                      )}
+                    </>
                   )}
-                </>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <p className={headerTitleClass}>Profile Information</p>
+                  <p className={headerDescClass}>Update your personal details</p>
+                </div>
               )}
             </div>
 
-            {/* Tabs pill (exact same style as BillingHistory) */}
             <div className="overflow-x-auto px-1 py-1">
               <TabsList>
-
                 <TabsTrigger value="account">
-
                   <UserRound className="h-[18px] w-[18px] shrink-0" />
                   Account
                 </TabsTrigger>
 
                 <TabsTrigger value="security">
-                <ShieldCheck className="h-[18px] w-[18px] shrink-0" />
-                Security
-              </TabsTrigger>
-
+                  <ShieldCheck className="h-[18px] w-[18px] shrink-0" />
+                  Security
+                </TabsTrigger>
               </TabsList>
             </div>
           </div>
-
-          {/* Header divider (same as BillingHistory) */}
-          <div className="mt-5 h-px w-full bg-[rgba(37,48,240,0.2)] dark:bg-[rgba(255,255,255,0.2)]" />
         </div>
 
-        {/* Content area */}
         <div className="px-6 pb-6 pt-5">
           <TabsContent value="account" className="m-0 space-y-6">
             <ProfileAccountTab

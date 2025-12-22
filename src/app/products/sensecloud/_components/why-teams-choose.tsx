@@ -46,23 +46,6 @@ const FEATURES: Feature[] = [
 const WhyTeamsChoose = () => (
   <section className="relative py-16 md:py-20">
     {/* Background glows */}
-    {/* Left glow: Ellipse 7 */}
-    {/* <div className="pointer-events-none absolute left-0 top-1/2 z-0 -translate-y-1/2">
-        <img
-          src="/assets/product/Ellipse 7.svg"
-          alt=""
-          className="block h-auto w-auto max-w-none select-none"
-        />
-      </div>
-
-      <div className="pointer-events-none absolute right-0 top-1/2 z-0 -translate-y-1/2">
-        <img
-          src="/assets/product/Ellipse 2.svg"
-          alt=""
-          className="block h-auto w-auto max-w-none select-none"
-        />
-      </div> */}
-
     <div className="pointer-events-none absolute left-0 top-1/2 z-0 -translate-y-1/2 hidden dark:block">
       <img
         src="/assets/product/Ellipse 7.svg"

@@ -1,3 +1,4 @@
+
 // src/components/ui/select.tsx
 
 import * as React from "react";
@@ -8,7 +9,6 @@ import { cn } from "@/lib/utils";
 
 import { Check, ChevronUp, ChevronDown } from "lucide-react";
 
-
 type SelectVariant = "default" | "form" | "glowingSelector" | "pill";
 
 const Select = SelectPrimitive.Root;
@@ -18,10 +18,10 @@ const SelectValue = SelectPrimitive.Value;
 const selectTriggerVariants: Record<SelectVariant, string> = {
   default: cn(
     "flex w-full h-[60px] items-center justify-between rounded-lg px-5 py-4 text-base",
-    "bg-[#F2EFFF] dark:bg-[#191748]",
+    "bg-select-surface dark:bg-select-surface-dark",
     "ring-offset-background placeholder:text-paragraph",
     "border border-transparent",
-    "focus:outline-none focus:ring-0 focus:border-[#9370db]",
+    "focus:outline-none focus:ring-0 focus:border-select-focus-border",
     "disabled:cursor-not-allowed disabled:opacity-50",
     "[&>span]:line-clamp-1"
   ),
@@ -30,8 +30,8 @@ const selectTriggerVariants: Record<SelectVariant, string> = {
     "flex w-full h-14 px-5 items-center justify-between rounded-[1000px] text-base font-normal font-['Inter'] leading-6",
     "ring-offset-background placeholder:text-paragraph",
     "focus:outline-none",
-    "border border-[rgba(37,48,240,0.10)] bg-[rgba(37,48,240,0.07)]",
-    "dark:border-[rgba(255,255,255,0.20)] dark:bg-[rgba(255,255,255,0.04)]",
+    "border border-select-pill-border bg-select-pill-bg",
+    "dark:border-select-pill-border-dark dark:bg-select-pill-bg-dark",
     "focus:ring-2 focus:ring-ring focus:ring-offset-2",
     "disabled:cursor-not-allowed disabled:opacity-50",
     "[&>span]:line-clamp-1"
@@ -40,27 +40,27 @@ const selectTriggerVariants: Record<SelectVariant, string> = {
   form: cn(
     "flex w-full h-[52px] items-center justify-between rounded-[10px] pr-4",
     "text-[16px] [&>span]:line-clamp-1",
-    "bg-[#F4F1FF] dark:bg-[#ffffff0f]",
-    "border border-[#2530F0]/20 dark:border-[#ffffff1a]",
+    "bg-input-surface dark:bg-input-bg-dark",
+    "border border-input-border-brand/20 dark:border-input-border-dark",
     "text-slate-900 dark:text-white",
-    "focus-visible:outline-none focus-visible:border-[#5f4bf6]",
+    "focus-visible:outline-none focus-visible:border-input-focus",
     "disabled:cursor-not-allowed disabled:opacity-50"
   ),
-
 
   glowingSelector: cn(
     "relative flex w-full items-center justify-between",
     "min-h-[54px] rounded-[8px] px-[20px] py-[15px]",
     "text-[16px] [&>span]:line-clamp-1",
-    "bg-[rgba(37,48,240,0.07)] text-[color:var(--black,#020816)]",
-    "dark:bg-[#2A2067] dark:text-white",
-    "border border-[#2530F0]/20 dark:border-white/10",
+    "bg-select-pill-bg text-text-heading",
+    "dark:bg-input-surface-dark dark:text-white",
+    "border border-input-border-brand/20 dark:border-white/10",
     "focus-visible:outline-none",
     "disabled:cursor-not-allowed disabled:opacity-50",
+    // Gradient ring (only visible on focus/open)
     "before:content-[''] before:absolute before:inset-0 before:rounded-[8px]",
     "before:pointer-events-none",
     "before:p-px",
-    "before:[background:linear-gradient(135deg,#8086F3,#4C55F8,#D971FF)]",
+    "before:bg-input-glow",
     "before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)]",
     "before:[-webkit-mask-composite:xor]",
     "before:[mask-composite:exclude]",
@@ -73,7 +73,7 @@ const selectTriggerVariants: Record<SelectVariant, string> = {
 const selectContentVariants: Record<SelectVariant, string> = {
   default: cn(
     "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-lg border",
-    "bg-[#F2EFFF] dark:bg-[#191748]",
+    "bg-select-surface dark:bg-select-surface-dark",
     "shadow-md",
     "data-[state=open]:animate-in data-[state=closed]:animate-out",
     "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
@@ -84,7 +84,7 @@ const selectContentVariants: Record<SelectVariant, string> = {
 
   pill: cn(
     "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-lg border",
-    "bg-[#F2EFFF] dark:bg-[#191748]",
+    "bg-select-surface dark:bg-select-surface-dark",
     "shadow-md",
     "data-[state=open]:animate-in data-[state=closed]:animate-out",
     "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
@@ -95,8 +95,8 @@ const selectContentVariants: Record<SelectVariant, string> = {
 
   form: cn(
     "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-[10px] border",
-    "bg-[#F4F1FF] dark:bg-[#191748]",
-    "border border-[#2530F0]/20 dark:border-[#ffffff1a]",
+    "bg-input-surface dark:bg-select-surface-dark",
+    "border border-input-border-brand/20 dark:border-input-border-dark",
     "shadow-md",
     "data-[state=open]:animate-in data-[state=closed]:animate-out",
     "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
@@ -107,8 +107,8 @@ const selectContentVariants: Record<SelectVariant, string> = {
 
   glowingSelector: cn(
     "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-[8px] border",
-    "bg-[#F4F1FF] dark:bg-[#191748]",
-    "border border-[#2530F0]/20 dark:border-white/10",
+    "bg-input-surface dark:bg-select-surface-dark",
+    "border border-input-border-brand/20 dark:border-white/10",
     "shadow-md",
     "data-[state=open]:animate-in data-[state=closed]:animate-out",
     "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
@@ -134,8 +134,8 @@ const SelectTrigger = React.forwardRef<
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      {/* explicit color so it matches develop behavior everywhere */}
-      <ChevronDown className="size-6 text-[#020816] dark:text-[#B9C2D5]" />
+      {/* explicit tokens so it matches develop behavior everywhere */}
+      <ChevronDown className="size-6 text-text-heading dark:text-text-muted-dark" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));
@@ -167,8 +167,7 @@ const SelectScrollDownButton = React.forwardRef<
     <ChevronDown className="h-4 w-4" />
   </SelectPrimitive.ScrollDownButton>
 ));
-SelectScrollDownButton.displayName =
-  SelectPrimitive.ScrollDownButton.displayName;
+SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayName;
 
 type SelectContentProps =
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content> & {
@@ -227,7 +226,7 @@ const SelectItem = React.forwardRef<
     ref={ref}
     className={cn(
       "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none",
-      "focus:bg-[#e1dcf8] dark:focus:bg-[#0d0b36] focus:text-accent-foreground",
+      "focus:bg-select-item-focus-bg dark:focus:bg-select-item-focus-bg-dark focus:text-accent-foreground",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}

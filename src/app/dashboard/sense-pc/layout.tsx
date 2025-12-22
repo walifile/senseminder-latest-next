@@ -7,5 +7,9 @@ interface CloudPCLayoutProps {
 }
 
 export default function CloudPCLayout({ children }: CloudPCLayoutProps) {
-  return <div className="flex-1 overflow-auto">{children}</div>;
+  return (
+    <div data-testid="dashboard-sense-pc-layout" className="flex-1 overflow-auto">
+      {children}
+    </div>
+  );
 }

@@ -55,23 +55,34 @@ const NewTicket = ({ setActiveTab }: Props) => {
   ) => {
     const { id, value } = e.target;
     setFormState((prev) => ({ ...prev, [id]: value }));
-
+  
     const errorSetter =
       id === "subject" ? setSubjectError : setDescriptionError;
     const maxLength = id === "subject" ? 50 : 500;
-
-    if (value.length > maxLength) {
+  
+    // Normalize common “smart” punctuation to plain equivalents for validation
+    const v = value
+      .normalize("NFKC")
+      .replace(/[\u2018\u2019]/g, "'") // ‘ ’ -> '
+      .replace(/[\u201C\u201D]/g, '"') // “ ” -> "
+      .replace(/\u00A0/g, " "); // non-breaking space -> space
+  
+    // Allow normal writing punctuation (industry-standard-ish) + Unicode letters/numbers
+    const allowed = /^[\p{L}\p{N}\s[\\\].,!?'"():;/@#&_-]*$/u;
+    const tooManyPunctInARow = /[[\\\].,!?'"():;/@#&_-]{4,}/;      
+  
+    if (v.length > maxLength) {
       errorSetter(`${id} cannot exceed ${maxLength} characters.`);
-    } else if (!/^[a-zA-Z0-9\s.,-]*$/.test(value)) {
-      errorSetter(
-        "Only letters, numbers, dash, space, comma, and dot are allowed."
-      );
-    } else if (/[.,-]{2,}/.test(value)) {
-      errorSetter("Avoid multiple special characters in a row.");
+    } else if (/[<>]/.test(v)) {
+      errorSetter("Please avoid using < or > characters.");
+    } else if (!allowed.test(v)) {
+      errorSetter("Please use standard text and punctuation only.");
+    } else if (tooManyPunctInARow.test(v)) {
+      errorSetter("Avoid too many special characters in a row.");
     } else {
       errorSetter("");
     }
-  };
+  };  
 
   const handleSelectChange = (field: string, value: string) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
@@ -119,7 +130,10 @@ const NewTicket = ({ setActiveTab }: Props) => {
 
   return (
     <>
-      <div className="p-[30px] pt-0 space-y-5 border-b border-black/10 dark:border-border">
+      <div
+        data-testid="dashboard-support-new-ticket-header"
+        className="p-[30px] pt-0 space-y-5 border-b border-black/10 dark:border-border"
+      >
         <div className="space-y-1">
           <div className="justify-start text-black dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8">
             Create new support ticket
@@ -129,7 +143,11 @@ const NewTicket = ({ setActiveTab }: Props) => {
           </div>
         </div>
       </div>
-      <form onSubmit={handleNewTicket} className="space-y-8 px-[30px]">
+      <form
+        data-testid="dashboard-support-new-ticket-form"
+        onSubmit={handleNewTicket}
+        className="space-y-8 px-[30px]"
+      >
         <div className="space-y-8">
           <div className="space-y-2.5">
             <label className="self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">

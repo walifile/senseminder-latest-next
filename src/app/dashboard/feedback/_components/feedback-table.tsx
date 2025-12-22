@@ -59,7 +59,7 @@ const FeedbackTable = ({ loading, filteredFeedback }: Props) => {
 
   return (
     <>
-      <Table>
+      <Table data-testid="dashboard-feedback-table">
         <TableHeader>
           <TableRow>
             {headers.map((header, i) => (

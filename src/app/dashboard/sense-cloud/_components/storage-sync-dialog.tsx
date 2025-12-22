@@ -47,7 +47,10 @@ const StorageSyncDialog: React.FC<StorageSyncDialogProps> = ({
   formatTimeAgo,
 }) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="sm:max-w-[600px]">
+    <DialogContent
+      data-testid="dashboard-sense-cloud-storage-sync-dialog"
+      className="sm:max-w-[600px]"
+    >
       <DialogHeader>
         <DialogTitle>Storage Integration</DialogTitle>
         <DialogDescription>

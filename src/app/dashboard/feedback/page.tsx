@@ -169,7 +169,7 @@ const FeedbackManagementPage = () => {
   const stats = getStatusStats();
 
   return (
-    <div className="space-y-6">
+    <div data-testid="dashboard-feedback-page" className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
@@ -230,7 +230,7 @@ const FeedbackManagementPage = () => {
       </div>
 
       {/* Main Card */}
-      <Card>
+      <Card data-testid="dashboard-feedback-card">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>

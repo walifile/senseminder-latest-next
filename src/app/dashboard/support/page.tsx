@@ -18,8 +18,11 @@ export default function SupportPage() {
   const [activeTab, setActiveTab] = useState("tickets");
 
   return (
-    <div className="space-y-6">
-      <Card className="relative !border-0 gradient-outline-border bg-[rgba(37,48,240,0.07)] dark:bg-[rgba(255,255,255,0.03)]">
+    <div data-testid="dashboard-support-page" className="space-y-6">
+      <Card
+        data-testid="dashboard-support-card"
+        className="relative !border-0 gradient-outline-border bg-[rgba(37,48,240,0.07)] dark:bg-[rgba(255,255,255,0.03)]"
+      >
         <CardContent className="p-0 space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="flex flex-col md:flex-row justify-between items-center p-6 border-b border-black/10 dark:border-border gap-3">

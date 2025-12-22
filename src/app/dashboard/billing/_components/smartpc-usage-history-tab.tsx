@@ -33,7 +33,11 @@ export function SmartPCUsageHistoryTab() {
   };
 
   return (
-    <TabsContent value="usage" className="space-y-4">
+    <TabsContent
+      data-testid="dashboard-billing-usage-history"
+      value="usage"
+      className="space-y-4"
+    >
       {/* Filters */}
       <HistoryFilters
         date={date}
@@ -45,7 +49,10 @@ export function SmartPCUsageHistoryTab() {
       />
 
       {/* History List */}
-      <div className="rounded-lg border max-h-[400px] overflow-y-auto divide-y">
+      <div
+        data-testid="dashboard-billing-usage-list"
+        className="rounded-lg border max-h-[400px] overflow-y-auto divide-y"
+      >
         {loading ? (
           <p className="text-center text-muted-foreground py-8">
             Loading usage history...

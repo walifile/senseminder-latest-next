@@ -188,8 +188,11 @@ const NotificationsPage = () => {
   const listAlerts = alerts;
 
   return (
-    <div className="space-y-6">
-      <Card className="relative !border-0 gradient-outline-border bg-[rgba(37,48,240,0.07)] dark:bg-[rgba(255,255,255,0.03)]">
+    <div data-testid="dashboard-notifications-page" className="space-y-6">
+      <Card
+        data-testid="dashboard-notifications-card"
+        className="relative !border-0 gradient-outline-border bg-[rgba(37,48,240,0.07)] dark:bg-[rgba(255,255,255,0.03)]"
+      >
         <CardContent className="p-0 space-y-6">
           {/* Header */}
           <div className="flex justify-between items-center p-6 border-b border-black/10 dark:border-border">
@@ -210,7 +213,10 @@ const NotificationsPage = () => {
                     Preferences
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px] rounded-2xl border border-border/40 bg-gradient-to-b from-background/90 to-muted/40 shadow-2xl backdrop-blur-xl transition-all">
+                <DialogContent
+                  data-testid="dashboard-notifications-preferences-dialog"
+                  className="sm:max-w-[425px] rounded-2xl border border-border/40 bg-gradient-to-b from-background/90 to-muted/40 shadow-2xl backdrop-blur-xl transition-all"
+                >
                   <DialogHeader className="space-y-2 pb-2">
                     <DialogTitle className="text-2xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">
                       Notification Preferences
@@ -344,7 +350,10 @@ const NotificationList: React.FC<ListProps> = ({
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div
+        data-testid="dashboard-notifications-list"
+        className="grid grid-cols-1 md:grid-cols-2 gap-5"
+      >
         {items.map((n) => (
           <NotificationCard
             // timestamp can collide; use a composite fallback
@@ -384,6 +393,7 @@ const NotificationCard: React.FC<CardProps> = ({ n, onRead, onNavigate }) => {
 
   return (
     <Card
+      data-testid={`dashboard-notification-card-${n.timestamp}`}
       className={
         n.isRead
           ? "relative bg-[rgba(255,255,255,0.30)] dark:bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(37,48,240,0.10)] dark:hover:bg-[rgba(128,134,243,0.20)] border-blue-700/20 md:rounded-[10px]"

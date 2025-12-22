@@ -71,7 +71,7 @@ export default function MfaMethodDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent data-testid="dashboard-mfa-method-dialog">
         <DialogHeader>
           <DialogTitle>
             {method === "app" && "Setup Authenticator App"}

@@ -112,7 +112,10 @@ const QuickStats = () => {
   return (
     <>
       {/* md+: 4 columns, promo spans 2 => all 3 cards in one row */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+      <div
+        data-testid="dashboard-billing-quick-stats"
+        className="grid grid-cols-1 gap-6 md:grid-cols-4"
+      >
         <DashboardCard
           className={cn(
             "relative min-h-[180px] overflow-hidden md:col-span-2",
@@ -316,6 +319,7 @@ const QuickStats = () => {
         }}
       >
         <DialogContent
+          data-testid="dashboard-billing-promo-dialog"
           className={cn(
             "sm:max-w-md",
             step === "success" &&

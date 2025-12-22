@@ -5,7 +5,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function TicketTableSkeleton() {
   return (
     <>
-      <div className="p-6 pt-0 space-y-5 border-b border-black/10 dark:border-border">
+      <div
+        data-testid="dashboard-support-ticket-table-skeleton"
+        className="p-6 pt-0 space-y-5 border-b border-black/10 dark:border-border"
+      >
         <div className="space-y-1">
           <div className="justify-start text-[#020816] dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8">
             Sense Cloud

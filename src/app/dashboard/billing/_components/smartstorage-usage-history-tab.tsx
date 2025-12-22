@@ -26,7 +26,11 @@ export function SmartStorageUsageHistoryTab() {
   };
 
   return (
-    <TabsContent value="storage-usage" className="space-y-4">
+    <TabsContent
+      data-testid="dashboard-billing-storage-history"
+      value="storage-usage"
+      className="space-y-4"
+    >
       {/* Filters */}
       <HistoryFilters
         date={date}
@@ -37,7 +41,10 @@ export function SmartStorageUsageHistoryTab() {
       />
 
       {/* History List */}
-      <div className="rounded-lg border max-h-[400px] overflow-y-auto divide-y">
+      <div
+        data-testid="dashboard-billing-storage-list"
+        className="rounded-lg border max-h-[400px] overflow-y-auto divide-y"
+      >
         {filteredHistory.length > 0 ? (
           filteredHistory.map((usage) => (
             <div

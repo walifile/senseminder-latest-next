@@ -30,7 +30,10 @@ export default function DesktopAppDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] md:max-w-[800px] gap-10 py-12">
+      <DialogContent
+        data-testid="dashboard-sense-cloud-desktop-app-dialog"
+        className="sm:max-w-[600px] md:max-w-[800px] gap-10 py-12"
+      >
         <div className="flex gap-10 justify-between items-center">
           <div className="flex flex-col gap-6">
             <div>

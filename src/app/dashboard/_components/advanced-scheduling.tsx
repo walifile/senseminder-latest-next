@@ -165,7 +165,7 @@ const AdvancedScheduling = () => {
   };
 
   return (
-    <Card>
+    <Card data-testid="dashboard-advanced-scheduling">
       <CardHeader>
         <CardTitle className="text-lg">Advanced Scheduling</CardTitle>
         <CardDescription>

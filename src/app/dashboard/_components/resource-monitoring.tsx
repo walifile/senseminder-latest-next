@@ -167,7 +167,7 @@ const ResourceMonitoring = () => {
   );
 
   return (
-    <Card className="col-span-full">
+    <Card data-testid="dashboard-resource-monitoring" className="col-span-full">
       <CardContent className="pt-6">
         <div className="mb-4 flex items-center justify-between">
           <div className="space-y-1">

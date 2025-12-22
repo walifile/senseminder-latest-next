@@ -45,8 +45,6 @@ export function ForgotPasswordDialog({
   const { toast } = useToast();
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
-
-  // step: "email" (forgot form) → "reset" (set new password)
   const [step, setStep] = useState<"email" | "reset">("email");
   const [resetEmail, setResetEmail] = useState<string | null>(null);
 
@@ -65,13 +63,11 @@ export function ForgotPasswordDialog({
     : "/assets/authlayout/light/sensepc-logo-code.svg";
 
   const handleSuccessStartReset = (email: string) => {
-    // ✅ instead of router.push(...), show reset dialog inline
     setResetEmail(email);
     setStep("reset");
   };
 
   const handleCloseAll = () => {
-    // reset local state and close overlay
     setStep("email");
     setResetEmail(null);
     onClose();
@@ -107,7 +103,6 @@ export function ForgotPasswordDialog({
         Logger.log("📨 Cognito Reset Response:", response);
 
         if (response.success) {
-          // ✅ now we move to reset-password step inside same overlay
           handleSuccessStartReset(email);
         } else {
           Logger.error("Cognito Reset Failed:", response.error);
@@ -153,7 +148,7 @@ export function ForgotPasswordDialog({
           isOpen
           email={resetEmail}
           onClose={handleCloseAll}
-          variant="card" // 👈 card-only, no extra overlay
+          variant="card" 
         />
       ) : (
         <div

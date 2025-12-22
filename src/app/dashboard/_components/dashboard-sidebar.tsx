@@ -124,6 +124,7 @@ const DashboardSidebar = () => {
       {/* Mobile Menu Toggle */}
       <div className="fixed top-4 left-4 z-50 md:hidden">
         <Button
+          data-testid="dashboard-sidebar-mobile-toggle"
           variant="outline"
           size="icon"
           onClick={toggleMobileSidebar}
@@ -136,6 +137,7 @@ const DashboardSidebar = () => {
       {/* Mobile Overlay */}
       {mobileOpen && (
         <div
+          data-testid="dashboard-sidebar-mobile-overlay"
           className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setMobileOpen(false)}
         />
@@ -143,6 +145,7 @@ const DashboardSidebar = () => {
 
       {/* Sidebar */}
       <aside
+        data-testid="dashboard-sidebar"
         className={cn(
           "fixed top-0 bottom-0 left-0 z-50 md:relative transition-all duration-300 bg-blue-700/5 dark:bg-[#010526] border-r-[1px]",
           collapsed ? "w-20" : "w-64 p-7",
@@ -152,22 +155,27 @@ const DashboardSidebar = () => {
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
-          <div className="relative h-[90px] px-4 mb-7 flex items-center">
+          <div
+            data-testid="dashboard-sidebar-header"
+            className="relative h-[90px] px-4 mb-7 flex items-center"
+          >
             {/* Centered logo when expanded */}
             {!collapsed && (
-              <div className="mx-auto">
+              <div data-testid="dashboard-sidebar-logo" className="mx-auto">
                 <Logo />
               </div>
             )}
 
             {/* Right-side controls (collapse + mobile close) */}
             <div
+              data-testid="dashboard-sidebar-controls"
               className={cn(
                 "absolute inset-y-0 right-0 flex items-center pr-1",
                 collapsed ? "translate-x-[25px]" : "translate-x-[50px]"
               )}
             >
               <Button
+                data-testid="dashboard-sidebar-collapse-toggle"
                 variant="ghost"
                 size="icon"
                 onClick={toggleSidebar}
@@ -190,6 +198,7 @@ const DashboardSidebar = () => {
                 </div>
               </Button>
               <Button
+                data-testid="dashboard-sidebar-mobile-close"
                 variant="ghost"
                 size="icon"
                 onClick={toggleMobileSidebar}
@@ -201,11 +210,18 @@ const DashboardSidebar = () => {
           </div>
           <hr className="border-t dark:border-white/10 border-neutral-900/30" />
           {/* Navigation Links */}
-          <div className="flex-1 py-8 space-y-[10px] overflow-y-auto">
+          <div
+            data-testid="dashboard-sidebar-nav"
+            className="flex-1 py-8 space-y-[10px] overflow-y-auto"
+          >
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 href={item.path}
+                data-testid={`dashboard-sidebar-link-${item.name
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]+/g, "-")
+                  .replace(/(^-|-$)/g, "")}`}
                 className={cn(
                   "flex items-center px-4 py-[10px] rounded-full transition-colors",
                   pathname === item.path
@@ -224,12 +240,14 @@ const DashboardSidebar = () => {
 
           {/* Sidebar Footer */}
           <div
+            data-testid="dashboard-sidebar-footer"
             className={cn(
               "pt-3 border-t dark:border-white/10 border-neutral-900/30",
               collapsed ? "text-center pb-3" : ""
             )}
           >
             <Button
+              data-testid="dashboard-sidebar-logout"
               variant="ghost"
               className={cn(
                 "w-full justify-start text-[#454545] dark:text-white",

@@ -70,7 +70,11 @@ export default function FAQ({
   const [value, setValue] = React.useState<string | undefined>("item-2");
 
   return (
-    <section id="faq" className="container relative my-12 md:my-20">
+    <section
+      id="faq"
+      data-testid="home-faq"
+      className="container relative my-12 md:my-20"
+    >
       <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-24">
         {/* Left: Heading + Illustration */}
         <div className="relative lg:col-span-2 space-y-8 md:space-y-28">

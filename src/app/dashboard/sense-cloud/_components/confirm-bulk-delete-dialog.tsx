@@ -24,7 +24,7 @@ const ConfirmBulkDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
   onDeleteSelected,
 }) => (
   <Dialog open={open} onOpenChange={onClose}>
-    <DialogContent>
+    <DialogContent data-testid="dashboard-sense-cloud-confirm-bulk-delete-dialog">
       <DialogHeader>
         <DialogTitle>Delete Selected</DialogTitle>
         <DialogDescription>

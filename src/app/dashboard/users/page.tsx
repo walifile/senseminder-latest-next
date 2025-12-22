@@ -46,8 +46,11 @@ const UsersManagementPage = () => {
   );
 
   return (
-    <div className="space-y-6">
-      <Card className="relative !border-0 gradient-outline-border bg-[rgba(37,48,240,0.07)] dark:bg-[rgba(255,255,255,0.03)]">
+    <div data-testid="dashboard-users-page" className="space-y-6">
+      <Card
+        data-testid="dashboard-users-card"
+        className="relative !border-0 gradient-outline-border bg-[rgba(37,48,240,0.07)] dark:bg-[rgba(255,255,255,0.03)]"
+      >
         <CardContent className="p-0 space-y-6">
           {/* Header */}
           <div className="flex justify-between items-center p-6 border-b border-black/10 dark:border-border">

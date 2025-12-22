@@ -67,7 +67,7 @@ const DeleteUserDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
-      <DialogContent>
+      <DialogContent data-testid="dashboard-users-delete-dialog">
         <DialogHeader>
           <DialogTitle>Delete User</DialogTitle>
           <DialogDescription>

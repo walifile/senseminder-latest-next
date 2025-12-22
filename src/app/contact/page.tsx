@@ -93,7 +93,6 @@ const Contact = () => {
           <div className="w-full md:w-3/4 px-6 md:px-0">
             <Breadcrumb
               items={[{ label: "Home", href: "/" }, { label: "Contact" }]}
-              className="mt-0 mb-6 text-sm text-muted-foreground dark:text-muted-foreground [&_a]:text-muted-foreground [&_a]:hover:text-foreground [&_a]:transition-colors [&_span]:text-foreground"
             />
             <h1 className="w-full font-space-grotesk text-4xl md:text-[50px] font-bold mb-6 leading-[1]">
               Contact Us

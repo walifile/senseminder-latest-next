@@ -187,7 +187,10 @@ const Duplicates: React.FC<DuplicatesProps> = ({
   }, [fetchDuplicates]);
 
   return (
-    <ScrollArea className="h-full flex-1">
+    <ScrollArea
+      data-testid="dashboard-sense-cloud-duplicate-cleanup"
+      className="h-full flex-1"
+    >
       <div className="p-4">
         <div className="mx-auto flex max-w-5xl flex-col gap-4">
           {/* Header card */}

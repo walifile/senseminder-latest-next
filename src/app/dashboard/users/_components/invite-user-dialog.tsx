@@ -78,7 +78,10 @@ const InviteUserDialog = ({ open, onClose }: Props) => {
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        data-testid="dashboard-users-invite-dialog"
+        className="sm:max-w-[425px]"
+      >
         <DialogHeader>
           <DialogTitle>Invite User</DialogTitle>
           <DialogDescription>
@@ -86,7 +89,12 @@ const InviteUserDialog = ({ open, onClose }: Props) => {
             up their account.
           </DialogDescription>
         </DialogHeader>
-        <Form methods={methods} onSubmit={onSubmit} className="space-y-2">
+        <Form
+          data-testid="dashboard-users-invite-form"
+          methods={methods}
+          onSubmit={onSubmit}
+          className="space-y-2"
+        >
           <Field.Text
             name="name"
             label="Name"

@@ -112,7 +112,10 @@ const ManagePcDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
-      <DialogContent className="sm:max-w-[540px]">
+      <DialogContent
+        data-testid="dashboard-users-manage-pc-dialog"
+        className="sm:max-w-[540px]"
+      >
         <DialogHeader>
           <DialogTitle>
             Manage PCs for

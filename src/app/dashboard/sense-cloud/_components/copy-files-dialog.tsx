@@ -187,7 +187,10 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        data-testid="dashboard-sense-cloud-copy-files-dialog"
+        className="sm:max-w-[425px]"
+      >
         <DialogHeader>
           <DialogTitle>Copy {selectedFiles.length} file(s)</DialogTitle>
           <DialogDescription>

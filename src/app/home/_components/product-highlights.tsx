@@ -16,7 +16,10 @@ const ProductHighlights = () => {
   const router = useRouter();
   const onLearnMore = () => router.push(routes.about);
   return (
-  <div className="container relative my-12 md:my-20">
+  <div
+    data-testid="home-product-highlights"
+    className="container relative my-12 md:my-20"
+  >
     <div className="relative z-10 max-md:flex max-md:flex-col md:grid md:grid-cols-2 md:grid-rows-3 gap-6 md:gap-8">
       <motion.div
         initial={{ opacity: 0, y: 50 }}

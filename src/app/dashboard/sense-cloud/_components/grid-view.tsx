@@ -78,7 +78,10 @@ const GridView = ({
   formatFileSize,
   formatDate,
 }: GridViewProps) => (
-  <div className="rounded-lg border border-[rgba(37,48,240,0.10)] bg-[rgba(255,255,255,0.30)] dark:bg-[rgba(255,255,255,0.04)] p-4">
+  <div
+    data-testid="dashboard-sense-cloud-grid-view"
+    className="rounded-lg border border-[rgba(37,48,240,0.10)] bg-[rgba(255,255,255,0.30)] dark:bg-[rgba(255,255,255,0.04)] p-4"
+  >
     <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
       {(files as FileItem[]).map((file, index) => (
         <div

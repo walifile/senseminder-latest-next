@@ -71,8 +71,8 @@ const Hero = () => (
             ].map((t) => (
               <div key={t} className="inline-flex items-center gap-2">
                 <span className="inline-flex h-6 w-6 items-center justify-center rounded-[6px]">
-                  <span className="inline-flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#2530F0]">
-                    <Check className="h-3.5 w-3.5 text-white" />
+                  <span className="inline-flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#2530F0] dark:bg-[#13E1EA]">
+                      <Check className="h-3.5 w-3.5 text-white dark:text-black" />
                   </span>
                 </span>
                 <span className="text-[14px] leading-5 tracking-[-0.2px] text-[#020816] dark:text-white">

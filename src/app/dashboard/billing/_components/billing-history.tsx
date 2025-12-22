@@ -20,6 +20,7 @@ const TAB_ICON = {
 
 const BillingHistory = () => (
   <DashboardCard
+    data-testid="dashboard-billing-history"
     className={cn(
       "relative overflow-hidden p-0",
       "rounded-[20px] backdrop-blur-[32px] backdrop-filter"

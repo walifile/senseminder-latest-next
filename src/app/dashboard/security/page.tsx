@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 const SecurityPage = () => (
-  <div className="flex flex-col h-full">
+  <div data-testid="dashboard-security-page" className="flex flex-col h-full">
     <div className="flex flex-col gap-4 mb-6">
       <div>
         <h1 className="text-2xl font-bold">Security & Privacy</h1>

@@ -168,7 +168,7 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
-      <DialogContent>
+      <DialogContent data-testid="dashboard-assign-user-dialog">
        <DialogHeader>
         <DialogTitle className="text-lg font-semibold">
           SensePC : {pc?.systemName}

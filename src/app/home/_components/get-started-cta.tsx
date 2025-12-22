@@ -17,7 +17,7 @@ export default function GetStartedCTA({
   gradient,
 }: GetStartedCTAProps) {
   return (
-    <section className="relative">
+    <section data-testid="home-get-started-cta" className="relative">
       <div className="relative container my-12 md:my-20">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}

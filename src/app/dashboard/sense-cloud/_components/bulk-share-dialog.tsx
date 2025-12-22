@@ -112,7 +112,10 @@ const BulkShareDialog: React.FC<ShareDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent
+        data-testid="dashboard-sense-cloud-bulk-share-dialog"
+        className="sm:max-w-[500px]"
+      >
         <DialogHeader>
           <DialogTitle>Share Selected</DialogTitle>
           <DialogDescription>

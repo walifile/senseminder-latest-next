@@ -1,10 +1,16 @@
+"use client";
+
 import React from "react";
 import FAQ from "@/app/home/_components/faq";
+import { GetStartedCtaSection } from "@/app/products/_components/get-started-cta-section";
+import RealWorldUse, {
+  type RealWorldUseItem,
+} from "@/app/products/_components/real-world-use";
+
+import { useGetStartedNav } from "@/hooks/use-get-started";
 
 import Hero from "./hero";
 import { MainLayout } from "./layout";
-import RealWorld from "./real-world-use";
-import GetStartedCTA from "./get-started-cta";
 import WhyTeamsChoose from "./why-teams-choose";
 import RentSmarterProcess from "./how-it-works";
 import SmartStoragePricing from "./smartstorage-pricing";
@@ -32,19 +38,65 @@ const senseCloudFaqItems = [
   },
 ];
 
-const SensePCPage = () => (
-  <MainLayout>
-    <Hero />
-    <WhyTeamsChoose />
-    <RentSmarterProcess />
-    <RealWorld />
-    <SmartStoragePricing />
-    <FAQ
-      items={senseCloudFaqItems}
-      subtitle="Everything you need to know about Sense Cloud"
-    />
-    <GetStartedCTA />
-  </MainLayout>
-);
+const REAL_WORLD_ITEMS: RealWorldUseItem[] = [
+  {
+    title: "Project & Workspace Storage",
+    description:
+      "Keep each project or team workspace backed by its own storage namespace, with predictable access patterns and cost.",
+    imageSrc: "/assets/product/sensecloud/Frame(3).svg",
+  },
+  {
+    title: "Backups & Snapshots",
+    description:
+      "Use SenseCloud as the backbone for desktop snapshots, file backups, and long-term archives.",
+    imageSrc: "/assets/product/sensecloud/Frame.svg",
+  },
+  {
+    title: "Media & Asset Libraries",
+    description:
+      "Store large design files, marketing assets, and media libraries centrally so they’re always available from any SensePC.",
+    imageSrc: "/assets/product/sensecloud/Frame(1).svg",
+  },
+  {
+    title: "Data for Analytics & AI ",
+    description:
+      "Give your analytics or AI workloads a consistent place to read from and write to, alongside your SensePC compute.",
+    imageSrc: "/assets/product/sensecloud/Frame(2).svg",
+  },
+];
 
-export default SensePCPage;
+const SenseCloudPage = () => {
+  const onGetStarted = useGetStartedNav();
+
+  return (
+    <MainLayout>
+      <Hero />
+      <WhyTeamsChoose />
+      <RentSmarterProcess />
+
+      <RealWorldUse
+        heading="Cloud Storage Solutions That Make Sense"
+        items={REAL_WORLD_ITEMS}
+      />
+
+      <SmartStoragePricing />
+
+      <FAQ
+        items={senseCloudFaqItems}
+        subtitle="Everything you need to know about Sense Cloud"
+      />
+
+      <GetStartedCtaSection
+        title="Power your Sense PC with secure storage."
+        description="Get started by choosing the storage option that fits your work."
+        primaryCta={{
+          label: "Get Started with SensePC",
+          onClick: onGetStarted,
+        }}
+        secondaryCta={{ label: "Contact Sales", onClick: onGetStarted }}
+      />
+    </MainLayout>
+  );
+};
+
+export default SenseCloudPage;

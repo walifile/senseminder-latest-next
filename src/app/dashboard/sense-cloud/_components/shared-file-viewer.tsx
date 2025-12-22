@@ -27,7 +27,7 @@ export default function SharedFileViewer({ name, previewUrl }: Props) {
 
   if (["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg"].includes(ext)) {
     return (
-      <div className="w-full">
+      <div data-testid="dashboard-sense-cloud-shared-file-viewer" className="w-full">
         {!loaded && skeleton}
         <img
           src={previewUrl}
@@ -41,7 +41,7 @@ export default function SharedFileViewer({ name, previewUrl }: Props) {
 
   if (ext === "pdf") {
     return (
-      <div className="w-full">
+      <div data-testid="dashboard-sense-cloud-shared-file-viewer" className="w-full">
         {!loaded && skeleton}
         <iframe
           src={previewUrl}
@@ -55,7 +55,7 @@ export default function SharedFileViewer({ name, previewUrl }: Props) {
 
   if (["mp4", "webm", "ogg", "mov", "quicktime"].includes(ext)) {
     return (
-      <div className="w-full">
+      <div data-testid="dashboard-sense-cloud-shared-file-viewer" className="w-full">
         {!loaded && skeleton}
         <video
           src={previewUrl}
@@ -69,7 +69,7 @@ export default function SharedFileViewer({ name, previewUrl }: Props) {
 
   if (["mp3", "wav", "oga", "ogg"].includes(ext)) {
     return (
-      <div className="w-full">
+      <div data-testid="dashboard-sense-cloud-shared-file-viewer" className="w-full">
         {!loaded && skeleton}
         <audio
           src={previewUrl}
@@ -82,7 +82,10 @@ export default function SharedFileViewer({ name, previewUrl }: Props) {
   }
 
   return (
-    <div className="text-sm text-muted-foreground">
+    <div
+      data-testid="dashboard-sense-cloud-shared-file-viewer"
+      className="text-sm text-muted-foreground"
+    >
       Preview not available. Use the download button.
     </div>
   );

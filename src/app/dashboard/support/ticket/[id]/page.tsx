@@ -13,11 +13,11 @@ import {
 import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { formatDateTime, formatTimeLabel } from "@/lib/utils/format-time";
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 
 import { useSelector } from "react-redux";
 
-import { format } from "date-fns";
 import { ChevronLeft, CheckCircle2 } from "lucide-react";
 
 import TicketConversation from "../../_components/ticket-conversation";
@@ -110,7 +110,10 @@ const TicketDetailPage = () => {
 
   if (!userId) {
     return (
-      <div className="text-red-500 text-sm">
+      <div
+        data-testid="dashboard-support-ticket-error"
+        className="text-red-500 text-sm"
+      >
         Something went wrong loading your ticket. Please try refreshing the page
         or sign in again.
         <br />
@@ -118,12 +121,17 @@ const TicketDetailPage = () => {
     );
   }
 
-  if (isLoading || isFetching || !ticket) return <div>Loading ticket...</div>;
+  if (isLoading || isFetching || !ticket)
+    return (
+      <div data-testid="dashboard-support-ticket-loading">
+        Loading ticket...
+      </div>
+    );
 
   const isClosed = ticket.status === "closed";
 
   return (
-    <div className="space-y-6">
+    <div data-testid="dashboard-support-ticket-page" className="space-y-6">
       <Button
         variant="ghost"
         size="sm"
@@ -135,14 +143,16 @@ const TicketDetailPage = () => {
 
       {/* Subject and status */}
       <div className="flex items-center gap-4 flex-wrap">
-        <h1 className="text-2xl font-semibold">{ticket.subject}</h1>
+        <h1 className="text-2xl font-bold font-['Space_Grotesk'] leading-8">
+          {ticket.subject}
+        </h1>
         <div className={getStatusBadgeClass(ticket.status)}>
           {formatLabel(ticket.status)}
         </div>
       </div>
 
       {/* Description */}
-      <div className="bg-muted/50 p-4 border text-sm text-muted-foreground rounded-md whitespace-pre-line">
+      <div className="bg-blue-700/5 dark:bg-white/5 p-4 rounded-[10px] outline outline-1 outline-blue-700/10 dark:outline-white/20 text-base font-['Inter'] leading-6 text-[#454545] dark:text-[#B9C2D5] whitespace-pre-line">
         {ticket.description}
       </div>
 
@@ -221,12 +231,14 @@ const TicketDetailPage = () => {
 
         {/* Right: Ticket Info */}
         <div className="w-full space-y-6 mt-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Ticket Info</CardTitle>
+          <Card className="border border-blue-700/10 dark:border-white/15 bg-blue-700/5 dark:bg-white/5 shadow-none rounded-[10px]">
+            <CardHeader className="bg-transparent rounded-t-[10px]">
+              <CardTitle className="text-lg font-semibold font-['Space_Grotesk'] leading-8">
+                Ticket Info
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+            <CardContent className="space-y-3 font-['Inter'] text-base leading-6 text-[#454545] dark:text-[#B9C2D5]">
+              <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
                 <div className="text-muted-foreground">Email</div>
                 <div className="truncate">{ticket.email}</div>
 
@@ -237,7 +249,10 @@ const TicketDetailPage = () => {
                 <div className="break-all">{ticket.ticketId}</div>
 
                 <div className="text-muted-foreground">Created</div>
-                <div>{format(new Date(ticket.createdAt), "PPpp")}</div>
+                <div>
+                  {formatDateTime(ticket.createdAt, "PPP p")}{" "}
+                  <span className="text-muted-foreground">({formatTimeLabel(ticket.createdAt).split(" ").slice(-1)[0]})</span>
+                </div>
 
                 <div className="text-muted-foreground">Category</div>
                 <div className="capitalize">{ticket.category}</div>

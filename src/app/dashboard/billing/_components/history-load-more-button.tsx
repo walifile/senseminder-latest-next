@@ -8,6 +8,7 @@ interface Props {
 const HistoryLoadMoreButton = ({ loading, fetchHistory }: Props) => (
   <div className="flex justify-center pt-4">
     <button
+      data-testid="dashboard-billing-history-load-more"
       className="text-sm px-4 py-2 rounded-md bg-primary text-white disabled:opacity-50"
       onClick={() => fetchHistory(true)}
       disabled={loading}

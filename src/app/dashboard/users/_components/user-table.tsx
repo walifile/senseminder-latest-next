@@ -84,7 +84,7 @@ const UserTable = ({ loading, filteredUsers }: Props) => {
 
   return (
     <>
-      <Table>
+      <Table data-testid="dashboard-users-table">
         <TableHeader>
           <TableRow className="bg-blue-700/10 dark:bg-[#ffffff0f] hover:bg-blue-700/10 dark:hover:bg-[#ffffff0f]">
             {headers.map((header, i) => {

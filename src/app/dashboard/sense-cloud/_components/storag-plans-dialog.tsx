@@ -88,7 +88,10 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent
+        data-testid="dashboard-sense-cloud-storage-plans-dialog"
+        className="sm:max-w-[600px]"
+      >
         <DialogHeader>
           <DialogTitle>Storage Plan</DialogTitle>
           <DialogDescription>

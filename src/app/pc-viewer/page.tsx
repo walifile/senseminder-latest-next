@@ -251,9 +251,6 @@ const DCViewerContent: React.FC = () => {
     }
   }
 
-
-
-
   const launchVMResponse = useSelector((state: RootState) =>
     instanceId ? selectLaunchVMResponse(state, instanceId) : null
   );
@@ -263,6 +260,7 @@ const DCViewerContent: React.FC = () => {
   const url = launchVMResponse?.dnsName;
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
 
   // Ensure “unused” state vars are consumed (no-op reads to satisfy eslint)
   void _dcvError;
@@ -383,9 +381,14 @@ const DCViewerContent: React.FC = () => {
     if (connRef.current) return;
     if (!(sessionId && authToken)) return;
 
-    setTvEffect("on");
+    // setTvEffect("on");
+    // setIsLoading(true);
+    // setConnectionState("RECONNECTING");
+    setIsDisconnecting(false);
+    setTvEffect(null); // we won't use tvEffect overlays anymore
     setIsLoading(true);
     setConnectionState("RECONNECTING");
+
 
     const fitToContainer = async (heads?: Head[]): Promise<void> => {
       const c = connRef.current;
@@ -470,7 +473,12 @@ const DCViewerContent: React.FC = () => {
               setMicSupportReason(null);
             }
 
+            // setIsLoading(false);
+            // setIsConnected(true);
+            // handleQualityChange("auto");
+            // setConnectionState("CONNECTED");
             setIsLoading(false);
+            setIsDisconnecting(false);
             setIsConnected(true);
             handleQualityChange("auto");
             setConnectionState("CONNECTED");
@@ -486,9 +494,13 @@ const DCViewerContent: React.FC = () => {
 
           // moved from observers.disconnect
           disconnect: () => {
+            setIsLoading(false);
+            setIsDisconnecting(false);
+
             setIsConnected(false);
             setConnectionState("DISCONNECTED");
-            setTvEffect("off");
+            setTvEffect(null);
+
             setWebcamEnabled(false);
             setWebcamDeviceId(undefined);
             setWebcamError(null);
@@ -525,11 +537,13 @@ const DCViewerContent: React.FC = () => {
       conn._sensepcCleanup = cleanup;
     } catch (error) {
       setDcvError(error as Error);
-      setTvEffect("off");
+      setTvEffect(null);
       setIsLoading(false);
+      setIsDisconnecting(false);
       setIsConnected(false);
       setConnectionState("DISCONNECTED");
     }
+
   };
 
   useEffect(() => {
@@ -563,28 +577,42 @@ const DCViewerContent: React.FC = () => {
   };
 
   const handleDisconnect = () => {
-    const c = connRef.current;
-    if (c) {
-      try {
-        c._sensepcCleanup?.();
-      } catch {
-        /* no-op */
-      }
-      try {
-        void c.disconnect();
-      } catch {
-        /* no-op */
-      }
-      connRef.current = null;
-      setTvEffect("off");
-      setIsConnected(false);
-      setConnectionState("DISCONNECTED");
-      // Reset device/file-transfer state
-      setWebcamEnabled(false);
-      setWebcamDeviceId(undefined);
-      setWebcamError(null);
-    }
-  };
+  const c = connRef.current;
+  if (!c) return;
+
+  // ✅ show custom UI while disconnecting
+  setIsDisconnecting(true);
+  setIsLoading(true);
+
+  try {
+    c._sensepcCleanup?.();
+  } catch {
+    /* no-op */
+  }
+  try {
+    void c.disconnect();
+  } catch {
+    /* no-op */
+  }
+
+  connRef.current = null;
+
+  // local optimistic UI (callback.disconnect will also run)
+  setTvEffect(null);
+  setIsConnected(false);
+  setConnectionState("DISCONNECTED");
+
+  setWebcamEnabled(false);
+  setWebcamDeviceId(undefined);
+  setWebcamError(null);
+  setMicEnabled(false);
+  setMicError(null);
+
+  // ✅ if callback doesn't fire for any reason
+  setIsLoading(false);
+  setIsDisconnecting(false);
+};
+
 
   // Stats
   const updateStats = async () => {
@@ -657,53 +685,69 @@ const DCViewerContent: React.FC = () => {
           id="remote-desktop"
           className="absolute inset-0 w-[100vw] h-[100dvh] overflow-hidden bg-black z-0"
         />
-        {/* TV On/Off Animation */}
-        <AnimatePresence>
-          {isLoading && (
-            <>
-              <motion.div
-                initial={{ scaleY: 0, opacity: 1 }}
-                animate={{ scaleY: 1, opacity: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 1.5, ease: [0.4, 0, 0.2, 1] }}
-                className="absolute inset-0 bg-white dark:bg-gray-900 origin-center z-30"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(0deg, transparent 0%, rgba(255, 255, 255, 0.1) 2%, transparent 3%)",
-                  backgroundSize: "100% 3px",
-                }}
-              />
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: [0, 1, 0] }}
-                transition={{ duration: 0.3, times: [0, 0.5, 1] }}
-                className="absolute inset-0 bg-blue-500/20 z-29"
-              />
-            </>
-          )}
-          {tvEffect === "off" && (
-            <>
-              <motion.div
-                initial={{ scaleY: 0, opacity: 0 }}
-                animate={{ scaleY: 1, opacity: 1 }}
-                exit={{ opacity: 1 }}
-                transition={{ duration: 1, ease: [0.4, 0, 0.2, 1] }}
-                className="absolute inset-0 bg-black origin-center z-30"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(0deg, transparent 0%, rgba(255, 255, 255, 0.05) 2%, transparent 3%)",
-                  backgroundSize: "100% 3px",
-                }}
-              />
-              <motion.div
-                initial={{ opacity: 1 }}
-                animate={{ opacity: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="absolute inset-0 bg-white/5 z-29"
-              />
-            </>
+        <AnimatePresence initial={false}>
+          {(isLoading || isDisconnecting || connectionState !== "CONNECTED") && (
+            <motion.div
+              key="sensepc-connection-overlay"
+              initial={false} // ✅ no fade-in on first render (prevents black flash)
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }} // only used on exit
+              // z-40: above DCV (z-0), below sidebar (z-50)
+              className="absolute inset-0 z-40 grid place-items-center overflow-hidden bg-white dark:bg-black"
+            >
+              {/* Ellipse 3 (stretch left->right, avoid cut on ultrawide) */}
+              <div className="pointer-events-none absolute inset-0 grid place-items-center">
+                <img
+                  src="/Ellipse%203.svg"
+                  alt=""
+                  className="w-[140vw] max-w-none  object-contain"
+                />
+              </div>
+
+              {/* Center content */}
+              <div className="relative z-10 flex flex-col items-center gap-5 px-6 text-center">
+                {/* Logo / Mark */}
+                <img src="/check-dark.svg" alt="SensePC" className="dark:hidden" />
+                <img src="/check-light.svg" alt="SensePC" className="hidden dark:block" />
+
+                {/* Status copy (improved) */}
+                <div className="flex flex-col items-center gap-2">
+                  {/* Big primary status */}
+                  <div className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-lg md:text-xl">
+                    {isDisconnecting
+                      ? "Disconnecting from your PC"
+                      : isLoading || connectionState === "RECONNECTING"
+                        ? "Connecting to your PC"
+                        : "Disconnected"}
+                  </div>
+
+                  {/* Support line + spinner */}
+                  {(isLoading || isDisconnecting || connectionState === "RECONNECTING") ? (
+                    <div className="flex items-center gap-2 rounded-full border border-zinc-200/70 bg-white/70 px-3 py-1.5 text-sm text-zinc-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-zinc-200">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="font-medium">
+                        {isDisconnecting ? "Ending session safely…" : "Establishing secure session…"}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-sm font-medium text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-200">
+                      Session not connected
+                    </div>
+                  )}
+
+                  {/* Helper line */}
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400 sm:text-sm">
+                    {isLoading || isDisconnecting || connectionState === "RECONNECTING"
+                      ? "This usually takes a few seconds."
+                      : "Use the Connect button in the side panel."}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           )}
         </AnimatePresence>
+
 
         {/* DCV Viewer (optional path) */}
         {isConnected && !tvEffect && dcvSession && url && (

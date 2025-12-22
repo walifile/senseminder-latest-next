@@ -28,7 +28,6 @@ export default function AboutPage() {
       >
         <Breadcrumb
           items={[{ label: "Home", href: "/" }, { label: "About Us" }]}
-          className="mt-0 mb-6 text-sm text-muted-foreground dark:text-muted-foreground [&_a]:text-muted-foreground [&_a]:hover:text-foreground [&_a]:transition-colors [&_span]:text-foreground"
         />
         <p className="font-space-grotesk font-bold text-3xl md:text-[65px] leading-[1] my-3 w-full">
           About SensePC

@@ -16,6 +16,7 @@ export default function SensePCCost() {
 
   return (
     <section
+      data-testid="home-sensepc-cost"
       className="container my-12 md:my-20"
       aria-label="SensePC Cost Estimator"
     >

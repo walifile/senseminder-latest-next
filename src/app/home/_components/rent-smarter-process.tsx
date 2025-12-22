@@ -37,7 +37,7 @@ const steps = [
 const RentSmarterProcess: React.FC = () => {
   const onBuildPc = useBuildPcNav();
   return (
-  <section className="relative">
+  <section data-testid="home-rent-smarter-process" className="relative">
     <div className="z-0 absolute -top-80 -left-96 blur-[160px] md:blur-[200px] w-60 md:w-[400px] h-full opacity-40 bg-[#9C05BF]" />
     <div className="z-0 absolute top-0 -left-72 blur-[160px] md:blur-[200px] w-60 md:w-[400px] h-full opacity-40 bg-[#4027E5]" />
 

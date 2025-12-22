@@ -72,7 +72,7 @@ const SmartPcConnectButton = ({
 
   return (
     <>
-      <Button
+      {/* <Button
         size="sm"
         variant="default"
         onClick={() => handleLaunch(pc.instanceId, pc.systemName)}
@@ -86,7 +86,26 @@ const SmartPcConnectButton = ({
       >
         <ExternalLink className="h-4 w-4 mr-1.5" />
         {launchingInstances.includes(pc.instanceId) ? "Connecting..." : "Connect"}
-      </Button>
+      </Button> */}
+      <Button
+  size="sm"
+  variant="default"
+  onClick={(e) => {
+    e.stopPropagation();
+    void handleLaunch(pc.instanceId, pc.systemName);
+  }}
+  disabled={
+    isLoading ||
+    isBusy(pc.state) ||
+    pc.state !== "running" ||
+    (!isMember && isPCAssigned(pc.instanceId))
+  }
+  className="h-8"
+>
+  <ExternalLink className="mr-1.5 h-4 w-4" />
+  {launchingInstances.includes(pc.instanceId) ? "Connecting..." : "Connect"}
+</Button>
+
       <SlidePopup open={showPopup} onClose={() => setShowPopup(false)} />
     </>
   );

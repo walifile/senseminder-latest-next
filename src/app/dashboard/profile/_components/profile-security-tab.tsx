@@ -1,6 +1,4 @@
 
-
-
 "use client";
 
 import type { SmartPCSession } from "@/api/session";
@@ -38,6 +36,77 @@ const ICONS = {
   connectedDevices: "/assets/dashboard/connector.svg",
 } as const;
 
+const getClientTimeZone = (): string => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch {
+    return "UTC";
+  }
+};
+
+const toDateSafe = (value: unknown): Date | null => {
+  if (!value) return null;
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  // number: could be seconds or milliseconds
+  if (typeof value === "number") {
+    const ms = value < 1_000_000_000_000 ? value * 1000 : value;
+    const d = new Date(ms);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  // string: could be ISO or numeric epoch
+  if (typeof value === "string") {
+    const s = value.trim();
+    if (!s) return null;
+
+    if (/^\d+$/.test(s)) {
+      const n = Number(s);
+      const ms = n < 1_000_000_000_000 ? n * 1000 : n;
+      const d = new Date(ms);
+      return Number.isNaN(d.getTime()) ? null : d;
+    }
+
+    const d = new Date(s);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  return null;
+};
+
+const formatLastActivity = (value: unknown): string => {
+  const d = toDateSafe(value);
+  if (!d) return "Unknown";
+
+  const tz = getClientTimeZone();
+
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      timeZone: tz,
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZoneName: "short",
+    }).format(d);
+  } catch {
+    return new Intl.DateTimeFormat(undefined, {
+      timeZone: "UTC",
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZoneName: "short",
+    }).format(d);
+  }
+};
 
 export const ProfileSecurityTab = () => {
   const { toast } = useToast();
@@ -243,7 +312,10 @@ export const ProfileSecurityTab = () => {
 
   return (
     <>
-      <div className="space-y-6">
+      <div
+        data-testid="dashboard-profile-security-tab"
+        className="space-y-6"
+      >
         {/* Row 1: Password + Security Question */}
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Password */}
@@ -560,15 +632,10 @@ export const ProfileSecurityTab = () => {
                     </p>
 
                     <p className="text-xs text-muted-foreground">
-                      Last Activity{" "}
-                      {session.lastSeen
-                        ? new Date(session.lastSeen).toLocaleString()
-                        : "Unknown"}
+                      Last Activity {formatLastActivity(session.lastSeen)}
                       {session.location?.city || session.location?.country
                         ? ` • ${session.location?.city || "Unknown"}, ${
-                            session.location?.country ||
-                            session.location?.region ||
-                            ""
+                            session.location?.country || session.location?.region || ""
                           }`
                         : ""}
                     </p>

@@ -34,7 +34,7 @@ const FolderListView: React.FC<FolderListViewProps> = ({
   };
 
   return (
-    <div className="py-4">
+    <div data-testid="dashboard-sense-cloud-folder-list" className="py-4">
       <div className="space-y-2">
         {isLoading && <p>Loading folders...</p>}
 

@@ -1,7 +1,7 @@
 import CloudStorage from "./_components/smart-storage";
 
 const StoragePage = async () => (
-  <div className="space-y-6">
+  <div data-testid="dashboard-sense-cloud-page" className="space-y-6">
     <CloudStorage />
   </div>
 );

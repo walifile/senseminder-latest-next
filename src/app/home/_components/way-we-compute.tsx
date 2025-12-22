@@ -15,7 +15,10 @@ import { ArrowUpRight } from "lucide-react";
 const WayWeCompute = () => {
   const router = useRouter();
   return (
-  <div className="container relative my-12 md:my-20">
+  <div
+    data-testid="home-way-we-compute"
+    className="container relative my-12 md:my-20"
+  >
     <div className="z-0 hidden dark:block absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 size-1/2 blur-[300px] bg-[#6A00FF]" />
 
     <motion.div

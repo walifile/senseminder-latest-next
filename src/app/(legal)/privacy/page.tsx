@@ -49,7 +49,6 @@ const Privacy = () => {
             { label: "Home", href: "/" },
             { label: "Privacy Policy" },
           ]}
-          className="mt-0 mb-6 text-sm text-muted-foreground dark:text-muted-foreground [&_a]:text-muted-foreground [&_a]:hover:text-foreground [&_a]:transition-colors [&_span]:text-foreground"
         />
 
         <div className="flex flex-col md:flex-row gap-10 md:items-stretch">

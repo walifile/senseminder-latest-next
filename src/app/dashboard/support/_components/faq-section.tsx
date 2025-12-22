@@ -61,7 +61,10 @@ export default function FAQSection() {
 
   return (
     <>
-      <div className="p-[30px] pt-0 space-y-5 border-b border-black/10 dark:border-border">
+      <div
+        data-testid="dashboard-support-faq-header"
+        className="p-[30px] pt-0 space-y-5 border-b border-black/10 dark:border-border"
+      >
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <div className="justify-start text-black dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8">
@@ -120,7 +123,10 @@ export default function FAQSection() {
         </div>
       </div>
 
-      <div className="p-[30px] space-y-6 overflow-auto">
+      <div
+        data-testid="dashboard-support-faq-content"
+        className="p-[30px] space-y-6 overflow-auto"
+      >
         {filtered.map((cat: Category, idx: number) => {
           const ids = getItemIds(cat);
           const openValues = openMap[cat.title] ?? [];

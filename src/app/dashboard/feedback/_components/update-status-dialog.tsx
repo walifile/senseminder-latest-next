@@ -78,7 +78,10 @@ const UpdateStatusDialog = ({ open, onClose, selectedFeedback }: Props) => {
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        data-testid="dashboard-feedback-update-status-dialog"
+        className="sm:max-w-[425px]"
+      >
         <DialogHeader>
           <DialogTitle>Update Feedback Status</DialogTitle>
           <DialogDescription>
@@ -87,7 +90,12 @@ const UpdateStatusDialog = ({ open, onClose, selectedFeedback }: Props) => {
           </DialogDescription>
         </DialogHeader>
 
-        <Form methods={methods} onSubmit={onSubmit} className="space-y-4">
+        <Form
+          data-testid="dashboard-feedback-update-status-form"
+          methods={methods}
+          onSubmit={onSubmit}
+          className="space-y-4"
+        >
           <Field.Select
             name="status"
             label="Status"

@@ -82,7 +82,10 @@ const FilePreviewDialog: React.FC<FilePreviewProps> = ({
 
   return (
     <Dialog open={!!file} onOpenChange={onClose}>
-      <DialogContent className="w-[90vw] max-w-5xl border-none bg-background/95 p-6 rounded-3xl shadow-2xl">
+      <DialogContent
+        data-testid="dashboard-sense-cloud-file-preview-dialog"
+        className="w-[90vw] max-w-5xl border-none bg-background/95 p-6 rounded-3xl shadow-2xl"
+      >
         <DialogHeader className="pb-4 border-b">
           <DialogTitle className="text-lg font-semibold text-foreground">
             File preview

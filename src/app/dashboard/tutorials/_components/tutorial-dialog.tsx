@@ -34,7 +34,10 @@ type TutorialDialogProps = {
 export const TutorialDialog = ({ tutorial }: TutorialDialogProps) => (
   <Dialog>
     <DialogTrigger asChild>
-      <div className="relative cursor-pointer group">
+      <div
+        data-testid={`dashboard-tutorial-trigger-${tutorial.id}`}
+        className="relative cursor-pointer group"
+      >
         <div
           className="relative h-[216px] overflow-hidden bg-center bg-cover"
           style={{
@@ -60,7 +63,10 @@ export const TutorialDialog = ({ tutorial }: TutorialDialogProps) => (
         </div>
       </div>
     </DialogTrigger>
-    <DialogContent className="max-w-4xl">
+    <DialogContent
+      data-testid={`dashboard-tutorial-dialog-${tutorial.id}`}
+      className="max-w-4xl"
+    >
       <DialogHeader>
         <DialogTitle>{tutorial.title}</DialogTitle>
         <DialogDescription>{tutorial.description}</DialogDescription>

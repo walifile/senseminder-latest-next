@@ -1,47 +1,40 @@
-"use client";
 
 import Link from "next/link";
+import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-interface Crumb {
-  label: string;
-  href?: string; // if no href → it becomes the active (grey) item
-}
+type BreadcrumbItem = { label: string; href?: string };
 
-interface BreadcrumbProps {
-  items: Crumb[];
-  className?: string;
-}
+type BreadcrumbProps = {
+  items: BreadcrumbItem[];
+  className?: string; // keep optional for future, but you won’t use it now
+};
+
+const DEFAULT_BREADCRUMB_CLASS =
+  "mt-0 mb-6 text-sm text-muted-foreground dark:text-muted-foreground " +
+  "[&_a]:text-muted-foreground [&_a]:hover:text-foreground [&_a]:transition-colors " +
+  "[&_span]:text-foreground";
 
 export function Breadcrumb({ items, className }: BreadcrumbProps) {
   return (
-    <section>
-      <div
-        className={cn(
-          "my-8 flex items-center space-x-2 text-base font-normal text-paragraph",
-          className
-        )}
-      >
-        {items.map((item, index) => (
-          <div key={index} className="flex items-center space-x-2">
-            {/* Link OR Active Label */}
-            {item.href ? (
-              <Link
-                href={item.href}
-                className="text-link-primary hover:text-primary/80"
-              >
-                {item.label}
-              </Link>
-            ) : (
-              <span className="text-black">{item.label}</span>
-            )}
+    <nav className={cn(DEFAULT_BREADCRUMB_CLASS, className)} aria-label="Breadcrumb">
+      <ol className="flex flex-wrap items-center gap-2">
+        {items.map((item, idx) => {
+          const isLast = idx === items.length - 1;
 
-            {/* Add separator except last */}
-            {index < items.length - 1 && <span className="text-black">-</span>}
-          </div>
-        ))}
-      </div>
-    </section>
+          return (
+            <li key={`${item.label}-${idx}`} className="flex items-center gap-2">
+              {item.href && !isLast ? (
+                <Link href={item.href}>{item.label}</Link>
+              ) : (
+                <span>{item.label}</span>
+              )}
+              {!isLast && <span className="text-muted-foreground">/</span>}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
   );
 }

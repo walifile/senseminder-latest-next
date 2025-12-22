@@ -93,7 +93,12 @@ const FeedbackForm = ({ onClose }: Props) => {
   }, [reset, onClose]);
 
   return (
-    <Form methods={methods} onSubmit={onSubmit} className="space-y-4">
+    <Form
+      data-testid="dashboard-feedback-form"
+      methods={methods}
+      onSubmit={onSubmit}
+      className="space-y-4"
+    >
       <Field.Select
         name="type"
         label="Feedback Type"

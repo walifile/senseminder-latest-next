@@ -25,7 +25,7 @@ import {
 import { AlertTriangle } from "lucide-react";
 
 const SettingsPage = () => (
-  <div className="space-y-6">
+  <div data-testid="dashboard-settings-page" className="space-y-6">
     <h1 className="text-2xl font-bold">Settings</h1>
 
     <Tabs defaultValue="general" className="w-full">

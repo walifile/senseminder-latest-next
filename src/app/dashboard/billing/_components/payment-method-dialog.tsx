@@ -253,6 +253,24 @@ export function PaymentMethodDialog() {
         }
       }
     } catch (error: unknown) {
+      console.error("Detach payment method error:", error);
+      // Check for HTTP 400 error
+      if (error && typeof error === 'object' && 'status' in error) {
+        const rtkError = error as { status: number; data?: { message?: string } };
+
+        if (rtkError.status === 400 && rtkError.data?.message) {
+          toast({
+            title: "Error",
+            description: rtkError.data.message,
+            variant: "destructive",
+            duration: 7000,
+          });
+          setDeletingId(null);
+          return;
+        }
+      }
+
+      // Default error handling
       const message =
         error instanceof Error
           ? error.message
@@ -275,11 +293,12 @@ export function PaymentMethodDialog() {
     <>
       <Button onClick={() => setOpen(true)} className="gap-2">
         <CreditCard className="h-4 w-4" />
-        Add Payment Method
+        Manage Payment Methods
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
+          data-testid="dashboard-billing-payment-method-dialog"
           className="
             p-0
             max-w-none sm:max-w-none
@@ -584,13 +603,16 @@ export function PaymentMethodDialog() {
           </div>
         </DialogContent>
       </Dialog>
-      <Dialog
+<Dialog
   open={confirmRemoveOpen}
   onOpenChange={(v) => {
     if (!v) closeRemoveConfirm();
   }}
 >
-  <DialogContent className="w-[min(92vw,420px)] p-0">
+  <DialogContent
+    data-testid="dashboard-billing-payment-method-remove-dialog"
+    className="w-[min(92vw,420px)] p-0"
+  >
     <div className="rounded-[16px] bg-white px-5 py-6 dark:bg-[#140947] sm:px-6">
       <DialogHeader className="space-y-1 text-left">
         <DialogTitle className="font-space-grotesk text-[18px] font-semibold leading-6 text-[#020816] dark:text-white">

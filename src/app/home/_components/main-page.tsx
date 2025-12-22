@@ -65,7 +65,12 @@ export default function HomePage() {
           <br />
         </h3>
 
-        <Button size="lg" className="w-full md:w-fit" onClick={onGetStarted}>
+        <Button
+          data-testid="home-get-started-button"
+          size="lg"
+          className="w-full md:w-fit"
+          onClick={onGetStarted}
+        >
           Switch to Sense PC
           <ArrowUpRight />
         </Button>

@@ -132,7 +132,10 @@ const CloudPCDetailsPage = () => {
 
   if (loading || !pc) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div
+        data-testid="dashboard-sense-pc-details-loading"
+        className="flex items-center justify-center h-screen"
+      >
         Loading...
       </div>
     );
@@ -152,7 +155,10 @@ const CloudPCDetailsPage = () => {
   // };
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
+    <div
+      data-testid="dashboard-sense-pc-details-page"
+      className="container mx-auto p-6 space-y-8"
+    >
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>

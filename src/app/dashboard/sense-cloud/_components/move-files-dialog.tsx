@@ -233,7 +233,10 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        data-testid="dashboard-sense-cloud-move-files-dialog"
+        className="sm:max-w-[425px]"
+      >
         <DialogHeader>
           <DialogTitle>Move {selectedFiles.length} file(s)</DialogTitle>
           <DialogDescription>

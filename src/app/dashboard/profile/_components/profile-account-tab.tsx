@@ -5,14 +5,8 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { DashboardCard } from "@/components/ui/dashboard/dashboard-card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Card,
-  CardTitle,
-  CardHeader,
-  CardContent,
-  CardDescription,
-} from "@/components/ui/card";
 
 import { Camera } from "lucide-react";
 
@@ -52,88 +46,121 @@ export const ProfileAccountTab = ({
     e.preventDefault();
   }
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Profile Information</CardTitle>
-        <CardDescription>Update your personal details</CardDescription>
-      </CardHeader>
+  const avatarSrc: string | null = null;
 
-      <CardContent className="space-y-6">
-        <div className="flex flex-col gap-6 md:flex-row md:items-center">
-          <div className="relative">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src="/avatar-placeholder.jpg" alt="User" />
-              <AvatarFallback className="text-xl">
+  const labelClass =
+    "text-[18px] font-semibold leading-[32px] tracking-[-0.3px] text-text-heading dark:text-white";
+
+  const fieldSurfaceClass =
+    "bg-select-pill-bg border border-select-pill-border rounded-[10px] px-5 py-4 h-auto";
+
+  return (
+    <div className="grid items-start gap-6 lg:grid-cols-[auto_1fr]">
+      {/* Left card: use default DashboardCard */}
+      <DashboardCard className="p-6">
+        <div className="flex items-start gap-4">
+          <div className="relative shrink-0">
+            <Avatar className="h-20 w-20">
+              {avatarSrc ? <AvatarImage src={avatarSrc} alt="" /> : null}
+              <AvatarFallback className="text-base">
                 {fallbackInitials}
               </AvatarFallback>
             </Avatar>
 
-            <Button
-              size="icon"
-              className="absolute bottom-0 right-0 h-8 w-8 rounded-full"
-            >
-              <Camera className="h-4 w-4" />
-            </Button>
+            {/* camera badge */}
+            <div className="absolute -bottom-1 left-[58%] rounded-[12px] bg-gradient-to-l from-brand-magenta to-link-primary p-[4.8px]">
+              <Camera className="h-[14px] w-[14px] text-white" />
+            </div>
           </div>
 
-          <div className="flex-1 space-y-2">
-            <h3 className="font-medium">Profile Picture</h3>
-            <p className="text-sm text-muted-foreground">
-              JPG, GIF or PNG. Max size 2MB.
-            </p>
+          <div className="flex min-w-0 flex-col gap-4">
+            <div className="space-y-1">
+              <p className="truncate text-[16px] font-semibold leading-[1.6] text-text-heading dark:text-white">
+                {fullName || "—"}
+              </p>
+              <p className="text-[12px] font-normal text-input-placeholder dark:text-muted-foreground">
+                JPG, GIF or PNG. Max size 2MB.
+              </p>
+            </div>
 
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline">
+            <div className="flex items-center gap-3">
+              <Button type="button" size="sm" disabled={loading || saving}>
                 Upload
               </Button>
-              <Button size="sm" variant="outline">
+
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={loading || saving}
+              >
                 Remove
               </Button>
             </div>
           </div>
         </div>
+      </DashboardCard>
 
-        <form onSubmit={prevent} className="grid gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="fullName">Full Name</Label>
+      {/* Right card: default DashboardCard + light override to dark bg */}
+      <DashboardCard className="p-6 bg-public-card-bg-dark dark:bg-public-card-bg-dark">
+        <form onSubmit={prevent} className="flex flex-col gap-5">
+          <div className="flex flex-col gap-2.5">
+            <Label htmlFor="fullName" className={labelClass}>
+              Full Name
+            </Label>
             <Input
               id="fullName"
               name="fullName"
               value={fullName}
-              placeholder="Full Name"
               onChange={(e) => setFullName(e.target.value)}
-              disabled={loading}
+              disabled={loading || saving}
               autoComplete="name"
+              className={fieldSurfaceClass}
+              placeholder="Full Name"
             />
           </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="country">Country</Label>
+          <div className="flex flex-col gap-2.5">
+            <Label htmlFor="email" className={labelClass}>
+              Email
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              value={profile?.email || ""}
+              disabled
+              className={`${fieldSurfaceClass} opacity-50`}
+            />
+          </div>
+
+          <div className="flex flex-col gap-2.5">
+            <Label htmlFor="country" className={labelClass}>
+              Country
+            </Label>
             <Input
               id="country"
               name="country"
               value={country}
               onChange={(e) => setCountry(e.target.value)}
+              disabled={loading || saving}
+              autoComplete="country-name"
+              className={fieldSurfaceClass}
               placeholder="Your Country"
-              disabled={loading}
             />
           </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" value={profile?.email || ""} disabled />
-            <p className="text-sm text-muted-foreground">
-              Email cannot be changed. Please contact support if you need to
-              update your email address.
-            </p>
-          </div>
+          <p className="text-[16px] leading-[24px] tracking-[-0.3px] text-input-placeholder dark:text-muted-foreground">
+            Email cannot be changed. Please contact support if you need to update
+            your email address.
+          </p>
 
-          <Button onClick={onSave} disabled={loading || saving} type="button">
-            {saving ? "Saving..." : "Save Changes"}
-          </Button>
+          <div>
+            <Button type="button" onClick={onSave} disabled={loading || saving}>
+              {saving ? "Saving..." : "Save changes"}
+            </Button>
+          </div>
         </form>
-      </CardContent>
-    </Card>
+      </DashboardCard>
+    </div>
   );
 };

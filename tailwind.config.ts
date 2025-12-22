@@ -75,7 +75,45 @@ export default {
         "public-card-bg-light": "#ffffff",
         "public-card-border-light": "rgba(37,48,240,0.2)",      
         "public-card-bg-dark": "rgba(255,255,255,0.03)",        
-        "public-card-border-dark": "rgba(113,69,185,0.6)",    
+        "public-card-border-dark": "rgba(113,69,185,0.6)",   
+        
+        
+
+        // tailwind.config.ts (inside theme.extend.colors)
+        "input-focus": "#5f4bf6",
+        "input-surface": "#F4F1FF",
+        "input-surface-dark": "#2A2067",
+        "input-placeholder": "#454545",
+        "input-placeholder-dark": "#B9C2D5",
+        "input-border-brand": "#2530F0",
+        "input-border-dark": "#ffffff1a",
+        "input-bg-dark": "#ffffff0f",
+
+
+        // Select tokens
+        "select-surface": "#F2EFFF",
+        "select-surface-dark": "#191748",
+        "select-focus-border": "#9370db",
+
+        "select-pill-border": "rgba(37,48,240,0.10)",
+        "select-pill-bg": "rgba(37,48,240,0.07)",
+        "select-pill-border-dark": "rgba(255,255,255,0.20)",
+        "select-pill-bg-dark": "rgba(255,255,255,0.04)",
+
+        "select-item-focus-bg": "#e1dcf8",
+        "select-item-focus-bg-dark": "#0d0b36",
+
+        // If you want exact icon/text colors (matching your current code)
+        "text-heading": "#020816",
+        "text-muted-dark": "#B9C2D5",
+        "brand-magenta": "#A801BA",
+        // Security tab tokens
+        "border-white-08": "rgba(255,255,255,0.08)",
+        "border-white-10": "rgba(255,255,255,0.10)",
+        "surface-white-50": "rgba(255,255,255,0.50)",
+        "surface-white-06": "rgba(255,255,255,0.06)",
+        "brand-blue-07": "rgba(37,48,240,0.07)",
+
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -138,6 +176,8 @@ export default {
           "radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.15) 0%, rgba(10, 10, 35, 0) 50%)",
         "feature-gradient":
           "linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)",
+        "input-glow": "linear-gradient(135deg,#8086F3,#4C55F8,#D971FF)",
+
       },
     },
   },

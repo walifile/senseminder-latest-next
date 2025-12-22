@@ -128,6 +128,24 @@ const QuickRecharge = () => {
       }
     } catch (error: unknown) {
       Logger.error("Failed to update auto-recharge:", error);
+
+      // Check for HTTP 400 error
+      if (error && typeof error === 'object' && 'status' in error) {
+        const rtkError = error as { status: number; data?: { message?: string } };
+
+        if (rtkError.status === 400 && rtkError.data?.message) {
+          toast({
+            title: "Error",
+            description: rtkError.data.message,
+            variant: "destructive",
+            duration: 7000,
+          });
+          setAutoRechargeEnabled(false);
+          return;
+        }
+      }
+
+      // Default error handling
       const message =
         error instanceof Error
           ? error.message
@@ -136,6 +154,7 @@ const QuickRecharge = () => {
         title: "Error updating auto-recharge",
         description: message,
       });
+      setAutoRechargeEnabled(false);
     }
   };
 
@@ -172,7 +191,10 @@ const QuickRecharge = () => {
 
   return (
     <>
-      <DashboardCard className="relative overflow-hidden p-0">
+      <DashboardCard
+        data-testid="dashboard-billing-quick-recharge"
+        className="relative overflow-hidden p-0"
+      >
         {/* Header */}
         <div className="px-6 pt-5">
           <div className="space-y-1">
@@ -323,7 +345,7 @@ const QuickRecharge = () => {
         open={showAutoRechargeConfig.value}
         onOpenChange={showAutoRechargeConfig.onToggle}
       >
-        <DialogContent>
+        <DialogContent data-testid="dashboard-billing-auto-recharge-dialog">
           <DialogHeader>
             <DialogTitle>Configure Auto-Recharge</DialogTitle>
             <DialogDescription>
@@ -371,7 +393,7 @@ const QuickRecharge = () => {
           if (!open) setShowDisableAutoRechargeConfirm(false);
         }}
       >
-        <DialogContent>
+        <DialogContent data-testid="dashboard-billing-auto-recharge-disable-dialog">
           <DialogHeader>
             <DialogTitle>Turn off auto-recharge?</DialogTitle>
             <DialogDescription>
@@ -404,7 +426,7 @@ const QuickRecharge = () => {
 
       {/* Recharge Confirmation Dialog */}
       <Dialog open={showConfirm.value} onOpenChange={showConfirm.onToggle}>
-        <DialogContent>
+        <DialogContent data-testid="dashboard-billing-recharge-confirm-dialog">
           <DialogHeader>
             <DialogTitle>Confirm Recharge</DialogTitle>
             <DialogDescription>

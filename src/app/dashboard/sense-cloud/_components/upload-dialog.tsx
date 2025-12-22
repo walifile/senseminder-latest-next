@@ -158,7 +158,10 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        data-testid="dashboard-sense-cloud-upload-dialog"
+        className="sm:max-w-[425px]"
+      >
         <DialogHeader>
           <DialogTitle>Upload Files</DialogTitle>
           <DialogDescription>

@@ -28,7 +28,10 @@ const benefitCards = [
 ];
 
 const FutureOfComputing = () => (
-  <div className="relative container my-12 md:my-30">
+  <div
+    data-testid="home-future-of-computing"
+    className="relative container my-12 md:my-30"
+  >
     <div className="z-0 absolute left-0 right-0 top-0 w-full h-3/4 opacity-10 dark:opacity-100 blur-[200px] bg-[radial-gradient(ellipse_100%_100%_at_50%_100%,#020816_45.67%,#63189D_79.33%,#2530F0_100%)]" />
 
     <div className="relative space-y-6 md:space-y-12">

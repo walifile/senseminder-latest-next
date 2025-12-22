@@ -116,7 +116,10 @@ const TutorialsPage = () => {
   ];
 
   return (
-    <div className="rounded-3xl border border-[#8086F3] bg-white dark:bg-[rgba(255,255,255,0.03)] backdrop-blur-[32px] ">
+    <div
+      data-testid="dashboard-tutorials-page"
+      className="rounded-3xl border border-[#8086F3] bg-white dark:bg-[rgba(255,255,255,0.03)] backdrop-blur-[32px] "
+    >
       {/* Filters */}
       <div className="px-7 py-8">
         <div className="pb-5">

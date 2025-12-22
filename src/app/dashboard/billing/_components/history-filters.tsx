@@ -27,7 +27,10 @@ const HistoryFilters = ({
   onRefresh,
   isRefreshing = false,
 }: Props) => (
-    <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
+  <div
+    data-testid="dashboard-billing-history-filters"
+    className="flex flex-col gap-4 lg:flex-row lg:items-end"
+  >
       {/* ✅ Search first (long) */}
       {showSearch ? (
         <DashboardSearch

@@ -21,7 +21,10 @@ const RecentActivityPanel = ({
   recentActivity,
   formatTimeAgo,
 }: RecentActivityPanelProps) => (
-  <ScrollArea className="flex-1">
+  <ScrollArea
+    data-testid="dashboard-sense-cloud-recent-activity"
+    className="flex-1"
+  >
     <div className="p-4 space-y-4">
       {recentActivity.map((activity) => (
         <div

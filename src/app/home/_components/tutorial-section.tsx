@@ -117,7 +117,7 @@ const TutorialSection = () => {
   };
 
   return (
-    <section className="relative">
+    <section data-testid="home-tutorial-section" className="relative">
       <div className="hidden dark:md:block z-0 absolute -top-10 -right-20 w-[195px] h-[357px] opacity-40 bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)] blur-[100px]" />
       <div className="hidden dark:md:block z-0 absolute -bottom-10 left-32 w-[195px] h-[357px] opacity-40 bg-[#9C05BF] blur-[100px]" />
 
