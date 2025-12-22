@@ -2,7 +2,7 @@
 
 import type { RootState } from "@/redux/store";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRenameItemMutation } from "@/api/fileManagerAPI";
 
 import { Logger } from "@/lib/utils/logger";
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { useSelector } from "react-redux";
+
 import { useToast } from "@/hooks/use-toast";
 
 import type { FileItem } from "../types";

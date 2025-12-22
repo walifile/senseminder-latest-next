@@ -7,7 +7,7 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 
-import { X, Download, Loader2 } from "lucide-react";
+import { X, Loader2, Download } from "lucide-react";
 
 import type { FileItem } from "../types";
 

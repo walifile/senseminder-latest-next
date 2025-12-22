@@ -6,7 +6,7 @@ import { toast } from "@/components/ui/use-toast";
 import { TabsContent } from "@/components/ui/tabs";
 import { fCurrency } from "@/lib/utils/format-number";
 
-import { ArrowUpRight, ArrowDownLeft, Copy } from "lucide-react";
+import { Copy, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 
 import HistoryFilters from "./history-filters";
 import { useHistoryData } from "../hooks/use-history-data";

@@ -31,7 +31,7 @@ import {
 
 import { useSelector } from "react-redux";
 
-import { Copy, Download, Loader2 } from "lucide-react";
+import { Copy, Loader2, Download } from "lucide-react";
 
 // import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";

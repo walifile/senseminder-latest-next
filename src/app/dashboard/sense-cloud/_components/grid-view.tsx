@@ -22,15 +22,15 @@ import {
   Eye,
   Star,
   File,
+  Copy,
   Share2,
   Trash2,
+  Pencil,
   Download,
   Calendar,
   FolderIcon,
   GripVertical,
   MoreHorizontal,
-  Pencil,
-  Copy,
 } from "lucide-react";
 
 import FileTypeIcon from "./file-type-icon";

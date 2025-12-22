@@ -46,6 +46,15 @@ import {
   // CardDescription,
 } from "@/components/ui/card";
 import {
+  Pagination,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
   DropdownMenu,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -56,15 +65,6 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationEllipsis,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 
 import { useSelector } from "react-redux";
 
@@ -79,6 +79,7 @@ import {
   Trash2,
   Share2,
   Filter,
+  Pencil,
   Loader2,
   FileText,
   Download,
@@ -92,7 +93,6 @@ import {
   GripVertical,
   GraduationCap,
   MoreHorizontal,
-  Pencil,
 } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
@@ -105,6 +105,7 @@ import GridView from "./grid-view";
 import ShareDialog from "./share-dialog";
 import { recentActivity } from "../data";
 import UploadDialog from "./upload-dialog";
+import RenameDialog from "./rename-dialog";
 import FileTypeIcon from "./file-type-icon";
 import Duplicates from "./duplicate-cleanup";
 import { SidebarPanel } from "./storage-sidebar";
@@ -119,7 +120,6 @@ import StoragePlansDialog from "./storag-plans-dialog";
 import ConfirmDeleteDialog from "./confirm-delete-dialog";
 import RecentActivityPanel from "./recent-activity-panel";
 import ConfirmBulkDeleteDialog from "./confirm-bulk-delete-dialog";
-import RenameDialog from "./rename-dialog";
 import {
   formatDate,
   formatTimeAgo,

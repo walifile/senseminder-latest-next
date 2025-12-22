@@ -15,7 +15,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 
-import { Download as DownloadIcon, Loader2 } from "lucide-react";
+import { Loader2, Download as DownloadIcon } from "lucide-react";
 
 export default function Client({ shareId }: { shareId: string }) {
   const { data, isLoading, isError } = useGetShareInfoQuery({ shareId });
