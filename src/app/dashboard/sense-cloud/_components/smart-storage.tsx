@@ -56,6 +56,14 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 import { useSelector } from "react-redux";
 
@@ -80,9 +88,7 @@ import {
   FolderIcon,
   ListFilter,
   ArrowUpDown,
-  ChevronLeft,
   GripVertical,
-  ChevronRight,
   GraduationCap,
   MoreHorizontal,
   Pencil,
@@ -248,6 +254,10 @@ const CloudStorage = () => {
 
   const files = data?.files || [];
   const pagination = data?.pagination || {};
+  const pageNumbers = Array.from(
+    { length: pagination.pages || 0 },
+    (_, i) => i + 1
+  );
 
   const [triggerDownloadFile] = useLazyDownloadFileQuery();
   const [triggerFolderDownload] = useLazyDownloadFolderQuery();
@@ -1616,54 +1626,63 @@ const CloudStorage = () => {
                                       </DropdownMenuContent>
                                     </DropdownMenu>
 
-                                    <div className="flex items-center space-x-2">
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() =>
-                                          handlePageChange(page - 1)
-                                        }
-                                        disabled={!pagination?.hasPrevious}
-                                      >
-                                        <ChevronLeft className="h-4 w-4" />
-                                        Previous
-                                      </Button>
-
-                                      <div className="flex items-center space-x-1">
-                                        {Array.from(
-                                          { length: pagination.pages },
-                                          (_, i) => i + 1
-                                        ).map((pageNumber) => (
-                                          <Button
-                                            key={pageNumber}
-                                            variant={
-                                              pagination.page === pageNumber
-                                                ? "default"
-                                                : "outline"
+                                    <Pagination className="w-auto">
+                                      <PaginationContent>
+                                        <PaginationItem>
+                                          <PaginationPrevious
+                                            href="#"
+                                            onClick={(event) => {
+                                              event.preventDefault();
+                                              if (pagination?.hasPrevious) {
+                                                handlePageChange(page - 1);
+                                              }
+                                            }}
+                                            className={
+                                              pagination?.hasPrevious
+                                                ? ""
+                                                : "pointer-events-none opacity-50"
                                             }
-                                            size="sm"
-                                            onClick={() =>
-                                              handlePageChange(pageNumber)
-                                            }
-                                            className="w-8"
-                                          >
-                                            {pageNumber}
-                                          </Button>
+                                          />
+                                        </PaginationItem>
+                                        {pageNumbers.map((pageNumber) => (
+                                          <PaginationItem key={pageNumber}>
+                                            <PaginationLink
+                                              href="#"
+                                              isActive={
+                                                pagination.page === pageNumber
+                                              }
+                                              className={
+                                                pagination.page === pageNumber
+                                                  ? "bg-gradient-to-r from-[#3A29E7] to-[#A601BA] text-white border-0 hover:from-[#2C1FC5] hover:to-[#8C019D] hover:text-white rounded-full"
+                                                  : ""
+                                              }
+                                              onClick={(event) => {
+                                                event.preventDefault();
+                                                handlePageChange(pageNumber);
+                                              }}
+                                            >
+                                              {pageNumber}
+                                            </PaginationLink>
+                                          </PaginationItem>
                                         ))}
-                                      </div>
-
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() =>
-                                          handlePageChange(page + 1)
-                                        }
-                                        disabled={!pagination?.hasNext}
-                                      >
-                                        Next
-                                        <ChevronRight className="h-4 w-4 ml-1" />
-                                      </Button>
-                                    </div>
+                                        <PaginationItem>
+                                          <PaginationNext
+                                            href="#"
+                                            onClick={(event) => {
+                                              event.preventDefault();
+                                              if (pagination?.hasNext) {
+                                                handlePageChange(page + 1);
+                                              }
+                                            }}
+                                            className={
+                                              pagination?.hasNext
+                                                ? ""
+                                                : "pointer-events-none opacity-50"
+                                            }
+                                          />
+                                        </PaginationItem>
+                                      </PaginationContent>
+                                    </Pagination>
                                   </div>
                                 </div>
                               </div>
