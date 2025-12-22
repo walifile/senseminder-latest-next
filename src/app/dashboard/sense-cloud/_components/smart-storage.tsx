@@ -1651,11 +1651,6 @@ const CloudStorage = () => {
                                               isActive={
                                                 pagination.page === pageNumber
                                               }
-                                              className={
-                                                pagination.page === pageNumber
-                                                  ? "bg-gradient-to-r from-[#3A29E7] to-[#A601BA] text-white border-0 hover:from-[#2C1FC5] hover:to-[#8C019D] hover:text-white rounded-full"
-                                                  : ""
-                                              }
                                               onClick={(event) => {
                                                 event.preventDefault();
                                                 handlePageChange(pageNumber);

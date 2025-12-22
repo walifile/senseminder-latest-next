@@ -55,6 +55,10 @@ const PaginationLink = ({
         variant: isActive ? "outline" : "ghost",
         size,
       }),
+      isActive
+        ? "bg-gradient-to-r from-[#3A29E7] to-[#A601BA] text-white border-0 hover:from-[#2C1FC5] hover:to-[#8C019D] hover:text-white"
+        : "border border-[#3A29E7]/40 text-foreground hover:border-[#3A29E7]/70",
+      "rounded-full",
       className
     )}
     {...props}
