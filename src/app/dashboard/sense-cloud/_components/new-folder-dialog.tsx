@@ -6,6 +6,7 @@ import React, { useState, useEffect } from "react";
 import { useCreateFolderMutation } from "@/api/fileManagerAPI";
 
 import { Logger } from "@/lib/utils/logger";
+import { getErrorMessage } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -70,7 +71,10 @@ const NewFolderDialog: React.FC<NewFolderDialogProps> = ({
       Logger.error("Failed to create folder:", err);
       toast({
         title: "Error",
-        description: "Could not create the folder. Please try again.",
+        description: getErrorMessage(
+          err,
+          "Could not create the folder. Please try again."
+        ),
         variant: "destructive",
       });
     }

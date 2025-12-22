@@ -7,6 +7,7 @@ import {
 } from "@/api/fileManagerAPI";
 
 import { Logger } from "@/lib/utils/logger";
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -143,16 +144,12 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
       setSelectedFiles([]);
       closeDialog();
     } catch (error) {
-      const err = error as { data?: { message?: string }; message?: string };
-      let errorMessage = "Could not copy items. Please try again.";
-
-      if (err?.data?.message) errorMessage = err.data.message;
-      else if (err?.message) errorMessage = err.message;
-      else if (typeof err === "string") errorMessage = err;
-
       toast({
         title: "Copy Failed",
-        description: errorMessage,
+        description: getErrorMessage(
+          error,
+          "Could not copy items. Please try again."
+        ),
         variant: "destructive",
       });
     }

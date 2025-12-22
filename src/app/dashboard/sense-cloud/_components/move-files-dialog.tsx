@@ -9,6 +9,7 @@ import {
 } from "@/api/fileManagerAPI";
 
 import { Logger } from "@/lib/utils/logger";
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -169,18 +170,6 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
         originalError?: unknown;
       };
       Logger.error(" Move operation failed:", err);
-
-      // More detailed error handling
-      let errorMessage = "Could not move selected items. Please try again.";
-
-      if (err?.data?.message) {
-        errorMessage = err.data.message;
-      } else if (err?.message) {
-        errorMessage = err.message;
-      } else if (typeof err === "string") {
-        errorMessage = err;
-      }
-
       Logger.error(" Error details:", {
         status: err?.status,
         data: err?.data,
@@ -190,7 +179,10 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
 
       toast({
         title: "Move Failed",
-        description: errorMessage,
+        description: getErrorMessage(
+          error,
+          "Could not move selected items. Please try again."
+        ),
         variant: "destructive",
       });
     }
