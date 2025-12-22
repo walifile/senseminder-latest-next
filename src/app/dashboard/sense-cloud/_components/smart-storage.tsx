@@ -329,7 +329,11 @@ const CloudStorage = () => {
   const handleCategorySelection = (category: string) => {
     setSelectedCategory(category);
     handleCloseFolderback();
+    setFilters({ starred: false, shared: false, modified: "" });
+    setSearchQuery("");
+    setSelectedFiles([]);
     setPage(1);
+    setLimit(10);
   };
 
   const handleMoveSelected = (file: FileItem) => {
