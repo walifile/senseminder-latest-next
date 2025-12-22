@@ -1,4 +1,3 @@
-
 // src/components/ui/checkbox.tsx
 import * as React from "react";
 
@@ -17,11 +16,11 @@ const Checkbox = React.forwardRef<
     className={cn(
       "peer h-4 w-4 shrink-0 rounded-[3px]",
       "border border-[#9CA3AF] bg-transparent",
-      "dark:border-[#FFFFFF99] dark:bg-transparent",
+      "dark:border-[#2530F0]",
       "data-[state=checked]:bg-[#2530F0] data-[state=checked]:border-[#2530F0] data-[state=checked]:text-white",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2530F0] focus-visible:ring-offset-0",
       "disabled:cursor-not-allowed disabled:opacity-50",
-      className,
+      className
     )}
     {...props}
   >
