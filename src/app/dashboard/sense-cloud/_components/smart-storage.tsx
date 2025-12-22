@@ -85,6 +85,7 @@ import {
   ChevronRight,
   GraduationCap,
   MoreHorizontal,
+  Pencil,
 } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
@@ -110,6 +111,7 @@ import StoragePlansDialog from "./storag-plans-dialog";
 import ConfirmDeleteDialog from "./confirm-delete-dialog";
 import RecentActivityPanel from "./recent-activity-panel";
 import ConfirmBulkDeleteDialog from "./confirm-bulk-delete-dialog";
+import RenameDialog from "./rename-dialog";
 import {
   formatDate,
   formatTimeAgo,
@@ -177,6 +179,8 @@ const CloudStorage = () => {
   const [path, setPath] = useState<FileItem[]>([]);
 
   const [filePreview, setFilePreview] = useState<FileItem | null>(null);
+  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [fileToRename, setFileToRename] = useState<FileItem | null>(null);
 
   const debouncedQuery = useDebounce(searchQuery, 500);
 
@@ -319,6 +323,11 @@ const CloudStorage = () => {
   const handleMoveSelected = (file: FileItem) => {
     setSelectedFiles([file.id]);
     setMoveDialogOpen(true);
+  };
+
+  const handleRenameSelected = (file: FileItem) => {
+    setFileToRename(file);
+    setRenameDialogOpen(true);
   };
 
   const handleDownload = async (file: FileItem) => {
@@ -1464,6 +1473,16 @@ const CloudStorage = () => {
                                                         ? "Unstar"
                                                         : "Star"}
                                                     </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                      onClick={() =>
+                                                        handleRenameSelected(
+                                                          file
+                                                        )
+                                                      }
+                                                    >
+                                                      <Pencil className="h-4 w-4 mr-2" />
+                                                      Rename
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
                                                     {file.fileType !==
                                                       "folder" && (
@@ -1528,6 +1547,7 @@ const CloudStorage = () => {
                                     handleDownload={handleDownload}
                                     formatFileSize={formatFileSize}
                                     formatDate={formatDate}
+                                    handleRenameSelected={handleRenameSelected}
                                   />
                                 )}
 
@@ -1669,6 +1689,48 @@ const CloudStorage = () => {
         isDownloading={
           !!filePreview && downloadingFile === filePreview.fileName
         }
+      />
+
+      <RenameDialog
+        open={renameDialogOpen}
+        onOpenChange={(open) => {
+          setRenameDialogOpen(open);
+          if (!open) setFileToRename(null);
+        }}
+        file={fileToRename}
+        onRenamed={({ oldKey, newKey, newName }) => {
+          const oldRoot = oldKey.endsWith("/") ? oldKey : `${oldKey}/`;
+          const newRoot = newKey.endsWith("/") ? newKey : `${newKey}/`;
+
+          setPath((prev) =>
+            prev.map((entry) => {
+              if (entry.id === oldKey) {
+                return { ...entry, id: newKey, fileName: newName };
+              }
+              if (entry.id.startsWith(oldRoot)) {
+                const updatedId = `${newRoot}${entry.id.slice(oldRoot.length)}`;
+                const updatedName = updatedId.split("/").filter(Boolean).pop() || entry.fileName;
+                return { ...entry, id: updatedId, fileName: updatedName };
+              }
+              return entry;
+            })
+          );
+
+          setSelectedFolder((prev) => {
+            if (!prev) return prev;
+            if (prev.id === oldKey) {
+              return { ...prev, id: newKey, fileName: newName };
+            }
+            if (prev.id.startsWith(oldRoot)) {
+              const updatedId = `${newRoot}${prev.id.slice(oldRoot.length)}`;
+              const updatedName = updatedId.split("/").filter(Boolean).pop() || prev.fileName;
+              return { ...prev, id: updatedId, fileName: updatedName };
+            }
+            return prev;
+          });
+
+          refetch();
+        }}
       />
 
       {/* <ConfirmDeleteDialog

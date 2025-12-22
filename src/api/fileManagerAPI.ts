@@ -453,6 +453,21 @@ export const fileManagerAPI = createApi({
       }),
       invalidatesTags: ["Files", "Hierarchy"],
     }),
+    renameItem: builder.mutation({
+      query: ({ region, userId, key, fileName, folder, newName }) => ({
+        url: "rename",
+        method: "POST",
+        body: {
+          region,
+          userId,
+          key,
+          fileName,
+          folder,
+          newName,
+        },
+      }),
+      invalidatesTags: ["Files", "Hierarchy"],
+    }),
     listFiles: builder.query({
       query: ({
         userId,
@@ -750,6 +765,7 @@ export const {
   useCancelShareMutation,
   useCopyFilesMutation,
   useMoveFilesMutation,
+  useRenameItemMutation,
   useGetUsageQuery,
   useListHierarchyQuery,
   useLazyDownloadFolderQuery,
