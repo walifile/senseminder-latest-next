@@ -224,7 +224,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
                 and drop
               </p>
               <p className="text-xs text-[#454545] dark:text-[#B9C2D5]">
-                Any file type up to 10MB
+                Any file type
               </p>
             </div>
             <input
