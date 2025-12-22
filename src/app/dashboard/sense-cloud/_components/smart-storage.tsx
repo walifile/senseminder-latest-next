@@ -1404,7 +1404,9 @@ const CloudStorage = () => {
                                                   </DropdownMenuTrigger>
                                                   <DropdownMenuContent align="end">
                                                     {file.type !== "folder" && (
-                                                      <>
+                                                    <>
+                                                      {file.fileType !==
+                                                        "folder" && (
                                                         <DropdownMenuItem
                                                           onClick={() =>
                                                             setFilePreview(file)
@@ -1413,12 +1415,13 @@ const CloudStorage = () => {
                                                           <Eye className="h-4 w-4 mr-2" />
                                                           View
                                                         </DropdownMenuItem>
+                                                      )}
 
-                                                        <DropdownMenuItem
-                                                          disabled={
-                                                            downloadingFile ===
-                                                            file.fileName
-                                                          }
+                                                      <DropdownMenuItem
+                                                        disabled={
+                                                          downloadingFile ===
+                                                          file.fileName
+                                                        }
                                                           onClick={() => {
                                                             if (
                                                               file.fileType ===

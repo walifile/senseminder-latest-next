@@ -664,7 +664,7 @@ export const fileManagerAPI = createApi({
           ...(key && { key }),
         },
       }),
-      invalidatesTags: ["Files"],
+      invalidatesTags: ["Files", "Hierarchy"],
     }),
 
     deleteFiles: builder.mutation<
@@ -684,7 +684,7 @@ export const fileManagerAPI = createApi({
           fileNames,
         },
       }),
-      invalidatesTags: ["Files"],
+      invalidatesTags: ["Files", "Hierarchy"],
     }),
 
     // Deduplication
