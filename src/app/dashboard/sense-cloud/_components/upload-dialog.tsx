@@ -7,6 +7,7 @@ import { FEEDBACK_TRIGGERS } from "@/constants/app-constants";
 // import { Progress } from "@/components/ui/progress";
 import {
   useUploadFileMutation,
+  useUploadCompleteMutation,
   useUploadToPresignedUrlMutation,
 } from "@/api/fileManagerAPI";
 
@@ -58,6 +59,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   const [isDragging, setIsDragging] = useState(false);
 
   const [uploadFile] = useUploadFileMutation();
+  const [uploadComplete] = useUploadCompleteMutation();
   const [uploadToPresignedUrl] = useUploadToPresignedUrlMutation();
   const { user } = useSelector((state: RootState) => state.auth);
   const { triggerFeedback } = useFeedback();
@@ -108,11 +110,12 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
     const newStatus = { ...uploadStatus };
     selectedFiles.forEach((file) => (newStatus[file.name] = "loading"));
     setUploadStatus(newStatus);
+    let hadError = false;
 
     await Promise.all(
       selectedFiles.map(async (file) => {
         try {
-          const { uploadUrl } = await uploadFile({
+          const { uploadUrl, finalFileName, key } = await uploadFile({
             fileName: file.name,
             fileType: file.type,
             userId: user?.id,
@@ -124,18 +127,32 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
           }).unwrap();
 
           await uploadToPresignedUrl({ uploadUrl, file }).unwrap();
+          await uploadComplete({
+            fileName: finalFileName || file.name,
+            fileType: file.type,
+            userId: user?.id,
+            region: "virginia",
+            size: file.size.toString(),
+            status: "private",
+            starred: false,
+            folder: folderPath,
+            key,
+          }).unwrap();
           setUploadStatus((prev) => ({ ...prev, [file.name]: "success" }));
           void triggerFeedback({
             trigger: FEEDBACK_TRIGGERS.PC_ACTION,
             delayMinutes: 0,
           });
-          closeDialog();
         } catch (err) {
           Logger.error(err);
+          hadError = true;
           setUploadStatus((prev) => ({ ...prev, [file.name]: "error" }));
         }
       })
     );
+    if (!hadError) {
+      closeDialog();
+    }
   };
 
   const handleDrop = (event: React.DragEvent<HTMLLabelElement>) => {

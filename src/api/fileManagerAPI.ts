@@ -521,6 +521,34 @@ export const fileManagerAPI = createApi({
       }),
       invalidatesTags: ["Files"],
     }),
+    uploadComplete: builder.mutation({
+      query: ({
+        fileName,
+        fileType,
+        userId,
+        region,
+        size,
+        status,
+        starred,
+        folder,
+        key,
+      }) => ({
+        url: "upload-complete",
+        method: "POST",
+        body: {
+          fileName,
+          fileType,
+          userId,
+          region,
+          size,
+          status,
+          starred,
+          folder,
+          key,
+        },
+      }),
+      invalidatesTags: ["Files"],
+    }),
     downloadFolder: builder.query<
       { downloadUrl: string },
       {
@@ -704,6 +732,7 @@ export const {
   useListFilesQuery,
   useListRemoteDesktopQuery,
   useUploadFileMutation,
+  useUploadCompleteMutation,
   useUploadToPresignedUrlMutation,
   useLazyDownloadFileQuery,
   useDeleteFileMutation,

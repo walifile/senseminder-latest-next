@@ -451,6 +451,8 @@ def lambda_handler(event, context):
 
         if route_key == "POST /upload":
             return handle_upload(event)
+        elif route_key == "POST /upload-complete":
+            return handle_upload_complete(event)
         elif route_key == "GET /download":
             return handle_download(event)
         elif route_key == "GET /list":
@@ -562,12 +564,83 @@ def handle_upload(event):
     print(f"Generating pre-signed URL with Bucket: {bucket_name}, Key: {key}, ContentType: {file_type}")
     upload_url = s3.generate_presigned_url('put_object', Params=params, ExpiresIn=3600)
 
-    # Save metadata (size as string to avoid Decimal issues in responses)
+    return response(200, {
+        'uploadUrl': upload_url,
+        'finalFileName': final_file_name,
+        'key': key
+    })
+
+def handle_upload_complete(event):
+    body = json.loads(event['body']) if 'body' in event else event
+    region = body.get('region')
+    file_name = body.get('fileName')
+    user_id = body.get('userId')
+    status = 'private'
+    starred = False
+    key = (body.get('key') or '').strip()
+
+    if not region or not user_id:
+        return response(400, {'message': 'Region and userId are required.'})
+
+    if not key:
+        if not file_name:
+            return response(400, {'message': 'fileName or key is required.'})
+        folder = body.get('folder', '').strip().strip('/')
+        key = f"{user_id}/uploads/{folder}/{file_name}" if folder else f"{user_id}/uploads/{file_name}"
+    else:
+        # Derive folder + file name from key to avoid mismatched metadata
+        rel = key[len(f"{user_id}/uploads/"):]
+        if '/' in rel:
+            folder, file_name = rel.rsplit('/', 1)
+        else:
+            folder, file_name = '', rel
+
+    if not key.startswith(f"{user_id}/uploads/"):
+        return response(400, {'message': 'Invalid key.'})
+
+    bucket_response = bucket_table.get_item(Key={'region': region})
+    if 'Item' not in bucket_response:
+        return response(404, {'message': f'No bucket found for region: {region}'})
+    bucket_name = bucket_response['Item']['bucketName']
+
+    try:
+        head = s3.head_object(Bucket=bucket_name, Key=key)
+    except Exception as e:
+        print(f"Upload complete head_object failed for {key}: {e}")
+        return response(404, {'message': 'Uploaded object not found. Please retry upload.'})
+    file_size_bytes = int(head.get('ContentLength') or 0)
+    file_type = head.get('ContentType') or 'application/octet-stream'
+
+    existing = file_metadata_table.get_item(Key={'id': key}).get('Item')
+    if existing and not existing.get('isDeleted'):
+        return response(200, {
+            'message': 'Upload already completed.',
+            'finalFileName': existing.get('fileName', file_name)
+        })
+
+    # Re-check quota using actual object size
+    try:
+        current_bytes = _get_user_storage_bytes(user_id)
+    except Exception as e:
+        print(f"Failed to calculate usage for {user_id}: {e}")
+        return response(500, {'message': 'Unable to verify storage quota. Please try again later.'})
+
+    if current_bytes + file_size_bytes > MAX_STORAGE_BYTES:
+        try:
+            s3.delete_object(Bucket=bucket_name, Key=key)
+        except Exception as e:
+            print(f"Failed to delete over-quota upload {key}: {e}")
+        return response(403, {
+            'message': 'Storage limit exceeded. Delete files or upgrade your plan before uploading.',
+            'currentBytes': current_bytes,
+            'maxBytes': MAX_STORAGE_BYTES
+        })
+
     file_metadata_table.put_item(
         Item={
             'id': key,
             'bucket': bucket_name,
-            'fileName': final_file_name,
+            'fileName': file_name or key.split('/')[-1],
             'fileType': file_type,
             'region': region,
             'userId': user_id,
@@ -581,14 +654,13 @@ def handle_upload(event):
         }
     )
 
-    # Update usage (numeric bytes)
     try:
         _update_usage_bytes(user_id, file_size_bytes)
     except Exception as e:
-        print(f"Usage update failed on upload: {e}")
+        print(f"Usage update failed on upload complete: {e}")
 
     print(f"Metadata saved to DynamoDB: {key}")
-    return response(200, {'uploadUrl': upload_url, 'finalFileName': final_file_name})
+    return response(200, {'message': 'Upload completed', 'finalFileName': file_name})
 
 def handle_download(event):
     query = event.get('queryStringParameters', {}) or {}
@@ -634,7 +706,7 @@ def handle_list(event):
         filter_type = query_params.get('type')
         folder = query_params.get('folder')
         sort_by = query_params.get('sortBy', 'date')
-        sort_order = query_params.get('sortOrder', 'asc')
+        sort_order = query_params.get('sortOrder', 'desc')
         search_term = query_params.get('search')
         recursive = query_params.get('recursive', 'false').lower() == 'true'
         page = int(query_params.get('page', 1))
