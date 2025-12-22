@@ -62,6 +62,7 @@ import {
   PaginationItem,
   PaginationLink,
   PaginationNext,
+  PaginationEllipsis,
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
@@ -254,9 +255,39 @@ const CloudStorage = () => {
 
   const files = data?.files || [];
   const pagination = data?.pagination || {};
-  const pageNumbers = Array.from(
-    { length: pagination.pages || 0 },
-    (_, i) => i + 1
+  const buildPaginationItems = (current: number, total: number) => {
+    if (!total || total <= 1) return total === 1 ? [1] : [];
+    if (total <= 5) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    const items: Array<number | "ellipsis"> = [];
+    const showLeftEllipsis = current > 3;
+    const showRightEllipsis = current < total - 2;
+
+    items.push(1);
+
+    if (showLeftEllipsis) {
+      items.push("ellipsis");
+    }
+
+    const start = Math.max(2, current - 1);
+    const end = Math.min(total - 1, current + 1);
+    for (let i = start; i <= end; i += 1) {
+      items.push(i);
+    }
+
+    if (showRightEllipsis) {
+      items.push("ellipsis");
+    }
+
+    items.push(total);
+    return items;
+  };
+
+  const paginationItems = buildPaginationItems(
+    pagination.page || page,
+    pagination.pages || 0
   );
 
   const [triggerDownloadFile] = useLazyDownloadFileQuery();
@@ -1650,22 +1681,34 @@ const CloudStorage = () => {
                                             }
                                           />
                                         </PaginationItem>
-                                        {pageNumbers.map((pageNumber) => (
-                                          <PaginationItem key={pageNumber}>
-                                            <PaginationLink
-                                              href="#"
-                                              isActive={
-                                                pagination.page === pageNumber
-                                              }
-                                              onClick={(event) => {
-                                                event.preventDefault();
-                                                handlePageChange(pageNumber);
-                                              }}
-                                            >
-                                              {pageNumber}
-                                            </PaginationLink>
-                                          </PaginationItem>
-                                        ))}
+                                        {paginationItems.map((item, index) => {
+                                          if (item === "ellipsis") {
+                                            return (
+                                              <PaginationItem
+                                                key={`ellipsis-${index}`}
+                                              >
+                                                <PaginationEllipsis />
+                                              </PaginationItem>
+                                            );
+                                          }
+
+                                          return (
+                                            <PaginationItem key={item}>
+                                              <PaginationLink
+                                                href="#"
+                                                isActive={
+                                                  pagination.page === item
+                                                }
+                                                onClick={(event) => {
+                                                  event.preventDefault();
+                                                  handlePageChange(item);
+                                                }}
+                                              >
+                                                {item}
+                                              </PaginationLink>
+                                            </PaginationItem>
+                                          );
+                                        })}
                                         <PaginationItem>
                                           <PaginationNext
                                             href="#"
