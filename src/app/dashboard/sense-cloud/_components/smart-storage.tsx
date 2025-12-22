@@ -1622,7 +1622,7 @@ const CloudStorage = () => {
                                             handlePageChange(1);
                                           }}
                                         >
-                                          {[1, 5, 10, 25].map((value) => (
+                                          {[5, 10, 25].map((value) => (
                                             <DropdownMenuRadioItem
                                               key={value}
                                               value={String(value)}
