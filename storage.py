@@ -1871,6 +1871,10 @@ def handle_move_or_copy(event, operation):
         source_key = f"{user_id}/uploads/{source_name}".rstrip('/')
 
         src_meta = file_metadata_table.get_item(Key={'id': source_key}).get('Item')
+        if not src_meta:
+            # Folder markers are stored with trailing '/', so try that if not found
+            source_key = f"{source_key}/"
+            src_meta = file_metadata_table.get_item(Key={'id': source_key}).get('Item')
         if not src_meta or src_meta.get('isDeleted'):
             print(f"[move/copy] Skip missing/deleted: {source_key}")
             continue

@@ -1665,6 +1665,9 @@ const CloudStorage = () => {
         file={filePreview}
         onClose={() => setFilePreview(null)}
         handleDownload={handleDownload}
+        isDownloading={
+          !!filePreview && downloadingFile === filePreview.fileName
+        }
       />
 
       {/* <ConfirmDeleteDialog

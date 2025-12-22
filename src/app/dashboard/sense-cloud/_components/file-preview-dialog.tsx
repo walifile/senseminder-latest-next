@@ -7,7 +7,7 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 
-import { X, Download } from "lucide-react";
+import { X, Download, Loader2 } from "lucide-react";
 
 import type { FileItem } from "../types";
 
@@ -15,12 +15,14 @@ interface FilePreviewProps {
   file: FileItem | null;
   onClose: () => void;
   handleDownload: (file: FileItem) => void;
+  isDownloading?: boolean;
 }
 
 const FilePreviewDialog: React.FC<FilePreviewProps> = ({
   file,
   onClose,
   handleDownload,
+  isDownloading = false,
 }) => {
   if (!file?.previewUrl) return null;
 
@@ -112,9 +114,22 @@ const FilePreviewDialog: React.FC<FilePreviewProps> = ({
               <X className="h-4 w-4" />
               Close
             </Button>
-            <Button onClick={() => handleDownload(file)} className="gap-2">
-              <Download className="h-4 w-4" />
-              Download
+            <Button
+              onClick={() => handleDownload(file)}
+              className="gap-2"
+              disabled={isDownloading}
+            >
+              {isDownloading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Downloading...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4" />
+                  Download
+                </>
+              )}
             </Button>
           </div>
         </DialogFooter>
