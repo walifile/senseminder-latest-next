@@ -98,8 +98,11 @@ export function OtpVerificationDialog({
       if (response.success) {
         toast({
           title: "Success",
-          description:
-            "Your email has been verified successfully. You can now sign in.",
+          description: (
+            <span data-testid="signup-verify-otp-success-message">
+              Your email has been verified successfully. You can now sign in.
+            </span>
+          ),
         });
 
         sessionStorage.removeItem("verificationEmail");

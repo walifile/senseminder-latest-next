@@ -168,7 +168,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        data-testid="dashboard-sense-cloud-share-dialog"
+        data-testid="storage-share-modal"
         className="sm:max-w-[640px]"
       >
         <DialogHeader>
@@ -332,10 +332,18 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            data-testid="storage-share-close-button"
+          >
             Cancel
           </Button>
-          <Button disabled={isLoading} onClick={handleShare}>
+          <Button
+            disabled={isLoading}
+            onClick={handleShare}
+            data-testid="storage-share-confirm-button"
+          >
             {isLoading ? (
               "Sharing..."
             ) : (

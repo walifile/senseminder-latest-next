@@ -40,6 +40,7 @@ const ConfirmBulkDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
           variant="destructive"
           onClick={onDeleteSelected}
           disabled={isLoading}
+          data-testid="storage-bulk-delete-confirm"
         >
           {isLoading ? "Deleting..." : "Confirm Delete"}
         </Button>

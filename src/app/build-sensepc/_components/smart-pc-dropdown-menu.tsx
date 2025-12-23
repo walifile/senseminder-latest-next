@@ -117,7 +117,7 @@ const SmartPcDropdownMenu = ({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" data-testid="sensepc-more-button">
             <MoreVertical className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -180,6 +180,7 @@ const SmartPcDropdownMenu = ({
                       ? "opacity-50 cursor-default select-none"
                       : ""
                   }
+                  data-testid="sensepc-resize-button"
                 >
                   <Shield className="h-4 w-4 mr-2" />
                   PC Resize
@@ -227,6 +228,7 @@ const SmartPcDropdownMenu = ({
                 setSelectedInstance(pc);
                 handleAssignUser();
               }}
+              data-testid="sensepc-assign-user-button"
             >
               <Plus className="h-4 w-4 mr-2" />
               Assign User
@@ -244,6 +246,7 @@ const SmartPcDropdownMenu = ({
                 setSelectedInstance(pc);
                 handleDelete();
               }}
+              data-testid="sensepc-delete-button"
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete

@@ -242,7 +242,10 @@ const GridView = ({
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div className="w-full">
-                          <DropdownMenuItem onClick={() => handleShare(file)}>
+                          <DropdownMenuItem
+                            onClick={() => handleShare(file)}
+                            data-testid="storage-share-button"
+                          >
                             <Share2 className="h-4 w-4 mr-2" />
                             Share
                           </DropdownMenuItem>
@@ -293,6 +296,7 @@ const GridView = ({
                       setSelectedFilesToDelete([file.fileName]);
                       setDeleteDialogOpen(true);
                     }}
+                    data-testid="storage-delete-selected-button"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
                     Delete

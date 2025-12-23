@@ -245,7 +245,7 @@ const SmartPCConfigDialog = ({
       });
 
       toast({
-        title: "Resize submitted",
+        title: <span data-testid="sensepc-resize-submitted-toast">Resize submitted</span>,
         description: `${selectedInstance?.systemName} is updating its CPU & Memory. It does not take more than 60 seconds.`,
       });
 
@@ -385,6 +385,7 @@ const SmartPCConfigDialog = ({
                   onClick={handleEstimate}
                   disabled={disableAction}
                   variant="secondary"
+                  data-testid="sensepc-estimate-button"
                 >
                   {isEstimating ? "Estimating..." : "Estimate"}
                 </Button>
@@ -400,6 +401,7 @@ const SmartPCConfigDialog = ({
                     (isStorageOnly && !pcIsRunning) // Storage: must be hourly AND running
                   }
                   onClick={handleResizeSubmit}
+                  data-testid="sensepc-confirm-resize-button"
                 >
                   {isStorageOnly
                     ? isNoStorageChange
@@ -417,6 +419,7 @@ const SmartPCConfigDialog = ({
                     if (!valid) return;
                     showConfirmation.onTrue();
                   }}
+                  data-testid="sensepc-build-pc-button"
                 >
                   Build PC
                 </Button>

@@ -1130,6 +1130,7 @@ const CloudStorage = () => {
                           size="sm"
                           variant="ghost"
                           className="text-base [&_svg]:size-5 gap-2"
+                          data-testid="storage-top-right-menu"
                         >
                           <MoreHorizontal className="h-5 w-5" />
                         </Button>
@@ -1147,6 +1148,7 @@ const CloudStorage = () => {
                                       ? "cursor-not-allowed opacity-50 pointer-events-none w-full gap-2"
                                       : "w-full gap-2"
                                   }
+                                  data-testid="storage-share-button"
                                   // className={"w-full"}
                                 >
                                   <Share2 className="h-4 w-4" />
@@ -1190,9 +1192,12 @@ const CloudStorage = () => {
                               setBulkDeleteDialogOpen(true);
                             }
                           }}
+                          data-testid="storage-bulk-delete-button"
                         >
                           <Trash2 className="h-4 w-4" />
-                          Delete Selected
+                          <span data-testid="storage-delete-selected-button">
+                            Delete Selected
+                          </span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -1308,6 +1313,7 @@ const CloudStorage = () => {
                                                   ? "bg-muted ring-2 ring-primary"
                                                   : ""
                                               }`}
+                                              data-testid="storage-file-list"
                                               draggable
                                               onDragStart={(e) =>
                                                 handleItemDragStart(e, file.id)
@@ -1501,6 +1507,7 @@ const CloudStorage = () => {
                                                                   file
                                                                 )
                                                               }
+                                                              data-testid="storage-share-button"
                                                             >
                                                               <Share2 className="h-4 w-4 mr-2" />
                                                               Share
@@ -1587,6 +1594,7 @@ const CloudStorage = () => {
                                                           true
                                                         );
                                                       }}
+                                                      data-testid="storage-delete-selected-button"
                                                     >
                                                       <Trash2 className="h-4 w-4 mr-2" />
                                                       Delete

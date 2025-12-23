@@ -28,7 +28,7 @@ const SmartPCEmptyState: React.FC<SmartPCEmptyStateProps> = ({
     </p>
     <div className="flex gap-4">
       {!isMember && (
-        <Button onClick={handleShowNewPCDialog}>
+        <Button onClick={handleShowNewPCDialog} data-testid="sensepc-build-button">
           <Plus className="h-4 w-4 mr-2" />
           Build Sense PC
         </Button>

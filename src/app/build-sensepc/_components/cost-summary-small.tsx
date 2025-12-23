@@ -141,6 +141,7 @@ const CostSummarySmall = ({
                   "text-[16px] leading-[24px] tracking-[-0.3px]",
                   "text-[#020816] dark:text-white text-right"
                 )}
+                data-testid="sensepc-cpu-price"
               >
                 {cpuRightValue}
               </span>
@@ -163,6 +164,7 @@ const CostSummarySmall = ({
                   "text-[16px] leading-[24px] tracking-[-0.3px]",
                   "text-[#020816] dark:text-white text-right"
                 )}
+                data-testid="sensepc-storage-price"
               >
                 {storageRightValue}
               </span>
@@ -190,6 +192,7 @@ const CostSummarySmall = ({
                     "text-[16px] leading-[24px] tracking-[-0.3px]",
                     "text-[#020816] dark:text-white text-right"
                   )}
+                  data-testid="sensepc-total-price"
                 >
                   {totalRightValue}
                 </span>

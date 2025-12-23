@@ -289,7 +289,7 @@ const CloudPCPage = () => {
               {/* --- LIST VIEW --- */}
               {viewMode === "list" ? (
  
-                <div className="space-y-3 min-w-0">
+                <div className="space-y-3 min-w-0" data-testid="sensepc-pc-list">
                   {(filteredPCs as PC[]).map((pc, index) => {
                     const pcInfo = realtimePcInfo[pc.systemName];
                     const isStarting = isStartingInstance(
@@ -313,6 +313,7 @@ const CloudPCPage = () => {
                             "md:flex-row md:items-center md:justify-between md:gap-6"
                           )}
                           onClick={() => handlePCSelection(index)}
+                          data-testid="sensepc-pc-card"
                         >
                           {/* LEFT + MIDDLE */}
                           <div className="flex min-w-0 flex-1 flex-col gap-3 md:flex-row md:items-center md:gap-6">
@@ -339,9 +340,22 @@ const CloudPCPage = () => {
                                     "inline-flex items-center gap-[6px] rounded-full px-4 py-[6px] text-[11px] leading-5 tracking-[-0.2px] uppercase",
                                     getStatusClasses(pc.state, isStarting)
                                   )}
+                                  data-testid={
+                                    statusText === "Running"
+                                      ? "sensepc-running-status"
+                                      : statusText === "CONNECTED"
+                                      ? "sensepc-connected-status"
+                                      : statusText === "DISCONNECTED"
+                                      ? "sensepc-disconnected-status"
+                                      : statusText === "Stopped"
+                                      ? "sensepc-stopped-status"
+                                      : undefined
+                                  }
                                 >
                                   {getStatusIcon(pc.state)}
-                                  <span>{statusText}</span>
+                                  <span data-testid="sensepc-status">
+                                    {statusText}
+                                  </span>
                                 </div>
                               </div>
                             </div>
@@ -478,7 +492,10 @@ const CloudPCPage = () => {
 
               ) : (
                 /* --- GRID VIEW --- */
-                <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div
+                  className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+                  data-testid="sensepc-pc-list"
+                >
                   {(filteredPCs as PC[]).map((pc, index) => {
                     const pcInfo = realtimePcInfo[pc.systemName];
                     const isStarting = isStartingInstance(
@@ -500,6 +517,7 @@ const CloudPCPage = () => {
                             "relative flex w-full min-w-0 flex-col gap-[18px] px-4 py-6"
                           )}
                           onClick={() => handlePCSelection(index)}
+                          data-testid="sensepc-pc-card"
                         >
                           {/* header */}
                           <div className="flex items-start justify-between">
@@ -528,9 +546,22 @@ const CloudPCPage = () => {
                                       "inline-flex items-center gap-[6px] rounded-full px-4 py-[6px] text-[11px] leading-5 tracking-[-0.2px] uppercase",
                                       getStatusClasses(pc.state, isStarting)
                                     )}
+                                    data-testid={
+                                      statusText === "Running"
+                                        ? "sensepc-running-status"
+                                        : statusText === "CONNECTED"
+                                        ? "sensepc-connected-status"
+                                        : statusText === "DISCONNECTED"
+                                        ? "sensepc-disconnected-status"
+                                        : statusText === "Stopped"
+                                        ? "sensepc-stopped-status"
+                                        : undefined
+                                    }
                                   >
                                     {getStatusIcon(pc.state)}
-                                    <span>{statusText}</span>
+                                    <span data-testid="sensepc-status">
+                                      {statusText}
+                                    </span>
                                   </div>
                                 </div>
                               </div>

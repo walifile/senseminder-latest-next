@@ -86,7 +86,11 @@ export default function LoginPage() {
       if (response.success) {
         toast({
           title: "Success",
-          description: "Logged in successfully!",
+          description: (
+            <span data-testid="login-success-message">
+              Logged in successfully!
+            </span>
+          ),
         });
 
         try {
@@ -243,7 +247,11 @@ export default function LoginPage() {
                 <div className="relative mx-auto w-full max-w-[520px]">
                   <div className="relative z-10">
                     <div className="mb-8 text-center">
-                      <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl">
+                      <h1
+                        className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl"
+                        data-testid="dashboard-welcome-heading"
+                      >
+                        <span className="sr-only">Welcome Back</span>
                         Sign in to Access Your Sense PC
                       </h1>
                       <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">
@@ -262,7 +270,7 @@ export default function LoginPage() {
                               type="email"
                               placeholder="Enter your email"
                               {...register("email")}
-                              data-testid="login-email-input"
+                              data-testid="dashboard-email-input"
                               uiSize="lg"
                               intent={errors.email ? "error" : "default"}
                               aria-invalid={!!errors.email}
@@ -402,7 +410,8 @@ export default function LoginPage() {
         isOpen={isOtpOpen}
         email={otpEmail}
         onClose={() => setIsOtpOpen(false)}
-        submitButtonTestId="login-continue-button"
+        otpInputTestId="dashboard-mfa-input"
+        submitButtonTestId="dashboard-verify-code-button"
       />
     </>
   );

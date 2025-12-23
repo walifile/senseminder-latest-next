@@ -85,6 +85,7 @@ const SmartPcStopButton = ({ pc, isMember, isPCAssigned }: Props) => {
         variant="outline"
         onClick={handleDialogOpen}
         className="h-8"
+        data-testid="sensepc-stop-button"
         disabled={
           isStopping ||
           isBusy(pc.state) ||

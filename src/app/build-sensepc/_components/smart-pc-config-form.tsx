@@ -228,6 +228,7 @@ const SmartPcConfigForm = ({
                   {...field}
                   disabled={isLocked("pcName")}
                   data-cancel-drag
+                  data-testid="sensepc-computer-name-input"
                 />
 
                 )}
@@ -309,6 +310,7 @@ const SmartPcConfigForm = ({
 
                   placeholder="Select CPU size"
                   options={cpuOptionsForOS}
+                  triggerTestId="sensepc-cpu-config-select"
                   disabled={
                     loadingExisting ||
                     (isResize && isStorageOnly) ||
@@ -343,6 +345,7 @@ const SmartPcConfigForm = ({
 
                 placeholder="Select storage size"
                 options={storageOptions}
+                triggerTestId="sensepc-memory-config-select"
                 disabled={isLocked("storage")}
               />
             </div>

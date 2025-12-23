@@ -95,8 +95,11 @@ export default function SignUpPage() {
 
         toast({
           title: "Success",
-          description:
-            "Account created successfully! Please verify your email.",
+          description: (
+            <span data-testid="signup-success-message">
+              Account created successfully! Please verify your email.
+            </span>
+          ),
         });
 
         sessionStorage.setItem("verificationEmail", email);

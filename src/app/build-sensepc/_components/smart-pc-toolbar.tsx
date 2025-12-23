@@ -40,6 +40,7 @@ const SmartPcToolbar = ({
         <Button
           onClick={handleShowNewPCDialog}
           className="hidden sm:inline-flex rounded-full px-7 py-4 bg-gradient-to-l from-[#a801ba] to-[#2530f0] text-[16px] font-medium leading-6 text-white hover:opacity-95"
+          data-testid="sensepc-build-button"
         >
           <Plus className="mr-2 h-4 w-4" />
           Build Sense PC

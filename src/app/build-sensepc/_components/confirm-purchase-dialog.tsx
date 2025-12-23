@@ -139,7 +139,10 @@ const ConfirmPurchaseDialog = ({
             You are about to be charged upfront for this Computer based on your
             selected plan.
             <br />
-            <span className="mt-2 inline-block text-sm font-semibold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded-md">
+            <span
+              className="mt-2 inline-block text-sm font-semibold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded-md"
+              data-testid="sensepc-estimated-total"
+            >
               Estimated total: {getFormattedTotalPrice()}
             </span>
           </DialogDescription>
@@ -152,6 +155,7 @@ const ConfirmPurchaseDialog = ({
             checked={acceptConfirmed}
             onChange={(e) => setAcceptConfirmed(e.target.checked)}
             className="mt-1 h-4 w-4 border rounded"
+            data-testid="sensepc-acknowledge-checkbox"
           />
           <label
             htmlFor="purchase-confirm-check"
@@ -169,6 +173,7 @@ const ConfirmPurchaseDialog = ({
             type="button"
             disabled={isCreating || !acceptConfirmed}
             onClick={onSubmit}
+            data-testid="sensepc-confirm-pay-button"
           >
             {isCreating ? "Processing..." : "Confirm & Pay"}
           </Button>

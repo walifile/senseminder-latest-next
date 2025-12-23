@@ -75,7 +75,7 @@ export const ConfirmDeleteModal = ({
       }
       await deleteVM({ instanceId, region }).unwrap();
       toast({
-        title: "Computer Deleted",
+        title: <span data-testid="sensepc-delete-success-message">Computer Deleted</span>,
         description: `Computer "${systemName}" has been deleted successfully.`,
       });
       dispatch(removeStartingInstance(instanceId));
@@ -151,6 +151,7 @@ export const ConfirmDeleteModal = ({
                   checked={isChecked}
                   onChange={(e) => setIsChecked(e.target.checked)}
                   className="mt-1 h-4 w-4 border rounded"
+                  data-testid="sensepc-delete-confirm-checkbox"
                 />
                 <label
                   htmlFor="delete-confirm"
@@ -174,6 +175,7 @@ export const ConfirmDeleteModal = ({
               onClick={handleConfirmDelete}
               disabled={!isChecked || loading}
               className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white rounded-md px-5 py-2 text-sm font-medium flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              data-testid="sensepc-delete-confirm-button"
             >
               {loading ? (
                 <>

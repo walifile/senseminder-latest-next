@@ -64,6 +64,7 @@ const OTPDialog = ({
             value={otp}
             onChange={handleChange}
             disabled={isLoading}
+            data-testid="dashboard-mfa-input"
           >
             <InputOTPGroup>
               <InputOTPSlot index={0} />
@@ -81,6 +82,7 @@ const OTPDialog = ({
             onClick={handleSubmit}
             disabled={isLoading || otp.length !== 6}
             className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white dark:from-[#0EA5E9] dark:to-[#6366F1] dark:hover:from-[#0284C7] dark:hover:to-[#4F46E5] disabled:opacity-60"
+            data-testid="dashboard-verify-code-button"
           >
             {isLoading ? (
               <>

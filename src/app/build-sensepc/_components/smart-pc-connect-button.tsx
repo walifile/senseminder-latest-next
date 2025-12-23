@@ -87,7 +87,7 @@ const SmartPcConnectButton = ({
         <ExternalLink className="h-4 w-4 mr-1.5" />
         {launchingInstances.includes(pc.instanceId) ? "Connecting..." : "Connect"}
       </Button> */}
-      <Button
+<Button
   size="sm"
   variant="default"
   onClick={(e) => {
@@ -101,6 +101,7 @@ const SmartPcConnectButton = ({
     (!isMember && isPCAssigned(pc.instanceId))
   }
   className="h-8"
+  data-testid="sensepc-connect-button"
 >
   <ExternalLink className="mr-1.5 h-4 w-4" />
   {launchingInstances.includes(pc.instanceId) ? "Connecting..." : "Connect"}

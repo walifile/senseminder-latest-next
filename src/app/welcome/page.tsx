@@ -233,6 +233,7 @@ export default function WelcomePage() {
                 variant="glowing"
                 wrapperClassName="bg-white dark:bg-[#2A2067]"
                 {...register("fullName", { required: true })}
+                data-testid="login-full-name-input"
               />
                           </div>
 
@@ -246,6 +247,7 @@ export default function WelcomePage() {
                     shouldValidate: true,
                   })
                 }
+                data-testid="login-accept-terms-checkbox"
               />
 
               <label
