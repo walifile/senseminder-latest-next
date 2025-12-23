@@ -313,6 +313,7 @@ const SlidePopup: React.FC<SlidePopupProps> = ({ open, onClose }) => {
                 e.stopPropagation();
                 onClose();
               }}
+              data-testid="sensepc-skip-button"
               className="text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
             >
               Skip

@@ -10,7 +10,7 @@ const FileTypeIcon = ({
   index: number;
   fileName: string;
   fileType: string;
-  size?: "small" | "large";
+  size?: "small" | "large" | "xlarge";
 }) => {
   const IconComponent = getFileIcon(fileName, fileType);
 
@@ -18,7 +18,7 @@ const FileTypeIcon = ({
     <div
       data-testid="dashboard-sense-cloud-file-type-icon"
       className={`flex items-center justify-center ${
-        size === "small" ? "h-5 w-5" : "h-8 w-8"
+        size === "small" ? "h-5 w-5" : (size === "xlarge" ? "h-12 w-12" : "h-8 w-8")
       }`}
     >
       <IconComponent

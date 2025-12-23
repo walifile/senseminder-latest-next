@@ -99,9 +99,8 @@ const GridView = ({
               setFilePreview(file);
             }
           }}
-          className={`relative group px-4 rounded-lg border border-border hover:bg-muted/50 transition-colors ${
-            dragOverFolderId === file.id ? "bg-muted ring-2 ring-primary" : ""
-          } ${file.fileType === "folder" ? "py-3" : "pt-2 pb-3"}`}
+          className={`relative group px-4 rounded-lg border border-border hover:bg-muted/50 transition-colors ${dragOverFolderId === file.id ? "bg-muted ring-2 ring-primary" : ""
+            } ${file.fileType === "folder" ? "py-3" : "pt-2 pb-3"}`}
           draggable
           onDragStart={(e) => handleItemDragStart(e, file.id)}
           onDragOver={(e) =>
@@ -119,19 +118,17 @@ const GridView = ({
           }
         >
           <div
-            className={`${
-              file.fileType === "folder"
+            className={`${file.fileType === "folder"
                 ? "h-full flex flex-col justify-between gap-1"
                 : "w-full flex items-center gap-1"
-            }`}
+              }`}
           >
             {/* drag handle + checkbox */}
             <div
-              className={`flex items-center gap-2 ${
-                file.fileType === "folder"
-                  ? "absolute top-2 left-2"
+              className={`flex items-center gap-2 ${file.fileType === "folder"
+                  ? ""
                   : "flex-shrink-0 mr-2"
-              }`}
+                }`}
             >
               <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
               <Checkbox
@@ -145,11 +142,10 @@ const GridView = ({
               {...(file.fileType === "folder" && {
                 title: "Click to open folder",
               })}
-              className={`flex items-center ${
-                file.fileType === "folder"
+              className={`flex items-center ${file.fileType === "folder"
                   ? "flex-col cursor-pointer text-center mb-3"
                   : "gap-2 flex-1 min-w-0"
-              }`}
+                }`}
               onClick={() => {
                 if (file.fileType === "folder") {
                   handleFolderSelection(file);
@@ -162,19 +158,17 @@ const GridView = ({
                     index={index}
                     fileName={file.fileName}
                     fileType={file.fileType}
-                    size="large"
+                    size="xlarge"
                   />
                 )}
               </div>
               <div
-                className={`${
-                  file.fileType === "folder" ? "w-full" : "flex-1 min-w-0"
-                }`}
+                className={`${file.fileType === "folder" ? "w-full" : "flex-1 min-w-0"
+                  }`}
               >
                 <div
-                  className={`flex items-center gap-1 font-medium truncate text-sm ${
-                    file.fileType === "folder" ? "" : "min-w-0"
-                  }`}
+                  className={`flex items-center justify-center align-middle gap-1 font-medium truncate text-sm ${file.fileType === "folder" ? "" : "min-w-0"
+                    }`}
                   title={file.fileName}
                 >
                   <span className="truncate">{file.fileName}</span>
@@ -190,7 +184,7 @@ const GridView = ({
                     <Copy className="h-3.5 w-3.5" />
                   </button>
                 </div>
-                {file.fileType === "folder" && (
+                {file.fileType === "folder" && file.size && (
                   <div className="text-xs text-muted-foreground mt-1">
                     {formatFileSize(file.size)}
                   </div>
@@ -203,8 +197,8 @@ const GridView = ({
               {file.fileType === "folder" && formatDate(file.createdAt)}
               <div className="flex items-center gap-1">
                 {/* {file.shared && (
-                                                  <Share2 className="h-3.5 w-3.5 text-green-500" />
-                                                )} */}
+                  <Share2 className="h-3.5 w-3.5 text-green-500" />
+                )} */}
                 {file.starred && (
                   <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
                 )}
@@ -212,11 +206,10 @@ const GridView = ({
             </div>
 
             <div
-              className={`${
-                file.fileType === "folder"
+              className={`${file.fileType === "folder"
                   ? "absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                   : ""
-              }`}
+                }`}
             >
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -305,107 +298,95 @@ const GridView = ({
               </DropdownMenu>
             </div>
           </div>
+          {!file?.previewUrl ? null : (
+            <div className="flex items-center justify-center mt-5 w-full h-[76px] overflow-hidden rounded">
+              {(() => {
+                const ext =
+                  file.fileName
+                    .split(".")
+                    .pop()
+                    ?.toLowerCase() || "";
+                const src = file.previewUrl;
 
-          {/* {!file?.previewUrl ? null : (
-                                            <div className="flex items-center justify-center mt-3 w-full h-[76px] overflow-hidden rounded">
-                                              {(() => {
-                                                const ext =
-                                                  file.fileName
-                                                    .split(".")
-                                                    .pop()
-                                                    ?.toLowerCase() || "";
-                                                const src = file.previewUrl;
-
-                                                if (
-                                                  [
-                                                    "png",
-                                                    "jpg",
-                                                    "jpeg",
-                                                    "gif",
-                                                    "webp",
-                                                  ].includes(ext)
-                                                ) {
-                                                  return (
-                                                    <img
-                                                      src={src}
-                                                      alt={file.fileName}
-                                                      className="w-full h-20 object-contain rounded bg-white dark:bg-background p-1"
-                                                    />
-                                                  );
-                                                } else if (ext === "pdf") {
-                                                  return (
-                                                    <iframe
-                                                      src={src}
-                                                      title={file.fileName}
-                                                      className="size-full rounded"
-                                                    />
-                                                  );
-                                                } else if (
-                                                  [
-                                                    "doc",
-                                                    "docx",
-                                                    "xls",
-                                                    "xlsx",
-                                                    "ppt",
-                                                    "pptx",
-                                                  ].includes(ext)
-                                                ) {
-                                                  const officeSrc = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
-                                                    src
-                                                  )}`;
-                                                  return (
-                                                    <iframe
-                                                      src={officeSrc}
-                                                      title={file.fileName}
-                                                      className="size-full rounded"
-                                                    />
-                                                  );
-                                                } else if (
-                                                  [
-                                                    "mp4",
-                                                    "webm",
-                                                    "ogg",
-                                                    "mov",
-                                                    "quicktime",
-                                                  ].includes(ext)
-                                                ) {
-                                                  return (
-                                                    <video
-                                                      src={src}
-                                                      controls
-                                                      className="size-full rounded"
-                                                    />
-                                                  );
-                                                } else if (
-                                                  [
-                                                    "mp3",
-                                                    "wav",
-                                                    "ogg",
-                                                  ].includes(ext)
-                                                ) {
-                                                  return (
-                                                    <audio
-                                                      src={src}
-                                                      controls
-                                                      className="size-full rounded"
-                                                    />
-                                                  );
-                                                } else {
-                                                  return (
-                                                    <div className="text-muted-foreground size-full flex items-center justify-center rounded">
-                                                      <p>
-                                                        Preview not available
-                                                        for this file type.
-                                                      </p>
-                                                    </div>
-                                                  );
-                                                }
-                                              })()}
-                                            </div>
-                                          )} */}
+                if (
+                  [
+                    "png",
+                    "jpg",
+                    "jpeg",
+                    "gif",
+                    "webp",
+                  ].includes(ext)
+                ) {
+                  return (
+                    <img
+                      src={src}
+                      alt={file.fileName}
+                      className="w-full h-20 object-contain rounded bg-white dark:bg-background p-1"
+                    />
+                  );
+                } else if (ext === "pdf") {
+                  return (
+                    <iframe
+                      src={src}
+                      title={file.fileName}
+                      className="size-full rounded"
+                    />
+                  );
+                } else if (
+                  [
+                    "doc",
+                    "docx",
+                    "xls",
+                    "xlsx",
+                    "ppt",
+                    "pptx",
+                  ].includes(ext)
+                ) {
+                  const officeSrc = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
+                    src
+                  )}`;
+                  return (
+                    <iframe
+                      src={officeSrc}
+                      title={file.fileName}
+                      className="size-full rounded"
+                    />
+                  );
+                } else if (
+                  ["mp4", "webm", "ogg"].includes(ext)
+                ) {
+                  return (
+                    <video
+                      src={src}
+                      controls
+                      className="size-full rounded"
+                    />
+                  );
+                } else if (
+                  ["mp3", "wav", "ogg"].includes(ext)
+                ) {
+                  return (
+                    <audio
+                      src={src}
+                      controls
+                      className="size-full rounded"
+                    />
+                  );
+                } else {
+                  return (
+                    <div className="text-muted-foreground size-full flex items-center justify-center rounded">
+                      <p>
+                        Preview not available for this file type.
+                      </p>
+                    </div>
+                  );
+                }
+              })()}
+            </div>
+          )}
           {file.fileType !== "folder" && (
             <div className="space-y-1.5 mt-2">
-              <div className="flex items-center justify-between text-[#454545] dark:text-[#B9C2D5] py-6">
+              <div className="flex items-center justify-between text-[#454545] dark:text-[#B9C2D5] pt-3 pb-5">
                 <div className="flex items-center gap-2">
                   <File className="h-4 w-4 text-[#A801BA] " />
                   <span className=" text-[#454545] dark:text-[#B9C2D5] text-base">
