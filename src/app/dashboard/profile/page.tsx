@@ -145,7 +145,11 @@ const ProfilePage = () => {
       await updateUserProfile(payload);
 
       toast({
-        title: "Profile Updated",
+        title: (
+          <span data-testid="profile-updated-success-message">
+            Profile Updated
+          </span>
+        ),
         description: "Your profile changes have been saved.",
       });
 

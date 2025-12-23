@@ -110,7 +110,13 @@ const NewTicket = ({ setActiveTab }: Props) => {
 
       await createTicket({ userId, body }).unwrap();
 
-      toast({ title: "Support ticket created" });
+      toast({
+        title: (
+          <span data-testid="support-success-message">
+            Support ticket created
+          </span>
+        ),
+      });
       setFormState({
         subject: "",
         category: "technical",

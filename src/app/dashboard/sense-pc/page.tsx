@@ -289,7 +289,7 @@ const CloudPCPage = () => {
               {/* --- LIST VIEW --- */}
               {viewMode === "list" ? (
  
-                <div className="space-y-3 min-w-0" data-testid="sensepc-pc-list">
+                <div className="space-y-3 min-w-0 pc-list" data-testid="sensepc-pc-list">
                   {(filteredPCs as PC[]).map((pc, index) => {
                     const pcInfo = realtimePcInfo[pc.systemName];
                     const isStarting = isStartingInstance(
@@ -308,6 +308,7 @@ const CloudPCPage = () => {
                         <PcCard
                           selected={isSelected}
                           className={cn(
+                            "pc-card",
                             "relative w-full min-w-0 cursor-pointer",
                             "flex flex-col gap-3 px-4 py-4",
                             "md:flex-row md:items-center md:justify-between md:gap-6"
@@ -493,7 +494,7 @@ const CloudPCPage = () => {
               ) : (
                 /* --- GRID VIEW --- */
                 <div
-                  className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+                  className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 pc-list"
                   data-testid="sensepc-pc-list"
                 >
                   {(filteredPCs as PC[]).map((pc, index) => {
@@ -514,6 +515,7 @@ const CloudPCPage = () => {
                         <PcCard
                           selected={isSelected}
                           className={cn(
+                            "pc-card",
                             "relative flex w-full min-w-0 flex-col gap-[18px] px-4 py-6"
                           )}
                           onClick={() => handlePCSelection(index)}

@@ -230,11 +230,17 @@ const DashboardSidebar = () => {
                 .replace(/[^a-z0-9]+/g, "-")
                 .replace(/(^-|-$)/g, "")}`;
               const testId =
-                item.name === "Security & Privacy"
-                  ? "dashboard-security-privacy-link"
-                  : item.name === "Support"
-                    ? "support-sidebar-link"
-                    : defaultTestId;
+                item.name === "Sense PC"
+                  ? "sensepc-sidebar-link"
+                  : item.name === "Sense Cloud"
+                    ? "sensepc-storage-sidebar-link"
+                    : item.name === "Users"
+                      ? "sensepc-users-sidebar-link"
+                      : item.name === "Security & Privacy"
+                        ? "dashboard-security-privacy-link"
+                        : item.name === "Support"
+                          ? "support-sidebar-link"
+                          : defaultTestId;
 
               return (
                 <Link
@@ -252,7 +258,15 @@ const DashboardSidebar = () => {
                   <item.icon
                     className={cn("h-5 w-5", collapsed ? "mx-auto" : "mr-[6px]")}
                   />
-                  {!collapsed && <span>{item.name}</span>}
+                  {!collapsed && (
+                    <span
+                      data-testid={
+                        item.name === "Billing" ? "sensepc-wallet-icon" : undefined
+                      }
+                    >
+                      {item.name}
+                    </span>
+                  )}
                 </Link>
               );
             })}

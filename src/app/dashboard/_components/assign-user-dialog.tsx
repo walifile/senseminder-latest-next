@@ -168,12 +168,12 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
-      <DialogContent data-testid="dashboard-assign-user-dialog">
-       <DialogHeader>
-        <DialogTitle className="text-lg font-semibold">
-          SensePC : {pc?.systemName}
-        </DialogTitle>
-      </DialogHeader>
+      <DialogContent data-testid="sensepc-assign-modal">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-semibold">
+            SensePC : {pc?.systemName}
+          </DialogTitle>
+        </DialogHeader>
 
         {isLoading ? (
           <div>Loading members...</div>
@@ -183,8 +183,8 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
             {assignedUser ? (
               <div>
                 <div>
-                  Currently assigned to:
-                  <Badge className="ml-2">
+                  Assigned to:
+                  <Badge className="ml-2" data-testid="sensepc-assigned-user-indicator">
                     {assignedUser.firstName || assignedUser.email}
                   </Badge>
                 </div>
@@ -206,25 +206,32 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
 
             {/* Assignment options */}
             <div>
-              <div className="font-bold mb-2 mt-4">Assign to Member:</div>
-              <div className="flex flex-col gap-2">
+              <div
+                className="font-bold mb-2 mt-4"
+                data-testid="sensepc-assign-to-member-label"
+              >
+                Assign to Member:
+              </div>
+              <div className="flex flex-col gap-2" data-testid="sensepc-member-list">
                 {memberUsers.length === 0 && <div>No members found.</div>}
                 {memberUsers.map((user) => (
-                  <Button
-                    disabled={!!assignedUser && assignedUser.id === user.id}
-                    variant={
-                      !!assignedUser && assignedUser.id === user.id
-                        ? "secondary"
-                        : "default"
-                    }
-                    key={user.id}
-                    onClick={() => assignToMember(user)}
-                  >
-                    {user.firstName || user.email}
-                    {!!assignedUser &&
-                      assignedUser.id === user.id &&
-                      " (Already Assigned)"}
-                  </Button>
+                  <div key={user.id} data-testid="sensepc-member-item">
+                    <Button
+                      disabled={!!assignedUser && assignedUser.id === user.id}
+                      variant={
+                        !!assignedUser && assignedUser.id === user.id
+                          ? "secondary"
+                          : "default"
+                      }
+                      onClick={() => assignToMember(user)}
+                      data-testid="sensepc-assign-confirm-button"
+                    >
+                      {user.firstName || user.email}
+                      {!!assignedUser &&
+                        assignedUser.id === user.id &&
+                        " (Already Assigned)"}
+                    </Button>
+                  </div>
                 ))}
               </div>
             </div>
