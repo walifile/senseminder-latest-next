@@ -1272,7 +1272,6 @@ const CloudStorage = () => {
                                           </TableHead>
                                           <TableHead>Size</TableHead>
                                           <TableHead>Uploaded</TableHead>
-                                          <TableHead>Download</TableHead>
                                           <TableHead className="border-r-0">
                                             Status
                                           </TableHead>
@@ -1378,39 +1377,7 @@ const CloudStorage = () => {
                                               <TableCell className="whitespace-nowrap">
                                                 {formatDate(file.createdAt)}
                                               </TableCell>
-                                              <TableCell className="whitespace-nowrap">
-                                                {file.fileType === "folder" ? (
-                                                  <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="gap-2"
-                                                    disabled={
-                                                      downloadingFile ===
-                                                      file.fileName
-                                                    }
-                                                    onClick={() =>
-                                                      handleFolderDownload(
-                                                        file
-                                                      )
-                                                    }
-                                                  >
-                                                    {downloadingFile ===
-                                                    file.fileName ? (
-                                                      <>
-                                                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                                                        Downloading...
-                                                      </>
-                                                    ) : (
-                                                      <>
-                                                        <Download className="h-4 w-4" />
-                                                        Download
-                                                      </>
-                                                    )}
-                                                  </Button>
-                                                ) : (
-                                                  "-"
-                                                )}
-                                              </TableCell>
+
                                               <TableCell className="border-r-0">
                                                 {file.shared ? (
                                                   <Badge
@@ -1441,24 +1408,26 @@ const CloudStorage = () => {
                                                   </DropdownMenuTrigger>
                                                   <DropdownMenuContent align="end">
                                                     {file.type !== "folder" && (
-                                                    <>
-                                                      {file.fileType !==
-                                                        "folder" && (
-                                                        <DropdownMenuItem
-                                                          onClick={() =>
-                                                            setFilePreview(file)
-                                                          }
-                                                        >
-                                                          <Eye className="h-4 w-4 mr-2" />
-                                                          View
-                                                        </DropdownMenuItem>
-                                                      )}
+                                                      <>
+                                                        {file.fileType !==
+                                                          "folder" && (
+                                                          <DropdownMenuItem
+                                                            onClick={() =>
+                                                              setFilePreview(
+                                                                file
+                                                              )
+                                                            }
+                                                          >
+                                                            <Eye className="h-4 w-4 mr-2" />
+                                                            View
+                                                          </DropdownMenuItem>
+                                                        )}
 
-                                                      <DropdownMenuItem
-                                                        disabled={
-                                                          downloadingFile ===
-                                                          file.fileName
-                                                        }
+                                                        <DropdownMenuItem
+                                                          disabled={
+                                                            downloadingFile ===
+                                                            file.fileName
+                                                          }
                                                           onClick={() => {
                                                             if (
                                                               file.fileType ===
