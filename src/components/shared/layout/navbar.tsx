@@ -83,7 +83,11 @@ const Navbar = () => {
               <ProfileDropdown />
             ) : (
               <Button asChild className="rounded-full px-7 py-3">
-                <Link href="/auth" className="space-x-1.5">
+                <Link
+                  href="/auth"
+                  className="space-x-1.5"
+                  data-testid="home-sign-in-link"
+                >
                   <CircleUserRound className="h-5 w-5" />
                   <span>Login</span>
                 </Link>
@@ -98,7 +102,11 @@ const Navbar = () => {
               <ProfileDropdown />
             ) : (
               <Button asChild size="icon" className="rounded-full">
-                <Link href="/auth" aria-label="Sign in">
+                <Link
+                  href="/auth"
+                  aria-label="Sign in"
+                  data-testid="home-sign-in-link"
+                >
                   <CircleUserRound className="h-6 w-6" />
                 </Link>
               </Button>

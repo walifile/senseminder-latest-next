@@ -158,6 +158,7 @@ const TicketConversation: React.FC<Props> = ({
         <div
           ref={containerRef}
           className="max-h-[500px] overflow-y-auto px-4 py-4 space-y-4"
+          data-testid="support-conversation-history"
         >
           {messages.map((msg, idx) => {
             const msgDate = msg.timestamp.split("T")[0];
@@ -246,6 +247,7 @@ const TicketConversation: React.FC<Props> = ({
                           ? "bg-emerald-500/[0.06] dark:bg-emerald-400/10 border-emerald-500/15 dark:border-emerald-200/15 text-emerald-950 dark:text-emerald-50"
                           : "bg-blue-700/[0.04] dark:bg-white/5 border-blue-700/12 dark:border-white/12 text-[#0B1220] dark:text-[#E7ECF6]",
                       ].join(" ")}
+                      data-testid="support-reply-message"
                     >
                       {msg.content}
                     </pre>
@@ -314,7 +316,10 @@ const TicketConversation: React.FC<Props> = ({
           <CardContent>
             <form onSubmit={handleReplySubmit} className="space-y-4">
               {ticketStatus === "resolved" && (
-                <div className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200 text-sm p-3 rounded border border-yellow-200 dark:border-yellow-900/40">
+                <div
+                  className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200 text-sm p-3 rounded border border-yellow-200 dark:border-yellow-900/40"
+                  data-testid="support-reopen-warning"
+                >
                   This ticket has been marked as resolved. Your reply will
                   reopen it.
                 </div>
@@ -328,6 +333,7 @@ const TicketConversation: React.FC<Props> = ({
                 text-base font-normal placeholder:font-normal font-['Inter'] leading-6"
                 value={reply}
                 onChange={(e) => setReply(e.target.value)}
+                data-testid="support-reply-textarea"
               />
 
               <input
@@ -344,6 +350,7 @@ const TicketConversation: React.FC<Props> = ({
                   type="button"
                   variant="outline"
                   onClick={() => document.getElementById("upload")?.click()}
+                  data-testid="support-upload-files-button"
                 >
                   Upload files
                 </Button>
@@ -371,7 +378,11 @@ const TicketConversation: React.FC<Props> = ({
               </div>
 
               <div className="flex justify-end">
-                <Button type="submit" disabled={!reply.trim() || isSending}>
+                <Button
+                  type="submit"
+                  disabled={!reply.trim() || isSending}
+                  data-testid="support-send-reply-button"
+                >
                   <Send className="h-4 w-4 mr-1" />
                   {isSending ? "Sending..." : "Send Reply"}
                 </Button>

@@ -288,6 +288,7 @@ export function MfaTotpDialog({
                 value={code}
                 onChange={(val) => setCode(val)}
                 disabled={submitting}
+                data-testid="login-mfa-input"
               >
                 <InputOTPGroup>
                   {[...Array(6)].map((_, i) => (
@@ -301,6 +302,7 @@ export function MfaTotpDialog({
               type="submit"
               disabled={submitting}
               size="lg"
+              data-testid="login-mfa-submit-button"
               className="
                 w-full
               "

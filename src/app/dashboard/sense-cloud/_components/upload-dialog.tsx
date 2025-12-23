@@ -176,7 +176,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent
-        data-testid="dashboard-sense-cloud-upload-dialog"
+        data-testid="storage-upload-modal"
         className="sm:max-w-[425px]"
       >
         <DialogHeader>
@@ -195,7 +195,10 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
               Select Region
             </label>
             <Select value={region} onValueChange={setRegion}>
-              <SelectTrigger className="w-full h-auto px-5 py-4 text-paragraph text-base font-normal font-['Inter'] leading-6">
+              <SelectTrigger
+                className="w-full h-auto px-5 py-4 text-paragraph text-base font-normal font-['Inter'] leading-6"
+                data-testid="storage-region-dropdown"
+              >
                 <SelectValue placeholder="Select a region" />
               </SelectTrigger>
               <SelectContent>
@@ -237,6 +240,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
                 handleFileChange(e.target.files);
                 e.target.value = "";
               }}
+              data-testid="storage-file-input"
             />
           </label>
 
@@ -317,6 +321,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
               Object.values(uploadStatus).includes("loading")
             }
             className="w-full"
+            data-testid="storage-upload-files-button"
           >
             Upload Files
           </Button>

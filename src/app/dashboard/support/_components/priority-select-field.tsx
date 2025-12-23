@@ -15,7 +15,7 @@ interface Props {
 const PrioritySelectField = ({ value, setValue, disabled = false }: Props) => (
   <Select value={value} onValueChange={setValue} disabled={disabled}>
     <SelectTrigger
-      data-testid="dashboard-support-priority-select"
+      data-testid="support-priority-dropdown"
       variant="glowingSelector"
     >
       <SelectValue placeholder="Select priority" />

@@ -55,6 +55,7 @@ export interface RHFSelectProps {
   contentClassName?: string;
 
   onValueChange?: (value: string) => void;
+  triggerTestId?: string;
 }
 
 export const RHFSelect = forwardRef<HTMLButtonElement, RHFSelectProps>(
@@ -76,6 +77,7 @@ export const RHFSelect = forwardRef<HTMLButtonElement, RHFSelectProps>(
       contentClassName,
       selectVariant = "default",
       onValueChange,
+      triggerTestId,
     },
     ref
   ) => {
@@ -149,6 +151,7 @@ export const RHFSelect = forwardRef<HTMLButtonElement, RHFSelectProps>(
                   ref={ref}
                   id={name}
                   variant={selectVariant}
+                  data-testid={triggerTestId}
                   className={cn(
                     // keep existing error behavior
                     hasError && "border-red-500 focus:border-red-500",

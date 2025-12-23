@@ -191,7 +191,10 @@ export default function PCCostCalculator() {
           {/* Left card */}
           <div className="rounded-2xl p-4 md:p-10 space-y-8 bg-white dark:bg-transparent dark:bg-[linear-gradient(162.96deg,#170D44_11.73%,rgba(23,13,68,0.61)_98.26%)]">
             <div className="space-y-6">
-              <h3 className="font-space-grotesk font-bold text-2xl">
+              <h3
+                className="font-space-grotesk font-bold text-2xl"
+                data-testid="landing-choose-configurations-section"
+              >
                 Choose Configurations
               </h3>
 
@@ -211,6 +214,7 @@ export default function PCCostCalculator() {
                   options={osOptions}
                   placeholder="Select Operating System"
                   className="gap-4"
+                  triggerTestId="landing-operating-system-dropdown"
                 />
 
                 {/* Linux Category */}
@@ -249,6 +253,7 @@ export default function PCCostCalculator() {
                     selectedOS ? "Select CPU & Memory" : "Select OS first"
                   }
                   className="gap-4"
+                  triggerTestId="landing-cpu-memory-dropdown"
                 />
 
                 {/* Location */}
@@ -263,6 +268,7 @@ export default function PCCostCalculator() {
                   }
                   options={locationOptions}
                   className="gap-4"
+                  triggerTestId="landing-region-dropdown"
                 />
 
                 {/* Storage */}
@@ -277,6 +283,7 @@ export default function PCCostCalculator() {
                   }
                   options={storageOptions}
                   className="gap-4"
+                  triggerTestId="landing-storage-dropdown"
                 />
               </div>
             </div>
@@ -294,7 +301,10 @@ export default function PCCostCalculator() {
               "border border-[#2530F033] dark:outline-border dark:before:rounded-[16px]"
             )}
           >
-            <h3 className="font-space-grotesk font-bold text-2xl">
+            <h3
+              className="font-space-grotesk font-bold text-2xl"
+              data-testid="landing-configuration-summary"
+            >
               Your Configuration
             </h3>
 
@@ -352,7 +362,7 @@ export default function PCCostCalculator() {
 
               {/* Total Cost */}
               <div className="flex items-center justify-between gap-5 flex-wrap rounded-2xl p-5 bg-[#2530F033] dark:bg-transparent dark:bg-[linear-gradient(276.71deg,rgba(128,134,243,0.5)_-194.99%,rgba(3,10,135,0.25)_-40.44%,rgba(186,37,240,0.5)_248.78%)]">
-                <div className="space-y-1">
+                <div className="space-y-1" data-testid="landing-est-monthly-price">
                   <div className="text-sm text-paragraph">Est. Monthly*</div>
                   <div className="text-base font-semibold">
                     {estimateData?.total?.pricePerMonth !== undefined
@@ -366,7 +376,7 @@ export default function PCCostCalculator() {
                   className="w-[1px] h-7 bg-[#02081633] dark:bg-[#FFFFFF33]"
                 />
 
-                <div className="space-y-1">
+                <div className="space-y-1" data-testid="landing-est-daily-price">
                   <div className="text-sm text-paragraph">Est. Daily*</div>
                   <div className="text-base font-semibold">
                     {estimateData?.total?.pricePerDay !== undefined
@@ -380,7 +390,7 @@ export default function PCCostCalculator() {
                   className="w-[1px] h-7 bg-[#02081633] dark:bg-[#FFFFFF33]"
                 />
 
-                <div className="space-y-1">
+                <div className="space-y-1" data-testid="landing-est-hourly-price">
                   <div className="text-sm text-paragraph">Est. Hourly*</div>
                   <div className="text-base font-semibold">
                     {estimateData?.total?.pricePerHour !== undefined
@@ -403,11 +413,17 @@ export default function PCCostCalculator() {
                   isLoading
                 }
                 onClick={handleGetEstimate}
+                data-testid="landing-view-estimate-button"
               >
                 {isLoading ? "Calculating..." : "View Estimate"}
               </Button>
 
-              <Button size="lg" variant="outline" type="submit">
+              <Button
+                size="lg"
+                variant="outline"
+                type="submit"
+                data-testid="landing-build-pc-button"
+              >
                 Build PC
                 <ArrowUpRight />
               </Button>
@@ -415,7 +431,10 @@ export default function PCCostCalculator() {
 
             {/* Benefits */}
             <div className="space-y-3.5">
-              <h4 className="font-space-grotesk font-bold text-lg">
+              <h4
+                className="font-space-grotesk font-bold text-lg"
+                data-testid="landing-included-features"
+              >
                 Included with every plan:
               </h4>
 

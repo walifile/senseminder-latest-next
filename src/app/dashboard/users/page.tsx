@@ -70,7 +70,11 @@ const UsersManagementPage = () => {
               </Popover> */}
             </div>
             <div className="flex space-x-2">
-              <Button onClick={inviteDialog.onTrue} className="gap-2">
+              <Button
+                onClick={inviteDialog.onTrue}
+                className="gap-2"
+                data-testid="user-management-invite-button"
+              >
                 <UserPlus className="h-4 w-4" />
                 Invite User
               </Button>
@@ -100,6 +104,7 @@ const UsersManagementPage = () => {
                         className="pl-14 h-14 md:text-base rounded-full bg-blue-700/5 dark:bg-[#FFFFFF08] text-black placeholder:text-[#454545] dark:text-[#B8C2D5]"
                         onChange={(e) => setSearchQuery(e.target.value)}
                         value={searchQuery}
+                        data-testid="user-management-search-input"
                       />
                     </div>
                   </div>
@@ -113,7 +118,9 @@ const UsersManagementPage = () => {
               </CardContent>
 
               <CardFooter className="border-t border-black/10 dark:border-border pt-6 flex justify-between text-muted-foreground text-sm">
-                <p>Total users: {users.length}</p>
+                <p data-testid="user-management-total-users-text">
+                  Total users: {users.length}
+                </p>
               </CardFooter>
             </Card>
           </div>

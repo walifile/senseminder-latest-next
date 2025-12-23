@@ -342,6 +342,7 @@ export const ProfileSecurityTab = () => {
                     size="sm"
                     onClick={() => setShowPasswordForm(true)}
                     type="button"
+                    data-testid="security-change-password-button"
                   >
                     Change password
                   </Button>
@@ -395,6 +396,7 @@ export const ProfileSecurityTab = () => {
                       type="password"
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
+                      data-testid="security-current-password-input"
                     />
                   </div>
 
@@ -405,6 +407,7 @@ export const ProfileSecurityTab = () => {
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
+                      data-testid="security-new-password-input"
                     />
                     <p className="text-xs text-muted-foreground">
                       Must be at least 8 characters long and include a number or
@@ -419,6 +422,7 @@ export const ProfileSecurityTab = () => {
                       type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
+                      data-testid="security-confirm-password-input"
                     />
                   </div>
 
@@ -436,7 +440,11 @@ export const ProfileSecurityTab = () => {
                       Cancel
                     </Button>
 
-                    <Button type="submit" disabled={changingPassword}>
+                    <Button
+                      type="submit"
+                      disabled={changingPassword}
+                      data-testid="security-confirm-change-password-button"
+                    >
                       {changingPassword ? "Updating..." : "Confirm"}
                     </Button>
                   </div>
@@ -534,8 +542,15 @@ export const ProfileSecurityTab = () => {
                       else setShowTotpDialog(true);
                     }}
                     type="button"
+                    data-testid={
+                      is2FAEnabled
+                        ? "security-disable-button"
+                        : "security-setup-authenticator-button"
+                    }
                   >
-                    {is2FAEnabled ? "Disable" : "Setup"}
+                    <span data-testid="dashboard-setup-authenticator-button">
+                      {is2FAEnabled ? "Disable" : "Setup"}
+                    </span>
                   </Button>
 
                   <MfaTotpDialog
@@ -597,8 +612,15 @@ export const ProfileSecurityTab = () => {
                     variant={isEmailMFAEnabled ? "destructive" : "default"}
                     onClick={handleToggleEmailMFA}
                     type="button"
+                    data-testid={
+                      isEmailMFAEnabled
+                        ? "security-disable-button"
+                        : "dashboard-setup-email-otp-button"
+                    }
                   >
-                    {isEmailMFAEnabled ? "Disable" : "Setup"}
+                    <span data-testid="dashboard-setup-email-otp-button">
+                      {isEmailMFAEnabled ? "Disable" : "Setup"}
+                    </span>
                   </Button>
                 </div>
               </DashboardCard>

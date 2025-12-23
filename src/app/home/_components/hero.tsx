@@ -55,6 +55,7 @@ const Hero: React.FC<HeroProps> = ({
                 size="lg"
                 className="relative w-full z-10"
                 onClick={onGetStarted}
+                data-testid="landing-get-started-button"
               >
                 Get Started Now
                 <ArrowUpRight />

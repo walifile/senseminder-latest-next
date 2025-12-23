@@ -297,7 +297,12 @@ const ProfilePage = () => {
                 </div>
               ) : (
                 <div className="space-y-1">
-                  <p className={headerTitleClass}>Profile Information</p>
+                  <p
+                    className={headerTitleClass}
+                    data-testid="profile-information-heading"
+                  >
+                    Profile Information
+                  </p>
                   <p className={headerDescClass}>Update your personal details</p>
                 </div>
               )}

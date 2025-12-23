@@ -219,6 +219,7 @@ export function MfaEmailDialog({
                 value={code}
                 onChange={(val) => setCode(val)}
                 disabled={isVerifying}
+                data-testid="login-mfa-input"
               >
                 <InputOTPGroup>
                   {[...Array(6)].map((_, i) => (
@@ -232,6 +233,7 @@ export function MfaEmailDialog({
               type="submit"
               disabled={isVerifying}
               size="lg"
+              data-testid="login-mfa-submit-button"
               className="
                 w-full
                 rounded-full

@@ -137,16 +137,23 @@ const TicketDetailPage = () => {
         size="sm"
         onClick={() => router.push("/dashboard/support")}
         className="gap-1"
+        data-testid="support-back-button"
       >
         <ChevronLeft className="h-4 w-4" /> Back to Support
       </Button>
 
       {/* Subject and status */}
       <div className="flex items-center gap-4 flex-wrap">
-        <h1 className="text-2xl font-bold font-['Space_Grotesk'] leading-8">
+        <h1
+          className="text-2xl font-bold font-['Space_Grotesk'] leading-8"
+          data-testid="support-ticket-title"
+        >
           {ticket.subject}
         </h1>
-        <div className={getStatusBadgeClass(ticket.status)}>
+        <div
+          className={getStatusBadgeClass(ticket.status)}
+          data-testid="support-ticket-status"
+        >
           {formatLabel(ticket.status)}
         </div>
       </div>
@@ -231,7 +238,10 @@ const TicketDetailPage = () => {
 
         {/* Right: Ticket Info */}
         <div className="w-full space-y-6 mt-8">
-          <Card className="border border-blue-700/10 dark:border-white/15 bg-blue-700/5 dark:bg-white/5 shadow-none rounded-[10px]">
+          <Card
+            className="border border-blue-700/10 dark:border-white/15 bg-blue-700/5 dark:bg-white/5 shadow-none rounded-[10px]"
+            data-testid="support-ticket-info"
+          >
             <CardHeader className="bg-transparent rounded-t-[10px]">
               <CardTitle className="text-lg font-semibold font-['Space_Grotesk'] leading-8">
                 Ticket Info
@@ -279,6 +289,7 @@ const TicketDetailPage = () => {
                   variant="outline"
                   className="w-full gap-1 mt-3"
                   onClick={() => handleStatusChange("resolved")}
+                  data-testid="support-mark-resolved-button"
                 >
                   <CheckCircle2 className="h-4 w-4" />
                   Mark as Resolved

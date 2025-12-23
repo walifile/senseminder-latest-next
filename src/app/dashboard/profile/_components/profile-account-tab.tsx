@@ -117,6 +117,7 @@ export const ProfileAccountTab = ({
               autoComplete="name"
               className={fieldSurfaceClass}
               placeholder="Full Name"
+              data-testid="profile-full-name-input"
             />
           </div>
 
@@ -130,6 +131,7 @@ export const ProfileAccountTab = ({
               value={profile?.email || ""}
               disabled
               className={`${fieldSurfaceClass} opacity-50`}
+              data-testid="profile-email-input"
             />
           </div>
 
@@ -146,6 +148,7 @@ export const ProfileAccountTab = ({
               autoComplete="country-name"
               className={fieldSurfaceClass}
               placeholder="Your Country"
+              data-testid="profile-country-input"
             />
           </div>
 
@@ -155,7 +158,12 @@ export const ProfileAccountTab = ({
           </p>
 
           <div>
-            <Button type="button" onClick={onSave} disabled={loading || saving}>
+            <Button
+              type="button"
+              onClick={onSave}
+              disabled={loading || saving}
+              data-testid="profile-save-changes-button"
+            >
               {saving ? "Saving..." : "Save changes"}
             </Button>
           </div>

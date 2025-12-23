@@ -195,6 +195,7 @@ export default function SignUpPage() {
                           value={firstName}
                           onChange={(e) => setFirstName(e.target.value)}
                           required
+                          data-testid="signup-first-name-input"
                           uiSize="lg"
                           className="pl-11"
                         />
@@ -212,6 +213,7 @@ export default function SignUpPage() {
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                         required
+                        data-testid="signup-last-name-input"
                         uiSize="lg"
                         className="pl-11"
                       />
@@ -230,6 +232,7 @@ export default function SignUpPage() {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
+                          data-testid="signup-email-input"
                           uiSize="lg"
                           className="pl-11"
                         />
@@ -248,6 +251,7 @@ export default function SignUpPage() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            data-testid="signup-password-input"
                             uiSize="lg"
                             className="pl-11 pr-11"
                           />
@@ -278,6 +282,7 @@ export default function SignUpPage() {
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             required
+                            data-testid="signup-confirm-password-input"
                             uiSize="lg"
                             className="pl-11 pr-11"
                           />
@@ -308,6 +313,7 @@ export default function SignUpPage() {
                             onCheckedChange={(checked) =>
                               setAcceptTerms(checked === true)
                             }
+                            data-testid="signup-accept-terms-checkbox"
                           />
 
                           <span>
@@ -334,6 +340,7 @@ export default function SignUpPage() {
                         type="submit"
                         disabled={isLoading}
                         size="lg"
+                        data-testid="signup-submit-button"
                         className={cn(
                           "mt-3 w-full rounded-full text-sm font-medium",
                           "bg-gradient-to-l from-[#a801ba] to-[#2530f0]",
@@ -390,6 +397,8 @@ export default function SignUpPage() {
         isOpen={isOtpOpen}
         email={otpEmail}
         onClose={() => setIsOtpOpen(false)}
+        otpInputTestId="signup-otp-input"
+        submitButtonTestId="signup-verify-otp-button"
         onVerified={() => {
           setIsOtpOpen(false);
           router.push("/auth");

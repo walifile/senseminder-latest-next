@@ -88,7 +88,11 @@ const ProfileDropdown = () => {
       <>
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2 pl-0 pr-3 h-14">
+            <Button
+              variant="ghost"
+              className="flex items-center gap-2 pl-0 pr-3 h-14"
+              data-testid="dashboard-user-account-icon"
+            >
               <Avatar className="size-14">
                 <AvatarFallback>{getAvatarFallback(user ?? {})}</AvatarFallback>
               </Avatar>
@@ -127,7 +131,11 @@ const ProfileDropdown = () => {
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+            <DropdownMenuItem
+              onClick={handleLogout}
+              className="text-red-600"
+              data-testid="dashboard-logout-button"
+            >
               <LogOut className="mr-2 h-4 w-4" />
               Logout
             </DropdownMenuItem>

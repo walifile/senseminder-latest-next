@@ -19,9 +19,10 @@ export default function AttachmentUploader({
 }: Props) {
   return (
     <div
-      data-testid="dashboard-support-attachment-uploader"
+      data-testid="support-upload-files-button"
       className="self-stretch h-52 relative bg-blue-700/5 hover:bg-blue-700/10 dark:bg-white/5 dark:hover:bg-white/10 rounded-[10px] outline outline-[1.30px] outline-offset-[-1.30px] outline-blue-700/10 dark:outline-white/20 border-[1.3px] border-dashed border-white/20 cursor-pointer transition"
       onClick={() => document.getElementById("ticket-file-upload")?.click()}
+      role="button"
     >
       <div className="w-[557px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 absolute inline-flex flex-col justify-center items-center gap-4">
         <div className="w-9 h-9 relative overflow-hidden">

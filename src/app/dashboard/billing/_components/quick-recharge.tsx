@@ -223,6 +223,9 @@ const QuickRecharge = () => {
                     setSelectedAmount(amount);
                     showConfirm.onTrue();
                   }}
+                  data-testid={
+                    amount === 20 ? "billing-quick-recharge-20-button" : undefined
+                  }
                 >
                   <span className="text-[22px] font-medium leading-8 tracking-[-0.3px]">
                     ${amount}
@@ -444,6 +447,7 @@ const QuickRecharge = () => {
               onChange={() =>
                 setAddFundsAutoRechargeEnabled(!addFundsAutoRechargeEnabled)
               }
+              data-testid="billing-auto-recharge-checkbox"
             />
             <label
               htmlFor="autoRecharge"
@@ -460,6 +464,7 @@ const QuickRecharge = () => {
             <Button
               onClick={() => doRecharge(selectedAmount)}
               disabled={isRecharging}
+              data-testid="billing-yes-recharge-button"
             >
               {isRecharging ? "Recharging..." : "Yes, Recharge"}
             </Button>

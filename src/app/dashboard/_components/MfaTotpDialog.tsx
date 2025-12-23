@@ -318,7 +318,7 @@ export default function MfaTotpDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent data-testid="dashboard-mfa-totp-dialog">
+      <DialogContent data-testid="security-authenticator-popup">
         <DialogHeader>
           <DialogTitle>Setup Authenticator App</DialogTitle>
           <DialogDescription>
@@ -343,13 +343,18 @@ export default function MfaTotpDialog({
                 className="text-center tracking-widest"
                 value={userCode}
                 onChange={(e) => setUserCode(e.target.value.replace(/\D/g, ""))}
+                data-testid="security-otp-input"
               />
             </div>
             <DialogFooter className="pt-4">
               <Button variant="ghost" onClick={onClose}>
                 Cancel
               </Button>
-              <Button onClick={handleVerify} disabled={verifying}>
+              <Button
+                onClick={handleVerify}
+                disabled={verifying}
+                data-testid="security-confirm-button"
+              >
                 {verifying ? "Verifying..." : "Confirm"}
               </Button>
             </DialogFooter>

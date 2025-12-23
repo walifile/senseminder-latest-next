@@ -103,6 +103,7 @@ export default function TicketTable() {
             placeholder="Search requests"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            inputTestId="support-search-input"
           />
 
           {/* Status Filter */}
@@ -111,7 +112,11 @@ export default function TicketTable() {
               Status:
             </label>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[150px]" variant="pill">
+              <SelectTrigger
+                className="w-[150px]"
+                variant="pill"
+                data-testid="support-status-filter"
+              >
                 <SelectValue placeholder="Any" />
               </SelectTrigger>
               <SelectContent>
@@ -129,7 +134,7 @@ export default function TicketTable() {
       <div className="px-6 pb-6">
         <div className="overflow-hidden rounded-2xl border border-[#2530F033] dark:border-[#ffffff1a]">
           <Table
-            data-testid="dashboard-support-ticket-table"
+            data-testid="support-ticket-list"
             className="border-separate border-spacing-0"
           >
             <TableHeader>
@@ -155,6 +160,7 @@ export default function TicketTable() {
                       onClick={() =>
                         handleTicketClick(ticket.ticketId, ticket.email)
                       }
+                      data-testid="support-ticket-row"
                       className={`border-b ${
                         isOwner
                           ? "hover:bg-muted/40 cursor-pointer"
@@ -164,10 +170,16 @@ export default function TicketTable() {
                       <TableCell className="whitespace-nowrap">
                         {formatDate(ticket.createdAt)}
                       </TableCell>
-                      <TableCell className="text-muted-foreground whitespace-nowrap">
+                      <TableCell
+                        className="text-muted-foreground whitespace-nowrap"
+                        data-testid="support-ticket-id"
+                      >
                         #{ticket.ticketId}
                       </TableCell>
-                      <TableCell className="whitespace-normal break-words max-w-[300px]">
+                      <TableCell
+                        className="whitespace-normal break-words max-w-[300px]"
+                        data-testid="support-ticket-subject"
+                      >
                         {ticket.subject}
                       </TableCell>
                       <TableCell>
@@ -176,7 +188,10 @@ export default function TicketTable() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <span className={getStatusBadgeClass(ticket.status)}>
+                        <span
+                          className={getStatusBadgeClass(ticket.status)}
+                          data-testid="support-ticket-status-badge"
+                        >
                           {ticket.status.charAt(0).toUpperCase() +
                             ticket.status.slice(1)}
                         </span>

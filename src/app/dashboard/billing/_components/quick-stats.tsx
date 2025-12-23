@@ -242,7 +242,10 @@ const QuickStats = () => {
             </p>
 
             <div className="flex flex-col gap-px">
-              <div className="text-[28px] font-bold leading-[1.3125] tracking-[-0.016em] md:text-[32px] text-[#020816] dark:text-white">
+              <div
+                className="text-[28px] font-bold leading-[1.3125] tracking-[-0.016em] md:text-[32px] text-[#020816] dark:text-white"
+                data-testid="billing-wallet-balance"
+              >
 
                 {balanceLoading ? <QuickStatsLoading /> : fCurrency(balance)}
               </div>

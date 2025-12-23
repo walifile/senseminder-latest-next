@@ -92,6 +92,7 @@ export function SidebarPanel({
             variant="default"
             className="w-full"
             onClick={onUploadClick}
+            data-testid="storage-upload-button"
           >
             <Upload className="h-4 w-4" />
             Upload

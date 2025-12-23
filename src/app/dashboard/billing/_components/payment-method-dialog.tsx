@@ -291,14 +291,18 @@ export function PaymentMethodDialog() {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} className="gap-2">
+      <Button
+        onClick={() => setOpen(true)}
+        className="gap-2"
+        data-testid="billing-add-payment-method-button"
+      >
         <CreditCard className="h-4 w-4" />
         Manage Payment Methods
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
-          data-testid="dashboard-billing-payment-method-dialog"
+          data-testid="billing-add-payment-modal"
           className="
             p-0
             max-w-none sm:max-w-none
@@ -413,6 +417,7 @@ export function PaymentMethodDialog() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       autoComplete="cc-name"
+                      data-testid="billing-cardholder-name-input"
                     />
                   </div>
 
@@ -461,6 +466,7 @@ export function PaymentMethodDialog() {
                       disabled={!stripe || loading}
                       onClick={handleAdd}
                       className="w-full"
+                      data-testid="billing-save-card-button"
                     >
                       {loading ? (
                         <span className="inline-flex items-center gap-2">

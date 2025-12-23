@@ -224,28 +224,38 @@ const DashboardSidebar = () => {
             data-testid="dashboard-sidebar-nav"
             className="flex-1 py-8 space-y-[10px] overflow-y-auto"
           >
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                href={item.path}
-                data-testid={`dashboard-sidebar-link-${item.name
-                  .toLowerCase()
-                  .replace(/[^a-z0-9]+/g, "-")
-                  .replace(/(^-|-$)/g, "")}`}
-                className={cn(
-                  "flex items-center px-4 py-[10px] rounded-full transition-colors",
-                  pathname === item.path
-                    ? "bg-blue-700 text-white"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  collapsed && "justify-center px-0 w-[50%] mx-auto"
-                )}
-              >
-                <item.icon
-                  className={cn("h-5 w-5", collapsed ? "mx-auto" : "mr-[6px]")}
-                />
-                {!collapsed && <span>{item.name}</span>}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const defaultTestId = `dashboard-sidebar-link-${item.name
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/(^-|-$)/g, "")}`;
+              const testId =
+                item.name === "Security & Privacy"
+                  ? "dashboard-security-privacy-link"
+                  : item.name === "Support"
+                    ? "support-sidebar-link"
+                    : defaultTestId;
+
+              return (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  data-testid={testId}
+                  className={cn(
+                    "flex items-center px-4 py-[10px] rounded-full transition-colors",
+                    pathname === item.path
+                      ? "bg-blue-700 text-white"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    collapsed && "justify-center px-0 w-[50%] mx-auto"
+                  )}
+                >
+                  <item.icon
+                    className={cn("h-5 w-5", collapsed ? "mx-auto" : "mr-[6px]")}
+                  />
+                  {!collapsed && <span>{item.name}</span>}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Sidebar Footer */}

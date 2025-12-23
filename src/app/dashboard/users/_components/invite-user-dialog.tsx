@@ -79,7 +79,8 @@ const InviteUserDialog = ({ open, onClose }: Props) => {
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent
-        data-testid="dashboard-users-invite-dialog"
+        data-testid="user-management-invite-modal"
+        closeTestId="user-management-close-modal-button"
         className="sm:max-w-[425px]"
       >
         <DialogHeader>
@@ -100,6 +101,7 @@ const InviteUserDialog = ({ open, onClose }: Props) => {
             label="Name"
             placeholder="John Doe"
             inputClassName="justify-start h-auto px-5 py-4 text-paragraph text-base font-normal placeholder:font-normal font-['Inter'] leading-6"
+            inputTestId="user-management-name-input"
           />
 
           <Field.Text
@@ -107,6 +109,7 @@ const InviteUserDialog = ({ open, onClose }: Props) => {
             label="Email"
             placeholder="john.doe@example.com"
             inputClassName="justify-start h-auto px-5 py-4 text-paragraph text-base font-normal placeholder:font-normal font-['Inter'] leading-6"
+            inputTestId="user-management-email-input"
           />
 
           <Field.Select
@@ -115,13 +118,21 @@ const InviteUserDialog = ({ open, onClose }: Props) => {
             placeholder="Select a role"
             className="gap-2"
             triggerClassName="h-[52px] text-base font-semibold font-['Inter'] leading-6"
+            triggerTestId="user-management-role-dropdown"
             options={[
               { value: "admin", label: "Admin" },
               { value: "member", label: "Member" },
             ]}
           />
           <DialogFooter className="!mt-6">
-            <Button variant="default" size="lg" className="w-full" type="submit" disabled={isSubmitting}>
+            <Button
+              variant="default"
+              size="lg"
+              className="w-full"
+              type="submit"
+              disabled={isSubmitting}
+              data-testid="user-management-send-invitation-button"
+            >
               {isSubmitting ? "Sending..." : "Send Invitation"}
             </Button>
           </DialogFooter>

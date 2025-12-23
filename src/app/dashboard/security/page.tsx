@@ -25,7 +25,12 @@ const SecurityPage = () => (
   <div data-testid="dashboard-security-page" className="flex flex-col h-full">
     <div className="flex flex-col gap-4 mb-6">
       <div>
-        <h1 className="text-2xl font-bold">Security & Privacy</h1>
+        <h1
+          className="text-2xl font-bold"
+          data-testid="security-privacy-heading"
+        >
+          Security & Privacy
+        </h1>
         <p className="text-muted-foreground">
           Learn how we protect your Sense PC and data
         </p>

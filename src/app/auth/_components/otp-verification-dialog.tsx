@@ -47,6 +47,8 @@ interface OtpVerificationDialogProps {
   email: string | null;
   onClose: () => void;
   onVerified?: () => void; // e.g. redirect to /auth
+  otpInputTestId?: string;
+  submitButtonTestId?: string;
 }
 
 export function OtpVerificationDialog({
@@ -54,6 +56,8 @@ export function OtpVerificationDialog({
   email,
   onClose,
   onVerified,
+  otpInputTestId,
+  submitButtonTestId,
 }: OtpVerificationDialogProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -231,7 +235,11 @@ export function OtpVerificationDialog({
                   <FormItem className="w-full flex flex-col items-center">
                     <FormControl>
                       <div className="flex justify-center w-full">
-                        <InputOTP maxLength={6} {...field}>
+                        <InputOTP
+                          maxLength={6}
+                          data-testid={otpInputTestId}
+                          {...field}
+                        >
                           <InputOTPGroup>
                             {[...Array(6)].map((_, i) => (
                               <InputOTPSlot key={i} index={i} />
@@ -249,6 +257,7 @@ export function OtpVerificationDialog({
                 type="submit"
                 disabled={isVerifying || isResending}
                 size="lg"
+                data-testid={submitButtonTestId}
                 className="
                   w-full
                   rounded-full

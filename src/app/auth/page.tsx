@@ -262,6 +262,7 @@ export default function LoginPage() {
                               type="email"
                               placeholder="Enter your email"
                               {...register("email")}
+                              data-testid="login-email-input"
                               uiSize="lg"
                               intent={errors.email ? "error" : "default"}
                               aria-invalid={!!errors.email}
@@ -284,6 +285,7 @@ export default function LoginPage() {
                               type="password"
                               placeholder="Password"
                               {...register("password")}
+                              data-testid="login-password-input"
                               uiSize="lg"
                               intent={errors.password ? "error" : "default"}
                               aria-invalid={!!errors.password}
@@ -328,6 +330,7 @@ export default function LoginPage() {
                           size="lg"
                           className="mt-3 w-full rounded-full text-sm font-medium"
                           disabled={isLoading}
+                          data-testid="login-button"
                         >
                           {isLoading ? "Logging in..." : "Login"}
                         </Button>
@@ -352,6 +355,7 @@ export default function LoginPage() {
                           type="button"
                           className="font-semibold text-link-primary hover:underline"
                           onClick={() => router.push(routes.signUp)}
+                          data-testid="signup-link-button"
                         >
                           Sign up
                         </button>
@@ -398,6 +402,7 @@ export default function LoginPage() {
         isOpen={isOtpOpen}
         email={otpEmail}
         onClose={() => setIsOtpOpen(false)}
+        submitButtonTestId="login-continue-button"
       />
     </>
   );

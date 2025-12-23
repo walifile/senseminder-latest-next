@@ -36,6 +36,7 @@ export interface RHFTextProps {
   maxLength?: number;
   minLength?: number;
   onChange?: (value: string) => void;
+  inputTestId?: string;
 }
 
 export const RHFText = forwardRef<
@@ -62,6 +63,7 @@ export const RHFText = forwardRef<
       maxLength,
       minLength,
       onChange,
+      inputTestId,
     },
     ref
   ) => {
@@ -142,6 +144,7 @@ export const RHFText = forwardRef<
                     rows={rows}
                     maxLength={maxLength}
                     minLength={minLength}
+                    data-testid={inputTestId}
                     className={cn(
                       "border-0 outline outline-1 outline-offset-[-1px] outline-blue-700/10 dark:outline-white/20 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none ring-offset-background bg-blue-700/5 dark:bg-white/5 rounded-[10px]",
                       hasError && "border-red-500 focus:border-red-500",
@@ -160,6 +163,7 @@ export const RHFText = forwardRef<
                     disabled={disabled}
                     maxLength={maxLength}
                     minLength={minLength}
+                    data-testid={inputTestId}
                     className={cn(
                       "h-11 border-0 outline outline-1 outline-offset-[-1px] outline-blue-700/10 dark:outline-white/20 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none ring-offset-background bg-blue-700/5 dark:bg-white/5 rounded-[10px]",
                       hasError && "border-red-500 focus:border-red-500",

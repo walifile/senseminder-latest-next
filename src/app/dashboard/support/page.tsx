@@ -38,6 +38,13 @@ export default function SupportPage() {
                       key={tab.value}
                       value={tab.value}
                       className={supportTabTriggerClass}
+                      data-testid={
+                        tab.value === "new-ticket"
+                          ? "support-new-ticket-tab"
+                          : tab.value === "tickets"
+                            ? "support-my-tickets-tab"
+                            : "support-faq-tab"
+                      }
                     >
                       <div {...supportTabIconProps(tab.icon)} />
                       <div className="justify-start text-sm font-medium font-['Inter'] leading-5">

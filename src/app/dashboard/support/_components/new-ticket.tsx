@@ -159,6 +159,7 @@ const NewTicket = ({ setActiveTab }: Props) => {
               value={formState.subject}
               onChange={handleInputChange}
               className="justify-start h-auto px-5 py-4 text-[#454545] dark:text-[#B9C2D5] bg-blue-700/5 text-base font-normal placeholder:font-normal font-['Inter'] leading-6 rounded-[10px]"
+              data-testid="support-subject-input"
             />
             {subjectError && (
               <p className="text-sm text-red-500">{subjectError}</p>
@@ -174,7 +175,10 @@ const NewTicket = ({ setActiveTab }: Props) => {
                 value={formState.category}
                 onValueChange={(val) => handleSelectChange("category", val)}
               >
-                <SelectTrigger variant="glowingSelector">
+                <SelectTrigger
+                  variant="glowingSelector"
+                  data-testid="support-category-dropdown"
+                >
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -205,6 +209,7 @@ const NewTicket = ({ setActiveTab }: Props) => {
               value={formState.description}
               onChange={handleInputChange}
               className="min-h-[200px] self-stretch relative bg-blue-700/5 dark:bg-white/5 rounded-[10px] outline outline-1 outline-blue-700/10 dark:outline-white/20"
+              data-testid="support-description-textarea"
             />
             {descriptionError && (
               <p className="text-sm text-red-500">{descriptionError}</p>
@@ -232,6 +237,7 @@ const NewTicket = ({ setActiveTab }: Props) => {
               !!subjectError ||
               !!descriptionError
             }
+            data-testid="support-submit-ticket-button"
           >
             {loading ? "Submitting..." : "Submit Ticket"}
           </Button>
