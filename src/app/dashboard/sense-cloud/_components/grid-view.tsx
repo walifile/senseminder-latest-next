@@ -193,7 +193,7 @@ const GridView = ({
                                                   <Share2 className="h-3.5 w-3.5 text-green-500" />
                                                 )} */}
                 {file.starred && (
-                  <Star className="h-3.5 w-3.5 text-yellow-500" />
+                  <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
                 )}
               </div>
             </div>
