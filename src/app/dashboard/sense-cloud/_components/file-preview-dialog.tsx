@@ -110,6 +110,7 @@ const FilePreviewDialog: React.FC<FilePreviewProps> = ({
               variant="outline"
               onClick={onClose}
               className="gap-2 text-sm"
+              data-testid="storage-file-viewer-close"
             >
               <X className="h-4 w-4" />
               Close

@@ -82,13 +82,14 @@ const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
             Cancel
           </Button>
-          <Button
-            variant="destructive"
-            onClick={handleFileDelete}
-            disabled={isLoading}
-          >
-            {isLoading ? "Deleting..." : "Confirm Delete"}
-          </Button>
+        <Button
+          variant="destructive"
+          onClick={handleFileDelete}
+          disabled={isLoading}
+          data-testid="storage-confirm-delete-button"
+        >
+          {isLoading ? "Deleting..." : "Confirm Delete"}
+        </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
