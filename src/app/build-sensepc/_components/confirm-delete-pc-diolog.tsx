@@ -75,7 +75,7 @@ export const ConfirmDeleteModal = ({
       }
       await deleteVM({ instanceId, region }).unwrap();
       toast({
-        title: <span data-testid="sensepc-delete-success-message">Computer Deleted</span>,
+        title: "Computer Deleted",
         description: `Computer "${systemName}" has been deleted successfully.`,
       });
       dispatch(removeStartingInstance(instanceId));
