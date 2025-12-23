@@ -1,8 +1,3 @@
-
-
-
-// build-smartpc/src/app/build-smartpc/_components/selected-pc.tsx
-
 "use client";
 
 import type { RootState } from "@/redux/store";
@@ -45,7 +40,6 @@ import { BillingPlanDialog } from "./billing-dialog";
 import type { PC, SelectedPcProps } from "../types";
 
 const { INSTANCE_DETAILS_URL } = appConfig;
-
 
 const STAT_CARD_BASE =
   "rounded-[10px] p-4 text-sm bg-[rgba(37,48,240,0.1)] text-[#020816] " +
@@ -205,13 +199,13 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
       initial={{ height: 0, opacity: 0 }}
       animate={{ height: "auto", opacity: 1 }}
       exit={{ height: 0, opacity: 0 }}
-      className="mt-14"
+      className="mt-14 font-['Space_Grotesk']"
     >
-      <DashboardCard className="w-full overflow-hidden p-4 md:p-5 lg:p-6">
+      <DashboardCard className="w-full overflow-hidden p-4 md:p-5 lg:p-6 font-['Space_Grotesk']">
         {/* ========= SIMPLE HEADER (FIGMA) ========= */}
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-medium text-[#020816] md:text-lg dark:text-white">
-            Instance Details
+          <h3 className="font-['Space_Grotesk'] text-base font-medium text-[#020816] md:text-lg dark:text-white">
+            Computer Metrics
           </h3>
 
           <Button
@@ -234,17 +228,15 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
             {/* ---- METRICS ROW (5 SMALL CARDS) ---- */}
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
               {/* CPU */}
-              <div
-                className={`${STAT_CARD_BASE} flex flex-col justify-between`}
-              >
+              <div className={`${STAT_CARD_BASE} flex flex-col justify-between`}>
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Cpu className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-semibold text-[#020816] dark:text-white">
+                    <span className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
                       CPU
                     </span>
                   </div>
-                  <span className="text-sm text-[#454545] dark:text-muted-foreground">
+                  <span className="font-['Space_Grotesk'] text-sm text-[#454545] dark:text-muted-foreground">
                     {cpuPercent.toFixed(2)}%
                   </span>
                 </div>
@@ -257,17 +249,15 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
               </div>
 
               {/* Memory */}
-              <div
-                className={`${STAT_CARD_BASE} flex flex-col justify-between`}
-              >
+              <div className={`${STAT_CARD_BASE} flex flex-col justify-between`}>
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <MemoryStick className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-semibold text-[#020816] dark:text-white">
+                    <span className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
                       Memory
                     </span>
                   </div>
-                  <span className="text-sm text-[#454545] dark:text-muted-foreground">
+                  <span className="font-['Space_Grotesk'] text-sm text-[#454545] dark:text-muted-foreground">
                     {memPercent.toFixed(2)}%
                   </span>
                 </div>
@@ -283,11 +273,11 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
               <div className={`${STAT_CARD_BASE} flex flex-col justify-center`}>
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-semibold text-[#020816] dark:text-white">
+                  <span className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
                     Region
                   </span>
                 </div>
-                <span className="mt-2 text-sm text-[#454545] dark:text-muted-foreground">
+                <span className="font-['Space_Grotesk'] mt-2 text-sm text-[#454545] dark:text-muted-foreground">
                   {current.region || "—"}
                 </span>
               </div>
@@ -296,11 +286,11 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
               <div className={`${STAT_CARD_BASE} flex flex-col justify-center`}>
                 <div className="flex items-center gap-2">
                   <MonitorPlay className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-semibold text-[#020816] dark:text-white">
+                  <span className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
                     Uptime
                   </span>
                 </div>
-                <span className="mt-2 text-sm text-[#454545] dark:text-muted-foreground">
+                <span className="font-['Space_Grotesk'] mt-2 text-sm text-[#454545] dark:text-muted-foreground">
                   {current.uptime || "N/A"}
                 </span>
               </div>
@@ -309,13 +299,12 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
               <div className={`${STAT_CARD_BASE} flex flex-col justify-center`}>
                 <div className="flex items-center gap-2">
                   <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-semibold text-[#020816] dark:text-white">
+                  <span className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
                     Cost
                   </span>
                 </div>
-                <span className="mt-2 text-sm text-[#454545] dark:text-muted-foreground">
-                  ${current.monthlyBillingTotal?.toFixed(2) ?? "0.00"} this
-                  month
+                <span className="font-['Space_Grotesk'] mt-2 text-sm text-[#454545] dark:text-muted-foreground">
+                  ${current.monthlyBillingTotal?.toFixed(2) ?? "0.00"} this month
                 </span>
               </div>
             </div>
@@ -325,40 +314,25 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
 
             {/* ---- SPECIFICATIONS ---- */}
             <div>
-              <h4 className="text-sm font-medium text-[#020816] dark:text-white">
+              <h4 className="font-['Space_Grotesk'] text-sm font-medium text-[#020816] dark:text-white">
                 Specifications
               </h4>
               <div className="mt-3 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
                 {[
                   { icon: Cpu, label: "CPU", value: current.specs?.cpu },
-                  {
-                    icon: MemoryStick,
-                    label: "Memory",
-                    value: current.specs?.ram,
-                  },
-                  {
-                    icon: HardDrive,
-                    label: "SSD",
-                    value: current.specs?.storage,
-                  },
+                  { icon: MemoryStick, label: "Memory", value: current.specs?.ram },
+                  { icon: HardDrive, label: "SSD", value: current.specs?.storage },
                   { icon: Activity, label: "GPU", value: current.specs?.gpu },
-                  {
-                    icon: Settings,
-                    label: "OS",
-                    value: formattedOS,
-                  },
+                  { icon: Settings, label: "OS", value: formattedOS },
                 ].map(({ icon: Icon, label, value }) => (
-                  <div
-                    key={label}
-                    className={`${STAT_CARD_BASE} space-y-1`}
-                  >
+                  <div key={label} className={`${STAT_CARD_BASE} space-y-1`}>
                     <div className="flex items-center gap-2">
                       <Icon className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-semibold text-[#020816] dark:text-white">
+                      <span className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
                         {label}
                       </span>
                     </div>
-                    <span className="block text-sm text-[#454545] dark:text-muted-foreground">
+                    <span className="font-['Space_Grotesk'] block text-sm text-[#454545] dark:text-muted-foreground">
                       {value || "—"}
                     </span>
                   </div>
@@ -374,28 +348,28 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-muted-foreground" />
-                    <h4 className="text-sm font-semibold text-[#020816] dark:text-white">
+                    <h4 className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
                       Assigned User
                     </h4>
                   </div>
                   {current.assignedUser ? (
                     <div className="mt-1 flex flex-wrap items-center gap-3">
                       <Avatar className="h-8 w-8">
-                        <AvatarFallback>
+                        <AvatarFallback className="font-['Space_Grotesk']">
                           {current.assignedUser.name?.[0] ?? "?"}
                         </AvatarFallback>
                       </Avatar>
                       <div className="space-y-0.5 text-sm">
-                        <div className="font-medium text-[#020816] dark:text-white">
+                        <div className="font-['Space_Grotesk'] font-medium text-[#020816] dark:text-white">
                           {current.assignedUser.name}
                         </div>
-                        <div className="text-xs text-[#454545] dark:text-muted-foreground">
+                        <div className="font-['Space_Grotesk'] text-xs text-[#454545] dark:text-muted-foreground">
                           {current.assignedUser.email}
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-[#454545] dark:text-muted-foreground">
+                    <p className="font-['Space_Grotesk'] text-sm text-[#454545] dark:text-muted-foreground">
                       No user assigned to this PC.
                     </p>
                   )}
@@ -407,7 +381,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                     handleAssignUser();
                     setSelectedInstance(current);
                   }}
-                  className="h-9 rounded-full bg-gradient-to-l from-[#a801ba] to-[#2530f0] px-6 text-sm text-white hover:opacity-90"
+                  className="h-9 rounded-full bg-gradient-to-l from-[#a801ba] to-[#2530f0] px-6 text-sm text-white hover:opacity-90 font-['Space_Grotesk']"
                 >
                   <Plus className="mr-1 h-4 w-4" />
                   Assign
@@ -416,126 +390,125 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
             )}
 
             {/* ---- BILLING PLAN (BOTTOM) ---- */}
-          {/* ---- BILLING PLAN (BOTTOM) ---- */}
-{!isMember && current.billingPlan && (
-  <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-    <div className="max-w-xl space-y-2">
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="text-sm font-semibold text-[#020816] dark:text-white">
-          Current Billing Plan:
-        </span>
-        <span className="inline-flex items-center rounded-full bg-[rgba(219,135,0,0.15)] px-4 py-1 text-sm text-[#db8700] dark:bg-[rgba(243,156,18,0.15)] dark:text-[#f39c12]">
-          {current.billingPlan.charAt(0).toUpperCase() +
-            current.billingPlan.slice(1)}
-        </span>
-      </div>
-      {current.billingPlanDescription && (
-        <p className="text-sm text-[#454545] dark:text-muted-foreground">
-          {current.billingPlanDescription}
-        </p>
-      )}
-    </div>
+            {!isMember && current.billingPlan && (
+              <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+                <div className="max-w-xl space-y-2">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
+                      Current Billing Plan:
+                    </span>
+                    <span className="font-['Space_Grotesk'] inline-flex items-center rounded-full bg-[rgba(219,135,0,0.15)] px-4 py-1 text-sm text-[#db8700] dark:bg-[rgba(243,156,18,0.15)] dark:text-[#f39c12]">
+                      {current.billingPlan.charAt(0).toUpperCase() +
+                        current.billingPlan.slice(1)}
+                    </span>
+                  </div>
+                  {current.billingPlanDescription && (
+                    <p className="font-['Space_Grotesk'] text-sm text-[#454545] dark:text-muted-foreground">
+                      {current.billingPlanDescription}
+                    </p>
+                  )}
+                </div>
 
-    <Button
-      variant="outline"
-      size="sm"
-      className="h-11 rounded-full px-6 text-sm text-[#020816] dark:text-white"
-      onClick={(e) => {
-        e.stopPropagation();
-        setShowBillingDialog(true);
-      }}
-    >
-      Change Plan
-    </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-11 rounded-full px-6 text-sm text-[#020816] dark:text-white font-['Space_Grotesk']"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowBillingDialog(true);
+                  }}
+                >
+                  Change Plan
+                </Button>
 
-    <BillingPlanDialog
-      currentPlan={current.billingPlan as "hourly" | "daily" | "monthly"}
-      open={showBillingDialog}
-      onOpenChange={setShowBillingDialog}
-      configId={current.configId}
-      storageSize={current.specs?.storage}
-      region={current.region}
-      autoRenewEnabled={current.autoRenew}
-      onToggleAutoRenew={handleAutoRenewToggle}
-      onConfirm={async (newPlan) => {
-        try {
-          const response = await addBillingPlan({
-            instanceId: current.instanceId,
-            billingPlan: newPlan,
-          }).unwrap();
+                <BillingPlanDialog
+                  currentPlan={current.billingPlan as "hourly" | "daily" | "monthly"}
+                  open={showBillingDialog}
+                  onOpenChange={setShowBillingDialog}
+                  configId={current.configId}
+                  storageSize={current.specs?.storage}
+                  region={current.region}
+                  autoRenewEnabled={current.autoRenew}
+                  onToggleAutoRenew={handleAutoRenewToggle}
+                  onConfirm={async (newPlan) => {
+                    try {
+                      const response = await addBillingPlan({
+                        instanceId: current.instanceId,
+                        billingPlan: newPlan,
+                      }).unwrap();
 
-          const change = (response?.change ?? "no_change") as
-            | "no_change"
-            | "upgrade"
-            | "downgrade";
+                      const change = (response?.change ?? "no_change") as
+                        | "no_change"
+                        | "upgrade"
+                        | "downgrade";
 
-          const descriptions: Record<"hourly" | "daily" | "monthly", string> = {
-            hourly:
-              "Perfect for quick tasks and testing. No commitment, instant start/stop.",
-            daily:
-              "Ideal for day-long projects. ~15% savings vs hourly.",
-            monthly:
-              "Best value for regular users. ~35% savings vs weekly.",
-          };
+                      const descriptions: Record<
+                        "hourly" | "daily" | "monthly",
+                        string
+                      > = {
+                        hourly:
+                          "Perfect for quick tasks and testing. No commitment, instant start/stop.",
+                        daily: "Ideal for day-long projects. ~Savings up to 10% vs hourly.",
+                        monthly: "Best value for regular users. ~Saving up to 10% vs daily.",
+                      };
 
-          let title = "Billing Plan";
-          let message = "";
+                      let title = "Billing Plan";
+                      let message = "";
 
-          if (change === "no_change") {
-            title = "No Changes Made";
-            message =
-              "You selected the same billing plan. Nothing was changed.";
-          } else if (change === "upgrade") {
-            title = "Billing Plan Updated";
-            message = `You've switched to the ${newPlan} plan.`;
-          } else if (change === "downgrade") {
-            title = "Downgrade Scheduled";
-            message =
-              `Your request to downgrade to the ${newPlan} plan has been saved. ` +
-              `The new plan will take effect after the current billing cycle.`;
-          }
+                      if (change === "no_change") {
+                        title = "No Changes Made";
+                        message =
+                          "You selected the same billing plan. Nothing was changed.";
+                      } else if (change === "upgrade") {
+                        title = "Billing Plan Updated";
+                        message = `You've switched to the ${newPlan} plan.`;
+                      } else if (change === "downgrade") {
+                        title = "Downgrade Scheduled";
+                        message =
+                          `Your request to downgrade to the ${newPlan} plan has been saved. ` +
+                          `The new plan will take effect after the current billing cycle.`;
+                      }
 
-          toast({ title, description: message });
+                      toast({ title, description: message });
 
-          if (change === "upgrade") {
-            setCloudPCs((prev) => {
-              const updated = [...prev];
-              updated[selectedPCs[0]] = {
-                ...updated[selectedPCs[0]],
-                billingPlan: newPlan,
-                billingPlanDescription: descriptions[newPlan],
-              };
-              return updated;
-            });
-          } else if (change === "downgrade") {
-            setCloudPCs((prev) => {
-              const updated = [...prev];
-              updated[selectedPCs[0]] = {
-                ...updated[selectedPCs[0]],
-                billingPlanDescription:
-                  (updated[selectedPCs[0]]?.billingPlanDescription ?? "") +
-                  " (Downgrade scheduled)",
-              };
-              return updated;
-            });
-          }
+                      if (change === "upgrade") {
+                        setCloudPCs((prev) => {
+                          const updated = [...prev];
+                          updated[selectedPCs[0]] = {
+                            ...updated[selectedPCs[0]],
+                            billingPlan: newPlan,
+                            billingPlanDescription: descriptions[newPlan],
+                          };
+                          return updated;
+                        });
+                      } else if (change === "downgrade") {
+                        setCloudPCs((prev) => {
+                          const updated = [...prev];
+                          updated[selectedPCs[0]] = {
+                            ...updated[selectedPCs[0]],
+                            billingPlanDescription:
+                              (updated[selectedPCs[0]]?.billingPlanDescription ??
+                                "") + " (Downgrade scheduled)",
+                          };
+                          return updated;
+                        });
+                      }
 
-          setShowBillingDialog(false);
-        } catch (error) {
-          toast({
-            title: "Error",
-            description: getErrorMessage(
-              error,
-              "Failed to update billing plan.",
-            ),
-            variant: "destructive",
-          });
-        }
-      }}
-    />
-  </div>
-)}
-
+                      setShowBillingDialog(false);
+                    } catch (error) {
+                      toast({
+                        title: "Error",
+                        description: getErrorMessage(
+                          error,
+                          "Failed to update billing plan.",
+                        ),
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                />
+              </div>
+            )}
           </div>
         )}
       </DashboardCard>

@@ -21,10 +21,12 @@ function BillingPageInner() {
   const { triggerRefresh } = useBillingRefresh();
 
   return (
-    <div data-testid="dashboard-billing-page" className="space-y-8">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold">Billing & Payments</h1>
+      <div data-testid="dashboard-billing-page" className="space-y-8">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <h1 className="justify-start text-black dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8">
+              Billing & Payments
+            </h1>
           <Button
             variant="ghost"
             size="icon"

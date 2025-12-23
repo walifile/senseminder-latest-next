@@ -49,20 +49,20 @@ export const ProfileAccountTab = ({
   const avatarSrc: string | null = null;
 
   const labelClass =
-    "text-[18px] font-semibold leading-[32px] tracking-[-0.3px] text-text-heading dark:text-white";
+    "font-['Space_Grotesk'] text-[18px] font-semibold leading-[32px] tracking-[-0.3px] text-text-heading dark:text-white";
 
   const fieldSurfaceClass =
-    "bg-select-pill-bg border border-select-pill-border rounded-[10px] px-5 py-4 h-auto";
+    "font-['Space_Grotesk'] bg-select-pill-bg border border-select-pill-border rounded-[10px] px-5 py-4 h-auto";
 
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-[auto_1fr]">
+    <div className="font-['Space_Grotesk'] grid items-start gap-6 lg:grid-cols-[auto_1fr]">
       {/* Left card: use default DashboardCard */}
-      <DashboardCard className="p-6">
+      <DashboardCard className="p-6 font-['Space_Grotesk']">
         <div className="flex items-start gap-4">
           <div className="relative shrink-0">
             <Avatar className="h-20 w-20">
               {avatarSrc ? <AvatarImage src={avatarSrc} alt="" /> : null}
-              <AvatarFallback className="text-base">
+              <AvatarFallback className="font-['Space_Grotesk'] text-base">
                 {fallbackInitials}
               </AvatarFallback>
             </Avatar>
@@ -75,10 +75,10 @@ export const ProfileAccountTab = ({
 
           <div className="flex min-w-0 flex-col gap-4">
             <div className="space-y-1">
-              <p className="truncate text-[16px] font-semibold leading-[1.6] text-text-heading dark:text-white">
+              <p className="font-['Space_Grotesk'] truncate text-[16px] font-semibold leading-[1.6] text-text-heading dark:text-white">
                 {fullName || "—"}
               </p>
-              <p className="text-[12px] font-normal text-input-placeholder dark:text-muted-foreground">
+              <p className="font-['Space_Grotesk'] text-[12px] font-normal text-input-placeholder dark:text-muted-foreground">
                 JPG, GIF or PNG. Max size 2MB.
               </p>
             </div>
@@ -102,8 +102,8 @@ export const ProfileAccountTab = ({
       </DashboardCard>
 
       {/* Right card: default DashboardCard + light override to dark bg */}
-      <DashboardCard className="p-6 bg-public-card-bg-dark dark:bg-public-card-bg-dark">
-        <form onSubmit={prevent} className="flex flex-col gap-5">
+      <DashboardCard className="p-6 bg-public-card-bg-dark dark:bg-public-card-bg-dark font-['Space_Grotesk']">
+        <form onSubmit={prevent} className="flex flex-col gap-5 font-['Space_Grotesk']">
           <div className="flex flex-col gap-2.5">
             <Label htmlFor="fullName" className={labelClass}>
               Full Name
@@ -152,7 +152,7 @@ export const ProfileAccountTab = ({
             />
           </div>
 
-          <p className="text-[16px] leading-[24px] tracking-[-0.3px] text-input-placeholder dark:text-muted-foreground">
+          <p className="font-['Space_Grotesk'] text-[16px] leading-[24px] tracking-[-0.3px] text-input-placeholder dark:text-muted-foreground">
             Email cannot be changed. Please contact support if you need to update
             your email address.
           </p>

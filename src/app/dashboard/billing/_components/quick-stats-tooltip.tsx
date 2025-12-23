@@ -1,4 +1,3 @@
-
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 
 import { cn } from "@/lib/utils";
@@ -26,7 +25,7 @@ const QuickStatsTooltip = ({ content, iconClass }: Props) => (
         side="top"
         sideOffset={8}
         collisionPadding={12}
-        className="z-[9999] max-w-xs text-xs"
+        className={cn("z-[9999] max-w-xs text-xs", "font-['Space_Grotesk']")}
       >
         {content}
       </TooltipContent>

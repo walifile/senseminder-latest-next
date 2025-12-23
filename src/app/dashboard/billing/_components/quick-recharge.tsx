@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -130,8 +129,11 @@ const QuickRecharge = () => {
       Logger.error("Failed to update auto-recharge:", error);
 
       // Check for HTTP 400 error
-      if (error && typeof error === 'object' && 'status' in error) {
-        const rtkError = error as { status: number; data?: { message?: string } };
+      if (error && typeof error === "object" && "status" in error) {
+        const rtkError = error as {
+          status: number;
+          data?: { message?: string };
+        };
 
         if (rtkError.status === 400 && rtkError.data?.message) {
           toast({
@@ -193,12 +195,12 @@ const QuickRecharge = () => {
     <>
       <DashboardCard
         data-testid="dashboard-billing-quick-recharge"
-        className="relative overflow-hidden p-0"
+        className={cn("relative overflow-hidden p-0", "font-['Space_Grotesk']")}
       >
         {/* Header */}
         <div className="px-6 pt-5">
           <div className="space-y-1">
-            <p className="text-[24px] font-bold tracking-[-0.4px] text-foreground">
+            <p className="justify-start text-2xl font-bold leading-8">
               Quick Recharge
             </p>
             <p className="text-[16px] tracking-[-0.3px] text-muted-foreground dark:text-[#B9C2D5]">
@@ -243,7 +245,6 @@ const QuickRecharge = () => {
               ))}
             </div>
 
-
             {/* Or enter custom amount divider */}
             <div className="flex items-center gap-3.5">
               <div className="h-px flex-1 bg-[rgba(37,48,240,0.2)] dark:bg-[rgba(255,255,255,0.2)]" />
@@ -272,9 +273,8 @@ const QuickRecharge = () => {
                   className={cn(
                     "h-14 rounded-[10px] pl-12 pr-5 text-[18px] leading-8 tracking-[-0.3px]",
                     "bg-[rgba(37,48,240,0.07)] dark:bg-[rgba(255,255,255,0.04)]",
-                                    "border border-[#2530F0]/20 dark:border-white/10",
-                                    "focus-visible:outline-none focus-visible:border-[#5f4bf6]",
-                    // Figma: light vs dark field
+                    "border border-[#2530F0]/20 dark:border-white/10",
+                    "focus-visible:outline-none focus-visible:border-[#5f4bf6]"
                   )}
                 />
               </div>
@@ -300,45 +300,45 @@ const QuickRecharge = () => {
               </Button>
             </div>
 
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="h-5 w-5 rounded-[4px] accent-[#2530F0]"
+                  checked={autoRechargeEnabled}
+                  onChange={handleAutoRechargeToggle}
+                />
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="h-5 w-5 rounded-[4px] accent-[#2530F0]"
-                checked={autoRechargeEnabled}
-                onChange={handleAutoRechargeToggle}
-              />
-
-              <span className="text-[16px] tracking-[-0.3px] text-muted-foreground dark:text-[#B9C2D5]">
-                Enable auto-recharge when balance drops below $10
-              </span>
-            </div>
-
-            {autoRechargeEnabled && (
-              <div className="flex flex-wrap items-center gap-2 pl-7 text-sm text-muted-foreground dark:text-[#B9C2D5]">
-                <span>Current auto-recharge amount:</span>
-
-                <span className="inline-flex items-center rounded-full bg-background px-3 py-1 text-sm font-medium border">
-                  ${autoRechargeAmount}
+                <span className="text-[16px] tracking-[-0.3px] text-muted-foreground dark:text-[#B9C2D5]">
+                  Enable auto-recharge when balance drops below $10
                 </span>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  title="Edit auto-recharge amount"
-                  onClick={() => {
-                    setTempAutoRechargeAmount(autoRechargeAmount);
-                    showAutoRechargeConfig.onTrue();
-                  }}
-                >
-                  <PencilLine className="h-3.5 w-3.5" />
-                </Button>
               </div>
-            )}
-          </div>
 
+              {autoRechargeEnabled && (
+                <div className="flex flex-wrap items-center gap-2 pl-7 text-sm text-muted-foreground dark:text-[#B9C2D5]">
+                  <span className="text-[14px] font-semibold tracking-[-0.2px] text-foreground">
+                    Current auto-recharge amount:
+                  </span>
+
+                  <span className="inline-flex items-center rounded-full bg-background px-3 py-1 text-sm font-medium border">
+                    ${autoRechargeAmount}
+                  </span>
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    title="Edit auto-recharge amount"
+                    onClick={() => {
+                      setTempAutoRechargeAmount(autoRechargeAmount);
+                      showAutoRechargeConfig.onTrue();
+                    }}
+                  >
+                    <PencilLine className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </DashboardCard>
@@ -348,7 +348,7 @@ const QuickRecharge = () => {
         open={showAutoRechargeConfig.value}
         onOpenChange={showAutoRechargeConfig.onToggle}
       >
-        <DialogContent data-testid="dashboard-billing-auto-recharge-dialog">
+        <DialogContent data-testid="dashboard-billing-auto-recharge-dialog" className="font-['Space_Grotesk']">
           <DialogHeader>
             <DialogTitle>Configure Auto-Recharge</DialogTitle>
             <DialogDescription>
@@ -384,7 +384,9 @@ const QuickRecharge = () => {
             <Button variant="outline" onClick={showAutoRechargeConfig.onFalse}>
               Cancel
             </Button>
-            <Button onClick={confirmAutoRechargeConfig}>Save &amp; Enable</Button>
+            <Button onClick={confirmAutoRechargeConfig}>
+              Save &amp; Enable
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -396,7 +398,7 @@ const QuickRecharge = () => {
           if (!open) setShowDisableAutoRechargeConfirm(false);
         }}
       >
-        <DialogContent data-testid="dashboard-billing-auto-recharge-disable-dialog">
+        <DialogContent data-testid="dashboard-billing-auto-recharge-disable-dialog" className="font-['Space_Grotesk']">
           <DialogHeader>
             <DialogTitle>Turn off auto-recharge?</DialogTitle>
             <DialogDescription>
@@ -429,7 +431,7 @@ const QuickRecharge = () => {
 
       {/* Recharge Confirmation Dialog */}
       <Dialog open={showConfirm.value} onOpenChange={showConfirm.onToggle}>
-        <DialogContent data-testid="dashboard-billing-recharge-confirm-dialog">
+        <DialogContent data-testid="dashboard-billing-recharge-confirm-dialog" className="font-['Space_Grotesk']">
           <DialogHeader>
             <DialogTitle>Confirm Recharge</DialogTitle>
             <DialogDescription>

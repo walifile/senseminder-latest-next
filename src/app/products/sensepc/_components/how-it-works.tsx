@@ -31,6 +31,9 @@ const steps = [
   },
 ];
 
+const HEADING_FONT =
+  "justify-start text-black dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8";
+
 const RentSmarterProcess: React.FC = () => (
   <section className="relative">
     {/* Light mode ellipses (positioned like Figma: upper-mid, clipped at edges) */}
@@ -64,7 +67,8 @@ const RentSmarterProcess: React.FC = () => (
         transition={{ duration: 0.6 }}
         className="space-y-12 lg:col-span-2"
       >
-        <h4 className="max-w-lg font-space-grotesk text-2xl font-bold md:text-4xl">
+        {/* ✅ apply requested heading font */}
+        <h4 className={`${HEADING_FONT} max-w-lg md:text-4xl`}>
           How SensePC works
         </h4>
       </motion.div>

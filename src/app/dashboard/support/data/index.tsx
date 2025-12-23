@@ -589,7 +589,7 @@ export const CATEGORIES: Category[] = [
         q: "I don’t see CPU/Memory usage.",
         a: (
           <>
-            Open the <strong>Instance Details</strong> panel in the dashboard
+            Open the <strong>Computer Metrics</strong> panel in the dashboard
             for live CPU and memory metrics. If it’s empty, refresh or ensure
             the instance is running.
           </>

@@ -137,7 +137,7 @@ const DashboardSidebar = () => {
           href="/"
           className="flex items-center"
         >
-          <Logo />
+          <Logo noLink />
         </Link>
       </div>
 

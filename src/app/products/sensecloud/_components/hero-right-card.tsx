@@ -26,6 +26,9 @@ const LIGHT = {
   shield: "/assets/product/sensecloud/hero_shield_light.svg",
 } as const;
 
+const HEADING_FONT =
+  "justify-start text-black dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8";
+
 const HeroRightCard = () => (
   <div
     className={cn(
@@ -34,7 +37,9 @@ const HeroRightCard = () => (
       // light
       "bg-[rgba(37,48,240,0.10)]",
       // dark
-      "dark:bg-[rgba(255,255,255,0.03)]"
+      "dark:bg-[rgba(255,255,255,0.03)]",
+      // ✅ base font for body
+      "font-['Inter']"
     )}
   >
     {/* Ellipse: bottom-left */}
@@ -86,7 +91,8 @@ const HeroRightCard = () => (
           <p className="text-[14px] leading-5 tracking-[-0.2px] text-[#454545] dark:text-[#A3A3A3]">
             Storage Snapshot
           </p>
-          <p className="text-[16px] leading-6 tracking-[-0.3px] font-semibold text-[#020816] dark:text-white">
+          {/* ✅ heading font */}
+          <p className={cn(HEADING_FONT, "text-[16px] leading-6 font-semibold")}>
             SenseCloud Volume
           </p>
         </div>
@@ -125,9 +131,16 @@ const HeroRightCard = () => (
       {/* Storage card */}
       <div className="w-full overflow-hidden rounded-[16px] bg-[#E6EEFF] p-6 dark:bg-[#1A1244]">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-base leading-7 tracking-[-0.3px] font-semibold text-[#0B1220] dark:text-white">
+          {/* ✅ section title font */}
+          <p
+            className={cn(
+              "text-base leading-7 tracking-[-0.3px] font-semibold text-[#0B1220] dark:text-white",
+              "font-['Space_Grotesk']"
+            )}
+          >
             Workspace-Storage-01
           </p>
+
           <div className="inline-flex items-center gap-2 text-[#2530F0] dark:text-[#13E1EA]">
             <span className="relative h-5 w-5 shrink-0">
               <img
@@ -143,7 +156,8 @@ const HeroRightCard = () => (
                 className="hidden h-full w-full dark:block"
               />
             </span>
-            <span className="text-[16px] leading-6 tracking-[-0.2px] font-semibold">
+            {/* ✅ label font */}
+            <span className="text-[16px] leading-6 tracking-[-0.2px] font-semibold font-['Space_Grotesk']">
               Attached to SensePC
             </span>
           </div>
@@ -188,7 +202,8 @@ const HeroRightCard = () => (
               />
             </span>
 
-            <p className="text-[16px] leading-6 tracking-[-0.3px] font-semibold text-[#020816] dark:text-white">
+            {/* ✅ mini-card title font */}
+            <p className="text-[16px] leading-6 tracking-[-0.3px] font-semibold text-[#020816] dark:text-white font-['Space_Grotesk']">
               Performance
             </p>
           </div>
@@ -216,7 +231,8 @@ const HeroRightCard = () => (
               />
             </span>
 
-            <p className="text-[16px] leading-6 tracking-[-0.3px] font-semibold text-[#020816] dark:text-white">
+            {/* ✅ mini-card title font */}
+            <p className="text-[16px] leading-6 tracking-[-0.3px] font-semibold text-[#020816] dark:text-white font-['Space_Grotesk']">
               Security
             </p>
           </div>

@@ -19,16 +19,20 @@ const FeedbackDialog = ({ open, onClose }: Props) => (
   <Dialog open={open} onOpenChange={onClose}>
     <DialogContent
       data-testid="dashboard-feedback-dialog"
-      className="sm:max-w-[425px]"
+      className="sm:max-w-[425px] font-['Space_Grotesk']"
     >
-      <DialogHeader>
-        <DialogTitle>Share Your Feedback</DialogTitle>
-        <DialogDescription>
+      <DialogHeader className="font-['Space_Grotesk']">
+        <DialogTitle className="font-['Space_Grotesk']">
+          Share Your Feedback
+        </DialogTitle>
+        <DialogDescription className="font-['Space_Grotesk']">
           We value your input to help us improve our services.
         </DialogDescription>
       </DialogHeader>
 
-      <FeedbackForm onClose={onClose} />
+      <div className="font-['Space_Grotesk']">
+        <FeedbackForm onClose={onClose} />
+      </div>
     </DialogContent>
   </Dialog>
 );

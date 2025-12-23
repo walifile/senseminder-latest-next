@@ -5,6 +5,8 @@ import Image from "next/image";
 
 import { Check } from "lucide-react";
 
+const HEADING_FONT =
+  "justify-start text-black dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8";
 
 const planCards = [
   {
@@ -56,14 +58,17 @@ const SmartStoragePricing = () => (
     <div className="pointer-events-none absolute -left-[346px] bottom-[-140px] hidden h-[680px] w-[680px] rotate-[-11.316deg] rounded-[680px] bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)] opacity-50 blur-[250px] dark:block" />
     <div className="pointer-events-none absolute -right-[200px] bottom-[-140px] h-[680px] w-[680px] rotate-[-11.316deg] rounded-[680px] bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)] opacity-30 blur-[250px] dark:hidden" />
     <div className="pointer-events-none absolute -right-[200px] bottom-[-140px] hidden h-[680px] w-[680px] rotate-[-11.316deg] rounded-[680px] bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)] opacity-50 blur-[250px] dark:block" />
+
     <div className="container mx-auto px-4 md:px-6">
       <div className="grid gap-[30px] lg:grid-cols-[1.2fr,0.8fr]">
         <div className="space-y-[23px]">
           <div className="rounded-[16px] bg-[rgba(37,48,240,0.10)] p-[30px] dark:bg-[linear-gradient(163deg,_#170D44_11.73%,_rgba(23,13,68,0.61)_98.26%)]">
             <div className="space-y-3">
-              <h2 className="font-['Space_Grotesk'] text-[28px] md:text-[36px] lg:text-[44px] font-semibold leading-[40px] text-[#0B1220] dark:text-white md:leading-[56px]">
+              {/* ✅ Apply your heading font */}
+              <h2 className={`${HEADING_FONT} md:text-[36px] lg:text-[44px] leading-[40px] md:leading-[56px]`}>
                 Sense Cloud Pricing & Plans
               </h2>
+
               <p className="text-[#454545] dark:text-[#B9C2D5] text-2xl font-normal font-['Inter'] leading-10">
                 Sense Cloud uses the same simple, transparent, and wallet-based
                 billing system as Sense PC. Auto-tiered plans adjust to your
@@ -95,9 +100,12 @@ const SmartStoragePricing = () => (
                     />
                     {plan.tag}
                   </span>
-                  <h3 className="justify-start text-base font-semibold font-['Space_Grotesk'] leading-8 text-[#020816] dark:text-white">
+
+                  {/* ✅ Apply heading font (keeps size) */}
+                  <h3 className={`${HEADING_FONT} text-base font-semibold leading-8`}>
                     {plan.title}
                   </h3>
+
                   <p className="self-stretch justify-start text-sm font-normal font-['Inter'] leading-5 text-[#454545] dark:text-[#B9C2D5]">
                     {plan.description}
                   </p>
@@ -129,10 +137,13 @@ const SmartStoragePricing = () => (
                   className="h-8 w-8"
                 />
               </span>
-              <h3 className="justify-start text-2xl font-semibold font-['Space_Grotesk'] capitalize leading-8text-[#0B1220] dark:text-white">
+
+              {/* ✅ Apply heading font; keep your intended size */}
+              <h3 className={`${HEADING_FONT} text-2xl font-semibold`}>
                 Storage Billing Highlights
               </h3>
             </div>
+
             <ul className="space-y-3 text-base font-normal font-['Inter'] leading-6 text-[#454545] dark:text-[#B9C2D5]">
               {billingHighlights.map((item) => (
                 <li key={item} className="flex gap-2">
@@ -156,15 +167,20 @@ const SmartStoragePricing = () => (
                     className="h-8 w-8"
                   />
                 </span>
-                <h3 className="justify-start text-2xl font-semibold font-['Space_Grotesk'] capitalize leading-8text-[#0B1220] dark:text-white">
-                  Durability & Availability
+
+                {/* ✅ Apply heading font */}
+                <h3 className={`${HEADING_FONT} text-2xl font-semibold`}>
+                  Durability &amp; Availability
                 </h3>
               </div>
-              <p className="mt-2 self-stretch justify-start text-White text-sm font-normal font-['Inter'] leading-5 text-[#454545] dark:text-white">
+
+              <p className="mt-2 self-stretch justify-start text-sm font-normal font-['Inter'] leading-5 text-[#454545] dark:text-white">
                 Sense Cloud is built to keep your files safe and easy to access.
               </p>
             </div>
+
             <hr />
+
             <ul className="space-y-3 text-base font-normal font-['Inter'] leading-6 text-[#454545] dark:text-[#B9C2D5]">
               {durabilityHighlights.map((item) => (
                 <li key={item} className="flex gap-2">
@@ -188,15 +204,20 @@ const SmartStoragePricing = () => (
                     className="h-8 w-8"
                   />
                 </span>
-                <h3 className="justify-start text-2xl font-semibold font-['Space_Grotesk'] capitalize leading-8text-[#0B1220] dark:text-white">
+
+                {/* ✅ Apply heading font */}
+                <h3 className={`${HEADING_FONT} text-2xl font-semibold`}>
                   SensePC Integration
                 </h3>
               </div>
-              <p className="mt-2 self-stretch justify-start text-White text-sm font-normal font-['Inter'] leading-5 text-[#454545] dark:text-white">
+
+              <p className="mt-2 self-stretch justify-start text-sm font-normal font-['Inter'] leading-5 text-[#454545] dark:text-white">
                 Sense Cloud works naturally with your cloud desktops.
               </p>
             </div>
+
             <hr />
+
             <ul className="space-y-3 text-base font-normal font-['Inter'] leading-6 text-[#454545] dark:text-[#B9C2D5]">
               {integrationHighlights.map((item) => (
                 <li key={item} className="flex gap-2">

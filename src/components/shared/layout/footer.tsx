@@ -7,6 +7,9 @@ import { usePathname } from "next/navigation";
 
 import NewsletterForm from "@/components/shared/layout/newsletter-form";
 
+const HEADING_FONT =
+  "justify-start text-black dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8";
+
 const socialLinks = [
   { href: "https://www.facebook.com/officialsensepc/", icon: "facebook1" },
   { href: "https://www.instagram.com/sensepcofficial/", icon: "instagram1" },
@@ -48,18 +51,14 @@ const Footer = () => {
 
   return (
     <footer
-      className="relative text-white overflow-visible min-h-[190px]"
+      className="relative overflow-visible min-h-[190px] font-['Inter'] text-white"
       aria-label="Site footer"
     >
       {/* Glow background layers (home only, disabled for some routes) */}
       {!hideGlow && (
         <>
-          <div
-            className="h-[150px] w-[400px] md:h-[248px] md:w-[995px] z-0 absolute -top-10 left-0 md:top-[-95px] md:left-48 bg-[#4027E5] rounded-[50%] blur-[160px] md:blur-[200px] opacity-40"
-          />
-          <div
-            className="h-[150px] w-[400px] md:h-[248px] md:w-[995px] z-0 absolute -top-20 right-0 md:top-[-165px] md:right-48 bg-[#9C05BF] rounded-[50%] blur-[160px] md:blur-[200px] opacity-40"
-          />
+          <div className="h-[150px] w-[400px] md:h-[248px] md:w-[995px] z-0 absolute -top-10 left-0 md:top-[-95px] md:left-48 bg-[#4027E5] rounded-[50%] blur-[160px] md:blur-[200px] opacity-40" />
+          <div className="h-[150px] w-[400px] md:h-[248px] md:w-[995px] z-0 absolute -top-20 right-0 md:top-[-165px] md:right-48 bg-[#9C05BF] rounded-[50%] blur-[160px] md:blur-[200px] opacity-40" />
         </>
       )}
 
@@ -79,7 +78,7 @@ const Footer = () => {
                 height={60}
                 className="w-[210px] h-[60px] object-contain"
               />
-              <p className="text-base max-w-sm">
+              <p className="text-base max-w-sm text-white/85">
                 Access your powerful PC from anywhere, with low latency and
                 enterprise-grade security.
               </p>
@@ -110,7 +109,10 @@ const Footer = () => {
                 height={26}
                 unoptimized
               />
-              <h3 className="font-semibold text-base">Quick Links</h3>
+              {/* ✅ heading font */}
+              <h3 className={`${HEADING_FONT} text-base font-semibold text-white`}>
+                Quick Links
+              </h3>
             </div>
 
             <ul className="flex md:flex-col gap-3 flex-wrap">
@@ -118,7 +120,7 @@ const Footer = () => {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="flex items-center gap-2 text-link"
+                    className="flex items-center gap-2 text-link font-['Inter']"
                   >
                     <Image
                       src={`/assets/svg/${link.icon}.svg`}
@@ -127,7 +129,9 @@ const Footer = () => {
                       height={24}
                       unoptimized
                     />
-                    <span>{link.text}</span>
+                    <span className="text-white/85 hover:text-white transition-colors">
+                      {link.text}
+                    </span>
                   </Link>
                 </li>
               ))}
@@ -144,7 +148,10 @@ const Footer = () => {
                 height={26}
                 unoptimized
               />
-              <h3 className="font-semibold text-base">Products</h3>
+              {/* ✅ heading font */}
+              <h3 className={`${HEADING_FONT} text-base font-semibold text-white`}>
+                Products
+              </h3>
             </div>
 
             <ul className="space-y-3">
@@ -158,11 +165,16 @@ const Footer = () => {
                     unoptimized
                   />
                   {item.href ? (
-                    <Link href={item.href} className="text-link">
+                    <Link
+                      href={item.href}
+                      className="text-link font-['Inter'] text-white/85 hover:text-white transition-colors"
+                    >
                       {item.text}
                     </Link>
                   ) : (
-                    <span className="text-link">{item.text}</span>
+                    <span className="text-link font-['Inter'] text-white/85">
+                      {item.text}
+                    </span>
                   )}
                 </li>
               ))}
@@ -179,7 +191,10 @@ const Footer = () => {
                 height={26}
                 unoptimized
               />
-              <h3 className="font-semibold text-base">Newsletter</h3>
+              {/* ✅ heading font */}
+              <h3 className={`${HEADING_FONT} text-base font-semibold text-white`}>
+                Newsletter
+              </h3>
             </div>
 
             <div className="max-w-sm">
@@ -188,8 +203,8 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="pt-4 border-t border-[#F8F8F8]">
-          <p className="text-center text-[#F8F8F8] text-sm font-poppins">
+        <div className="pt-4 border-t border-[#F8F8F8]/25">
+          <p className="text-center text-[#F8F8F8] text-sm font-['Inter']">
             © {currentYear} sensepc. All rights reserved.
           </p>
         </div>

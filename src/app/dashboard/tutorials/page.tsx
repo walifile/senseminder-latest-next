@@ -118,16 +118,17 @@ const TutorialsPage = () => {
   return (
     <div
       data-testid="dashboard-tutorials-page"
-      className="rounded-3xl border border-[#8086F3] bg-white dark:bg-[rgba(255,255,255,0.03)] backdrop-blur-[32px] "
+      className="rounded-3xl border border-[#8086F3] bg-white dark:bg-[rgba(255,255,255,0.03)] backdrop-blur-[32px] font-['Space_Grotesk']"
     >
       {/* Filters */}
       <div className="px-7 py-8">
         <div className="pb-5">
-          <h1 className="text-2xl font-bold">Video Tutorials</h1>
+          <h1 className="text-2xl font-bold leading-8">Video Tutorials</h1>
           <p className="text-muted-foreground">
             Learn how to make the most of your Sense PC
           </p>
         </div>
+
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <GradientSearchInput
@@ -138,32 +139,35 @@ const TutorialsPage = () => {
               id="tutorial-search"
             />
           </div>
+
           <div className="flex gap-4">
-            <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-            >
-              <SelectTrigger className="w-[180px]" variant="pill">
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-[180px] font-['Space_Grotesk']" variant="pill">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="font-['Space_Grotesk']">
                 {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
+                  <SelectItem key={category} value={category} className="font-['Space_Grotesk']">
                     {category.charAt(0).toUpperCase() + category.slice(1)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+
             <Select
               value={selectedDifficulty}
               onValueChange={setSelectedDifficulty}
             >
-              <SelectTrigger className="w-[180px]" variant="pill">
+              <SelectTrigger className="w-[180px] font-['Space_Grotesk']" variant="pill">
                 <SelectValue placeholder="Difficulty" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="font-['Space_Grotesk']">
                 {difficulties.map((difficulty) => (
-                  <SelectItem key={difficulty} value={difficulty}>
+                  <SelectItem
+                    key={difficulty}
+                    value={difficulty}
+                    className="font-['Space_Grotesk']"
+                  >
                     {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
                   </SelectItem>
                 ))}
@@ -174,8 +178,8 @@ const TutorialsPage = () => {
       </div>
 
       <div className="w-full h-px bg-[rgba(0,0,0,0.15)] dark:bg-[rgba(255,255,255,0.10)] rounded-full" />
-      {/* Tutorials Grid */}
 
+      {/* Tutorials Grid */}
       <div className="px-7 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredTutorials.map((tutorial) => (
@@ -184,9 +188,10 @@ const TutorialsPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="bg-[rgba(255,255,255,0.03)] rounded-3xl overflow-hidden border border-[#8086F3] hover:border-[#8086F3] transition-colors h-full"
+              className="bg-[rgba(255,255,255,0.03)] rounded-3xl overflow-hidden border border-[#8086F3] hover:border-[#8086F3] transition-colors h-full font-['Space_Grotesk']"
             >
               <TutorialDialog tutorial={tutorial} />
+
               <div className="px-4 py-5">
                 <h3 className="font-semibold text-sm md:text-lg truncate text-[#020816] dark:text-white">
                   {tutorial.title}
@@ -195,7 +200,9 @@ const TutorialsPage = () => {
                   {tutorial.description}
                 </p>
               </div>
+
               <div className="h-px w-full bg-[rgba(37,48,240,0.30)] dark:bg-[rgba(255,255,255,0.10)]" />
+
               <div className="px-4 py-4">
                 <div className="flex items-center justify-between w-full">
                   <span className="text-[14px] text-[#454545] dark:text-[#B9C2D5]">

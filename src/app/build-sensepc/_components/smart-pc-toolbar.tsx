@@ -1,4 +1,3 @@
-
 "use client";
 
 import { cn } from "@/lib/utils";
@@ -24,14 +23,14 @@ const SmartPcToolbar = ({
   setViewMode,
   handleShowNewPCDialog,
 }: Props) => (
-  <div className="flex flex-col gap-5">
+  <div className="flex flex-col gap-5 font-['Space_Grotesk']">
     {/* Header row: title + subtitle + primary button */}
     <div className="flex items-center justify-between gap-4">
       <div className="flex flex-col gap-1">
-        <h1 className="font-space-grotesk text-[32px] font-semibold tracking-[-0.5px] text-[#020816] dark:text-white">
+        <h1 className="font-['Space_Grotesk'] text-[32px] font-semibold tracking-[-0.5px] text-[#020816] dark:text-white">
           Sense PCs
         </h1>
-        <p className="text-[16px] leading-6 tracking-[-0.3px] text-[#454545] dark:text-[#b9c2d5]">
+        <p className="font-['Space_Grotesk'] text-[16px] leading-6 tracking-[-0.3px] text-[#454545] dark:text-[#b9c2d5]">
           Manage your Cloud Computer
         </p>
       </div>
@@ -39,7 +38,7 @@ const SmartPcToolbar = ({
       {!isMember && (
         <Button
           onClick={handleShowNewPCDialog}
-          className="hidden sm:inline-flex rounded-full px-7 py-4 bg-gradient-to-l from-[#a801ba] to-[#2530f0] text-[16px] font-medium leading-6 text-white hover:opacity-95"
+          className="hidden sm:inline-flex rounded-full px-7 py-4 bg-gradient-to-l from-[#a801ba] to-[#2530f0] text-[16px] font-medium leading-6 text-white hover:opacity-95 font-['Space_Grotesk']"
           data-testid="sensepc-build-button"
         >
           <Plus className="mr-2 h-4 w-4" />
@@ -131,7 +130,7 @@ const SmartPcToolbar = ({
     </div>
 
     {/* Bottom divider line */}
-<div className="h-px w-full bg-black/10 dark:bg-white/10" />
+    <div className="h-px w-full bg-black/10 dark:bg-white/10" />
   </div>
 );
 

@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { SmartPCSession } from "@/api/session";
@@ -25,7 +24,6 @@ import {
 } from "aws-amplify/auth";
 
 import { useToast } from "@/hooks/use-toast";
-
 
 const ICONS = {
   password: "/assets/dashboard/password.svg",
@@ -282,10 +280,10 @@ export const ProfileSecurityTab = () => {
     "rounded-[10px] border border-[rgba(37,48,240,0.10)] bg-[rgba(37,48,240,0.07)] p-5 dark:bg-[rgba(255,255,255,0.03)] dark:border-[rgba(255,255,255,0.08)]";
 
   const sectionTitleClass =
-    "text-[20px] font-semibold leading-[30px] tracking-[-0.3px]";
+    "text-[20px] font-semibold leading-[30px] tracking-[-0.3px] font-['Space_Grotesk']";
 
   const sectionDescClass =
-    "text-[16px] leading-[24px] tracking-[-0.3px] text-muted-foreground";
+    "text-[16px] leading-[24px] tracking-[-0.3px] text-muted-foreground font-['Space_Grotesk']";
 
   const optionCardClass =
     "rounded-[10px] border border-[rgba(37,48,240,0.07)] bg-[rgba(255,255,255,0.50)] p-6 dark:bg-[rgba(255,255,255,0.06)] dark:border-[rgba(255,255,255,0.10)]";
@@ -297,7 +295,7 @@ export const ProfileSecurityTab = () => {
     iconSrc: string;
     title: string;
   }) => (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3 font-['Space_Grotesk']">
       {iconSrc ? (
         <img
           src={iconSrc}
@@ -314,12 +312,12 @@ export const ProfileSecurityTab = () => {
     <>
       <div
         data-testid="dashboard-profile-security-tab"
-        className="space-y-6"
+        className="space-y-6 font-['Space_Grotesk']"
       >
         {/* Row 1: Password + Security Question */}
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Password */}
-          <DashboardCard className={primaryCardClass}>
+          <DashboardCard className={`${primaryCardClass} font-['Space_Grotesk']`}>
             <div className="space-y-4">
               <div className="space-y-1">
                 <TitleWithIcon iconSrc={ICONS.password} title="Password" />
@@ -390,7 +388,9 @@ export const ProfileSecurityTab = () => {
                   }}
                 >
                   <div className="grid gap-2">
-                    <Label htmlFor="current">Current Password</Label>
+                    <Label htmlFor="current" className="font-['Space_Grotesk']">
+                      Current Password
+                    </Label>
                     <Input
                       id="current"
                       type="password"
@@ -401,7 +401,9 @@ export const ProfileSecurityTab = () => {
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="new">New Password</Label>
+                    <Label htmlFor="new" className="font-['Space_Grotesk']">
+                      New Password
+                    </Label>
                     <Input
                       id="new"
                       type="password"
@@ -409,14 +411,16 @@ export const ProfileSecurityTab = () => {
                       onChange={(e) => setNewPassword(e.target.value)}
                       data-testid="security-new-password-input"
                     />
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground font-['Space_Grotesk']">
                       Must be at least 8 characters long and include a number or
                       symbol.
                     </p>
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="confirm">Re-enter New Password</Label>
+                    <Label htmlFor="confirm" className="font-['Space_Grotesk']">
+                      Re-enter New Password
+                    </Label>
                     <Input
                       id="confirm"
                       type="password"
@@ -454,7 +458,7 @@ export const ProfileSecurityTab = () => {
           </DashboardCard>
 
           {/* Security Question */}
-          <DashboardCard className={primaryCardClass}>
+          <DashboardCard className={`${primaryCardClass} font-['Space_Grotesk']`}>
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
@@ -491,7 +495,7 @@ export const ProfileSecurityTab = () => {
         />
 
         {/* MFA */}
-        <DashboardCard className="rounded-[10px] border border-[rgba(37,48,240,0.10)] bg-[rgba(37,48,240,0.07)] p-6 dark:bg-[rgba(255,255,255,0.03)] dark:border-[rgba(255,255,255,0.08)]">
+        <DashboardCard className="rounded-[10px] border border-[rgba(37,48,240,0.10)] bg-[rgba(37,48,240,0.07)] p-6 dark:bg-[rgba(255,255,255,0.03)] dark:border-[rgba(255,255,255,0.08)] font-['Space_Grotesk']">
           <div className="space-y-4">
             <div className="space-y-1">
               <TitleWithIcon
@@ -505,12 +509,11 @@ export const ProfileSecurityTab = () => {
 
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Authenticator App option */}
-              <DashboardCard className={optionCardClass}>
+              <DashboardCard className={`${optionCardClass} font-['Space_Grotesk']`}>
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div
                       className="flex h-11 w-11 items-center justify-center rounded-[22px]"
-                     
                       aria-hidden
                     >
                       {ICONS.mfaAuthenticator ? (
@@ -523,10 +526,10 @@ export const ProfileSecurityTab = () => {
                     </div>
 
                     <div className="space-y-1">
-                      <p className="text-[16px] font-medium leading-[24px] tracking-[-0.3px]">
+                      <p className="text-[16px] font-medium leading-[24px] tracking-[-0.3px] font-['Space_Grotesk']">
                         Authenticator App
                       </p>
-                      <p className="text-[14px] leading-[20px] tracking-[-0.2px] text-muted-foreground">
+                      <p className="text-[14px] leading-[20px] tracking-[-0.2px] text-muted-foreground font-['Space_Grotesk']">
                         {is2FAEnabled
                           ? "Two-factor authentication is enabled"
                           : "Use an authenticator app to generate one-time codes"}
@@ -581,12 +584,11 @@ export const ProfileSecurityTab = () => {
               </DashboardCard>
 
               {/* Email Authentication option */}
-              <DashboardCard className={optionCardClass}>
+              <DashboardCard className={`${optionCardClass} font-['Space_Grotesk']`}>
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div
                       className="flex h-11 w-11 items-center justify-center rounded-[22px]"
-                     
                       aria-hidden
                     >
                       {ICONS.mfaEmail ? (
@@ -598,10 +600,10 @@ export const ProfileSecurityTab = () => {
                     </div>
 
                     <div className="space-y-1">
-                      <p className="text-[16px] font-medium leading-[24px] tracking-[-0.3px]">
+                      <p className="text-[16px] font-medium leading-[24px] tracking-[-0.3px] font-['Space_Grotesk']">
                         Email Authentication
                       </p>
-                      <p className="text-[14px] leading-[20px] tracking-[-0.2px] text-muted-foreground">
+                      <p className="text-[14px] leading-[20px] tracking-[-0.2px] text-muted-foreground font-['Space_Grotesk']">
                         Receive codes via email
                       </p>
                     </div>
@@ -629,7 +631,7 @@ export const ProfileSecurityTab = () => {
         </DashboardCard>
 
         {/* Connected Devices */}
-        <DashboardCard className="rounded-[10px] border border-[rgba(37,48,240,0.10)] bg-[rgba(37,48,240,0.07)] p-6 dark:bg-[rgba(255,255,255,0.03)] dark:border-[rgba(255,255,255,0.08)]">
+        <DashboardCard className="rounded-[10px] border border-[rgba(37,48,240,0.10)] bg-[rgba(37,48,240,0.07)] p-6 dark:bg-[rgba(255,255,255,0.03)] dark:border-[rgba(255,255,255,0.08)] font-['Space_Grotesk']">
           <div className="flex h-full flex-col gap-4">
             <TitleWithIcon
               iconSrc={ICONS.connectedDevices}
@@ -644,16 +646,16 @@ export const ProfileSecurityTab = () => {
                   className="flex items-start justify-between border-b pb-3 last:border-0 last:pb-0"
                 >
                   <div className="space-y-1">
-                    <p className="flex items-center gap-2 text-sm font-medium">
+                    <p className="flex items-center gap-2 text-sm font-medium font-['Space_Grotesk']">
                       {session.deviceName || "Unknown Device"}
                       {session.isCurrentSession && (
-                        <span className="text-xs font-semibold text-green-600 dark:text-green-400">
+                        <span className="text-xs font-semibold text-green-600 dark:text-green-400 font-['Space_Grotesk']">
                           THIS DEVICE
                         </span>
                       )}
                     </p>
 
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground font-['Space_Grotesk']">
                       Last Activity {formatLastActivity(session.lastSeen)}
                       {session.location?.city || session.location?.country
                         ? ` • ${session.location?.city || "Unknown"}, ${

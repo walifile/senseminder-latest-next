@@ -262,6 +262,29 @@ const DCViewerContent: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
 
+  useEffect(() => {
+    // ✅ always return a cleanup function (consistent-return)
+    if (!fileModalOpen) return () => {};
+  
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+  
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [fileModalOpen]);
+  
+  useEffect(() => {
+    // ✅ always return a cleanup function (consistent-return)
+    if (typeof document === "undefined") return () => {};
+  
+    document.body.classList.toggle("sensepc-modal-open", fileModalOpen);
+  
+    return () => {
+      document.body.classList.remove("sensepc-modal-open");
+    };
+  }, [fileModalOpen]);  
+
   // Ensure “unused” state vars are consumed (no-op reads to satisfy eslint)
   void _dcvError;
   void _webcamDeviceId;
@@ -683,7 +706,10 @@ const DCViewerContent: React.FC = () => {
         {/* Viewer */}
         <div
           id="remote-desktop"
-          className="absolute inset-0 w-[100vw] h-[100dvh] overflow-hidden bg-black z-0"
+          className={cn(
+            "absolute inset-0 w-[100vw] h-[100dvh] overflow-hidden bg-black z-0",
+            fileModalOpen && "sensepc-dcv-block"
+          )}
         />
         <AnimatePresence initial={false}>
           {(isLoading || isDisconnecting || connectionState !== "CONNECTED") && (
@@ -1178,7 +1204,7 @@ const DCViewerContent: React.FC = () => {
           open={fileModalOpen}
           onOpenChange={setFileModalOpen}
           autoOpenOnGlobalDrag
-          title="File storage"
+          title="File transfer:"
         />
       </div>
 
@@ -1206,6 +1232,17 @@ const DCViewerContent: React.FC = () => {
           object-fit: contain !important; /* use 'cover' if you prefer to crop and truly fill */
           background: transparent !important;
           image-rendering: pixelated; /* scaled small streams look crisper */
+        }
+
+        /* When file modal is open, completely disable DCV layer interactions */
+        .sensepc-dcv-block,
+        .sensepc-dcv-block * {
+          pointer-events: none !important;
+        }
+        
+        /* Extra guard: keep scroll chained inside overlays */
+        body.sensepc-modal-open {
+          overscroll-behavior: contain;
         }
       `}</style>
     </div>

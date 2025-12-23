@@ -64,36 +64,47 @@ const REAL_WORLD_ITEMS: RealWorldUseItem[] = [
   },
 ];
 
+const HEADING_FONT =
+  "justify-start text-black dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8";
+
 const SensePCPage = () => {
   const onGetStarted = useGetStartedNav();
 
   return (
     <MainLayout>
-      <Hero />
-      <WhyTeamsChoose />
-      <RentSmarterProcess />
+      {/* ✅ apply the heading font to the main page wrapper so headings inside
+          these sections inherit if they use `inherit` / default text styles */}
+      <div className="w-full">
+        {/* If your shared components don’t inherit font-family,
+            apply the class on their heading nodes inside each component. */}
+        <div className={HEADING_FONT} style={{ display: "contents" }}>
+          <Hero />
+          <WhyTeamsChoose />
+          <RentSmarterProcess />
 
-      <RealWorldUse
-        heading="Desktop Cloud Computing Made to Fit Your Workflow"
-        items={REAL_WORLD_ITEMS}
-      />
+          <RealWorldUse
+            heading="Desktop Cloud Computing Made to Fit Your Workflow"
+            items={REAL_WORLD_ITEMS}
+          />
 
-      <SmartStoragePricing />
+          <SmartStoragePricing />
 
-      <FAQ
-        items={senseCloudFaqItems}
-        subtitle="Everything you need to know about SensePC"
-      />
+          <FAQ
+            items={senseCloudFaqItems}
+            subtitle="Everything you need to know about SensePC"
+          />
 
-      <GetStartedCtaSection
-        title="Power your Sense PC with secure storage."
-        description="WGet started by choosing the storage option that fits your work. "
-        primaryCta={{
-          label: "Get Started with SensePC",
-          onClick: onGetStarted,
-        }}
-        secondaryCta={{ label: "Contact Sales", onClick: onGetStarted }}
-      />
+          <GetStartedCtaSection
+            title="Power your Sense PC with secure storage."
+            description="WGet started by choosing the storage option that fits your work. "
+            primaryCta={{
+              label: "Get Started with SensePC",
+              onClick: onGetStarted,
+            }}
+            secondaryCta={{ label: "Contact Sales", onClick: onGetStarted }}
+          />
+        </div>
+      </div>
     </MainLayout>
   );
 };

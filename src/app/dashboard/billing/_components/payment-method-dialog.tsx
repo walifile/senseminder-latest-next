@@ -62,11 +62,10 @@ export function PaymentMethodDialog() {
       const mapped = mapPaymentMethodsFromAPI(data);
       setSavedPaymentMethods(mapped);
     }
-     
   }, [data]);
 
   const mapPaymentMethodsFromAPI = (
-    apiResponse: PaymentMethodResponse,
+    apiResponse: PaymentMethodResponse
   ): ExtendedPaymentMethod[] => {
     const defaultId = apiResponse.defaultPaymentMethod?.id;
     return apiResponse.paymentMethods.map(
@@ -81,10 +80,9 @@ export function PaymentMethodDialog() {
             brand: pm.card.brand,
           },
           isDefault: pm.id === defaultId,
-        }) as ExtendedPaymentMethod,
+        } as ExtendedPaymentMethod)
     );
   };
-
 
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
   const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
@@ -104,7 +102,6 @@ export function PaymentMethodDialog() {
     closeRemoveConfirm();
     await handleDeletePaymentMethod(pendingRemoveId);
   };
-
 
   const handleAdd = async () => {
     if (!stripe || !elements || !CardElement) {
@@ -170,8 +167,8 @@ export function PaymentMethodDialog() {
         prev.map((pm) =>
           pm.id === paymentMethodId
             ? { ...pm, isDefault: true }
-            : { ...pm, isDefault: false },
-        ),
+            : { ...pm, isDefault: false }
+        )
       );
       toast({
         title: "Default updated",
@@ -198,7 +195,7 @@ export function PaymentMethodDialog() {
       await detachPaymentMethod({ paymentMethodId }).unwrap();
 
       const updated = savedPaymentMethods.filter(
-        (pm) => pm.id !== paymentMethodId,
+        (pm) => pm.id !== paymentMethodId
       );
       setSavedPaymentMethods(updated);
 
@@ -214,8 +211,8 @@ export function PaymentMethodDialog() {
           updated.length === 1
             ? updated[0]
             : wasDefault
-              ? updated[updated.length - 1]
-              : null;
+            ? updated[updated.length - 1]
+            : null;
 
         if (candidate) {
           setMakeDefaultId(candidate.id);
@@ -227,8 +224,8 @@ export function PaymentMethodDialog() {
               prev.map((pm) =>
                 pm.id === candidate.id
                   ? { ...pm, isDefault: true }
-                  : { ...pm, isDefault: false },
-              ),
+                  : { ...pm, isDefault: false }
+              )
             );
             toast({
               title: "Default updated",
@@ -255,8 +252,11 @@ export function PaymentMethodDialog() {
     } catch (error: unknown) {
       console.error("Detach payment method error:", error);
       // Check for HTTP 400 error
-      if (error && typeof error === 'object' && 'status' in error) {
-        const rtkError = error as { status: number; data?: { message?: string } };
+      if (error && typeof error === "object" && "status" in error) {
+        const rtkError = error as {
+          status: number;
+          data?: { message?: string };
+        };
 
         if (rtkError.status === 400 && rtkError.data?.message) {
           toast({
@@ -293,7 +293,7 @@ export function PaymentMethodDialog() {
     <>
       <Button
         onClick={() => setOpen(true)}
-        className="gap-2"
+        className="gap-2 font-['Space_Grotesk'] font-bold"
         data-testid="billing-add-payment-method-button"
       >
         <CreditCard className="h-4 w-4" />
@@ -339,52 +339,52 @@ export function PaymentMethodDialog() {
 
             <div className="h-px w-full bg-black/10 dark:bg-white/15" />
 
-         {/* Security bar (aligned) */}
-          <div className="w-full overflow-hidden rounded-lg bg-[rgba(53,215,80,0.15)] px-4 py-3 dark:bg-[#1C144D]">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-              {/* Left */}
-              <div className="flex items-center gap-2 whitespace-nowrap">
-                <Lock className="h-5 w-5 shrink-0 text-[#35D750] dark:text-[#4CC26C]" />
-                <span className="font-inter text-sm leading-5 text-[#35D750] dark:text-[#4CC26C]">
-                  Bank-grade encryption
-                </span>
-              </div>
+            {/* Security bar (aligned) */}
+            <div className="w-full overflow-hidden rounded-lg bg-[rgba(53,215,80,0.15)] px-4 py-3 dark:bg-[#1C144D]">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                {/* Left */}
+                <div className="flex items-center gap-2 whitespace-nowrap">
+                  <Lock className="h-5 w-5 shrink-0 text-[#35D750] dark:text-[#4CC26C]" />
+                  <span className="font-inter text-sm leading-5 text-[#35D750] dark:text-[#4CC26C]">
+                    Bank-grade encryption
+                  </span>
+                </div>
 
-              {/* Divider */}
-              <div
-                aria-hidden
-                className="hidden sm:block h-6 w-px shrink-0 bg-[#35D750]/40 dark:bg-[#4CC26C]/40"
-              />
-
-              {/* Middle (keeps center aligned) */}
-              <div className="flex min-w-0 flex-1 sm:justify-center">
-                <span className="font-inter text-sm leading-5 text-[#35D750] dark:text-[#4CC26C] whitespace-nowrap">
-                  PCI DSS Level 1 by Stripe
-                </span>
-              </div>
-
-              {/* Divider */}
-              <div
-                aria-hidden
-                className="hidden sm:block h-6 w-px shrink-0 bg-[#35D750]/40 dark:bg-[#4CC26C]/40"
-              />
-
-              {/* Right */}
-              <div className="flex items-center gap-2 whitespace-nowrap sm:ml-auto">
-                <span className="font-inter text-sm leading-5 text-[#35D750] dark:text-[#4CC26C]">
-                  Powered by
-                </span>
-                <Image
-                  src="/assets/icons/stripe-Logo.svg"
-                  alt="Stripe"
-                  width={64}
-                  height={24}
-                  priority
-                  className="block h-6 w-auto shrink-0"
+                {/* Divider */}
+                <div
+                  aria-hidden
+                  className="hidden sm:block h-6 w-px shrink-0 bg-[#35D750]/40 dark:bg-[#4CC26C]/40"
                 />
+
+                {/* Middle (keeps center aligned) */}
+                <div className="flex min-w-0 flex-1 sm:justify-center">
+                  <span className="font-inter text-sm leading-5 text-[#35D750] dark:text-[#4CC26C] whitespace-nowrap">
+                    PCI DSS Level 1 by Stripe
+                  </span>
+                </div>
+
+                {/* Divider */}
+                <div
+                  aria-hidden
+                  className="hidden sm:block h-6 w-px shrink-0 bg-[#35D750]/40 dark:bg-[#4CC26C]/40"
+                />
+
+                {/* Right */}
+                <div className="flex items-center gap-2 whitespace-nowrap sm:ml-auto">
+                  <span className="font-inter text-sm leading-5 text-[#35D750] dark:text-[#4CC26C]">
+                    Powered by
+                  </span>
+                  <Image
+                    src="/assets/icons/stripe-Logo.svg"
+                    alt="Stripe"
+                    width={64}
+                    height={24}
+                    priority
+                    className="block h-6 w-auto shrink-0"
+                  />
+                </div>
               </div>
             </div>
-          </div>
 
             {/* Add Card */}
             <section className="flex flex-col gap-4 sm:gap-5">
@@ -394,7 +394,10 @@ export function PaymentMethodDialog() {
                 </h3>
 
                 {!showAddForm && (
-                  <Button variant="outline" onClick={() => setShowAddForm(true)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAddForm(true)}
+                  >
                     Add a card
                   </Button>
                 )}
@@ -566,7 +569,6 @@ export function PaymentMethodDialog() {
                               variant="outline"
                               disabled={deletingId === method.id}
                               onClick={() => openRemoveConfirm(method.id)}
-
                             >
                               {deletingId === method.id ? (
                                 <span className="inline-flex items-center gap-2">
@@ -609,50 +611,49 @@ export function PaymentMethodDialog() {
           </div>
         </DialogContent>
       </Dialog>
-<Dialog
-  open={confirmRemoveOpen}
-  onOpenChange={(v) => {
-    if (!v) closeRemoveConfirm();
-  }}
->
-  <DialogContent
-    data-testid="dashboard-billing-payment-method-remove-dialog"
-    className="w-[min(92vw,420px)] p-0"
-  >
-    <div className="rounded-[16px] bg-white px-5 py-6 dark:bg-[#140947] sm:px-6">
-      <DialogHeader className="space-y-1 text-left">
-        <DialogTitle className="font-space-grotesk text-[18px] font-semibold leading-6 text-[#020816] dark:text-white">
-          Remove payment method?
-        </DialogTitle>
-        <DialogDescription className="font-inter text-[14px] leading-5 text-[#454545] dark:text-[#B9C2D5]">
-          You can add it again at any time.
-        </DialogDescription>
-      </DialogHeader>
-
-      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
-        <Button variant="outline" onClick={closeRemoveConfirm}>
-          Cancel
-        </Button>
-
-        <Button
-          variant="destructive"
-          disabled={!pendingRemoveId || deletingId === pendingRemoveId}
-          onClick={confirmRemove}
+      <Dialog
+        open={confirmRemoveOpen}
+        onOpenChange={(v) => {
+          if (!v) closeRemoveConfirm();
+        }}
+      >
+        <DialogContent
+          data-testid="dashboard-billing-payment-method-remove-dialog"
+          className="w-[min(92vw,420px)] p-0"
         >
-          {deletingId === pendingRemoveId ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Removing…
-            </span>
-          ) : (
-            "Remove"
-          )}
-        </Button>
-      </div>
-    </div>
-  </DialogContent>
-</Dialog>
+          <div className="rounded-[16px] bg-white px-5 py-6 dark:bg-[#140947] sm:px-6">
+            <DialogHeader className="space-y-1 text-left">
+              <DialogTitle className="font-space-grotesk text-[18px] font-semibold leading-6 text-[#020816] dark:text-white">
+                Remove payment method?
+              </DialogTitle>
+              <DialogDescription className="font-inter text-[14px] leading-5 text-[#454545] dark:text-[#B9C2D5]">
+                You can add it again at any time.
+              </DialogDescription>
+            </DialogHeader>
 
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <Button variant="outline" onClick={closeRemoveConfirm}>
+                Cancel
+              </Button>
+
+              <Button
+                variant="destructive"
+                disabled={!pendingRemoveId || deletingId === pendingRemoveId}
+                onClick={confirmRemove}
+              >
+                {deletingId === pendingRemoveId ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Removing…
+                  </span>
+                ) : (
+                  "Remove"
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

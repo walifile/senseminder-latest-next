@@ -52,9 +52,19 @@ const Duplicates: React.FC<DuplicatesProps> = ({
   const cardClasses =
     "rounded-md border border-[rgba(37,48,240,0.12)] bg-[rgba(37,48,240,0.04)] dark:border-[#ffffff14] dark:bg-[#ffffff08]";
   const headingText = "text-[#020816] dark:text-white";
-  const mutedText = "text-[#454545] dark:text-[#B9C2D5]";
+  // const mutedText = "text-[#454545] dark:text-[#B9C2D5]";
   const pillClasses =
     "inline-flex items-center rounded-full bg-[rgba(37,48,240,0.12)] px-2 py-0.5 text-[10px] font-medium text-[#020816] dark:bg-[#ffffff12] dark:text-white";
+
+  // ✅ Font helpers (same font style you’ve been applying elsewhere)
+  // const headingFontClass =
+  //   "justify-start text-black dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8";
+  const subheadingFontClass =
+    "font-['Space_Grotesk'] font-semibold tracking-[-0.3px] text-[#020816] dark:text-white";
+  const bodyFontClass =
+    "font-['Inter'] text-[#454545] dark:text-[#B9C2D5]";
+  const smallFontClass =
+    "font-['Inter']";
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -191,7 +201,7 @@ const Duplicates: React.FC<DuplicatesProps> = ({
       data-testid="dashboard-sense-cloud-duplicate-cleanup"
       className="h-full flex-1"
     >
-      <div className="p-4">
+      <div className="p-4 font-['Inter']">
         <div className="mx-auto flex max-w-5xl flex-col gap-4">
           {/* Header card */}
           <div className={`flex flex-col gap-4 p-4 shadow-sm ${panelClasses}`}>
@@ -201,13 +211,10 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                   <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[rgba(37,48,240,0.12)] dark:bg-[#ffffff12]">
                     <Copy className="h-4 w-4 text-[#2530F0] dark:text-white" />
                   </span>
+
                   <div>
-                    <h3
-                      className={`text-base font-semibold leading-none ${headingText}`}
-                    >
-                      Duplicate files
-                    </h3>
-                    <p className={`mt-1 text-xs ${mutedText}`}>
+                    <h3 className={subheadingFontClass}>Duplicate files</h3>
+                    <p className={`mt-1 text-xs ${bodyFontClass}`}>
                       Find and clean up files with identical names and sizes.
                       The original is kept, duplicates are removed.
                     </p>
@@ -217,7 +224,7 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                 {/* Select all + pagination summary */}
                 {totalGroups > 0 && (
                   <div
-                    className={`flex flex-wrap items-center gap-3 text-xs ${mutedText}`}
+                    className={`flex flex-wrap items-center gap-3 text-xs ${bodyFontClass}`}
                   >
                     <button
                       type="button"
@@ -229,12 +236,13 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                         onCheckedChange={toggleSelectAllOnPage}
                         className="h-3 w-3 border-[rgba(37,48,240,0.5)] dark:border-[#ffffff3d] data-[state=checked]:border-[#2530F0] data-[state=checked]:bg-[#2530F0] dark:data-[state=checked]:border-white dark:data-[state=checked]:bg-white"
                       />
-                      <span className="font-medium text-[#020816] dark:text-white">
+                      <span className="font-medium text-[#020816] dark:text-white font-['Inter']">
                         Select all groups on this page
                       </span>
                     </button>
-                    <span className={`text-[11px] ${mutedText}`}>
-                      Page {page} of {totalPages} - showing {pageGroups.length} of {" "}
+
+                    <span className={`text-[11px] ${smallFontClass}`}>
+                      Page {page} of {totalPages} - showing {pageGroups.length} of{" "}
                       {totalGroups} duplicate groups
                     </span>
                   </div>
@@ -247,6 +255,7 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                   size="sm"
                   onClick={() => fetchDuplicates()}
                   disabled={loading}
+                  className="font-['Inter']"
                 >
                   {loading ? (
                     <>
@@ -260,10 +269,12 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                     </>
                   )}
                 </Button>
+
                 <Button
                   size="sm"
                   onClick={handleMerge}
                   disabled={merging || selected.length === 0}
+                  className="font-['Inter']"
                 >
                   {merging ? (
                     <>
@@ -282,14 +293,14 @@ const Duplicates: React.FC<DuplicatesProps> = ({
 
             {/* High-level stats inline with header for quick glance */}
             {scan?.stats && (
-              <div className="mt-2 flex flex-wrap gap-2 rounded-md bg-[rgba(37,48,240,0.08)] p-3 text-xs text-[#020816] dark:bg-[#ffffff0a] dark:text-[#B9C2D5]">
+              <div className={`mt-2 flex flex-wrap gap-2 rounded-md bg-[rgba(37,48,240,0.08)] p-3 text-xs ${bodyFontClass} dark:bg-[#ffffff0a]`}>
                 {formatDuplicateStats(scan.stats)}
               </div>
             )}
 
             {/* Error banner */}
             {error && (
-              <div className="mt-2 rounded-md border border-destructive/40 bg-destructive/5 p-3 text-xs text-destructive">
+              <div className="mt-2 rounded-md border border-destructive/40 bg-destructive/5 p-3 text-xs text-destructive font-['Inter']">
                 {error}
               </div>
             )}
@@ -298,13 +309,13 @@ const Duplicates: React.FC<DuplicatesProps> = ({
           {/* Main content: loading / empty / list */}
           {loading && (
             <div
-              className={`flex h-[260px] flex-col items-center justify-center gap-2 text-xs ${panelClasses} ${mutedText}`}
+              className={`flex h-[260px] flex-col items-center justify-center gap-2 text-xs ${panelClasses} ${bodyFontClass}`}
             >
               <Loader2 className="h-5 w-5 animate-spin" />
-              <p className={`font-medium ${headingText}`}>
+              <p className={`font-['Space_Grotesk'] font-semibold ${headingText}`}>
                 Scanning your storage for duplicates...
               </p>
-              <p className={`max-w-xs text-center text-[11px] ${mutedText}`}>
+              <p className={`max-w-xs text-center text-[11px] ${bodyFontClass}`}>
                 This may take a moment if you have a large number of files.
               </p>
             </div>
@@ -318,10 +329,10 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                 <FileText className="h-6 w-6 text-[#2530F0] dark:text-white" />
               </div>
               <div>
-                <h3 className={`text-sm font-semibold ${headingText}`}>
+                <h3 className={`font-['Space_Grotesk'] font-semibold text-sm ${headingText}`}>
                   No duplicates found
                 </h3>
-                <p className={`mt-1 text-xs ${mutedText}`}>
+                <p className={`mt-1 text-xs ${bodyFontClass}`}>
                   All your files are unique - nothing to clean up right now.
                 </p>
               </div>
@@ -333,15 +344,17 @@ const Duplicates: React.FC<DuplicatesProps> = ({
             <div className={`flex flex-col gap-3 p-3 ${panelClasses}`}>
               {/* List header summary */}
               <div
-                className={`flex flex-wrap items-center justify-between gap-2 border-b border-[rgba(37,48,240,0.12)] pb-2 text-[11px] ${mutedText} dark:border-[#ffffff14]`}
+                className={`flex flex-wrap items-center justify-between gap-2 border-b border-[rgba(37,48,240,0.12)] pb-2 text-[11px] ${bodyFontClass} dark:border-[#ffffff14]`}
               >
                 <span>
-                  Showing groups {startIndex + 1}-{Math.min(endIndex, totalGroups)} of {" "}
+                  Showing groups {startIndex + 1}-{Math.min(endIndex, totalGroups)} of{" "}
                   {totalGroups}
                 </span>
                 <span>
-                  Selected groups: {" "}
-                  <span className="font-semibold">{selected.length.toString()}</span>
+                  Selected groups:{" "}
+                  <span className="font-semibold font-['Inter']">
+                    {selected.length.toString()}
+                  </span>
                 </span>
               </div>
 
@@ -356,7 +369,7 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                   return (
                     <div
                       key={key}
-                      className={`${cardClasses} p-3 text-xs shadow-sm transition-colors hover:bg-[rgba(37,48,240,0.08)] dark:hover:bg-[#ffffff10]`}
+                      className={`${cardClasses} p-3 text-xs shadow-sm transition-colors hover:bg-[rgba(37,48,240,0.08)] dark:hover:bg-[#ffffff10] font-['Inter']`}
                     >
                       {/* Group header row */}
                       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -369,34 +382,30 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                           <div className="min-w-0 space-y-1">
                             <div className="flex flex-wrap items-center gap-2">
                               <span
-                                className={`truncate text-sm font-semibold ${headingText}`}
+                                className={`truncate text-sm font-semibold ${headingText} font-['Inter']`}
                               >
                                 {group.groupKey.fileName}
                               </span>
                               <Badge
                                 variant="outline"
-                                className="border-dashed border-[rgba(37,48,240,0.4)] text-[10px] text-[#2530F0] dark:border-[#ffffff33] dark:text-white"
+                                className="border-dashed border-[rgba(37,48,240,0.4)] text-[10px] text-[#2530F0] dark:border-[#ffffff33] dark:text-white font-['Inter']"
                               >
                                 {count} copies
                               </Badge>
                             </div>
-                            <div
-                              className={`flex flex-wrap gap-3 text-[11px] ${mutedText}`}
-                            >
+                            <div className={`flex flex-wrap gap-3 text-[11px] ${bodyFontClass}`}>
                               <span>
-                                Each: {" "}
-                                {formatFileSize(group.groupKey.sizeBytes ?? 0)}
+                                Each: {formatFileSize(group.groupKey.sizeBytes ?? 0)}
                               </span>
                               {group.totalBytes && (
                                 <span>
-                                  Total space used: {" "}
-                                  {formatFileSize(group.totalBytes)}
+                                  Total space used: {formatFileSize(group.totalBytes)}
                                 </span>
                               )}
                             </div>
                             <div className="mt-1">
                               <span className={`${pillClasses} gap-1`}>
-                                <span className="mr-1 opacity-70">
+                                <span className="mr-1 opacity-70 font-['Inter']">
                                   Primary location:
                                 </span>
                                 <span className="font-mono text-[10px]">
@@ -407,11 +416,9 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                           </div>
                         </div>
 
-                        <div className={`text-right text-[11px] ${mutedText}`}>
-                          <span className="font-medium">Keeping original</span>
-                          <div
-                            className={`mt-0.5 max-w-[220px] truncate text-xs font-medium ${headingText}`}
-                          >
+                        <div className={`text-right text-[11px] ${bodyFontClass}`}>
+                          <span className="font-medium font-['Inter']">Keeping original</span>
+                          <div className={`mt-0.5 max-w-[220px] truncate text-xs font-semibold ${headingText} font-['Inter']`}>
                             {group.primary.fileName}
                           </div>
                         </div>
@@ -419,7 +426,7 @@ const Duplicates: React.FC<DuplicatesProps> = ({
 
                       {/* Duplicates list */}
                       <div
-                        className={`mt-3 space-y-1 border-t border-[rgba(37,48,240,0.12)] pt-2 pl-7 text-[11px] ${mutedText} dark:border-[#ffffff14]`}
+                        className={`mt-3 space-y-1 border-t border-[rgba(37,48,240,0.12)] pt-2 pl-7 text-[11px] ${bodyFontClass} dark:border-[#ffffff14]`}
                       >
                         {group.duplicates.map((dup) => {
                           const dupFolder = getFolderForItem(dup, userId);
@@ -431,12 +438,12 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                               <div className="flex min-w-0 flex-col">
                                 <div className="flex items-center gap-1">
                                   <Trash2 className="h-3 w-3 opacity-70" />
-                                  <span className={`truncate ${headingText}`}>
+                                  <span className={`truncate ${headingText} font-['Inter']`}>
                                     {dup.fileName}
                                   </span>
                                 </div>
                                 <span className={`mt-0.5 w-fit ${pillClasses}`}>
-                                  <span className="mr-1 opacity-70">
+                                  <span className="mr-1 opacity-70 font-['Inter']">
                                     Will be deleted from:
                                   </span>
                                   <span className="font-mono text-[10px]">
@@ -444,10 +451,8 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                                   </span>
                                 </span>
                               </div>
-                              <span className={`whitespace-nowrap ${headingText}`}>
-                                {formatFileSize(
-                                  dup.sizeBytes ?? group.groupKey.sizeBytes
-                                )}
+                              <span className={`whitespace-nowrap ${headingText} font-['Inter']`}>
+                                {formatFileSize(dup.sizeBytes ?? group.groupKey.sizeBytes)}
                               </span>
                             </div>
                           );
@@ -461,17 +466,17 @@ const Duplicates: React.FC<DuplicatesProps> = ({
               {/* Pagination controls */}
               {totalPages > 1 && (
                 <div
-                  className={`mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[rgba(37,48,240,0.12)] pt-2 text-[11px] ${mutedText} dark:border-[#ffffff14]`}
+                  className={`mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[rgba(37,48,240,0.12)] pt-2 text-[11px] ${bodyFontClass} dark:border-[#ffffff14]`}
                 >
                   <span>
-                    Showing {startIndex + 1}-{Math.min(endIndex, totalGroups)} of {" "}
+                    Showing {startIndex + 1}-{Math.min(endIndex, totalGroups)} of{" "}
                     {totalGroups} groups
                   </span>
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-7 px-2"
+                      className="h-7 px-2 font-['Inter']"
                       disabled={page <= 1}
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                     >
@@ -485,7 +490,7 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                           key={p}
                           variant={p === page ? "default" : "outline"}
                           size="sm"
-                          className="h-7 px-2 text-[11px]"
+                          className="h-7 px-2 text-[11px] font-['Inter']"
                           onClick={() => setPage(p)}
                         >
                           {p}
@@ -496,7 +501,7 @@ const Duplicates: React.FC<DuplicatesProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-7 px-2"
+                      className="h-7 px-2 font-['Inter']"
                       disabled={page >= totalPages}
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     >
@@ -507,6 +512,10 @@ const Duplicates: React.FC<DuplicatesProps> = ({
               )}
             </div>
           )}
+
+          {/* (optional) Keeping your global heading style available if you ever need it */}
+          {/* <div className={headingFontClass}>Duplicate files</div> */}
+          {/* headingFontClass is declared to match your standard heading style */}
         </div>
       </div>
     </ScrollArea>

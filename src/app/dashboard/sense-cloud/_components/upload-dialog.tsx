@@ -1,3 +1,6 @@
+// src/app/dashboard/sense-cloud/_components/upload-dialog.tsx
+// (or wherever your UploadDialog lives)
+
 "use client";
 
 import type { RootState } from "@/redux/store";
@@ -64,6 +67,8 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   const { user } = useSelector((state: RootState) => state.auth);
   const { triggerFeedback } = useFeedback();
 
+  const isUploading = Object.values(uploadStatus).includes("loading");
+
   const appendFiles = (incoming: File[] | FileList | null) => {
     if (!incoming) return;
     const fileArray = Array.from(incoming);
@@ -110,7 +115,6 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
     const newStatus = { ...uploadStatus };
     selectedFiles.forEach((file) => (newStatus[file.name] = "loading"));
     setUploadStatus(newStatus);
-    let hadError = false;
 
     await Promise.all(
       selectedFiles.map(async (file) => {
@@ -138,21 +142,22 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
             folder: folderPath,
             key,
           }).unwrap();
+
           setUploadStatus((prev) => ({ ...prev, [file.name]: "success" }));
+
           void triggerFeedback({
             trigger: FEEDBACK_TRIGGERS.PC_ACTION,
             delayMinutes: 0,
           });
         } catch (err) {
           Logger.error(err);
-          hadError = true;
           setUploadStatus((prev) => ({ ...prev, [file.name]: "error" }));
         }
       })
     );
-    if (!hadError) {
-      closeDialog();
-    }
+
+    // ✅ DO NOT close dialog after upload.
+    // Let the user review results and close manually.
   };
 
   const handleDrop = (event: React.DragEvent<HTMLLabelElement>) => {
@@ -162,7 +167,11 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   };
 
   const closeDialog = () => {
+    // ✅ Don’t close the dialog mid-upload
+    if (isUploading) return;
+
     setSelectedFiles([]);
+    setUploadStatus({});
     onOpenChange(false);
   };
 
@@ -174,10 +183,27 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   }, [prefillToken]);
 
   return (
-    <Dialog open={open} onOpenChange={closeDialog}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        // ✅ Only run our close logic when dialog is being closed
+        if (!nextOpen) closeDialog();
+        // If opening, do nothing special
+      }}
+    >
       <DialogContent
         data-testid="storage-upload-modal"
         className="sm:max-w-[425px]"
+        // ✅ Prevent accidental close while uploading
+        onEscapeKeyDown={(e) => {
+          if (isUploading) e.preventDefault();
+        }}
+        onPointerDownOutside={(e) => {
+          if (isUploading) e.preventDefault();
+        }}
+        onInteractOutside={(e) => {
+          if (isUploading) e.preventDefault();
+        }}
       >
         <DialogHeader>
           <DialogTitle>Upload Files</DialogTitle>
@@ -186,6 +212,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
             {folderPath ? ` to the folder "${folderPath}"` : ""}.
           </DialogDescription>
         </DialogHeader>
+
         <div className="space-y-6">
           <div className="space-y-2">
             <label
@@ -223,13 +250,14 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
             <div className="flex flex-col items-center justify-center">
               <Upload className="h-8 w-8 mb-2 text-[#454545] dark:text-muted-foreground" />
               <p className="text-[#020816] dark:text-white mb-2 text-sm">
-                <span className="font-semibold ">Click to upload</span> or drag
+                <span className="font-semibold">Click to upload</span> or drag
                 and drop
               </p>
               <p className="text-xs text-[#454545] dark:text-[#B9C2D5]">
                 Any file type
               </p>
             </div>
+
             <input
               id="file-upload"
               type="file"
@@ -252,7 +280,6 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
                   key={file.name}
                   className="flex items-center justify-between bg-muted px-4 py-2 rounded-lg text-sm"
                 >
-                  {/* <span className="truncate w-40">{file.name}</span> */}
                   {file?.name?.length > 10 ? (
                     <span className="truncate w-40" title={file?.name}>
                       {`${file?.name.slice(0, 6)}...${file?.name?.slice(
@@ -262,6 +289,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
                   ) : (
                     <span className="truncate w-40">{file.name}</span>
                   )}
+
                   <div className="flex items-center gap-2">
                     {uploadStatus[file.name] === "loading" && (
                       <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
@@ -272,10 +300,12 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
                     {uploadStatus[file.name] === "error" && (
                       <X className="w-4 h-4 text-red-500" />
                     )}
+
                     {!uploadStatus[file.name] && (
                       <button
                         type="button"
                         onClick={() => handleFileRemove(index)}
+                        disabled={isUploading}
                       >
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </button>
@@ -285,33 +315,6 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
               ))}
             </div>
           )}
-
-          {/* Upload progress */}
-          {/* {Object.values(uploadStatus).includes("loading") && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Uploading...</span>
-                <span>
-                  {Math.round(
-                    (Object.values(uploadStatus).filter((s) => s === "success")
-                      .length /
-                      Object.keys(uploadStatus).length) *
-                      100
-                  )}
-                  %
-                </span>
-              </div>
-              <Progress
-                value={Math.round(
-                  (Object.values(uploadStatus).filter((s) => s === "success")
-                    .length /
-                    Object.keys(uploadStatus).length) *
-                    100
-                )}
-                className="h-2"
-              />
-            </div>
-          )} */}
 
           {/* Upload button */}
           <Button
@@ -323,7 +326,18 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
             className="w-full"
             data-testid="storage-upload-files-button"
           >
-            Upload Files
+            {isUploading ? "Uploading..." : "Upload Files"}
+          </Button>
+
+          {/* Optional: manual close button (keeps behavior explicit) */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={closeDialog}
+            disabled={isUploading}
+            className="w-full"
+          >
+            Close
           </Button>
         </div>
       </DialogContent>

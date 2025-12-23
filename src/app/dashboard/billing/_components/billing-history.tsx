@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import React from "react";
@@ -23,7 +21,8 @@ const BillingHistory = () => (
     data-testid="dashboard-billing-history"
     className={cn(
       "relative overflow-hidden p-0",
-      "rounded-[20px] backdrop-blur-[32px] backdrop-filter"
+      "rounded-[20px] backdrop-blur-[32px] backdrop-filter",
+      "font-['Space_Grotesk']" // ✅ apply font to entire card
     )}
   >
     <Tabs defaultValue="recharge" className="w-full" variant="glowing">
@@ -41,22 +40,21 @@ const BillingHistory = () => (
 
           {/* Tabs pill (scrollable on small screens) */}
           <div className="overflow-x-auto px-1 py-1">
-            <TabsList>
+            <TabsList className="font-['Space_Grotesk']">
               <TabsTrigger value="recharge">
                 <img
                   src={TAB_ICON.recharge}
                   alt=""
-                  className="h-[18px] w-[18px] shrink-0"
+                  className="h-[18px] w-[18px] shrink-0 filter invert dark:invert-0"
                 />
                 Wallet Recharge
               </TabsTrigger>
 
-             <TabsTrigger value="usage">
-
+              <TabsTrigger value="usage">
                 <img
                   src={TAB_ICON.usage}
                   alt=""
-                  className="h-[18px] w-[18px] shrink-0"
+                  className="h-[18px] w-[18px] shrink-0 filter invert dark:invert-0"
                 />
                 Sense PC Billing
               </TabsTrigger>
@@ -65,7 +63,7 @@ const BillingHistory = () => (
                 <img
                   src={TAB_ICON["storage-usage"]}
                   alt=""
-                  className="h-[18px] w-[18px] shrink-0"
+                  className="h-[18px] w-[18px] shrink-0 filter invert dark:invert-0"
                 />
                 Sense Cloud Billing
               </TabsTrigger>

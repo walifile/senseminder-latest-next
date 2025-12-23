@@ -42,8 +42,6 @@ export default function FAQSection() {
     })).filter((c: Category) => c.items.length > 0);
   }, [query]);
 
-  // const results = filtered.reduce((n: number, c: Category) => n + c.items.length, 0);
-
   // Helpers for expanding/collapsing
   const getItemIds = (cat: Category) =>
     cat.items.map((_, i) => `${cat.title}-${i}`);
@@ -63,21 +61,22 @@ export default function FAQSection() {
     <>
       <div
         data-testid="dashboard-support-faq-header"
-        className="p-[30px] pt-0 space-y-5 border-b border-black/10 dark:border-border"
+        className="p-[30px] pt-0 space-y-5 border-b border-black/10 dark:border-border font-['Space_Grotesk']"
       >
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
-            <div className="justify-start text-black dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8">
+            <div className="justify-start text-black dark:text-white text-2xl font-bold leading-8">
               FAQ
             </div>
-            <div className="justify-start text-[#454545] dark:text-paragraph text-base font-normal font-['Inter'] leading-6">
+            <div className="justify-start text-[#454545] dark:text-paragraph text-base font-normal leading-6">
               Find your expected answer here.
             </div>
           </div>
-          <span className="text-right justify-start text-[#454545] dark:text-paragraph text-base font-normal font-['Inter'] leading-6">
+          <span className="text-right justify-start text-[#454545] dark:text-paragraph text-base font-normal leading-6">
             {lastUpdated}
           </span>
         </div>
+
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Search */}
           <GradientSearchInput
@@ -125,7 +124,7 @@ export default function FAQSection() {
 
       <div
         data-testid="dashboard-support-faq-content"
-        className="p-[30px] space-y-6 overflow-auto"
+        className="p-[30px] space-y-6 overflow-auto font-['Space_Grotesk']"
       >
         {filtered.map((cat: Category, idx: number) => {
           const ids = getItemIds(cat);
@@ -183,12 +182,12 @@ export default function FAQSection() {
                       className="border rounded-xl mb-3"
                     >
                       <AccordionTrigger className="p-5 text-left bg-blue-700/5 dark:bg-white/5 hover:bg-blue-700/10 dark:hover:bg-muted/30 text-[#454545] dark:text-paragraph [&[data-state=open]]:text-black dark:[&[data-state=open]]:text-white rounded-[10px] [&[data-state=open]]:rounded-b-none [&[data-state=open]]:bg-blue-700/5 dark:[&[data-state=open]]:bg-white/5 outline outline-1 outline-blue-700/10 dark:outline-white/10">
-                        <span className="justify-start text-base font-medium font-['Inter'] leading-6">
+                        <span className="justify-start text-base font-medium leading-6">
                           {qa.q}
                         </span>
                       </AccordionTrigger>
                       <AccordionContent className="p-5 bg-blue-700/5 dark:bg-white/5 rounded-b-[10px]">
-                        <div className="justify-start text-paragraph text-base font-normal font-['Inter'] leading-6">
+                        <div className="justify-start text-paragraph text-base font-normal leading-6">
                           {qa.a}
                         </div>
                       </AccordionContent>

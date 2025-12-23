@@ -82,7 +82,7 @@ const Contact = () => {
   }
 
   return (
-    <main className="flex-grow pt-24 pb-16">
+    <main className="flex-grow pt-24 pb-16 font-['Inter']">
       <div className="container mx-auto px-4 md:px-6">
         {/* Breadcrumb */}
         <div className="my-8 flex items-center space-x-2 text-sm">
@@ -94,16 +94,21 @@ const Contact = () => {
             <Breadcrumb
               items={[{ label: "Home", href: "/" }, { label: "Contact" }]}
             />
-            <h1 className="w-full font-space-grotesk text-4xl md:text-[50px] font-bold mb-6 leading-[1]">
+
+            {/* ✅ Heading font applied */}
+            <h1 className="justify-start text-black dark:text-white text-2xl md:text-[50px] font-bold font-['Space_Grotesk'] leading-[1] mb-6">
               Contact Us
             </h1>
-            <p className="text-base md:text-lg text-paragraph dark:text-gray-300 leading-relaxed font-light">
+
+            {/* ✅ Body font applied */}
+            <p className="font-['Inter'] text-base md:text-lg text-[#454545] dark:text-[#B9C2D5] leading-relaxed font-light">
               Let’s connect. Whether you have a question, need support, or want
               to explore a partnership — we’re here for you. Our team is always
               ready to assist, collaborate, or simply hear your ideas. Reach out
               using any of the options below — we’d love to hear from you.
             </p>
           </div>
+
           <div className="w-full md:w-1/4 content-center justify-items-center">
             <Image
               src="/assets/svg/contact-us.svg"
@@ -120,7 +125,8 @@ const Contact = () => {
           <div className="flex h-full flex-col gap-8">
             {/* Top content */}
             <div className="space-y-8">
-              <p className="font-space-grotesk font-semibold text-2xl md:text-3xl tracking-tight text-foreground">
+              {/* ✅ Section heading font applied */}
+              <p className="justify-start text-black dark:text-white text-2xl md:text-3xl font-bold font-['Space_Grotesk'] leading-8 tracking-tight">
                 Contact Information
               </p>
 
@@ -139,7 +145,7 @@ const Contact = () => {
                   </div>
 
                   <div>
-                    <p className="text-foreground text-base md:text-lg font-medium leading-relaxed tracking-[-0.2px]">
+                    <p className="font-['Inter'] text-foreground text-base md:text-lg font-medium leading-relaxed tracking-[-0.2px]">
                       <a
                         href="mailto:contact@sensepc.com"
                         className="hover:text-primary transition-colors underline-offset-4 hover:underline"
@@ -164,7 +170,7 @@ const Contact = () => {
                   </div>
 
                   <div>
-                    <p className="text-foreground text-base md:text-lg font-medium leading-relaxed tracking-[-0.2px]">
+                    <p className="font-['Inter'] text-foreground text-base md:text-lg font-medium leading-relaxed tracking-[-0.2px]">
                       1372 Peachtree
                       <br />
                       Atlanta, Georgia 30309
@@ -179,7 +185,8 @@ const Contact = () => {
             {/* ✅ Push Business Hours down */}
             <div className="mt-auto">
               <div className="px-4 py-4 md:px-8 md:py-6 rounded-xl border bg-[#5220DE09] dark:bg-[#ffffff0a]">
-                <h2 className="font-space-grotesk text-xl md:text-2xl font-semibold tracking-tight text-foreground mb-5 flex items-center gap-3">
+                {/* ✅ Heading font applied */}
+                <h2 className="justify-start text-black dark:text-white text-2xl md:text-2xl font-bold font-['Space_Grotesk'] leading-8 tracking-tight mb-5 flex items-center gap-3">
                   <Image
                     src="/assets/svg/contact/clock.svg"
                     alt="Business Hours"
@@ -191,7 +198,7 @@ const Contact = () => {
                   Business Hours
                 </h2>
 
-                <div className="space-y-3">
+                <div className="space-y-3 font-['Inter']">
                   <div className="flex items-center justify-between gap-6">
                     <span className="text-sm md:text-base font-medium text-muted-foreground">
                       Monday – Friday
@@ -226,21 +233,28 @@ const Contact = () => {
               </div>
             </div>
           </div>
+
+          {/* Right: form */}
           <div>
-            <p className="font-space-grotesk font-semibold text-3xl mb-3">
+            {/* ✅ Heading font applied */}
+            <p className="justify-start text-black dark:text-white text-2xl md:text-3xl font-bold font-['Space_Grotesk'] leading-8 mb-3">
               Send Us a Message
             </p>
-            <p className="text-paragraph text-base font-light leading-[32px]">
+
+            {/* ✅ Body font applied */}
+            <p className="font-['Inter'] text-paragraph text-base font-light leading-[32px] text-[#454545] dark:text-[#B9C2D5]">
               Please fill out the form below and we will contact you within 24
               hours.
             </p>
+
             <br />
             <hr />
             <br />
+
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
+                className="space-y-6 font-['Inter']"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
@@ -248,12 +262,12 @@ const Contact = () => {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Your Name</FormLabel>
+                        {/* ✅ Label font applied */}
+                        <FormLabel className="block self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">
+                          Your Name
+                        </FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="John Doe"
-                            {...field}
-                          />
+                          <Input placeholder="John Doe" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -265,7 +279,10 @@ const Contact = () => {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email Address</FormLabel>
+                        {/* ✅ Label font applied */}
+                        <FormLabel className="block self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">
+                          Email Address
+                        </FormLabel>
                         <FormControl>
                           <Input
                             type="email"
@@ -284,12 +301,12 @@ const Contact = () => {
                   name="subject"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Subject</FormLabel>
+                      {/* ✅ Label font applied */}
+                      <FormLabel className="block self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">
+                        Subject
+                      </FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="How can we help you?"
-                          {...field}
-                        />
+                        <Input placeholder="How can we help you?" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -301,7 +318,10 @@ const Contact = () => {
                   name="message"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Message</FormLabel>
+                      {/* ✅ Label font applied */}
+                      <FormLabel className="block self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">
+                        Message
+                      </FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="Please provide details about your inquiry..."
@@ -316,7 +336,7 @@ const Contact = () => {
 
                 <Button
                   type="submit"
-                  className="w-full"
+                  className="w-full font-['Inter']"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (

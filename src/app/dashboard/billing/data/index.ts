@@ -1,16 +1,16 @@
 import { Clock, Calendar, CalendarDays } from "lucide-react";
 
+/** Font helpers (no color overrides) */
+export const TITLE_FONT =
+  "justify-start text-2xl font-bold font-['Space_Grotesk'] leading-8";
+export const LABEL_FONT = "font-['Space_Grotesk'] font-semibold";
+export const BODY_FONT = "font-['Space_Grotesk']";
+
+/** ✅ This MUST exist because quick-recharge.tsx imports it */
 export const quickRechargeAmounts = [
-  {
-    amount: 20,
-    label: "",
-  },
+  { amount: 20, label: "" },
   { amount: 50, label: "", description: "", isRecommended: true },
-  {
-    amount: 100,
-    label: "",
-    description: "",
-  },
+  { amount: 100, label: "", description: "" },
   { amount: 200, label: "", description: "" },
 ];
 
@@ -20,11 +20,7 @@ export const billingPlans = [
     name: "Hourly",
     description: "Perfect for quick tasks and testing",
     icon: Clock,
-    features: [
-      "Pay only for actual usage",
-      "No minimum commitment",
-      "Support included",
-    ],
+    features: ["Pay only for actual usage", "No minimum commitment", "Support included"],
   },
   {
     id: "daily",
@@ -33,11 +29,7 @@ export const billingPlans = [
     price: "9.99",
     unit: "day",
     icon: CalendarDays,
-    features: [
-      "24-hour continuous access",
-      "15% savings vs hourly",
-      "Support included",
-    ],
+    features: ["24-hour continuous access", "Savings up to 10% vs hourly", "Support included"],
   },
   {
     id: "monthly",
@@ -46,11 +38,7 @@ export const billingPlans = [
     price: "179.99",
     unit: "month",
     icon: Calendar,
-    features: [
-      "30-day continuous access",
-      "35% savings vs weekly",
-      "Support included",
-    ],
+    features: ["30-day continuous access", "Savings up to 10% vs daily", "Support included"],
   },
 ];
 

@@ -1,4 +1,3 @@
-
 // build-smartpc/src/app/build-smartpc/_components/billing-dialog.tsx
 
 "use client";
@@ -71,7 +70,7 @@ const PLAN_COPY: Record<
     estimateNote: "Estimated based on your current configuration",
     included: [
       "24-hour continuous access",
-      "15% savings vs hourly",
+      "Savings up to 10% vs hourly",
       "Support included",
     ],
   },
@@ -82,9 +81,9 @@ const PLAN_COPY: Record<
     tagline: "Best value for regular users",
     estimateNote: "Estimated based on your current configuration",
     included: [
-      "30-day continuous access",
-      "35% savings vs weekly",
-      "Support included",
+      "30-day continuous access.",
+      "Saving up to 10% vs daily.",
+      "Support included.",
     ],
   },
 };
@@ -97,7 +96,8 @@ export const BillingPlanDialog: React.FC<Props> = ({
   onOpenChange,
   onConfirm,
 }) => {
-  const [selectedPlan, setSelectedPlan] = React.useState<BillingPlan>(currentPlan);
+  const [selectedPlan, setSelectedPlan] =
+    React.useState<BillingPlan>(currentPlan);
   const [confirmChecked, setConfirmChecked] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
 
@@ -135,12 +135,13 @@ export const BillingPlanDialog: React.FC<Props> = ({
         className={cn(
           "max-w-[640px] border-0",
           "rounded-2xl px-6 py-6 sm:px-10 sm:py-8",
-          "shadow-xl"
+          "shadow-xl",
+          "font-['Space_Grotesk']"
         )}
       >
         {/* Header */}
         <DialogHeader className="flex flex-row items-start justify-between gap-4 p-0">
-          <DialogTitle className="text-xl font-semibold tracking-[-0.04em] text-[#020816] dark:text-white">
+          <DialogTitle className="font-['Space_Grotesk'] text-xl font-semibold tracking-[-0.04em] text-[#020816] dark:text-white">
             Change Plan
           </DialogTitle>
 
@@ -192,7 +193,7 @@ export const BillingPlanDialog: React.FC<Props> = ({
                       setConfirmChecked(false);
                     }}
                     className={cn(
-                      "flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition min-w-0",
+                      "font-['Space_Grotesk'] flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition min-w-0",
                       isActive
                         ? "bg-[#2530f0] text-white"
                         : "bg-transparent text-[#454545] dark:text-[#b9c2d5] hover:bg-black/5 dark:hover:bg-white/5"
@@ -212,27 +213,29 @@ export const BillingPlanDialog: React.FC<Props> = ({
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div className="space-y-2">
               <div className="flex items-end gap-2">
-                <span className="text-2xl font-semibold tracking-[-0.04em] text-[#020816] dark:text-white">
+                <span className="font-['Space_Grotesk'] text-2xl font-semibold tracking-[-0.04em] text-[#020816] dark:text-white">
                   {planCopy.price}
                 </span>
-                <span className="text-sm text-[#454545] dark:text-[#b9c2d5]">
+                <span className="font-['Space_Grotesk'] text-sm text-[#454545] dark:text-[#b9c2d5]">
                   {planCopy.unit}
                 </span>
               </div>
-              <p className="text-sm text-[#454545] dark:text-[#b9c2d5]">
+              <p className="font-['Space_Grotesk'] text-sm text-[#454545] dark:text-[#b9c2d5]">
                 {planCopy.tagline}
               </p>
 
               {planCopy.estimateNote && (
                 <div className="mt-1 flex items-center gap-2 text-xs text-[#454545] dark:text-[#b9c2d5]">
                   <AlertCircle className="h-4 w-4 opacity-80" />
-                  <span>{planCopy.estimateNote}</span>
+                  <span className="font-['Space_Grotesk']">
+                    {planCopy.estimateNote}
+                  </span>
                 </div>
               )}
             </div>
 
             {selectedPlan === currentPlan && (
-              <div className="inline-flex items-center gap-2 rounded-full bg-[rgba(45,216,90,0.12)] px-3 py-1 text-xs font-medium uppercase tracking-[0.08em] text-[#2dd85a] dark:bg-[rgba(97,253,138,0.12)] dark:text-[#61fd8a]">
+              <div className="font-['Space_Grotesk'] inline-flex items-center gap-2 rounded-full bg-[rgba(45,216,90,0.12)] px-3 py-1 text-xs font-medium uppercase tracking-[0.08em] text-[#2dd85a] dark:bg-[rgba(97,253,138,0.12)] dark:text-[#61fd8a]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#2dd85a] dark:bg-[#61fd8a]" />
                 Active
               </div>
@@ -242,7 +245,7 @@ export const BillingPlanDialog: React.FC<Props> = ({
 
         {/* What's included */}
         <div className="mt-6 space-y-3">
-          <h3 className="text-base font-semibold tracking-[-0.03em] text-[#020816] dark:text-white">
+          <h3 className="font-['Space_Grotesk'] text-base font-semibold tracking-[-0.03em] text-[#020816] dark:text-white">
             What&apos;s included
           </h3>
 
@@ -250,7 +253,7 @@ export const BillingPlanDialog: React.FC<Props> = ({
             {planCopy.included.map((item) => (
               <li
                 key={item}
-                className="flex items-start gap-2 text-sm text-[#454545] dark:text-[#b9c2d5]"
+                className="font-['Space_Grotesk'] flex items-start gap-2 text-sm text-[#454545] dark:text-[#b9c2d5]"
               >
                 <span className="mt-[2px] flex h-4 w-4 items-center justify-center rounded-full bg-[#2530f0]">
                   <Check className="h-3 w-3 text-white" />
@@ -270,10 +273,10 @@ export const BillingPlanDialog: React.FC<Props> = ({
                   <AlertCircle className="h-5 w-5 text-[#020816] dark:text-white" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-semibold text-[#020816] dark:text-white">
+                  <p className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
                     Hourly billing behavior
                   </p>
-                  <p className="text-sm text-[#454545] dark:text-[#a3a3a3]">
+                  <p className="font-['Space_Grotesk'] text-sm text-[#454545] dark:text-[#a3a3a3]">
                     With Hourly Plan you will not get charged for Stopped
                     computer CPU and Memory. However, SSD charges will
                     continue, since the disk remains allocated to preserve your
@@ -290,10 +293,10 @@ export const BillingPlanDialog: React.FC<Props> = ({
                     <AlertCircle className="h-5 w-5 text-[#020816] dark:text-white" />
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm font-semibold text-[#020816] dark:text-white">
+                    <p className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
                       Takes effect immediately
                     </p>
-                    <p className="text-sm text-[#454545] dark:text-[#a3a3a3]">
+                    <p className="font-['Space_Grotesk'] text-sm text-[#454545] dark:text-[#a3a3a3]">
                       This change will take effect immediately and you will be
                       charged from the wallet.
                     </p>
@@ -305,7 +308,7 @@ export const BillingPlanDialog: React.FC<Props> = ({
                 type="button"
                 onClick={() => setConfirmChecked((prev) => !prev)}
                 className={cn(
-                  "flex w-full items-center gap-3 rounded-[10px] border px-4 py-4 text-left",
+                  "font-['Space_Grotesk'] flex w-full items-center gap-3 rounded-[10px] border px-4 py-4 text-left",
                   "bg-[rgba(37,48,240,0.07)] border-[rgba(37,48,240,0.1)]",
                   "dark:bg-[rgba(255,255,255,0.04)] dark:border-white/40",
                   confirmChecked &&
@@ -324,7 +327,7 @@ export const BillingPlanDialog: React.FC<Props> = ({
                     <Check className="h-3 w-3 text-white dark:text-[#140947]" />
                   )}
                 </div>
-                <p className="text-sm font-semibold text-[#020816] dark:text-white">
+                <p className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
                   I Understand, Confirm Apply
                 </p>
               </button>
@@ -338,7 +341,7 @@ export const BillingPlanDialog: React.FC<Props> = ({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto font-['Space_Grotesk']"
           >
             Cancel
           </Button>
@@ -347,7 +350,7 @@ export const BillingPlanDialog: React.FC<Props> = ({
             type="button"
             onClick={handleApply}
             disabled={!canApply}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto font-['Space_Grotesk']"
           >
             {submitting ? "Applying..." : "Apply"}
           </Button>

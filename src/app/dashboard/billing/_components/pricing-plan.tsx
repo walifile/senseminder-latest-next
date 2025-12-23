@@ -85,18 +85,21 @@ const PricingPlan = () => {
     defaultPlanId
   );
 
-  const selectedPlan = useMemo(() => (
+  const selectedPlan = useMemo(
+    () =>
       billingPlans.find((p) => p.id === selectedPlanId) ??
       billingPlans[0] ??
-      null
-    ), [selectedPlanId]);
+      null,
+    [selectedPlanId]
+  );
 
   return (
     <DashboardCard
       data-testid="dashboard-billing-pricing-plan"
       className={cn(
         "relative overflow-hidden p-0 rounded-[20px]",
-        "backdrop-blur-[32px] backdrop-filter"
+        "backdrop-blur-[32px] backdrop-filter",
+        "font-['Space_Grotesk']" // ✅ apply font to everything inside
       )}
     >
       <Tabs
@@ -108,7 +111,7 @@ const PricingPlan = () => {
         {/* Header */}
         <div className="flex flex-col gap-4 px-6 pt-5 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1">
-            <p className="text-[24px] font-bold leading-8 tracking-[-0.4px] text-foreground">
+            <p className="justify-start text-2xl font-bold leading-8">
               Only Pay For What You Use
             </p>
             <p className="text-[16px] leading-6 tracking-[-0.3px] text-[#454545] dark:text-[#B9C2D5]">
@@ -117,7 +120,7 @@ const PricingPlan = () => {
           </div>
 
           {/* Service selection (pill) */}
-          <TabsList>
+          <TabsList className="font-bold">
             <TabsTrigger value="smartpc">
               <Cpu className="h-3 w-3" />
               Sense PC
