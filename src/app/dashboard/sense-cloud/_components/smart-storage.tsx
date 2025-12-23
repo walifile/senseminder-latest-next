@@ -98,6 +98,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePaginationItems } from "@/hooks/usePaginationItems";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
 import GradientSearchInput from "@/components/shared/inputs/gradient-search-input";
 
@@ -189,6 +190,7 @@ const CloudStorage = () => {
   const [filePreview, setFilePreview] = useState<FileItem | null>(null);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [fileToRename, setFileToRename] = useState<FileItem | null>(null);
+  const { copyToClipboard } = useCopyToClipboard();
 
   const debouncedQuery = useDebounce(searchQuery, 500);
 
@@ -402,6 +404,24 @@ const CloudStorage = () => {
     } finally {
       setDownloadingFile(null);
     }
+  };
+
+  const handleCopyFileName = async (fileName: string) => {
+    const ok = await copyToClipboard(fileName);
+    if (ok) {
+      toast({
+        title: "Copied",
+        description: "File name copied to clipboard.",
+      });
+      return;
+    }
+
+    Logger.error("Copy file name failed");
+    toast({
+      title: "Copy Failed",
+      description: "Unable to copy file name. Please try again.",
+      variant: "destructive",
+    });
   };
 
   const handleBulkShare = () => {
@@ -1355,14 +1375,27 @@ const CloudStorage = () => {
                                                     />
                                                   </div>
                                                   <div>
-                                                    <div className="flex items-center gap-1">
-                                                      <span>
-                                                        {file.fileName}
-                                                      </span>
-                                                      {file.starred && (
-                                                        <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
-                                                      )}
-                                                    </div>
+                                                      <div className="flex items-center gap-1">
+                                                        <span>
+                                                          {file.fileName}
+                                                        </span>
+                                                        <button
+                                                          type="button"
+                                                          className="text-muted-foreground hover:text-foreground transition-colors"
+                                                          aria-label="Copy file name"
+                                                          onClick={(event) => {
+                                                            event.stopPropagation();
+                                                            handleCopyFileName(
+                                                              file.fileName
+                                                            );
+                                                          }}
+                                                        >
+                                                          <Copy className="h-3.5 w-3.5" />
+                                                        </button>
+                                                        {file.starred && (
+                                                          <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                                                        )}
+                                                      </div>
                                                     {file.shared && (
                                                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                                         {/* reserved for shared-with count */}
@@ -1596,6 +1629,7 @@ const CloudStorage = () => {
                                     formatFileSize={formatFileSize}
                                     formatDate={formatDate}
                                     handleRenameSelected={handleRenameSelected}
+                                    handleCopyFileName={handleCopyFileName}
                                   />
                                 )}
 

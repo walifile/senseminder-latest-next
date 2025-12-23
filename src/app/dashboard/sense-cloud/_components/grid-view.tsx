@@ -59,6 +59,7 @@ type GridViewProps = {
   handleRenameSelected: (file: FileItem) => void;
   formatFileSize: (size?: number | string) => string;
   formatDate: (date: string) => string;
+  handleCopyFileName: (fileName: string) => void;
 };
 
 const GridView = ({
@@ -83,6 +84,7 @@ const GridView = ({
   handleRenameSelected,
   formatFileSize,
   formatDate,
+  handleCopyFileName,
 }: GridViewProps) => (
   <div
     data-testid="dashboard-sense-cloud-grid-view"
@@ -170,12 +172,23 @@ const GridView = ({
                 }`}
               >
                 <div
-                  className={`font-medium truncate text-sm ${
+                  className={`flex items-center gap-1 font-medium truncate text-sm ${
                     file.fileType === "folder" ? "" : "min-w-0"
                   }`}
                   title={file.fileName}
                 >
-                  {file.fileName}
+                  <span className="truncate">{file.fileName}</span>
+                  <button
+                    type="button"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Copy file name"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleCopyFileName(file.fileName);
+                    }}
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                  </button>
                 </div>
                 {file.fileType === "folder" && (
                   <div className="text-xs text-muted-foreground mt-1">
