@@ -1175,6 +1175,7 @@ const DCViewerContent: React.FC = () => {
                           className="w-full h-9"
                           onClick={handleDisconnect}
                           disabled={isLoading}
+                          data-testid="sensepc-disconnect-button"
                         >
                           {isLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Power className="h-4 w-4 mr-2" />}
                           {isLoading ? "Disconnecting..." : "Disconnect"}
@@ -1186,6 +1187,7 @@ const DCViewerContent: React.FC = () => {
                           className="w-full h-9"
                           onClick={handleConnect}
                           disabled={isLoading}
+                          data-testid="sensepc-connect-button"
                         >
                           {isLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Power className="h-4 w-4 mr-2" />}
                           {isLoading ? "Connecting..." : "Connect"}
