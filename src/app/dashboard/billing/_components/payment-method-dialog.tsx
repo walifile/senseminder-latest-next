@@ -437,6 +437,7 @@ export function PaymentMethodDialog() {
                         dark:bg-[#2A2067]
                         px-5 py-4
                       "
+                      data-testid="billing-card-number-input"
                     >
                       <CardElement
                         options={{
