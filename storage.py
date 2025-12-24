@@ -298,7 +298,7 @@ def _ensure_unique_file_key(bucket_name: str, dest_folder_prefix: str, desired_f
     # Try the plain core first if original didn't already contain a number.
     if n0 is None:
         key0 = f"{dest_folder_prefix}{core}{ext}"
-        if not _key_conflicts(bucket_name, key0):
+        if not _key_conflicts_live(bucket_name, key0):
             return f"{core}{ext}", key0
         start = 1
     else:
@@ -310,7 +310,7 @@ def _ensure_unique_file_key(bucket_name: str, dest_folder_prefix: str, desired_f
     while True:
         cand_name = f"{core} ({i}){ext}"
         cand_key = f"{dest_folder_prefix}{cand_name}"
-        if not _key_conflicts(bucket_name, cand_key):
+        if not _key_conflicts_live(bucket_name, cand_key):
             return cand_name, cand_key
         i += 1
 
@@ -326,7 +326,7 @@ def _ensure_unique_folder_key(bucket_name: str, dest_parent_prefix: str, folder_
     # Try core/ first if no number embedded
     if n0 is None:
         key0 = f"{dest_parent_prefix}{core}/"
-        if not _key_conflicts(bucket_name, key0):
+        if not _key_conflicts_live(bucket_name, key0):
             return core, key0
         start = 1
     else:
@@ -336,7 +336,7 @@ def _ensure_unique_folder_key(bucket_name: str, dest_parent_prefix: str, folder_
     while True:
         cand_name = f"{core} ({i})"
         cand_key = f"{dest_parent_prefix}{cand_name}/"
-        if not _key_conflicts(bucket_name, cand_key):
+        if not _key_conflicts_live(bucket_name, cand_key):
             return cand_name, cand_key
         i += 1
 
