@@ -236,6 +236,8 @@ const CloudStorage = () => {
     return selectedCategory.toLowerCase();
   })();
 
+  const sortOrder = sortBy === "name" ? "asc" : "desc";
+
   const { data, error, isFetching, refetch } = useListFilesQuery(
     {
       userId,
@@ -247,6 +249,7 @@ const CloudStorage = () => {
       modified: filters.modified,
       folder: folderPath,
       sortBy,
+      sortOrder,
       limit,
       page,
     },

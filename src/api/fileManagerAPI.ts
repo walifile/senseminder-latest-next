@@ -479,6 +479,7 @@ export const fileManagerAPI = createApi({
         modified,
         folder,
         sortBy,
+        sortOrder,
         limit,
         page,
       }) => ({
@@ -495,6 +496,7 @@ export const fileManagerAPI = createApi({
           ...(modified && { modified }),
           ...(folder && { folder }),
           ...(sortBy && { sortBy }),
+          ...(sortOrder && { sortOrder }),
           limit,
           page,
           // recursive,
