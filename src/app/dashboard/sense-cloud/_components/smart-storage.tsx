@@ -1304,17 +1304,22 @@ const CloudStorage = () => {
                                         </TableRow>
                                       </TableHeader>
                                       <TableBody>
-                                        {(files as FileItem[]).map(
-                                          (file, index) => (
-                                            <TableRow
-                                              key={file.id}
-                                              className={`hover:bg-muted/50 ${
-                                                dragOverFolderId === file.id
-                                                  ? "bg-muted ring-2 ring-primary"
-                                                  : ""
-                                              }`}
-                                              data-testid="storage-file-list"
-                                              draggable
+                                          {(files as FileItem[]).map(
+                                            (file, index) => (
+                                              <TableRow
+                                                key={file.id}
+                                                className={`hover:bg-muted/50 ${
+                                                  dragOverFolderId === file.id
+                                                    ? "bg-muted ring-2 ring-primary"
+                                                    : ""
+                                                }`}
+                                                onDoubleClick={() => {
+                                                  if (file.fileType !== "folder") {
+                                                    setFilePreview(file);
+                                                  }
+                                                }}
+                                                data-testid="storage-file-list"
+                                                draggable
                                               onDragStart={(e) =>
                                                 handleItemDragStart(e, file.id)
                                               }
