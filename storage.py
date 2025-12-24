@@ -12,6 +12,7 @@ import os
 import uuid
 import math
 import re
+from urllib.parse import unquote
 
 # Initialize AWS clients
 s3 = boto3.client('s3')
@@ -439,6 +440,72 @@ def _has_active_share_for_key(folder_key: str) -> bool:
         return False
     except Exception as e:
         print(f"_has_active_share_for_key error: {e}")
+        return False
+
+def _has_active_share_for_prefix(key: str) -> bool:
+    """
+    Return True if there is an ACTIVE, non-expired share whose objectKey
+    is a prefix of the provided key (for navigating subfolders).
+    """
+    try:
+        if not key:
+            return False
+        base_key = key.rstrip('/') + '/'
+        now_epoch = int(datetime.now(timezone.utc).timestamp())
+        resp = shares_table.scan(
+            FilterExpression=boto3.dynamodb.conditions.Attr('status').eq('active')
+        )
+        for it in resp.get('Items', []) or []:
+            ok = (it.get('objectKey') or '').strip()
+            if not ok:
+                continue
+            exp = it.get('expiresAt')
+            try:
+                exp_i = int(exp) if exp is not None else None
+            except Exception:
+                try:
+                    exp_i = int(float(exp))
+                except Exception:
+                    exp_i = None
+            if exp_i is not None and now_epoch > exp_i:
+                continue
+            share_prefix = ok.rstrip('/') + '/'
+            if base_key.startswith(share_prefix):
+                return True
+        return False
+    except Exception as e:
+        print(f"_has_active_share_for_prefix error: {e}")
+        return False
+
+def _normalize_key_param(key: str) -> str:
+    """Decode URL-encoded keys and normalize to a plain string."""
+    if not key:
+        return ""
+    try:
+        return unquote(key)
+    except Exception:
+        return key
+
+def _has_shared_metadata_prefix(key: str) -> bool:
+    """
+    Return True if there is any non-deleted metadata row under key
+    that is marked shared (folder shares propagate shared=True).
+    """
+    try:
+        if not key:
+            return False
+        resp = file_metadata_table.scan(
+            FilterExpression=(
+                boto3.dynamodb.conditions.Attr('id').begins_with(key) &
+                boto3.dynamodb.conditions.Attr('isDeleted').ne(True)
+            )
+        )
+        for it in resp.get('Items', []) or []:
+            if it.get('shared') or it.get('status') == 'shared':
+                return True
+        return False
+    except Exception as e:
+        print(f"_has_shared_metadata_prefix error: {e}")
         return False
 
 
@@ -1060,7 +1127,7 @@ def handle_download_folder(event):
     region = query.get('region')
     user_id = query.get('userId')  # optional for public
     folder = query.get('folder')   # for private download
-    key = query.get('key')         # for public shared download
+    key = _normalize_key_param(query.get('key'))         # for public shared download
 
     if not region:
         return response(400, {'message': 'region is required.'})
@@ -1073,8 +1140,8 @@ def handle_download_folder(event):
         parts = key.strip('/').split('/')
         user_id = parts[0]
         clean_folder_name = parts[-1]
-        # Public path: only allow if an active share exists for this folder key
-        if not _has_active_share_for_key(key):
+        # Public path: allow if the folder itself or a parent was shared
+        if not (_has_active_share_for_key(key) or _has_active_share_for_prefix(key) or _has_shared_metadata_prefix(key)):
             return response(410, {'message': 'This shared link is expired or revoked.'})
     else:
         prefix = f"{user_id}/uploads/{folder.strip('/')}/"
@@ -1788,13 +1855,13 @@ def handle_public_shared_list(event):
     try:
         query = event.get('queryStringParameters', {}) or {}
         region = query.get('region')
-        key = query.get('key', '').rstrip('/') + '/'
+        key = _normalize_key_param(query.get('key', '')).rstrip('/') + '/'
 
         if not region or not key:
             return response(400, {'message': 'region and key are required.'})
 
-        # Require an active share for this folder
-        if not _has_active_share_for_key(key):
+        # Require an active share for this folder (or a parent share)
+        if not (_has_active_share_for_key(key) or _has_active_share_for_prefix(key) or _has_shared_metadata_prefix(key)):
             return response(410, {'message': 'This shared link is expired or revoked.'})
 
         bucket_resp = bucket_table.get_item(Key={'region': region})

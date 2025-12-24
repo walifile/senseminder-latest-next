@@ -119,11 +119,20 @@ const EnhancedBreadcrumbs = ({
   );
 };
 
+const safeDecode = (value: string) => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
 const StaticStoragePage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const key = searchParams.get("key") || "";
+  const keyParam = searchParams.get("key") || "";
+  const key = safeDecode(keyParam);
   const { data, isLoading, isError, error } = usePublicSharedListQuery({
     key,
     region: "virginia",
@@ -165,6 +174,16 @@ const StaticStoragePage = () => {
   // Smart folder navigation that handles both child and sibling navigation
   const handleFolderClick = (file: FileItem) => {
     if (file.fileType !== "folder") return;
+
+    const fileKey = file.id
+      ? file.id.endsWith("/")
+        ? file.id
+        : `${file.id}/`
+      : "";
+    if (fileKey) {
+      router.push(`/shared-folder-viewer?key=${encodeURIComponent(fileKey)}`);
+      return;
+    }
 
     // Clean the current key (remove trailing slash for consistency)
     const cleanKey = key.endsWith("/") ? key.slice(0, -1) : key;
