@@ -4,6 +4,13 @@ import React from "react";
 
 import { Folder, ChevronRight } from "lucide-react";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
+
 import FolderHierarchy from "./folder-hierarchy";
 
 import type { FileItem } from "../types";
@@ -33,6 +40,23 @@ const FolderListView: React.FC<FolderListViewProps> = ({
   rootId,
   rootLabel = "Root",
 }) => {
+  const normalizeFolderId = (id: string) => (id.endsWith("/") ? id : `${id}/`);
+  const getParentFolderId = (id: string) => {
+    const trimmed = id.endsWith("/") ? id.slice(0, -1) : id;
+    const idx = trimmed.lastIndexOf("/");
+    return idx >= 0 ? trimmed.slice(0, idx + 1) : "";
+  };
+
+  const isInvalidDestination = (folderId: string) => {
+    if (!selectedFiles.length) {
+      return false;
+    }
+    const normalized = normalizeFolderId(folderId);
+    return selectedFiles.every(
+      (id) => normalizeFolderId(getParentFolderId(id)) === normalized
+    );
+  };
+
   const handleOpenFolder = (folder: FileItem) => {
     setPath((prev) => [...prev, folder]);
   };
@@ -44,58 +68,90 @@ const FolderListView: React.FC<FolderListViewProps> = ({
 
         {!isLoading && folders.length === 0 && <p>No folders found.</p>}
 
-        {!isLoading && rootId && (
-          <div
-            className={`group flex items-center justify-between p-2 rounded-lg cursor-pointer hover:bg-muted/50 ${
-              selectedFolderId === rootId ? "bg-muted" : ""
-            }`}
-            onClick={() => {
-              if (selectedFolder?.id !== rootId) {
-                setSelectedFolderId(rootId);
-              } else {
-                setSelectedFolderId(null);
-              }
-            }}
-          >
-            <div className="flex items-center gap-2">
-              <Folder className="h-4 w-4" />
-              <span>{rootLabel}</span>
-            </div>
-          </div>
-        )}
+        {!isLoading && rootId && (() => {
+          const isDisabled = isInvalidDestination(rootId);
+          return (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    className={`group flex items-center justify-between p-2 rounded-lg ${
+                      isDisabled
+                        ? "cursor-not-allowed opacity-60"
+                        : "cursor-pointer hover:bg-muted/50"
+                    } ${selectedFolderId === rootId ? "bg-muted" : ""}`}
+                    onClick={() => {
+                      if (isDisabled) return;
+                      if (selectedFolder?.id !== rootId) {
+                        setSelectedFolderId(rootId);
+                      } else {
+                        setSelectedFolderId(null);
+                      }
+                    }}
+                    aria-disabled={isDisabled}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Folder className="h-4 w-4" />
+                      <span>{rootLabel}</span>
+                    </div>
+                  </div>
+                </TooltipTrigger>
+                {isDisabled && (
+                  <TooltipContent side="top" align="center" sideOffset={6}>
+                    Already in this folder
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+          );
+        })()}
 
         {!isLoading &&
-          folders.map((folder: FileItem) => (
-            <div
-              key={folder.id}
-              className={`group flex items-center justify-between p-2 rounded-lg cursor-pointer hover:bg-muted/50 ${
-                selectedFolderId === folder.id ? "bg-muted" : ""
-              }`}
-              onClick={() => {
-                if (
-                  selectedFolder?.id !== folder.id &&
-                  selectedFiles?.some((id) => id !== folder.id)
-                ) {
-                  setSelectedFolderId(folder.id);
-                } else {
-                  setSelectedFolderId(null);
-                }
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <Folder className="h-4 w-4" />
-                <span>{folder.fileName}</span>
-              </div>
+          folders.map((folder: FileItem) => {
+            const isDisabled = isInvalidDestination(folder.id);
+            return (
+              <TooltipProvider key={folder.id}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={`group flex items-center justify-between p-2 rounded-lg ${
+                        isDisabled
+                          ? "cursor-not-allowed opacity-60"
+                          : "cursor-pointer hover:bg-muted/50"
+                      } ${selectedFolderId === folder.id ? "bg-muted" : ""}`}
+                      onClick={() => {
+                        if (isDisabled) return;
+                        if (selectedFolder?.id !== folder.id) {
+                          setSelectedFolderId(folder.id);
+                        } else {
+                          setSelectedFolderId(null);
+                        }
+                      }}
+                      aria-disabled={isDisabled}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Folder className="h-4 w-4" />
+                        <span>{folder.fileName}</span>
+                      </div>
 
-              <button
-                type="button"
-                onClick={() => handleOpenFolder(folder)}
-                className="hidden group-hover:block p-1 bg-muted text-primary rounded-full hover:bg-primary/10 transition"
-              >
-                <ChevronRight className="size-4" />
-              </button>
-            </div>
-          ))}
+                      <button
+                        type="button"
+                        onClick={() => handleOpenFolder(folder)}
+                        className="hidden group-hover:block p-1 bg-muted text-primary rounded-full hover:bg-primary/10 transition"
+                      >
+                        <ChevronRight className="size-4" />
+                      </button>
+                    </div>
+                  </TooltipTrigger>
+                  {isDisabled && (
+                    <TooltipContent side="top" align="center" sideOffset={6}>
+                      Already in this folder
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
+            );
+          })}
       </div>
 
       <FolderHierarchy
