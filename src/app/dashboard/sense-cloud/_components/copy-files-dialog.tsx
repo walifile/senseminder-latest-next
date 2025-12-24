@@ -104,6 +104,8 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
     return getCurrentLevelFolders(data, path);
   }, [data, path]);
 
+  const rootId = userId ? `${userId}/uploads/` : null;
+
   const handleCopy = async () => {
     if (!selectedFolderId || !userId || selectedFiles.length === 0) return;
 
@@ -113,11 +115,12 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
     });
 
     const destinationFolder = getRelativePath(selectedFolderId);
+    const isRootDestination = selectedFolderId === rootId;
     // Logger.log(`🚀 ~ Destination: ${selectedFolderId} → ${destinationFolder}`);
 
     if (
       sourceFileNames.some((name) => !name?.trim()) ||
-      !destinationFolder?.trim()
+      (!isRootDestination && !destinationFolder?.trim())
     ) {
       Logger.error("Invalid paths in copy");
       toast({
@@ -133,12 +136,14 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
         region: "virginia",
         userId,
         sourceFileNames,
-        destinationFolder,
+        destinationFolder: isRootDestination ? "" : destinationFolder,
       }).unwrap();
 
       toast({
         title: "Items Copied",
-        description: `${selectedFiles.length} item(s) copied to "${destinationFolder}"`,
+        description: `${selectedFiles.length} item(s) copied to "${
+          isRootDestination ? "Root" : destinationFolder
+        }"`,
       });
 
       setSelectedFiles([]);
@@ -204,6 +209,8 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
           setPath={setPath}
           selectedFolder={selectedFolder}
           selectedFiles={selectedFiles}
+          rootId={rootId}
+          rootLabel="All Files"
         />
 
         <DialogFooter>

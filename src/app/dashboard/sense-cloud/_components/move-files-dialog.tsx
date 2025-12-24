@@ -100,6 +100,8 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
     return getCurrentLevelFolders(data, path);
   }, [data, path]);
 
+  const rootId = userId ? `${userId}/uploads/` : null;
+
   const handleMove = async () => {
     if (!selectedFolderId) {
       Logger.error(" No destination folder selected");
@@ -139,13 +141,17 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
       });
 
       const destinationFolder = getRelativePath(selectedFolderId);
+      const isRootDestination = selectedFolderId === rootId;
 
       // Check if getRelativePath is working correctly
       if (sourceFileNames.some((name) => !name || name.trim() === "")) {
         throw new Error("Invalid source file paths");
       }
 
-      if (!destinationFolder || destinationFolder.trim() === "") {
+      if (
+        !isRootDestination &&
+        (!destinationFolder || destinationFolder.trim() === "")
+      ) {
         Logger.error(" Destination folder is empty after getRelativePath");
         throw new Error("Invalid destination folder path");
       }
@@ -154,12 +160,14 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
         region: "virginia",
         userId,
         sourceFileNames,
-        destinationFolder,
+        destinationFolder: isRootDestination ? "" : destinationFolder,
       };
       await moveFiles(movePayload).unwrap();
       toast({
         title: "Move Complete",
-        description: `${sourceFileNames.length} item(s) moved to "${destinationFolder}"`,
+        description: `${sourceFileNames.length} item(s) moved to "${
+          isRootDestination ? "Root" : destinationFolder
+        }"`,
       });
       setSelectedFiles([]);
       closeDialog();
@@ -245,6 +253,8 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
           setPath={setPath}
           selectedFolder={selectedFolder}
           selectedFiles={selectedFiles}
+          rootId={rootId}
+          rootLabel="All Files"
         />
 
         <DialogFooter>

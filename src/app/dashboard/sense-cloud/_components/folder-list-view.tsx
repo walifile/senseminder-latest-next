@@ -17,6 +17,8 @@ type FolderListViewProps = {
   setPath: React.Dispatch<React.SetStateAction<FileItem[]>>;
   selectedFolder: FileItem | null;
   selectedFiles: string[];
+  rootId?: string | null;
+  rootLabel?: string;
 };
 
 const FolderListView: React.FC<FolderListViewProps> = ({
@@ -28,6 +30,8 @@ const FolderListView: React.FC<FolderListViewProps> = ({
   setPath,
   selectedFolder,
   selectedFiles,
+  rootId,
+  rootLabel = "Root",
 }) => {
   const handleOpenFolder = (folder: FileItem) => {
     setPath((prev) => [...prev, folder]);
@@ -39,6 +43,26 @@ const FolderListView: React.FC<FolderListViewProps> = ({
         {isLoading && <p>Loading folders...</p>}
 
         {!isLoading && folders.length === 0 && <p>No folders found.</p>}
+
+        {!isLoading && rootId && (
+          <div
+            className={`group flex items-center justify-between p-2 rounded-lg cursor-pointer hover:bg-muted/50 ${
+              selectedFolderId === rootId ? "bg-muted" : ""
+            }`}
+            onClick={() => {
+              if (selectedFolder?.id !== rootId) {
+                setSelectedFolderId(rootId);
+              } else {
+                setSelectedFolderId(null);
+              }
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <Folder className="h-4 w-4" />
+              <span>{rootLabel}</span>
+            </div>
+          </div>
+        )}
 
         {!isLoading &&
           folders.map((folder: FileItem) => (
