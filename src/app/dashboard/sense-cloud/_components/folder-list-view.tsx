@@ -2,14 +2,14 @@
 
 import React from "react";
 
-import { Folder, ChevronRight } from "lucide-react";
-
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+
+import { Folder, ChevronRight } from "lucide-react";
 
 import FolderHierarchy from "./folder-hierarchy";
 
