@@ -55,22 +55,22 @@ const NewTicket = ({ setActiveTab }: Props) => {
   ) => {
     const { id, value } = e.target;
     setFormState((prev) => ({ ...prev, [id]: value }));
-  
+
     const errorSetter =
       id === "subject" ? setSubjectError : setDescriptionError;
     const maxLength = id === "subject" ? 50 : 500;
-  
+
     // Normalize common “smart” punctuation to plain equivalents for validation
     const v = value
       .normalize("NFKC")
       .replace(/[\u2018\u2019]/g, "'") // ‘ ’ -> '
       .replace(/[\u201C\u201D]/g, '"') // “ ” -> "
       .replace(/\u00A0/g, " "); // non-breaking space -> space
-  
+
     // Allow normal writing punctuation (industry-standard-ish) + Unicode letters/numbers
     const allowed = /^[\p{L}\p{N}\s[\\\].,!?'"():;/@#&_-]*$/u;
-    const tooManyPunctInARow = /[[\\\].,!?'"():;/@#&_-]{4,}/;      
-  
+    const tooManyPunctInARow = /[[\\\].,!?'"():;/@#&_-]{4,}/;
+
     if (v.length > maxLength) {
       errorSetter(`${id} cannot exceed ${maxLength} characters.`);
     } else if (/[<>]/.test(v)) {
@@ -82,7 +82,7 @@ const NewTicket = ({ setActiveTab }: Props) => {
     } else {
       errorSetter("");
     }
-  };  
+  };
 
   const handleSelectChange = (field: string, value: string) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
@@ -111,11 +111,7 @@ const NewTicket = ({ setActiveTab }: Props) => {
       await createTicket({ userId, body }).unwrap();
 
       toast({
-        title: (
-          <span data-testid="support-success-message">
-            Support ticket created
-          </span>
-        ),
+        title: "Support ticket created",
       });
       setFormState({
         subject: "",

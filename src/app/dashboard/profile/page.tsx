@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useSearchParams } from "next/navigation";
@@ -101,7 +100,10 @@ const ProfilePage = () => {
     );
   }, [profile]);
 
-  function parseNameForApi(raw: string): { firstName: string; lastName: string } {
+  function parseNameForApi(raw: string): {
+    firstName: string;
+    lastName: string;
+  } {
     const trimmed = raw.trim().replace(/\s+/, " ");
     if (!trimmed) return { firstName: "", lastName: "" };
     const [first, ...rest] = trimmed.split(/\s+/);
@@ -145,11 +147,7 @@ const ProfilePage = () => {
       await updateUserProfile(payload);
 
       toast({
-        title: (
-          <span data-testid="profile-updated-success-message">
-            Profile Updated
-          </span>
-        ),
+        title: "Profile Updated",
         description: "Your profile changes have been saved.",
       });
 
@@ -220,10 +218,7 @@ const ProfilePage = () => {
   return (
     <DashboardCard
       data-testid="dashboard-profile-page"
-      className={cn(
-        "relative overflow-hidden p-0",
-        "bg-public-card-bg-dark"
-      )}
+      className={cn("relative overflow-hidden p-0", "bg-public-card-bg-dark")}
     >
       <Tabs
         value={activeTab}
@@ -307,7 +302,9 @@ const ProfilePage = () => {
                   >
                     Profile Information
                   </p>
-                  <p className={headerDescClass}>Update your personal details</p>
+                  <p className={headerDescClass}>
+                    Update your personal details
+                  </p>
                 </div>
               )}
             </div>
