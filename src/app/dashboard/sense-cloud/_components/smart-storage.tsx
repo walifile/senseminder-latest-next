@@ -850,15 +850,17 @@ const CloudStorage = () => {
                     <RefreshCw className="h-4 w-4" />
                     Sync Storage
                   </Button> */}
-                  <Button
-                    variant="outline"
-                    size="default"
-                    onClick={() => setShowStoragePlans(true)}
-                    className="md:ml-auto h-[-webkit-fill-available]"
-                  >
-                    <HardDrive className="h-4 w-4" />
-                    <span>Storage Plans</span>
-                  </Button>
+                  <div className="md:ml-auto">
+                    <Button
+                      variant="outline"
+                      size="default"
+                      onClick={() => setShowStoragePlans(true)}
+                      className="h-14"
+                    >
+                      <HardDrive className="h-4 w-4" />
+                      <span>Storage Plans</span>
+                    </Button>
+                  </div>
                 </div>
               </div>
               {selectedCategory !== "Duplicates" && (
