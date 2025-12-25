@@ -30,6 +30,7 @@ const tutorials: Tutorial[] = [
     difficulty: "Beginner",
     uploadDate: "2025-12-25",
     lastUpdated: "2025-12-25",
+    showCategory: true
   },
   {
     id: 2,
@@ -43,6 +44,7 @@ const tutorials: Tutorial[] = [
     difficulty: "Advanced",
     uploadDate: "2025-12-25",
     lastUpdated: "2025-12-25",
+    showCategory: true
   },
   {
     id: 3,
@@ -56,6 +58,7 @@ const tutorials: Tutorial[] = [
     difficulty: "Intermediate",
     uploadDate: "2025-12-25",
     lastUpdated: "2025-12-25",
+    showCategory: true
   }
 ];
 
