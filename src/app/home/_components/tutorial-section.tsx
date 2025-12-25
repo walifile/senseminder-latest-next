@@ -22,7 +22,7 @@ const tutorials = [
     duration: "0:56",
     description: "A quick guide to get your cloud desktop running the way you need.",
     image: "/assets/images/gettingStartedWithSensePc.png",
-    videoUrl: "/videos/SENSEPC1.mp4",
+    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%201.mp4",
     youtubeUrl: "https://youtube.com",
   },
   {
@@ -31,7 +31,7 @@ const tutorials = [
     duration: "0:50",
     description: "Practical tips to make your Sense PC faster and more responsive.",
     image: "/assets/images/optimizing.jpg",
-    videoUrl: "/videos/SENSEPC2.mp4",
+    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%202.mp4",
     youtubeUrl: "https://youtube.com",
   },
   {
@@ -40,7 +40,7 @@ const tutorials = [
     duration: "1:30",
     description: "How to organize files and optimize your Sense Cloud.",
     image: "/assets/images/storageManagement.png",
-    videoUrl: "/videos/SENSEPC3.mp4",
+    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%203.mp4",
     youtubeUrl: "https://youtube.com",
   },
 ];
