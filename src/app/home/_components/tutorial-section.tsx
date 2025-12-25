@@ -28,19 +28,19 @@ const tutorials = [
   {
     id: 2,
     title: "Improve Performance",
-    duration: "0:50",
+    duration: "1:30",
     description: "Practical tips to make your Sense PC faster and more responsive.",
     image: "/assets/images/optimizing.jpg",
-    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%202.mp4",
+    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%203.mp4",
     youtubeUrl: "https://youtube.com",
   },
   {
     id: 3,
     title: "Manage Your Storage",
-    duration: "1:30",
+    duration: "0:50",
     description: "How to organize files and optimize your Sense Cloud.",
     image: "/assets/images/storageManagement.png",
-    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%203.mp4",
+    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%202.mp4",
     youtubeUrl: "https://youtube.com",
   },
 ];
