@@ -99,31 +99,37 @@ const InviteUserDialog = ({ open, onClose }: Props) => {
           <Field.Text
             name="name"
             label="Name"
+            inputVariant="auth"
             placeholder="John Doe"
-            inputClassName="justify-start h-auto px-5 py-4 text-paragraph text-base font-normal placeholder:font-normal font-['Inter'] leading-6"
+            inputClassName="justify-start h-auto px-5 py-4 text-paragraph text-base font-normal placeholder:font-normal font-['Inter'] leading-6 !border-0 !ring-0 !outline-none"
             inputTestId="user-management-name-input"
           />
 
+
           <Field.Text
-            name="email"
-            label="Email"
-            placeholder="john.doe@example.com"
-            inputClassName="justify-start h-auto px-5 py-4 text-paragraph text-base font-normal placeholder:font-normal font-['Inter'] leading-6"
-            inputTestId="user-management-email-input"
-          />
+          name="email"
+          label="Email"
+          inputVariant="auth"
+          placeholder="john.doe@example.com"
+          inputClassName="justify-start h-auto px-5 py-4 text-paragraph text-base font-normal placeholder:font-normal font-['Inter'] leading-6 !border-0 !ring-0 !outline-none"
+          inputTestId="user-management-email-input"
+        />
+
 
           <Field.Select
-            name="role"
-            label="Role"
-            placeholder="Select a role"
-            className="gap-2"
-            triggerClassName="h-[52px] text-base font-semibold font-['Inter'] leading-6"
-            triggerTestId="user-management-role-dropdown"
-            options={[
-              { value: "admin", label: "Admin" },
-              { value: "member", label: "Member" },
-            ]}
-          />
+          name="role"
+          label="Role"
+          placeholder="Select a role"
+          selectVariant="glowingSelector"
+          className="gap-2"
+          triggerClassName="h-[52px] text-base font-semibold font-['Inter'] leading-6 "
+          triggerTestId="user-management-role-dropdown"
+          options={[
+            { value: "admin", label: "Admin" },
+            { value: "member", label: "Member" },
+          ]}
+        />
+
           <DialogFooter className="!mt-6">
             <Button
               variant="default"

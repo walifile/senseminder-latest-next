@@ -14,12 +14,14 @@ interface Props {
 
 const PrioritySelectField = ({ value, setValue, disabled = false }: Props) => (
   <Select value={value} onValueChange={setValue} disabled={disabled}>
-    <SelectTrigger
-      data-testid="support-priority-dropdown"
-      variant="glowingSelector"
-    >
-      <SelectValue placeholder="Select priority" />
-    </SelectTrigger>
+  <SelectTrigger
+    data-testid="support-priority-dropdown"
+    variant="form"
+    className="h-auto rounded-[10px] px-5 py-4"
+  >
+    <SelectValue placeholder="Select priority" />
+  </SelectTrigger>
+
     <SelectContent>
       <SelectItem value="low">Low</SelectItem>
       <SelectItem value="medium">Medium</SelectItem>

@@ -73,6 +73,8 @@ const DashboardSidebar = () => {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const stripQuery = (p: string) => p.split("?")[0];
+
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
@@ -249,7 +251,7 @@ const DashboardSidebar = () => {
                   data-testid={testId}
                   className={cn(
                     "flex items-center px-4 py-[10px] rounded-full transition-colors",
-                    pathname === item.path
+                    pathname === stripQuery(item.path)
                       ? "bg-blue-700 text-white"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     collapsed && "justify-center px-0 w-[50%] mx-auto"

@@ -95,10 +95,10 @@ const SensePCPage = () => {
           />
 
           <GetStartedCtaSection
-            title="Power your Sense PC with secure storage."
-            description="WGet started by choosing the storage option that fits your work. "
+            title="For You. For Your Team. For Any Workflow."
+            description="Whether you’re deploying SensePC across your organization or just trying it out yourself, getting started takes just minutes."
             primaryCta={{
-              label: "Get Started with SensePC",
+              label: "Build a SensePC",
               onClick: onGetStarted,
             }}
             secondaryCta={{ label: "Contact Sales", onClick: onGetStarted }}

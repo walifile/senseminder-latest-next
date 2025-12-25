@@ -112,21 +112,22 @@ export default function TicketTable() {
               Status:
             </label>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger
-                className="w-[150px]"
-                variant="pill"
-                data-testid="support-status-filter"
-              >
-                <SelectValue placeholder="Any" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">Any</SelectItem>
-                <SelectItem value="open">Open</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
-                <SelectItem value="resolved">Resolved</SelectItem>
-                <SelectItem value="closed">Closed</SelectItem>
-              </SelectContent>
-            </Select>
+            <SelectTrigger
+              className="w-[150px]"
+              variant="pill"
+              data-testid="support-status-filter"
+            >
+              <SelectValue placeholder="Any" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="any">Any</SelectItem>
+              <SelectItem value="open">Open</SelectItem>
+              <SelectItem value="in-progress">In Progress</SelectItem>
+              <SelectItem value="resolved">Resolved</SelectItem>
+              <SelectItem value="closed">Closed</SelectItem>
+            </SelectContent>
+          </Select>
+
           </div>
         </div>
       </div>

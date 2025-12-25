@@ -1,8 +1,12 @@
+
+"use client";
+
+import React from "react";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 
-import { ArrowUpRight } from "lucide-react"; // or your own SVG
+import { ArrowUpRight } from "lucide-react";
 
 import { useGetStartedNav } from "@/hooks/use-get-started";
 
@@ -12,9 +16,17 @@ export function MissionCard() {
   const onGetStarted = useGetStartedNav();
 
   return (
-    <section>
-      <div className="container z-10 relative mb-16 md:mb-32">
-        <div className="grid gap-10 md:grid-cols-2 items-stretch">
+    <section className="relative isolate overflow-visible">
+      <div className="container relative mb-16 md:mb-32 overflow-visible">
+        {/* ✅ Decorative ellipse behind the Mission/Vision cards (dark mode only) */}
+        <img
+          src="/assets/svg/about/Ellipse 5-big.svg"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none select-none hidden md:hidden dark:md:block absolute left-1/2 top-0 z-0 -translate-x-1/2 -translate-y-[55%]"
+        />
+
+        <div className="grid gap-10 md:grid-cols-2 items-stretch relative z-10">
           {/* Our Mission */}
           <GradientInfoCard
             title="Our Mission"
@@ -29,30 +41,35 @@ export function MissionCard() {
               />
             }
           >
-            <p className="self-stretch justify-start text-paragraph text-lg font-normal font-['Inter'] leading-8 text-black dark:text-[#B9C2D5]">
-              Senseminder was founded by Ashfak Ahmed, a senior developer and
-              operations engineer focused on cloud-native computing, and is
-              proudly headquartered in Georgia, USA.
+
+            <p className="w-full font-inter text-[18px] font-normal leading-[32px] tracking-[-0.3px] text-[#7D7D7D] dark:text-[#B9C2D5]">
+              We’re on a mission to remove the friction separating you from high-performing
+              computing and secure cloud storage. We believe that powerful computing
+              shouldn’t require powerful hardware.
             </p>
-            <p className="self-stretch justify-start text-paragraph text-lg font-normal font-['Inter'] leading-8">
-              Our mission is to democratize access to high-performance cloud
-              computing through Sense PC — your personal, scalable, on-demand
-              desktop that launches instantly from anywhere.
+
+            <p className="w-full font-inter text-[18px] font-normal leading-[32px] tracking-[-0.3px] text-[#7D7D7D] dark:text-[#B9C2D5]">
+              To make our mission a reality, we have built our platform on real usage,
             </p>
-            <p className="font-medium text-[#020816] dark:text-white">
-              And the best part?{" "}
-              <span className="text-[#7AA2FF]">
+
+            <p className="w-full font-inter text-[16px] font-semibold leading-[24px] tracking-[-0.3px] text-[#020816] dark:text-white">
+              <span>So </span>
+
+              {/* Light: solid blue text | Dark: gradient text */}
+              <span className="text-[#2530F0] dark:bg-gradient-to-r dark:from-[#4C55F8] dark:via-[#8086F3] dark:to-[#D971FF] dark:bg-clip-text dark:text-transparent">
                 You only pay for what you use.
               </span>
             </p>
+
           </GradientInfoCard>
 
+          {/* Our Vision */}
           <GradientInfoCard
             title="Our Vision"
             icon={
               <Image
                 src="/assets/svg/about/our-vision.svg"
-                alt="Our Mission"
+                alt="Our Vision"
                 width={50}
                 height={50}
                 className="size-full"
@@ -60,56 +77,58 @@ export function MissionCard() {
               />
             }
           >
-            <ul className="list-disc ml-5 mb-5">
-              <li className="self-stretch justify-start text-paragraph text-lg font-normal font-['Inter'] leading-8">
-                Your PC launches in seconds from any device.
-              </li>
-              <li className="self-stretch justify-start text-paragraph text-lg font-normal font-['Inter'] leading-8">
-                You never worry about upgrades or storage again.
-              </li>
-              <li className="self-stretch justify-start text-paragraph text-lg font-normal font-['Inter'] leading-8">
-                Your data is secure and your impact is sustainable.
-              </li>
-              <li className="self-stretch justify-start text-paragraph text-lg font-normal font-['Inter'] leading-8">
-                Your computing power scales instantly with your needs.
-              </li>
-            </ul>
 
-            <p className="font-medium text-[#020816] dark:text-white">
-              We’re not patching old models —{" "}
-              <span className="text-[#7AA2FF]">
-                You only pay for what you use.
-              </span>
+            <p className="w-full font-inter text-[18px] font-normal leading-[32px] tracking-[-0.3px] text-[#7D7D7D] dark:text-[#B9C2D5]">
+              Our vision is to create a computer that launches in seconds, wherever you are.
             </p>
+
+            <p className="w-full font-inter text-[18px] font-normal leading-[32px] tracking-[-0.3px] text-[#7D7D7D] dark:text-[#B9C2D5]">
+              No more hardware maintenance, storage issues, or manual upgrades. Your data stays protected with
+              built-in security and a cloud-first design.
+            </p>
+
+            <p className="w-full font-inter text-[18px] font-normal leading-[32px] tracking-[-0.3px] text-[#7D7D7D] dark:text-[#B9C2D5]">
+              And finally, we want to create compute power that scales automatically with your workload.
+            </p>
+
           </GradientInfoCard>
 
-          <div className="md:col-span-2">
-            <GradientInfoCard
-              title="Our Story"
-              rightImage="/assets/svg/about/our-story.svg"
-            >
-              <p className="self-stretch justify-start text-paragraph text-2xl font-normal font-['Inter'] leading-8">
-                In 2020, I (Ashfak Ahmed) saw a frustrating truth: even the most
-                talented users were still limited by their hardware.
-              </p>
+          {/* Our Story */}
+          <div className="md:col-span-2 relative isolate overflow-visible">
+            {/* ✅ Huge ellipse behind the Our Story section (dark mode only) */}
+            <img
+              src="/assets/svg/about/Ellipse 4-huge.svg"
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none select-none hidden md:hidden dark:md:block absolute left-1/2 top-1/2 z-0 -translate-x-1/2 -translate-y-1/2"
+            />
 
-              <p className="self-stretch justify-start text-paragraph text-2xl font-normal font-['Inter'] leading-8">
-                So I built Senseminder — a platform designed from the cloud up
-                to offer people what they truly need: flexibility, power, and
-                freedom.
-              </p>
+            <div className="relative z-10">
+              <GradientInfoCard title="Our Story" rightImage="/assets/svg/about/our-story-1.svg">
+                <div className="font-inter text-[24px] font-normal leading-[40px] tracking-[-0.4px] text-[#7D7D7D] dark:text-[#B9C2D5]">
+                <p className="mb-4">
+                  In 2020, our founder, Ashfak Ahmed, decided he wanted to solve one of the
+                  cloud computing industry’s most bothersome problems: the fact that powerful
+                  work is limited by local hardware.
+                </p>
 
-              <div className="relative md:w-fit pt-12">
-                <Button
-                  size="default"
-                  className="relative w-full !py-4 h-auto"
-                  onClick={onGetStarted}
-                >
-                  Learn More
-                  <ArrowUpRight />
-                </Button>
+                <p className="mb-4">To fix that problem, Ash built Sense PC.</p>
+
+                <p>
+                  With his team, he built a cloud-native platform that delivers performance,
+                  flexibility, and freedom that a physical computer can’t match.
+                </p>
               </div>
-            </GradientInfoCard>
+
+
+                <div className="relative md:w-fit pt-12">
+                  <Button size="default" className="relative w-full !py-4 h-auto" onClick={onGetStarted}>
+                    Learn More
+                    <ArrowUpRight />
+                  </Button>
+                </div>
+              </GradientInfoCard>
+            </div>
           </div>
         </div>
       </div>

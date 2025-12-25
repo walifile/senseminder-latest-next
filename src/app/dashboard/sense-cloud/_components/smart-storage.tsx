@@ -1309,22 +1309,24 @@ const CloudStorage = () => {
                                         </TableRow>
                                       </TableHeader>
                                       <TableBody>
-                                          {(files as FileItem[]).map(
-                                            (file, index) => (
-                                              <TableRow
-                                                key={file.id}
-                                                className={`hover:bg-muted/50 ${
-                                                  dragOverFolderId === file.id
-                                                    ? "bg-muted ring-2 ring-primary"
-                                                    : ""
-                                                }`}
-                                                onDoubleClick={() => {
-                                                  if (file.fileType !== "folder") {
-                                                    setFilePreview(file);
-                                                  }
-                                                }}
-                                                data-testid="storage-file-list"
-                                                draggable
+                                        {(files as FileItem[]).map(
+                                          (file, index) => (
+                                            <TableRow
+                                              key={file.id}
+                                              className={`hover:bg-muted/50 ${
+                                                dragOverFolderId === file.id
+                                                  ? "bg-muted ring-2 ring-primary"
+                                                  : ""
+                                              }`}
+                                              onDoubleClick={() => {
+                                                if (
+                                                  file.fileType !== "folder"
+                                                ) {
+                                                  setFilePreview(file);
+                                                }
+                                              }}
+                                              data-testid="storage-file-list"
+                                              draggable
                                               onDragStart={(e) =>
                                                 handleItemDragStart(e, file.id)
                                               }
@@ -1391,27 +1393,27 @@ const CloudStorage = () => {
                                                     />
                                                   </div>
                                                   <div>
-                                                      <div className="flex items-center gap-1">
-                                                        <span>
-                                                          {file.fileName}
-                                                        </span>
-                                                        <button
-                                                          type="button"
-                                                          className="text-muted-foreground hover:text-foreground transition-colors"
-                                                          aria-label="Copy file name"
-                                                          onClick={(event) => {
-                                                            event.stopPropagation();
-                                                            handleCopyFileName(
-                                                              file.fileName
-                                                            );
-                                                          }}
-                                                        >
-                                                          <Copy className="h-3.5 w-3.5" />
-                                                        </button>
-                                                        {file.starred && (
-                                                          <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
-                                                        )}
-                                                      </div>
+                                                    <div className="flex items-center gap-1">
+                                                      <span>
+                                                        {file.fileName}
+                                                      </span>
+                                                      <button
+                                                        type="button"
+                                                        className="text-muted-foreground hover:text-foreground transition-colors"
+                                                        aria-label="Copy file name"
+                                                        onClick={(event) => {
+                                                          event.stopPropagation();
+                                                          handleCopyFileName(
+                                                            file.fileName
+                                                          );
+                                                        }}
+                                                      >
+                                                        <Copy className="h-3.5 w-3.5" />
+                                                      </button>
+                                                      {file.starred && (
+                                                        <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                                                      )}
+                                                    </div>
                                                     {file.shared && (
                                                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                                         {/* reserved for shared-with count */}

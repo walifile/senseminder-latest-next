@@ -523,17 +523,15 @@ const CloudPCPage = () => {
                         >
                           {/* header */}
                           <div className="flex items-start justify-between">
-                            <div className="flex items-start gap-3">
+                            <div className="flex items-center gap-3">
                               <div
                                 onClick={(e) => e.stopPropagation()}
                                 className="flex items-center"
                               >
                                 <Checkbox
                                   checked={isSelected}
-                                  onCheckedChange={() =>
-                                    handlePCSelection(index)
-                                  }
-                                  className="mt-[2px]"
+                                  onCheckedChange={() => handlePCSelection(index)}
+                                  className="" // ✅ removed mt-[2px] so checkbox aligns with name line
                                 />
                               </div>
 
@@ -561,9 +559,7 @@ const CloudPCPage = () => {
                                     }
                                   >
                                     {getStatusIcon(pc.state)}
-                                    <span data-testid="sensepc-status">
-                                      {statusText}
-                                    </span>
+                                    <span data-testid="sensepc-status">{statusText}</span>
                                   </div>
                                 </div>
                               </div>

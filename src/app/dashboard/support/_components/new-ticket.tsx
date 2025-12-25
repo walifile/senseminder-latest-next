@@ -155,12 +155,12 @@ const NewTicket = ({ setActiveTab }: Props) => {
             <label className="self-stretch justify-start text-black dark:text-white text-lg font-semibold font-['Space_Grotesk'] leading-8">
               Subject
             </label>
-            <Input
+           <Input
               id="subject"
               placeholder="Type subject"
               value={formState.subject}
               onChange={handleInputChange}
-              className="justify-start h-auto px-5 py-4 text-[#454545] dark:text-[#B9C2D5] bg-blue-700/5 text-base font-normal placeholder:font-normal font-['Inter'] leading-6 rounded-[10px]"
+              className="justify-start h-auto px-5 py-4 text-[#454545] dark:text-[#B9C2D5] text-base font-normal placeholder:font-normal font-['Inter'] leading-6 rounded-[10px]"
               data-testid="support-subject-input"
             />
             {subjectError && (
@@ -178,11 +178,13 @@ const NewTicket = ({ setActiveTab }: Props) => {
                 onValueChange={(val) => handleSelectChange("category", val)}
               >
                 <SelectTrigger
-                  variant="glowingSelector"
+                  variant="form"
+                  className="h-auto rounded-[10px] px-5 py-4"
                   data-testid="support-category-dropdown"
                 >
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
+
                 <SelectContent>
                   <SelectItem value="technical">Technical</SelectItem>
                   <SelectItem value="billing">Billing</SelectItem>
@@ -210,9 +212,10 @@ const NewTicket = ({ setActiveTab }: Props) => {
               placeholder="Describe you issue in detail"
               value={formState.description}
               onChange={handleInputChange}
-              className="min-h-[200px] self-stretch relative bg-blue-700/5 dark:bg-white/5 rounded-[10px] outline outline-1 outline-blue-700/10 dark:outline-white/20"
+              className="min-h-[200px] self-stretch relative dark:bg-white/5 rounded-[10px] outline outline-1 outline-blue-700/10 dark:outline-white/20"
               data-testid="support-description-textarea"
             />
+
             {descriptionError && (
               <p className="text-sm text-red-500">{descriptionError}</p>
             )}

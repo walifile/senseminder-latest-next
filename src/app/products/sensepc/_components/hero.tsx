@@ -38,16 +38,15 @@ const Hero = () => (
                   SensePC –
                 </span>
                 <span>
-                  A Cloud PC Desktop Built for Real-World Productivity
+                  A Cloud PC Built for Real-World Productivity
                 </span>
               </span>
             </h1>
-
-            <p className="max-w-2xl text-[#454545] dark:text-[#B9C2D5] tracking-[-0.4px] text-[16px] leading-7 md:text-[24px] md:leading-[40px]">
-              Launch a high-performing cloud workstation in just a few clicks.
-              SensePC handles speed and security in the background so you can
-              confidently work from any device.
+            <p className="max-w-2xl font-inter text-[24px] font-normal leading-[40px] tracking-[-0.4px] text-[#454545] dark:text-[#B9C2D5]">
+              Launch a high-performing cloud workstation in just a few clicks. SensePC handles
+              speed and security in the background so you can confidently work from any device.
             </p>
+
           </div>
 
           <div className="flex flex-wrap items-center gap-3">

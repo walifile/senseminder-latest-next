@@ -738,37 +738,50 @@ const DCViewerContent: React.FC = () => {
                 <img src="/check-light.svg" alt="SensePC" className="hidden dark:block" />
 
                 {/* Status copy (improved) */}
-                <div className="flex flex-col items-center gap-2">
-                  {/* Big primary status */}
-                  <div className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-lg md:text-xl">
-                    {isDisconnecting
-                      ? "Disconnecting from your PC"
-                      : isLoading || connectionState === "RECONNECTING"
-                        ? "Connecting to your PC"
-                        : "Disconnected"}
-                  </div>
+            {/* Status copy */}
+            <div className="mt-1 flex w-full max-w-[360px] flex-col items-center gap-3 text-center">
+              {/* Big primary status */}
+              {(isDisconnecting || isLoading || connectionState === "RECONNECTING") && (
+                <div className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-lg md:text-xl">
+                  {isDisconnecting ? "Disconnecting from your PC" : "Connecting to your PC"}
+                </div>
+              )}
 
-                  {/* Support line + spinner */}
-                  {(isLoading || isDisconnecting || connectionState === "RECONNECTING") ? (
-                    <div className="flex items-center gap-2 rounded-full border border-zinc-200/70 bg-white/70 px-3 py-1.5 text-sm text-zinc-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-zinc-200">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span className="font-medium">
-                        {isDisconnecting ? "Ending session safely…" : "Establishing secure session…"}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-sm font-medium text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-200">
-                      Session not connected
-                    </div>
-                  )}
-
-                  {/* Helper line */}
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400 sm:text-sm">
-                    {isLoading || isDisconnecting || connectionState === "RECONNECTING"
-                      ? "This usually takes a few seconds."
-                      : "Use the Connect button in the side panel."}
+              {/* Spinner row (always same height while connecting) */}
+              {(isLoading || isDisconnecting || connectionState === "RECONNECTING") ? (
+                <div className="flex h-9 items-center justify-center">
+                  <div className="flex items-center justify-center rounded-full border border-zinc-200/70 bg-white/70 px-4 py-2 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5">
+                    <Loader2 className="h-4 w-4 animate-spin text-zinc-800/80 dark:text-zinc-100/80" />
                   </div>
                 </div>
+              ) : (
+                <div className="flex flex-col items-center gap-3">
+                  <div className="rounded-full border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-200">
+                    Session not connected
+                  </div>
+
+                  <Button
+                    size="sm"
+                    variant="default"
+                    className="h-9 px-6"
+                    onClick={handleConnect}
+                    disabled={isLoading || !sessionId || !authToken}
+                    data-testid="sensepc-overlay-connect-button"
+                  >
+                    <Power className="mr-2 h-4 w-4" />
+                    Connect
+                  </Button>
+                </div>
+              )}
+
+              {/* Helper line */}
+              <div className="text-xs text-zinc-500 dark:text-zinc-400 sm:text-sm">
+                {isLoading || isDisconnecting || connectionState === "RECONNECTING"
+                  ? "This usually takes a few seconds."
+                  : "Press Connect to start the session."}
+              </div>
+            </div>
+
               </div>
             </motion.div>
           )}

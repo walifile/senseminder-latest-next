@@ -126,7 +126,7 @@ const ManagePcDialog = ({
               : ""}
           </DialogTitle>
           <DialogDescription>
-            Assign or unassign SmartPCs for this member.
+            Assign or unassign SensePC for this member.
           </DialogDescription>
         </DialogHeader>
 
@@ -157,14 +157,13 @@ const ManagePcDialog = ({
                     className="flex items-center justify-between border-b pb-2"
                   >
                     <div>
-                      <div className="font-bold">
-                        {pc.systemName || pc.instanceId}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {pc.instanceId}
-                        {pc.state ? ` · ${pc.state}` : ""}
-                      </div>
-                    </div>
+                    <div className="font-bold">{pc.systemName || "Unnamed PC"}</div>
+
+                    {pc.state ? (
+                      <div className="text-xs text-muted-foreground">{pc.state}</div>
+                    ) : null}
+                  </div>
+
 
                     <Button
                       size="sm"

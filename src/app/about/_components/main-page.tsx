@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -20,73 +21,72 @@ export default function AboutPage() {
   return (
     <MainLayout>
       <Hero
-        textMinWidth={683}
+        // ✅ IMPORTANT: remove desktop min-width constraint for mobile
+        textMinWidth={0}
         imageSrc="/assets/svg/about-hero-dark.svg"
         imageWidth={600}
         imageHeight={400}
         imageAlt="About illustration"
       >
-        <Breadcrumb
-          items={[{ label: "Home", href: "/" }, { label: "About Us" }]}
-        />
-        <p className="font-space-grotesk font-bold text-3xl md:text-[65px] leading-[1] my-3 w-full">
-          About SensePC
-        </p>
-        <p className="text-paragraph text-base md:text-2xl md:leading-[2.5rem] w-full">
-          At Sensepc, we’re redefining computing by delivering
-          high-performance, fully managed cloud computer that remove the need
-          for traditional hardware.
-        </p>
+        <div className="w-full min-w-0 md:min-w-[683px]">
+          <Breadcrumb
+  variant="figma"
+  items={[{ label: "Home", href: "/" }, { label: "About Us" }]}
+/>
+
+          <h1 className="w-full break-words font-space-grotesk font-bold text-[#020816] dark:text-white text-[32px] leading-[42px] tracking-[-0.5px] md:text-[72px] md:leading-[85px]">
+            Sense PC Gives You the Power of High-Performing Hardware Without The Cost
+          </h1>
+          <p className="w-full font-inter font-normal text-base text-[#7D7D7D] dark:text-[#B9C2D5] md:text-[24px] md:leading-[40px] md:tracking-[-0.4px]">
+            Get the advanced workstation experience without the hardware or the cost.
+            Sense PC gives you a cloud-native remote desktop that you can access whenever
+            you want, from any device.
+          </p>
+
+        </div>
       </Hero>
+
       <MissionCard />
       <WhoWeServeSection />
+
       <GetStartedCTA
         padding="px-4 py-20 md:px-6 md:py-16 mb-16 md:mb-32"
         gradient={
-          <div className="pointer-events-none absolute w-[680px] h-[680px] top-2/3 left-1/2 -translatex-1/2 -translate-y-1/2">
-            <Image
-              // src="/assets/svg/about/partner-us-shape-1-bg.png"
-              src="/assets/svg/about/partner-us-shape-1.png"
-              alt="Gradient"
-              fill
-              className="object-contain hidden dark:block"
-              priority
+          <img
+              src="/assets/svg/about/Ellipse 2-big.svg"
+              alt=""
+              aria-hidden="true"
+              className="
+                pointer-events-none select-none
+                absolute left-1/2 top-0
+                -translate-x-1/2 -translate-y-[55%]
+                z-0
+                hidden dark:md:block
+              "
             />
-          </div>
         }
       >
-        {/* Title */}
-        <h2 className="font-space-grotesk text-[#020816] dark:bg-clip-text dark:text-transparent dark:bg-gradient-to-l dark:from-indigo-400 dark:via-indigo-600 dark:to-fuchsia-400 text-3xl md:text-5xl font-semibold leading-10 md:leading-[56px]">
-          Partner With Us
-        </h2>
+        <p className="font-space-grotesk font-semibold text-[48px] leading-[56px] tracking-[-1px] text-[#020816] dark:text-white text-center">
+          Join the Next Generation of Cloud Computing
+        </p>
 
-        {/* Description */}
-        <div className="mt-6 space-y-4 text-base md:text-lg text-[#7D7D7D] dark:text-[#C8D3F5] leading-6 md:leading-8 font-normal max-w-[57rem] mx-auto">
+        <div className="mt-6 mx-auto max-w-[57rem] space-y-4 whitespace-pre-wrap text-center font-inter text-[18px] font-normal leading-[32px] tracking-[-0.3px] text-[#7D7D7D] dark:text-[#B9C2D5]">
           <p>
-            At{" "}
-            <span className="font-semibold dark:text-white text-[#020816] font-space-grotesk">
-              Senseminder
-            </span>
-            , we believe in growing through collaboration, feedback, and shared
-            vision. We welcome investors, partners, and innovators who are
-            excited to shape the future of cloud-native computing with us.
+            We proudly work with teams, investors, and innovators who share our
+            vision of advanced cloudnative computing. If you’re building tools,
+            exploring integrations, or shaping new ideas, we’d love to connect.
           </p>
 
-          <p className="max-w-[56rem] mx-auto">
-            Whether you're looking to invest, collaborate, or support our
-            mission — or simply want to share an idea{" "}
-            <span className="font-semibold dark:text-white text-[#020816] font-space-grotesk">
-              — we value your opinion and welcome your suggestions for
-              improvement.
-            </span>
+          <p className="text-[#020816] dark:text-white dark:font-medium dark:leading-[27px]">
+            If you’d like to partner, explore investment, or share feedback,
+            we’re always open to new conversations.
           </p>
         </div>
 
-        {/* CTA Button */}
-        <div className="mt-10 relative flex justify-center">
+        <div className="relative mt-10 flex justify-center">
           <Button
             size="lg"
-            className="relative z-10 text-base w-full md:w-auto"
+            className="relative z-10 w-full text-base md:w-auto"
             onClick={() => console.log("Navigate to Contact Page")}
           >
             Contact Us
@@ -94,11 +94,11 @@ export default function AboutPage() {
           </Button>
         </div>
       </GetStartedCTA>
+
       {pathname === "/" && (
-        <div className="relative w-full h-1">
-          <div className="pointer-events-none absolute w-full h-80 top-2/3 left-1/2 -translate-x-1/2 -translate-y-1/2">
+        <div className="relative h-1 w-full">
+          <div className="pointer-events-none absolute left-1/2 top-2/3 h-80 w-full -translate-x-1/2 -translate-y-1/2">
             <Image
-              // src="/assets/svg/about/partner-us-shape-3-bg.png"
               src="/assets/svg/about/partner-us-shape-3.png"
               alt="Gradient"
               fill

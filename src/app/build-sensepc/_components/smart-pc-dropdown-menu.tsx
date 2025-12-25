@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from "react";
@@ -29,15 +28,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import {
-  Cpu,
-  Plus,
-  Moon,
-  Trash2,
-  Shield,
-  RotateCcw,
-  MoreVertical,
   AlertTriangle,
   CalendarClock,
+  Cpu,
+  HardDrive, // ✅ SSD icon
+  MoreVertical,
+  Moon,
+  Plus,
+  RotateCcw,
+  Trash2,
 } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
@@ -69,7 +68,10 @@ const SmartPcDropdownMenu = ({
 }: Props) => {
   const plan = pc.billingPlan?.toLowerCase() || "";
   const planRestricted = !plan || plan === "daily" || plan === "monthly";
-  const isRunning = pc.state?.toLowerCase() === "running";
+
+  const state = pc.state?.toLowerCase() || "";
+  const isRunning = state === "running";
+  const isStopped = state === "stopped";
 
   const { toast } = useToast();
   const [restartVM, { isLoading: isRebooting }] = useRestartVMMutation();
@@ -112,6 +114,14 @@ const SmartPcDropdownMenu = ({
       setIsRebootDialogOpen(false);
     }
   };
+
+  // ✅ Rules:
+  // - PC Resize: only when STOPPED + Hourly plan
+  // - Add Volume: only when RUNNING + Hourly plan (so starting/stopping/etc are disabled)
+  // - Assign User: only when STOPPED
+  const resizeDisabled = planRestricted || !isStopped;
+  const addVolumeDisabled = planRestricted || !isRunning;
+  const assignUserDisabled = !isStopped;
 
   return (
     <>
@@ -172,23 +182,23 @@ const SmartPcDropdownMenu = ({
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (planRestricted) return;
+                    if (resizeDisabled) return;
                     openPCResizeDialog(pc);
                   }}
                   className={
-                    planRestricted
-                      ? "opacity-50 cursor-default select-none"
-                      : ""
+                    resizeDisabled ? "opacity-50 cursor-default select-none" : ""
                   }
                   data-testid="sensepc-resize-button"
                 >
-                  <Shield className="h-4 w-4 mr-2" />
+                  <Cpu className="h-4 w-4 mr-2" />
                   PC Resize
                 </DropdownMenuItem>
               </TooltipTrigger>
-              {planRestricted && (
+              {resizeDisabled && (
                 <TooltipContent side="right">
-                  Available only for PCs on Hourly plan
+                  {planRestricted
+                    ? "Available only for PCs on Hourly plan"
+                    : "Stop your PC to resize"}
                 </TooltipContent>
               )}
             </Tooltip>
@@ -199,41 +209,58 @@ const SmartPcDropdownMenu = ({
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (planRestricted) return;
+                    if (addVolumeDisabled) return;
                     openStorageDialog(pc);
                   }}
                   className={
-                    planRestricted
+                    addVolumeDisabled
                       ? "opacity-50 cursor-default select-none"
                       : ""
                   }
                 >
-                  <Cpu className="h-4 w-4 mr-2" />
+                  <HardDrive className="h-4 w-4 mr-2" />
                   Add Volume (SSD)
                 </DropdownMenuItem>
               </TooltipTrigger>
-              {planRestricted && (
+              {addVolumeDisabled && (
                 <TooltipContent side="right">
-                  Available only for PCs on Hourly plan
+                  {planRestricted
+                    ? "Available only for PCs on Hourly plan"
+                    : "Add Volume is available only when your PC is running"}
                 </TooltipContent>
               )}
             </Tooltip>
-          </TooltipProvider>
 
-          {/* Assign User */}
-          {!isMember && (
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedInstance(pc);
-                handleAssignUser();
-              }}
-              data-testid="sensepc-assign-user-button"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Assign User
-            </DropdownMenuItem>
-          )}
+            {/* Assign User */}
+            {!isMember && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (assignUserDisabled) return;
+                      setSelectedInstance(pc);
+                      handleAssignUser();
+                    }}
+                    className={
+                      assignUserDisabled
+                        ? "opacity-50 cursor-default select-none"
+                        : ""
+                    }
+                    data-testid="sensepc-assign-user-button"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Assign User
+                  </DropdownMenuItem>
+                </TooltipTrigger>
+                {assignUserDisabled && (
+                  <TooltipContent side="right">
+                    Stop your PC to assign a user
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            )}
+          </TooltipProvider>
 
           <DropdownMenuSeparator />
 
@@ -264,7 +291,6 @@ const SmartPcDropdownMenu = ({
       >
         <DialogContent
           onClick={(e) => {
-            // prevent click inside dialog from bubbling back to card
             e.stopPropagation();
           }}
         >

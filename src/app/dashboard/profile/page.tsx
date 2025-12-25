@@ -329,6 +329,8 @@ const ProfilePage = () => {
           <TabsContent value="account" className="m-0 space-y-6">
             <ProfileAccountTab
               profile={profile}
+              setProfile={setProfile} // ✅ add
+
               loading={loading}
               saving={saving}
               fullName={fullName}

@@ -35,7 +35,7 @@ const getTransactionId = (recharge: Recharge): string | null => {
     case "RECHARGE_WALLET":
       return details.paymentIntentId || null;
     case "REFUND_PROCESSED":
-      return details.refundId || details.paymentIntentId || null;
+      return details.paymentIntentId || details.refundId || null;
     default:
       return null;
   }

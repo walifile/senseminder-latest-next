@@ -1,137 +1,295 @@
+
+
 "use client";
 
+import React from "react";
 import Image from "next/image";
 
-export function WhoWeServeSection() {
+const ELLIPSE_LIST_SRC = "/assets/svg/about/ELLIPSE_LIST.svg";
+const ELLIPSE_WHATS_NEXT_SRC = "/assets/svg/about/ELLIPSE_WHATS_NEXT.svg";
+
+const FIGMA_ELLIPSE_6_LIGHT_URL =
+  "/assets/svg/about/FIGMA_ELLIPSE_6_LIGHT_URL.svg";
+const FIGMA_ELLIPSE_7_LIGHT_URL =
+  "/assets/svg/about/FIGMA_ELLIPSE_7_LIGHT_URL.svg";
+
+const FIGMA_CEO_ELLIPSE_6_LIGHT_URL =
+  "/assets/svg/about/FIGMA_CEO_ELLIPSE_6_LIGHT_URL.svg";
+
+const FIGMA_WHATS_NEXT_ELLIPSE_6_LIGHT_URL =
+  "/assets/svg/about/FIGMA_WHATS_NEXT_ELLIPSE_6_LIGHT_URL.svg";
+const FIGMA_WHATS_NEXT_ELLIPSE_1256_LIGHT_URL =
+  "/assets/svg/about/FIGMA_WHATS_NEXT_ELLIPSE_1256_LIGHT_URL.svg";
+
+const WHO_WE_SERVE = [
+  "Developers and engineers who need consistent performance.",
+  "Remote workers and distributed teams who need reliable access.",
+  "Creators, streamers, and power users who rely on heavy workloads",
+  "Students and researchers who need accessible computing power.",
+  "Organizations looking for secure, scalable cloud desktops",
+];
+
+function useIsDarkMode() {
+  const [isDark, setIsDark] = React.useState(false);
+
+  React.useEffect(() => {
+    const root = document.documentElement;
+
+    const update = () => setIsDark(root.classList.contains("dark"));
+    update();
+
+    const observer = new MutationObserver(update);
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+
+    return () => observer.disconnect();
+  }, []);
+
+  return isDark;
+}
+
+type GlassCardProps = {
+  children: React.ReactNode;
+  className?: string;
+  bgClassName?: string;
+  ellipseSrc?: string;
+  ellipseOuterClassName?: string;
+  ellipseBoxClassName?: string;
+
+  isDark?: boolean;
+};
+
+function GlassCard({
+  children,
+  className,
+  bgClassName,
+  ellipseSrc,
+  ellipseOuterClassName,
+  ellipseBoxClassName,
+  isDark = false,
+}: GlassCardProps) {
   return (
-    <section className="container z-10 relative mb-16 md:mb-32">
-      <div className="grid gap-8 md:grid-cols-[minmax(0,1.05fr)_minmax(0,1.45fr)] items-stretch">
-        {/* LEFT: Founder card */}
-        <div className="relative h-full">
-          <div className="relative h-full overflow-hidden rounded-3xl bg-[#5B8CFF]">
-            <Image
-              src="/assets/images/ashfak-ahmed.png" // <- update path to your image
-              alt="Ashfak Ahmed"
-              width={600}
-              height={720}
-              className="h-full w-full object-cover"
-              priority
-            />
-            {/* Name badge */}
-            <div className="absolute left-0 bottom-0 md:bottom-6 px-5 py-4 bg-white rounded-tr-[10px] rounded-br-0 md:rounded-br-[10px] inline-flex flex-col justify-start items-start w-[18.5rem] md:w-96">
-              <div className="text-[#020816] font-['Space_Grotesk'] font-semibold md:font-semibold text-2xl md:text-5xl leading-8 md:leading-[56px]">
-                Ashfak Ahmed
-              </div>
-              <div className="text-[#020816] font-['Inter'] font-normal text-lg md:text-2xl leading-8 md:leading-10">
-                Founder & CEO, Senseminder
+    <div
+      className={[
+        "relative isolate w-full rounded-2xl border",
+        "border-black/10 bg-white/60 backdrop-blur-xl",
+        "shadow-[0_10px_30px_rgba(2,8,22,0.08)]",
+        "dark:border-white/20 dark:bg-transparent dark:backdrop-blur-0 dark:shadow-none",
+        bgClassName ?? "",
+        className ?? "",
+      ].join(" ")}
+    >
+      {ellipseSrc && isDark ? (
+        <div
+          className={[
+            "pointer-events-none absolute z-10",
+            ellipseOuterClassName ?? "",
+          ].join(" ")}
+          aria-hidden
+        >
+          <div
+            className={[
+              "relative h-[214px] w-[214px]",
+              ellipseBoxClassName ?? "",
+            ].join(" ")}
+          >
+            <div className="absolute inset-[-93.46%]">
+              <div className="relative h-full w-full">
+                <Image
+                  src={ellipseSrc}
+                  alt=""
+                  fill
+                  className="object-contain"
+                  sizes="214px"
+                  priority={false}
+                />
               </div>
             </div>
           </div>
         </div>
+      ) : null}
 
-        {/* RIGHT: Who We Serve + What's Next */}
-        <div className="grid h-full gap-6 md:grid-rows-2 auto-rows-fr">
-          {/* Who We Serve */}
-          <section className="w-full">
-            <div className="relative w-full h-full rounded-[16px] outline outline-1 outline-offset-[-1px] outline-white/20 p-4 md:p-7 text-left dark:bg-transparent bg-white dark:bg-[linear-gradient(135deg,rgba(28,6,82,0.25)_0%,rgba(18,11,87,1)_80%,rgba(13,9,95,1)_100%)] bg-opacity-50 backdrop-blur-md overflow-hidden">
-              <div
-                className="pointer-events-none absolute -z-10 dark:hidden w-[1069.988px] h-[472.7071px] rounded-[32px] backdrop-blur-[300px] opacity-20 blur-[150px]"
-                style={{
-                  background:
-                    "linear-gradient(270deg, #BA25F0 4.8%, #2530F0 46.15%, #8086F3 100%)",
-                  top: "-330px",
-                  left: "-498px",
-                  transform: "rotate(-5.6deg)",
-                  borderRadius: "50%",
-                }}
-              />
-              <div
-                className="pointer-events-none absolute -z-10 dark:hidden w-[568.051px] h-[321.133px]  opacity-20 blur-[150px]"
-                style={{
-                  background:
-                    "linear-gradient(270deg, #BA25F0 4.8%, #2530F0 46.15%, #8086F3 100%)",
-                  transform: "rotate(-20.316deg)",
-                  bottom: "-170px",
-                  right: "-140px",
-                  borderRadius: "50%",
-                }}
-              />
+      <div className="relative z-20">{children}</div>
+    </div>
+  );
+}
 
-              {/* Title */}
-              <h2 className="font-space-grotesk text-[#020816] dark:text-white text-2xl md:text-5xl font-semibold leading-8 md:leading-[56px] mb-4">
-                Who We Serve
+export function WhoWeServeSection() {
+  const isDark = useIsDarkMode();
+
+  return (
+    <section className="container relative z-10 mb-16 md:mb-32">
+      <div className="flex flex-col gap-[30px]">
+        {/* Top row */}
+        <div className="grid grid-cols-1 items-start gap-[30px] lg:grid-cols-[436px_1fr] lg:items-stretch">
+          <div className="mx-auto flex w-full max-w-[436px] flex-col items-center justify-center gap-[34px] lg:mx-0 lg:max-w-none lg:h-[400px] lg:justify-between lg:gap-0">
+            <div className="relative h-[228px] w-[228px] overflow-hidden rounded-full">
+              <Image
+                src="/assets/images/ashfak-ahmed.png"
+                alt="Ashfak Ahmed"
+                fill
+                priority
+                className="object-cover"
+                sizes="228px"
+              />
+            </div>
+
+            <GlassCard
+              isDark={isDark}
+              className="overflow-hidden px-[26px] py-[20px] text-center"
+              bgClassName="dark:bg-[linear-gradient(-71.75767244916892deg,rgba(40,49,216,0.35)_11.783%,rgba(1,5,38,0.5)_74.564%,rgba(186,37,240,0.5)_256.64%)]"
+            >
+              {!isDark ? (
+                <div
+                  className="pointer-events-none absolute inset-0 z-0"
+                  aria-hidden
+                >
+                  {/* Left ellipse */}
+                  <div className="absolute left-[calc(50%-286.46px)] top-[calc(50%+57.1px)] h-[305.752px] w-[518.432px] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+                    <div className="flex-none rotate-[348.684deg]">
+                      <div className="relative h-[214.605px] w-[485.765px]">
+                        <div className="absolute inset-[-139.79%_-61.76%]">
+                          <img
+                            src={FIGMA_CEO_ELLIPSE_6_LIGHT_URL}
+                            alt=""
+                            className="block h-full w-full max-w-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="absolute left-[calc(50%+346.22px)] top-[calc(50%-28.12px)] h-[305.752px] w-[518.432px] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+                    <div className="flex-none rotate-[348.684deg]">
+                      <div className="relative h-[214.605px] w-[485.765px]">
+                        <div className="absolute inset-[-139.79%_-61.76%]">
+                          <img
+                            src={FIGMA_CEO_ELLIPSE_6_LIGHT_URL}
+                            alt=""
+                            className="block h-full w-full max-w-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              <p className="font-space-grotesk text-[24px] font-bold leading-[32px] tracking-[-0.5px] text-[#020816] dark:text-white md:text-[32px] md:leading-[42px]">
+                Ashfak Ahmed
+              </p>
+              <p className="mt-2 font-inter text-[16px] font-normal leading-[28px] tracking-[-0.4px] text-[#7D7D7D] dark:text-[#B9C2D5] md:text-[24px] md:leading-[40px]">
+                Founder &amp; CEO, Senseminder
+              </p>
+            </GlassCard>
+          </div>
+
+          <GlassCard
+            isDark={isDark}
+            className="overflow-hidden dark:overflow-visible px-6 pb-6 pt-10 md:px-[26px] md:pb-[26px] md:pt-12 lg:h-[400px]"
+            bgClassName="dark:bg-[linear-gradient(-77.4291868645794deg,rgba(40,49,216,0.35)_11.783%,rgba(1,5,38,0.5)_74.564%,rgba(186,37,240,0.5)_256.64%)]"
+            ellipseSrc={ELLIPSE_LIST_SRC}
+            ellipseOuterClassName="right-[27px] top-[-28px]"
+          >
+            {!isDark ? (
+              <div
+                className="pointer-events-none absolute inset-0 z-0"
+                aria-hidden
+              >
+                <img
+                  src={FIGMA_ELLIPSE_6_LIGHT_URL}
+                  alt=""
+                  className="absolute left-[-500px] top-[-240px] h-[623px] w-[1142px] max-w-none"
+                />
+                <img
+                  src={FIGMA_ELLIPSE_7_LIGHT_URL}
+                  alt=""
+                  className="absolute bottom-[-220px] right-[-260px] h-[426px] w-[620px] max-w-none"
+                />
+              </div>
+            ) : null}
+
+            <div className="relative z-10 flex flex-col gap-4">
+              <h2 className="font-space-grotesk text-[28px] font-semibold leading-[36px] tracking-[-1px] text-[#020816] dark:text-white md:text-[40px] md:leading-[48px] lg:text-[48px] lg:leading-[56px]">
+                Who Can Use Our Platform
               </h2>
 
-              {/* Bullets */}
-              <ul className="list-disc pl-5">
-                <li className="self-stretch justify-start text-paragraph text-base md:text-2xl font-normal font-['Inter'] leading-6 md:leading-10">
-                  Cloud developers and engineers
-                </li>
-                <li className="self-stretch justify-start text-paragraph text-base md:text-2xl font-normal font-['Inter'] leading-6 md:leading-10">
-                  Remote professionals and startups
-                </li>
-                <li className="self-stretch justify-start text-paragraph text-base md:text-2xl font-normal font-['Inter'] leading-6 md:leading-10">
-                  Gamers, streamers, and creators
-                </li>
-                <li className="self-stretch justify-start text-paragraph text-base md:text-2xl font-normal font-['Inter'] leading-6 md:leading-10">
-                  Students, researchers, and educators
-                </li>
-                <li className="self-stretch justify-start text-paragraph text-base md:text-2xl font-normal font-['Inter'] leading-6 md:leading-10">
-                  Enterprises and innovation teams
-                </li>
+              <ul className="list-disc pl-6 font-inter text-[16px] font-normal leading-[24px] tracking-[-0.3px] text-[#7D7D7D] dark:text-[#B9C2D5] lg:pl-9 lg:text-[24px] lg:leading-[40px] lg:tracking-[-0.4px]">
+                {WHO_WE_SERVE.map((item) => (
+                  <li key={item} className="mb-0">
+                    {item}
+                  </li>
+                ))}
               </ul>
-            </div>
-          </section>
 
-          {/* What's Next */}
-          <section className="w-full">
-            <div className="relative w-full h-full rounded-[16px] outline outline-1 outline-offset-[-1px] outline-white/20 p-4 md:p-7 text-left bg-white dark:bg-transparent dark:bg-[linear-gradient(135deg,rgba(28,6,82,0.25)_0%,rgba(18,11,87,1)_80%,rgba(13,9,95,1)_100%)] bg-opacity-50 backdrop-blur-md space-y-4 overflow-hidden">
-              {/* Title */}
-              <div
-                className="pointer-events-none absolute -z-10 dark:hidden w-[1069.988px] h-[472.7071px] rounded-[32px] backdrop-blur-[300px] opacity-20 blur-[150px]"
-                style={{
-                  background:
-                    "linear-gradient(270deg, #BA25F0 4.8%, #2530F0 46.15%, #8086F3 100%)",
-                  top: "-330px",
-                  left: "-498px",
-                  transform: "rotate(-5.6deg)",
-                  borderRadius: "50%",
-                }}
-              />
-              <div
-                className="pointer-events-none absolute -z-10 dark:hidden w-[568.051px] h-[321.133px]  opacity-20 blur-[150px]"
-                style={{
-                  background:
-                    "linear-gradient(270deg, #BA25F0 4.8%, #2530F0 46.15%, #8086F3 100%)",
-                  transform: "rotate(-20.316deg)",
-                  bottom: "-170px",
-                  right: "-140px",
-                  borderRadius: "50%",
-                }}
-              />
-              <h2 className="font-space-grotesk text-[#020816] dark:text-white text-2xl md:text-5xl font-semibold leading-8 md:leading-[56px] mb-4">
-                What’s Next
-              </h2>
-              <div className="self-stretch justify-start bg-[linear-gradient(90deg,#D971FF_0%,#4C55FB_45%,#8086F3_100%)] bg-clip-text text-transparent">
-                <span className="text-transparent text-lg md:text-2xl font-normal md:font-semibold font-['Inter'] md:font-['Space_Grotesk'] capitalize leading-8">
-                  Sense PC
-                </span>
-                <span className="text-[#020816] dark:text-white text-lg md:text-2xl font-normal md:font-semibold font-['Inter'] md:font-['Space_Grotesk'] lowercase md:capitalize leading-8">
-                  {" "}
-                  is just the beginning. We’re building a world where cloud
-                  computing is{" "}
-                </span>
-                <span className="text-transparent text-lg md:text-2xl font-normal md:font-semibold font-['Inter'] md:font-['Space_Grotesk'] lowercase md:capitalize leading-8">
-                  personal, powerful, and everywhere.
-                </span>
-              </div>
-              <div className="self-stretch justify-start text-paragraph text-base md:text-2xl font-normal font-['Inter'] leading-6 md:leading-10">
-                From smart billing to AI-optimized desktops — the future of
-                personal computing is cloud-native, fast, and fair.
-              </div>
             </div>
-          </section>
+          </GlassCard>
         </div>
+
+        <GlassCard
+          isDark={isDark}
+          className="overflow-hidden p-8"
+          bgClassName="dark:bg-[linear-gradient(-61.7052625283178deg,rgba(40,49,216,0.35)_11.783%,rgba(1,5,38,0.5)_74.564%,rgba(186,37,240,0.5)_256.64%)]"
+          ellipseSrc={ELLIPSE_WHATS_NEXT_SRC}
+          ellipseOuterClassName="right-[-20px] top-[3px]"
+        >
+          {!isDark ? (
+            <>
+              <div
+                className="pointer-events-none absolute left-[-789px] top-[calc(50%-157.92px)] z-0 flex h-[872.158px] w-[1169.703px] translate-y-[-50%] items-center justify-center"
+                aria-hidden
+              >
+                <div className="flex-none rotate-[335.625deg]">
+                  <div className="relative h-[472.707px] w-[1069.988px]">
+                    <div className="absolute inset-[-63.46%_-28.04%]">
+                      <img
+                        src={FIGMA_WHATS_NEXT_ELLIPSE_6_LIGHT_URL}
+                        alt=""
+                        className="block h-full w-full max-w-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className="pointer-events-none absolute left-[784px] top-[calc(50%+99.08px)] z-0 flex h-[986.166px] w-[1152.708px] translate-y-[-50%] items-center justify-center"
+                aria-hidden
+              >
+                <div className="flex-none rotate-[326.371deg]">
+                  <div className="relative h-[472.707px] w-[1069.988px]">
+                    <div className="absolute inset-[-63.46%_-28.04%]">
+                      <img
+                        src={FIGMA_WHATS_NEXT_ELLIPSE_1256_LIGHT_URL}
+                        alt=""
+                        className="block h-full w-full max-w-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : null}
+
+          <div className="relative z-10 flex flex-col gap-4">
+            <h2 className="font-space-grotesk text-[28px] font-semibold leading-[36px] tracking-[-1px] text-[#020816] dark:text-white md:text-[40px] md:leading-[48px] lg:text-[48px] lg:leading-[56px]">
+              What’s Next
+            </h2>
+
+            <p className="font-space-grotesk text-[16px] font-normal leading-[28px] tracking-[-0.4px] text-[#7D7D7D] dark:text-[#B9C2D5] md:text-[20px] md:leading-[32px] lg:text-[24px] lg:leading-[32px]">
+              Sense PC is only the beginning. We’re building a future where
+              computing is cloud-first, personal, and instantly accessible from
+              any device.
+            </p>
+
+            <p className="font-inter text-[16px] font-normal leading-[28px] tracking-[-0.4px] text-[#7D7D7D] dark:text-[#B9C2D5] md:text-[20px] md:leading-[32px] lg:text-[24px] lg:leading-[40px]">
+              <span className="font-space-grotesk font-semibold text-[#020816] dark:text-white">
+                Next up:{" "}
+              </span>
+              smarter billing, AI-driven performance, and deeper integration
+              across our platform.
+            </p>
+          </div>
+        </GlassCard>
       </div>
     </section>
   );
