@@ -1,6 +1,3 @@
-
-
-
 /* eslint perfectionist/sort-imports: "off" */
 
 "use client";
@@ -245,7 +242,7 @@ const SmartPCConfigDialog = ({
       });
 
       toast({
-        title: <span data-testid="sensepc-resize-submitted-toast">Resize submitted</span>,
+        title: "Resize submitted",
         description: `${selectedInstance?.systemName} is updating its CPU & Memory. It does not take more than 60 seconds.`,
       });
 
@@ -369,7 +366,8 @@ const SmartPCConfigDialog = ({
 
           {/* Sticky footer */}
           <div
-        className="sticky bottom-0 inset-x-0 border-t px-6 py-4 bg-[#ffffff] dark:bg-[#140947]"            data-cancel-drag
+            className="sticky bottom-0 inset-x-0 border-t px-6 py-4 bg-[#ffffff] dark:bg-[#140947]"
+            data-cancel-drag
           >
             <DialogFooter className="gap-2">
               <Button
