@@ -76,7 +76,12 @@ export const TutorialDialog = ({ tutorial }: TutorialDialogProps) => (
       </DialogHeader>
 
       <div className="aspect-video bg-black rounded-lg overflow-hidden">
-        <video src={tutorial.videoUrl} controls className="w-full h-full" />
+        <video src={tutorial.videoUrl}
+          controls
+          autoPlay
+          className="w-full h-full"
+          controlsList="nodownload"
+        />
       </div>
     </DialogContent>
   </Dialog>
