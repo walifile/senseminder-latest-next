@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { motion } from "framer-motion";
-import { Youtube, ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { TutorialCard } from "./tutorial-card";
 
@@ -255,7 +255,14 @@ const TutorialSection = () => {
           <DialogContent className="max-w-4xl bg-background border-border">
             <DialogHeader>
               <DialogTitle className="text-foreground">
-                {selectedVideo?.title}
+                <div className="z-10 space-y-2">
+                  <h3 className="font-space-grotesk font-bold text-xl md:text-2xl">
+                    {selectedVideo?.title}
+                  </h3>
+                  <p className="self-stretch justify-start text-[#454545] dark:text-[#A3A3A3] text-sm font-normal font-['Inter'] leading-5">
+                    {selectedVideo?.description}
+                  </p>
+                </div>
               </DialogTitle>
             </DialogHeader>
             {selectedVideo && (
@@ -269,7 +276,7 @@ const TutorialSection = () => {
                     controlsList="nodownload"
                   />
                 </div>
-                <div className="flex justify-end">
+                {/* <div className="flex justify-end">
                   <Button
                     variant="outline"
                     onClick={() =>
@@ -278,7 +285,7 @@ const TutorialSection = () => {
                   >
                     <Youtube /> Watch on YouTube
                   </Button>
-                </div>
+                </div> */}
               </div>
             )}
           </DialogContent>
