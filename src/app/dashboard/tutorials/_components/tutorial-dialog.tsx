@@ -25,6 +25,7 @@ export type Tutorial = {
   uploadDate: string;
   lastUpdated: string;
   thumbnail: string;
+  showCategory?: boolean;
 };
 
 type TutorialDialogProps = {
@@ -57,9 +58,11 @@ export const TutorialDialog = ({ tutorial }: TutorialDialogProps) => (
           <div className="absolute top-3 right-3">
             <GradientPillBadge>{tutorial.duration}</GradientPillBadge>
           </div>
-          <div className="absolute top-3 left-3">
-            <GradientPillBadge>{tutorial.category}</GradientPillBadge>
-          </div>
+          {tutorial.showCategory && 
+            <div className="absolute top-3 left-3">
+              <GradientPillBadge>{tutorial.category}</GradientPillBadge>
+            </div>
+          }
         </div>
       </div>
     </DialogTrigger>

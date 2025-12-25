@@ -20,71 +20,46 @@ import { type Tutorial, TutorialDialog } from "./_components/tutorial-dialog";
 const tutorials: Tutorial[] = [
   {
     id: 1,
-    title: "Getting Started with Sense PC",
-    duration: "5:30",
-    description:
-      "Learn the basics of setting up and using your Sense PC cloud computer.",
-    videoUrl: "/videos/getting-started.mp4",
-    youtubeUrl: "https://youtube.com/watch?v=getting-started",
+    title: "Set Up Your Sense PC",
+    duration: "0:56",
+    description: "A quick guide to get your cloud desktop running the way you need.",
+    videoUrl: "/videos/SENSEPC1.mp4",
+    youtubeUrl: "https://youtube.com",
     thumbnail: "/assets/svg/hero-img-dark.svg",
     category: "Basics",
     difficulty: "Beginner",
     uploadDate: "2024-02-15",
     lastUpdated: "2024-03-10",
+    showCategory: false
   },
   {
     id: 2,
-    title: "Advanced Performance Optimization",
-    duration: "8:45",
-    description:
-      "Discover techniques to optimize your Sense PC for maximum performance.",
-    videoUrl: "/videos/performance.mp4",
+    title: "Improve Performance",
+    duration: "0:50",
+    description: "Practical tips to make your Sense PC faster and more responsive.",
+    videoUrl: "/videos/SENSEPC2.mp4",
     youtubeUrl: "https://youtube.com/watch?v=performance",
     thumbnail: "/assets/svg/hero-img-dark.svg",
     category: "Performance",
     difficulty: "Advanced",
     uploadDate: "2024-02-01",
     lastUpdated: "2024-03-05",
+    showCategory: false
   },
   {
     id: 3,
-    title: "Storage Management Guide",
-    duration: "6:15",
-    description: "Master the art of managing your Sense cloud efficiently.",
-    videoUrl: "/videos/storage.mp4",
+    title: "Manage Your Storage",
+    duration: "1:30",
+    description: "How to organize files and optimize your Sense Cloud.",
+    videoUrl: "/videos/SENSEPC3.mp4",
     youtubeUrl: "https://youtube.com/watch?v=storage",
     thumbnail: "/assets/svg/hero-img-dark.svg",
     category: "Storage",
     difficulty: "Intermediate",
     uploadDate: "2024-01-20",
     lastUpdated: "2024-02-28",
-  },
-  {
-    id: 4,
-    title: "Security Best Practices",
-    duration: "7:20",
-    description: "Learn essential security measures to protect your Sense PC.",
-    videoUrl: "/videos/security.mp4",
-    youtubeUrl: "https://youtube.com/watch?v=security",
-    thumbnail: "/assets/svg/hero-img-dark.svg",
-    category: "Security",
-    difficulty: "Intermediate",
-    uploadDate: "2024-01-15",
-    lastUpdated: "2024-03-01",
-  },
-  {
-    id: 5,
-    title: "Customization and Personalization",
-    duration: "4:55",
-    description: "Customize your Sense PC environment to suit your needs.",
-    videoUrl: "/videos/customization.mp4",
-    youtubeUrl: "https://youtube.com/watch?v=customization",
-    thumbnail: "/assets/svg/hero-img-dark.svg",
-    category: "Customization",
-    difficulty: "Beginner",
-    uploadDate: "2024-02-10",
-    lastUpdated: "2024-02-25",
-  },
+    showCategory: false
+  }
 ];
 
 const TutorialsPage = () => {
@@ -188,7 +163,7 @@ const TutorialsPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="bg-[rgba(255,255,255,0.03)] rounded-3xl overflow-hidden border border-[#8086F3] hover:border-[#8086F3] transition-colors h-full font-['Space_Grotesk']"
+              className="relative bg-[rgba(255,255,255,0.03)] rounded-3xl overflow-hidden border border-[#8086F3] hover:border-[#8086F3] transition-colors h-full font-['Space_Grotesk'] pb-[53px]"
             >
               <TutorialDialog tutorial={tutorial} />
 
@@ -201,18 +176,20 @@ const TutorialsPage = () => {
                 </p>
               </div>
 
-              <div className="h-px w-full bg-[rgba(37,48,240,0.30)] dark:bg-[rgba(255,255,255,0.10)]" />
+              <div className="absolute bottom-0 left-0 right-0">
+                <div className="h-px w-full bg-[rgba(37,48,240,0.30)] dark:bg-[rgba(255,255,255,0.10)]" />
 
-              <div className="px-4 py-4">
-                <div className="flex items-center justify-between w-full">
-                  <span className="text-[14px] text-[#454545] dark:text-[#B9C2D5]">
-                    Uploaded:{" "}
-                    {new Date(tutorial.uploadDate).toLocaleDateString()}
-                  </span>
-                  <span className="text-[14px] text-[#454545] dark:text-[#B9C2D5]">
-                    Updated:{" "}
-                    {new Date(tutorial.lastUpdated).toLocaleDateString()}
-                  </span>
+                <div className="px-4 py-4">
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-[14px] text-[#454545] dark:text-[#B9C2D5]">
+                      Uploaded:{" "}
+                      {new Date(tutorial.uploadDate).toLocaleDateString()}
+                    </span>
+                    <span className="text-[14px] text-[#454545] dark:text-[#B9C2D5]">
+                      Updated:{" "}
+                      {new Date(tutorial.lastUpdated).toLocaleDateString()}
+                    </span>
+                  </div>
                 </div>
               </div>
             </motion.div>
