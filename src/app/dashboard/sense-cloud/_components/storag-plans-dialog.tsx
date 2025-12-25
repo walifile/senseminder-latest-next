@@ -1,5 +1,6 @@
 "use client";
 
+import { useGetStoragePricingTierQuery } from "@/api/billing";
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -55,9 +56,20 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
   const PRICE_PER_TIER = 0.5;
   
   const getStorageSizeFromTier = (tier: number) => `${tier * 20} GB`;
-  
-  const price =
-    storageTier === 1 ? PRICE_TIER_1 : (storageTier - 1) * PRICE_PER_TIER;  
+
+  const { data: storagePricingTierResponse } = useGetStoragePricingTierQuery();
+
+  const price = useMemo(() => {
+    const tierData = storagePricingTierResponse?.tier;
+    if (tierData && Number(tierData.tier) === storageTier) {
+      const pricePerGB = Number(tierData.pricePerGB);
+      const includedGB = Number(tierData.includedGB);
+      if (Number.isFinite(pricePerGB) && Number.isFinite(includedGB)) {
+        return pricePerGB * includedGB;
+      }
+    }
+    return storageTier === 1 ? PRICE_TIER_1 : (storageTier - 1) * PRICE_PER_TIER;
+  }, [storagePricingTierResponse, storageTier]);
 
   const fetchLatencies = useCallback(async () => {
     setLatencyLoading(true);
@@ -85,6 +97,18 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
   useEffect(() => {
     fetchLatencies();
   }, [fetchLatencies]);
+
+  useEffect(() => {
+    if (storagePricingTierResponse?.tier?.tier) {
+      setStorageTier(Number(storagePricingTierResponse.tier.tier));
+    }
+    if (storagePricingTierResponse?.lastFileRegion) {
+      const region = storagePricingTierResponse.lastFileRegion.toLowerCase();
+      if (region.includes("virginia") || region.includes("us-east")) {
+        setSelectedServer("us-east");
+      }
+    }
+  }, [storagePricingTierResponse]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

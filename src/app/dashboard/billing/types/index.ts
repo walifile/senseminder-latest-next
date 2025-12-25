@@ -126,10 +126,13 @@ export type AutoRechargeResponse = {
 };
 
 export type StoragePricingTierResponse = {
+  lastFileRegion?: string;
   tier: {
     tier: number;
-    pricePerGB: number;
-    includedGB: number;
+    pricePerGB?: number;
+    includedGB?: number;
+    lowerLimit?: number;
+    upperLimit?: number;
   };
 };
 
