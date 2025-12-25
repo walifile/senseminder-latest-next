@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useGetStoragePricingTierQuery } from "@/api/billing";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
