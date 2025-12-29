@@ -90,7 +90,7 @@ const ProfileDropdown = () => {
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="flex items-center gap-2 pl-0 pr-3 h-14"
+              className="flex h-14 w-14 items-center justify-center gap-2 px-0 md:w-auto md:justify-start md:pl-0 md:pr-3"
               data-testid="dashboard-user-account-icon"
             >
               <Avatar className="size-14">
