@@ -65,7 +65,7 @@ export function SmartPCUsageHistoryTab() {
           </span>
         </div>
 
-        <div className="flex items-center justify-between sm:justify-end gap-2">
+        <div className="flex w-full items-center gap-2 sm:w-auto sm:justify-end">
           <span className="text-sm text-muted-foreground">Total billed</span>
           <span className="text-sm font-semibold tabular-nums">
             {fCurrency(summary.total)}
@@ -100,7 +100,7 @@ export function SmartPCUsageHistoryTab() {
                     Usage
                   </th>
 
-                  <th className="text-left pl-[63px] px-4 py-4 font-semibold text-sm">
+                  <th className="text-center px-4 py-4 font-semibold text-sm">
                     Cost
                   </th>
 
@@ -165,12 +165,18 @@ export function SmartPCUsageHistoryTab() {
                       {/* Cost (centered) */}
                       <td className="px-4 py-4">
                         <div className="flex justify-center">
-                          <div className="w-full max-w-[220px] text-xs text-muted-foreground leading-tight text-left">
-                            <div className="whitespace-nowrap">
-                              🖥 CPU + Mem: {fCurrency(usage.instanceCost)}
+                          <div className="w-full max-w-[180px] sm:max-w-[220px] text-xs text-muted-foreground leading-snug text-left">
+                            <div className="break-words sm:whitespace-nowrap">
+                              <span aria-hidden="true" className="mr-1">
+                                🖥
+                              </span>
+                              CPU + Mem: {fCurrency(usage.instanceCost)}
                             </div>
-                            <div className="whitespace-nowrap mt-0.5 ml-11">
-                              💾 SSD: {fCurrency(usage.storageCost)}
+                            <div className="break-words sm:whitespace-nowrap mt-0.5 ml-0 sm:ml-11">
+                              <span aria-hidden="true" className="mr-1">
+                                💾
+                              </span>
+                              SSD: {fCurrency(usage.storageCost)}
                             </div>
                           </div>
                         </div>
@@ -180,12 +186,17 @@ export function SmartPCUsageHistoryTab() {
                       <td className="px-4 py-4">
                         <div className="flex justify-center">
                           <div className="text-xs text-muted-foreground leading-tight text-left">
-                            <p className="font-medium text-muted-foreground">💸 Breakdown</p>
+                          <p className="font-medium text-muted-foreground">
+                            <span aria-hidden="true" className="mr-1">
+                              💸
+                            </span>
+                            Breakdown
+                          </p>
 
                             {chargedFrom.length > 0 ? (
                               chargedFrom.map((x) => (
                                 <p key={x.label}>
-                                  • {x.label}: {fCurrency(x.value)}
+                                  - {x.label}: {fCurrency(x.value)}
                                 </p>
                               ))
                             ) : (

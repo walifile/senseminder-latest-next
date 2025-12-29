@@ -57,7 +57,7 @@ export function SmartStorageUsageHistoryTab() {
           </span>
         </div>
 
-        <div className="flex items-center justify-between sm:justify-end gap-2">
+        <div className="flex w-full items-center gap-2 sm:w-auto sm:justify-end">
           <span className="text-sm text-muted-foreground">Total billed</span>
           <span className="text-sm font-semibold tabular-nums">
             {fCurrency(summary.total)}
