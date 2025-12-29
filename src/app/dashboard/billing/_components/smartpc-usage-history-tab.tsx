@@ -83,7 +83,7 @@ export function SmartPCUsageHistoryTab() {
           ) : filteredHistory.length > 0 ? (
             <table
               data-testid="dashboard-billing-usage-list"
-              className="w-full text-sm table-fixed"
+              className="w-full min-w-[720px] text-sm table-fixed"
             >
               {/* ✅ Match Recharge-style spacing: Usage wide, last 4 columns equal width */}
               <colgroup>

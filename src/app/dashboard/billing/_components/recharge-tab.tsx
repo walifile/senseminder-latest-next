@@ -151,11 +151,11 @@ export function RechargeHistoryTab() {
               Loading recharge history...
             </p>
           ) : filteredHistory.length > 0 ? (
-            <table className="w-full text-sm table-fixed">
+            <table className="w-full min-w-[720px] text-sm table-fixed">
               {/* ✅ keep Transaction wide, and make the last 4 columns equal width => same gap */}
               <colgroup>
                 <col className="w-[48%]" />
-                <col className="w-[13%]" />
+                  <col className="hidden w-[13%] md:table-cell" />
                 <col className="w-[13%]" />
                 <col className="w-[13%]" />
                 <col className="w-[13%]" />

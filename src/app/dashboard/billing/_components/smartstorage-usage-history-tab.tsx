@@ -73,11 +73,11 @@ export function SmartStorageUsageHistoryTab() {
               Loading usage history...
             </p>
           ) : filteredHistory.length > 0 ? (
-            <table className="w-full text-sm table-fixed">
+            <table className="w-full min-w-[640px] text-sm table-fixed">
               {/* ✅ Match style: Usage wide, last 3 columns equal width (same gap) */}
               <colgroup>
                 <col className="w-[61%]" />
-                <col className="w-[13%]" />
+                <col className="hidden w-[13%] md:table-cell" />
                 <col className="w-[13%]" />
                 <col className="w-[13%]" />
               </colgroup>
