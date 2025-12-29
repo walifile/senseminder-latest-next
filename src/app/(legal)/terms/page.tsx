@@ -45,10 +45,7 @@ const Terms = () => {
     <main className="flex-grow pt-16 md:pt-24 pb-16">
       <div className="container mx-auto px-4 md:px-6">
         <Breadcrumb
-          items={[
-            { label: "Home", href: "/" },
-            { label: "Terms of Service" },
-          ]}
+          items={[{ label: "Home", href: "/" }, { label: "Terms of Service" }]}
         />
 
         <div className="flex flex-col md:flex-row gap-10 md:items-stretch">
@@ -96,7 +93,7 @@ const Terms = () => {
                     </p>
                     <p className="text-paragraph dark:text-gray-300">
                       These Terms of Service ("Terms") govern your access to and
-                      use of the Senseminder platform, including our SmartPC
+                      use of the Senseminder platform, including our Sense PC
                       virtual desktop services, cloud-based storage features,
                       and any related applications, software, websites, or
                       offerings (collectively, the "Services"). Senseminder LLC
@@ -155,7 +152,7 @@ const Terms = () => {
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
                         <a
-                          href="https://smartpc.cloud/privacy"
+                          href="https://Sense PC.cloud/privacy"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-700 dark:text-blue-400 underline"
@@ -238,12 +235,12 @@ const Terms = () => {
                     </p>
                     <p className="text-paragraph dark:text-gray-300">
                       <strong className="text-xl font-semibold text-black dark:text-white mt-6">
-                        "SmartPC"
+                        "Sense PC"
                       </strong>
                       <br />
                       Means the virtual desktop product offered by Senseminder
                       that provides the user with remote access to a
-                      cloud-hosted computing environment. A SmartPC typically
+                      cloud-hosted computing environment. A Sense PC typically
                       includes a preconfigured operating system, assigned
                       computing resources (CPU, RAM, GPU), storage, and software
                       utilities, accessible over the internet through supported
@@ -257,7 +254,7 @@ const Terms = () => {
                       Refers to Senseminder's cloud-based storage service that
                       allows users to upload, store, manage, and retrieve
                       personal or business files. SmartStorage may be used
-                      independently or in conjunction with a SmartPC instance.
+                      independently or in conjunction with a Sense PC instance.
                     </p>
                     <p className="text-paragraph dark:text-gray-300">
                       <strong className="text-xl font-semibold text-black dark:text-white mt-6">
@@ -274,7 +271,7 @@ const Terms = () => {
                       </strong>
                       <br />
                       Refers collectively to all offerings provided by
-                      Senseminder, including but not limited to SmartPC,
+                      Senseminder, including but not limited to Sense PC,
                       SmartStorage, associated APIs, software tools,
                       applications, customer support, and any other products,
                       content, or functionality offered under the Senseminder
@@ -296,7 +293,7 @@ const Terms = () => {
                       </strong>
                       <br />
                       Means a dedicated virtual machine or session assigned to
-                      the User as part of the SmartPC Service, which may be
+                      the User as part of the Sense PC Service, which may be
                       customized based on selected configuration parameters such
                       as location, OS, memory, or CPU cores.
                     </p>
@@ -337,12 +334,12 @@ const Terms = () => {
                       </strong>
                       <br />
                       <em>Main Disk:</em> The primary storage volume associated
-                      with a SmartPC instance. It includes the operating system,
-                      preinstalled applications, and serves as the user's main
-                      data storage. The size of the Main Disk is provisioned
-                      based on the user's selected configuration during
-                      subscription or setup. It is a required component of every
-                      SmartPC.
+                      with a Sense PC instance. It includes the operating
+                      system, preinstalled applications, and serves as the
+                      user's main data storage. The size of the Main Disk is
+                      provisioned based on the user's selected configuration
+                      during subscription or setup. It is a required component
+                      of every Sense PC.
                       <br />
                       <em>Additional Disk:</em> An optional storage volume that
                       Users may choose to attach for extra capacity, workload
@@ -387,7 +384,7 @@ const Terms = () => {
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
                       You must register for an account through the Senseminder
-                      platform to access SmartPC, SmartStorage, or any other
+                      platform to access Sense PC, SmartStorage, or any other
                       subscribed services. As part of the registration process,
                       you may be required to provide certain information such as
                       your name, email address, billing details, and service
@@ -455,7 +452,7 @@ const Terms = () => {
                       sole discretion, that your account is associated with
                       fraud, abuse, unauthorized access, or activity that
                       violates these Terms or any applicable laws. In such
-                      cases, you may lose access to your SmartPC instance,
+                      cases, you may lose access to your Sense PC instance,
                       SmartStorage content, or any related data, without refund.
                     </p>
                   </div>
@@ -475,14 +472,14 @@ const Terms = () => {
                       storage solutions designed to deliver scalable virtual
                       desktop environments and on-demand storage to users and
                       organizations. The two primary components of the Services
-                      are SmartPC and SmartStorage.
+                      are Sense PC and SmartStorage.
                     </p>
 
                     <h3 className="text-xl font-semibold text-black dark:text-white mt-6">
-                      SmartPC Remote Desktop Access
+                      Sense PC Remote Desktop Access
                     </h3>
                     <p className="text-paragraph dark:text-gray-300 mt-2">
-                      SmartPC is a virtual desktop infrastructure (VDI) service
+                      Sense PC is a virtual desktop infrastructure (VDI) service
                       that provides users with remote access to a cloud-hosted
                       computing environment. Each instance is provisioned with
                       dedicated system resources and is accessible through
@@ -490,17 +487,17 @@ const Terms = () => {
                     </p>
 
                     <h3 className="text-xl font-semibold text-black dark:text-white mt-6">
-                      SmartPC Features
+                      Sense PC Features
                     </h3>
                     <p className="text-paragraph dark:text-gray-300 mt-2">
                       Depending on your subscription tier and configuration,
-                      your SmartPC instance may include the following
+                      your Sense PC instance may include the following
                       capabilities:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
                         <strong>Create / Start / Stop / Delete:</strong> Full
-                        lifecycle management of SmartPC instances via the user
+                        lifecycle management of Sense PC instances via the user
                         dashboard.
                       </li>
                       <li>
@@ -537,12 +534,12 @@ const Terms = () => {
                       </li>
                       <li>
                         <strong>User Management:</strong> Role-based user
-                        control for SmartPC access and administration. Supported
-                        roles include:
+                        control for Sense PC access and administration.
+                        Supported roles include:
                         <ul className="list-disc pl-6 mt-1">
                           <li>
                             Owners – Can manage all users and administrators,
-                            modify permissions, and assign SmartPCs.
+                            modify permissions, and assign Sense PCs.
                           </li>
                           <li>
                             Administrators – Can manage users and other admins
@@ -559,11 +556,11 @@ const Terms = () => {
                         require acceptance before access is granted.
                       </li>
                       <li>
-                        <strong>Assign/Remove SmartPC to/from Users:</strong>{" "}
-                        SmartPCs can be flexibly allocated to a single user.
+                        <strong>Assign/Remove Sense PC to/from Users:</strong>{" "}
+                        Sense PCs can be flexibly allocated to a single user.
                         <br />
                         <span className="text-yellow-700 dark:text-yellow-400">
-                          ⚠️ Each SmartPC can only be assigned to one user at a
+                          ⚠️ Each Sense PC can only be assigned to one user at a
                           time.
                         </span>
                       </li>
@@ -573,7 +570,7 @@ const Terms = () => {
                         custom time schedules to optimize cost and performance.
                       </li>
                       <li>
-                        <strong>Idle Timeout:</strong> SmartPCs will
+                        <strong>Idle Timeout:</strong> Sense PCs will
                         automatically shut down after 6 hours of inactivity by
                         default. This setting is configurable by the owner or
                         admin.
@@ -595,7 +592,8 @@ const Terms = () => {
                       Access Methods
                     </h3>
                     <p className="text-paragraph dark:text-gray-300 mt-2">
-                      SmartPCs can be accessed through the following interfaces:
+                      Sense PCs can be accessed through the following
+                      interfaces:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>Modern web browsers</li>
@@ -614,7 +612,7 @@ const Terms = () => {
                       Internet Connectivity Requirement
                     </h3>
                     <p className="text-paragraph dark:text-gray-300 mt-2">
-                      All Senseminder services, including SmartPC, require a
+                      All Senseminder services, including Sense PC, require a
                       stable and active internet connection. We are not
                       responsible for degraded performance, latency, or access
                       interruptions caused by user-side network issues.
@@ -627,7 +625,7 @@ const Terms = () => {
                       Senseminder may implement backend optimization measures to
                       ensure platform stability and resource efficiency. These
                       measures may include auto-scaling or reallocation of
-                      unused resources. Inactive or underutilized SmartPCs may
+                      unused resources. Inactive or underutilized Sense PCs may
                       be paused temporarily with advance notice where
                       applicable.
                     </p>
@@ -642,7 +640,7 @@ const Terms = () => {
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
                         Amazon EC2 (Elastic Compute Cloud) is used to provision,
-                        host, and manage SmartPC virtual desktop instances.
+                        host, and manage Sense PC virtual desktop instances.
                       </li>
                       <li>
                         Amazon S3 (Simple Storage Service) is used for secure
@@ -700,39 +698,39 @@ const Terms = () => {
                       Plan Types: Hourly, Daily, Monthly
                     </h3>
                     <p className="text-paragraph dark:text-gray-300 mt-2">
-                      Senseminder offers the following SmartPC subscription
+                      Senseminder offers the following Sense PC subscription
                       plans:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white mt-2">
                       <li>
                         <strong>Hourly Plan:</strong> Charges for compute
-                        resources are incurred only when the SmartPC is in a
+                        resources are incurred only when the Sense PC is in a
                         running state, calculated in one-hour increments. Usage
                         of less than 60 minutes is rounded up to a full hour.
                         <br />
                         <span className="text-yellow-700 dark:text-yellow-400">
                           ⚠️ SSD storage charges (Main Disk and any Additional
-                          Disks) continue to apply even when the SmartPC is
+                          Disks) continue to apply even when the Sense PC is
                           stopped, as these volumes remain allocated and
                           reserved for your use.
                         </span>
                       </li>
                       <li>
                         <strong>Daily Plan:</strong> A flat daily rate is
-                        charged upfront upon SmartPC creation and every 24 hours
-                        thereafter, regardless of whether the SmartPC is running
-                        or stopped.
+                        charged upfront upon Sense PC creation and every 24
+                        hours thereafter, regardless of whether the Sense PC is
+                        running or stopped.
                       </li>
                       <li>
                         <strong>Monthly Plan:</strong> A flat monthly fee is
                         charged in advance and renews every 30 days, covering
-                        SmartPC usage for the entire term, regardless of
+                        Sense PC usage for the entire term, regardless of
                         instance state (running or stopped).
                       </li>
                     </ul>
                     <p className="text-paragraph dark:text-gray-300 mt-2">
-                      Users may select their preferred plan during SmartPC setup
-                      or change it later through the dashboard, subject to
+                      Users may select their preferred plan during Sense PC
+                      setup or change it later through the dashboard, subject to
                       upgrade/downgrade rules.
                     </p>
 
@@ -745,7 +743,7 @@ const Terms = () => {
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
-                        Successful each SmartPC creation (for Hourly, Daily, or
+                        Successful each Sense PC creation (for Hourly, Daily, or
                         Monthly plans)
                       </li>
                       <li>
@@ -764,14 +762,14 @@ const Terms = () => {
                       Upfront Billing Policy
                     </h3>
                     <p className="text-paragraph dark:text-gray-300 mt-2">
-                      All subscription fees, including those for SmartPC usage
+                      All subscription fees, including those for Sense PC usage
                       (Hourly, Daily, Monthly) and SmartStorage, are charged
                       upfront at the beginning of each billing cycle:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
                         Hourly Plan: Charges are applied immediately upon
-                        starting a SmartPC.
+                        starting a Sense PC.
                       </li>
                       <li>
                         Daily Plan: Charges are applied when a new daily cycle
@@ -805,7 +803,7 @@ const Terms = () => {
                       Billing may be triggered by the following:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
-                      <li>SmartPC instance creation or resumption</li>
+                      <li>Sense PC instance creation or resumption</li>
                       <li>Instance remains running</li>
                       <li>Billing cycle auto-renews</li>
                       <li>Additional Disks are provisioned</li>
@@ -846,7 +844,7 @@ const Terms = () => {
                       trial:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
-                      <li>Your SmartPC will be automatically stopped.</li>
+                      <li>Your Sense PC will be automatically stopped.</li>
                       <li>
                         Billing from wallet will begin immediately once the
                         trial ends (if not canceled in time and funds are
@@ -867,7 +865,7 @@ const Terms = () => {
                       If your wallet balance becomes insufficient:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
-                      <li>Your SmartPC may be automatically stopped</li>
+                      <li>Your Sense PC may be automatically stopped</li>
                       <li>Storage services may be paused or suspended</li>
                       <li>You will receive low balance notifications</li>
                       <li>
@@ -879,7 +877,7 @@ const Terms = () => {
                       </li>
                     </ul>
                     <p className="text-yellow-700 dark:text-yellow-400 mt-2">
-                      ⚠️ Stopped SmartPCs will not automatically resume upon
+                      ⚠️ Stopped Sense PCs will not automatically resume upon
                       recharge.
                     </p>
                     <p className="text-paragraph dark:text-gray-300 mt-2">
@@ -935,7 +933,7 @@ const Terms = () => {
                   <div className="space-y-4 p-8">
                     <p className="text-paragraph dark:text-gray-300">
                       This section outlines how payments are processed for
-                      Senseminder Services, including SmartPC and SmartStorage.
+                      Senseminder Services, including Sense PC and SmartStorage.
                       All fees are governed by your selected subscription plan
                       and usage activity, and are payable via the integrated
                       wallet system.
@@ -949,7 +947,7 @@ const Terms = () => {
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
-                        The selected SmartPC plan (Hourly, Daily, Monthly)
+                        The selected Sense PC plan (Hourly, Daily, Monthly)
                       </li>
                       <li>SmartStorage intelligent tier usage</li>
                       <li>
@@ -1025,8 +1023,8 @@ const Terms = () => {
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
-                        SmartPC charges (hourly, daily, monthly) are deducted at
-                        the start of each cycle
+                        Sense PC charges (hourly, daily, monthly) are deducted
+                        at the start of each cycle
                       </li>
                       <li>
                         SmartStorage billing is triggered at the start of the
@@ -1050,7 +1048,7 @@ const Terms = () => {
                       funds:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
-                      <li>SmartPC instances may be automatically stopped</li>
+                      <li>Sense PC instances may be automatically stopped</li>
                       <li>SmartStorage access may be suspended</li>
                       <li>
                         Auto-recharge (if configured) will attempt to restore
@@ -1134,10 +1132,10 @@ const Terms = () => {
                       Changing Subscription Plans
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      You may change your SmartPC subscription plan (Hourly,
+                      You may change your Sense PC subscription plan (Hourly,
                       Daily, Monthly) at any time from your dashboard. Each
-                      SmartPC is treated as a separate, individually billed
-                      instance. Changes made to one SmartPC will not affect
+                      Sense PC is treated as a separate, individually billed
+                      instance. Changes made to one Sense PC will not affect
                       others under your account.
                     </p>
                     <p className="text-paragraph dark:text-gray-300">
@@ -1166,10 +1164,11 @@ const Terms = () => {
                       Adding Storage Disks
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      Additional Disks can be added to your SmartPC instance for
-                      increased capacity (if applicable). Charges are applied
-                      upfront at the start of the next billing cycle. Additional
-                      Disks <strong>cannot be removed</strong> once provisioned.
+                      Additional Disks can be added to your Sense PC instance
+                      for increased capacity (if applicable). Charges are
+                      applied upfront at the start of the next billing cycle.
+                      Additional Disks <strong>cannot be removed</strong> once
+                      provisioned.
                     </p>
                     <p className="text-yellow-700 dark:text-yellow-400 mt-2">
                       ⚠️ Storage downgrade is not supported. Once storage is
@@ -1227,7 +1226,7 @@ const Terms = () => {
                   <hr />
                   <div className="space-y-4 p-8">
                     <p className="text-paragraph dark:text-gray-300">
-                      When you access and use SmartPC or any Senseminder
+                      When you access and use Sense PC or any Senseminder
                       software or platform service, you are granted a limited
                       license to use our system under the following terms and
                       conditions.
@@ -1259,7 +1258,7 @@ const Terms = () => {
                       <li>
                         Reverse engineering, modifying, decompiling, or
                         disassembling any part of the Senseminder platform or
-                        SmartPC software
+                        Sense PC software
                       </li>
                       <li>
                         Reproducing, distributing, selling, sublicensing,
@@ -1267,7 +1266,7 @@ const Terms = () => {
                         platform or its components
                       </li>
                       <li>
-                        Using SmartPC for unauthorized or resource-intensive
+                        Using Sense PC for unauthorized or resource-intensive
                         activities, including but not limited to:
                         <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                           <li>
@@ -1300,7 +1299,7 @@ const Terms = () => {
                       Open Source Licenses (If Applicable)
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      Certain software or components used within SmartPC or
+                      Certain software or components used within Sense PC or
                       Senseminder may be governed by open source licenses. Any
                       use of such components is subject to the license terms
                       provided with the software. These licenses may override
@@ -1316,7 +1315,7 @@ const Terms = () => {
                       Device Limitations
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      Your use of SmartPC and Senseminder software may be
+                      Your use of Sense PC and Senseminder software may be
                       subject to:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
@@ -1328,7 +1327,7 @@ const Terms = () => {
                       </li>
                     </ul>
                     <p className="text-paragraph dark:text-gray-300">
-                      You may only access SmartPC instances through approved
+                      You may only access Sense PC instances through approved
                       access methods (web, desktop client, or mobile app) and
                       may not bypass security protocols to run unauthorized
                       connections.
@@ -1348,7 +1347,7 @@ const Terms = () => {
                     <p className="text-paragraph dark:text-gray-300">
                       As a Senseminder user, you may upload, store, and manage
                       your files, documents, and other digital content through
-                      SmartPC and SmartStorage. This section outlines how your
+                      Sense PC and SmartStorage. This section outlines how your
                       data is handled and your responsibilities regarding that
                       data.
                     </p>
@@ -1379,7 +1378,7 @@ const Terms = () => {
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
-                        Your SmartPC instance (including Main and Additional
+                        Your Sense PC instance (including Main and Additional
                         Disks)
                       </li>
                       <li>SmartStorage volumes</li>
@@ -1398,7 +1397,7 @@ const Terms = () => {
                       Deletion Upon Termination
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      When a SmartPC instance is deleted:
+                      When a Sense PC instance is deleted:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
@@ -1406,7 +1405,7 @@ const Terms = () => {
                         Disks) are permanently deleted
                       </li>
                       <li>
-                        Data stored in the SmartPC is immediately and
+                        Data stored in the Sense PC is immediately and
                         irreversibly lost
                       </li>
                     </ul>
@@ -1422,9 +1421,9 @@ const Terms = () => {
                       <li>System-level failures</li>
                     </ul>
                     <p className="text-yellow-700 dark:text-yellow-400 mt-2">
-                      ⚠️ Deleting a SmartPC does not affect your SmartStorage
-                      content. SmartStorage and SmartPC are independent services
-                      with separate data lifecycles.
+                      ⚠️ Deleting a Sense PC does not affect your SmartStorage
+                      content. SmartStorage and Sense PC are independent
+                      services with separate data lifecycles.
                     </p>
                     <p className="text-paragraph dark:text-gray-300">
                       When your entire Senseminder account is closed (whether by
@@ -1432,7 +1431,7 @@ const Terms = () => {
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
-                        All SmartPC instances and all SmartStorage volumes
+                        All Sense PC instances and all SmartStorage volumes
                         linked to the account will be permanently deleted
                       </li>
                       <li>
@@ -1451,7 +1450,7 @@ const Terms = () => {
                       Sharing Content with Others (User Risk)
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      If you choose to share files, folders, or SmartPC access
+                      If you choose to share files, folders, or Sense PC access
                       with others (e.g., via collaboration tools, file links, or
                       user invitations), you do so at your own risk.
                     </p>
@@ -1477,7 +1476,7 @@ const Terms = () => {
                       Storage Disk Responsibility (Main vs Additional)
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      Your SmartPC may include:
+                      Your Sense PC may include:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
@@ -1570,7 +1569,7 @@ const Terms = () => {
                       No Unauthorized Access
                     </h3>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
-                      <li>Accessing other users’ SmartPCs or data</li>
+                      <li>Accessing other users’ Sense PCs or data</li>
                       <li>Probing Senseminder APIs or infrastructure</li>
                       <li>Circumventing access controls or monitoring tools</li>
                     </ul>
@@ -1602,7 +1601,7 @@ const Terms = () => {
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
-                        <strong>Admin:</strong> Full access to SmartPCs,
+                        <strong>Admin:</strong> Full access to Sense PCs,
                         billing, users, storage, and support tools
                       </li>
                       <li>
@@ -1632,7 +1631,7 @@ const Terms = () => {
                   <hr />
                   <div className="space-y-4 p-8">
                     <p className="text-paragraph dark:text-gray-300">
-                      This section defines how SmartPC SSD disks are
+                      This section defines how Sense PC SSD disks are
                       provisioned, how SmartStorage differs, and how operating
                       system licenses are handled within the Senseminder
                       platform.
@@ -1642,7 +1641,7 @@ const Terms = () => {
                       Default Storage Limits by Plan
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      Each SmartPC includes a Main Disk (SSD), which serves as
+                      Each Sense PC includes a Main Disk (SSD), which serves as
                       the system drive and includes:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
@@ -1659,12 +1658,12 @@ const Terms = () => {
                     </p>
 
                     <h3 className="text-xl font-semibold text-black dark:text-white">
-                      Optional Add-on SSD (SmartPC)
+                      Optional Add-on SSD (Sense PC)
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      Users may attach Additional SSD Disks to their SmartPC to
+                      Users may attach Additional SSD Disks to their Sense PC to
                       expand performance storage capacity. These disks are used
-                      exclusively within the SmartPC environment (not for
+                      exclusively within the Sense PC environment (not for
                       long-term user file storage).
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
@@ -1682,13 +1681,13 @@ const Terms = () => {
                       </li>
                     </ul>
                     <p className="text-yellow-700 dark:text-yellow-400 mt-2">
-                      ⚠️ These SSD disks are part of the SmartPC compute
+                      ⚠️ These SSD disks are part of the Sense PC compute
                       infrastructure and are not designed for backup or
                       archiving purposes.
                     </p>
 
                     <h3 className="text-xl font-semibold text-black dark:text-white">
-                      SmartStorage vs SmartPC Storage
+                      SmartStorage vs Sense PC Storage
                     </h3>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
@@ -1697,8 +1696,8 @@ const Terms = () => {
                         based on usage across your entire account
                       </li>
                       <li>
-                        <strong>SmartPC SSD</strong> (Main + Additional Disks)
-                        is ephemeral system storage, tied to specific SmartPC
+                        <strong>Sense PC SSD</strong> (Main + Additional Disks)
+                        is ephemeral system storage, tied to specific Sense PC
                         instances and reset upon deletion
                       </li>
                     </ul>
@@ -1711,8 +1710,9 @@ const Terms = () => {
                       Operating System Licensing
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      SmartPC instances may be provisioned with Windows or Linux
-                      operating systems, based on your selected configuration:
+                      Sense PC instances may be provisioned with Windows or
+                      Linux operating systems, based on your selected
+                      configuration:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
@@ -1747,7 +1747,7 @@ const Terms = () => {
                       License Reclamation on Termination
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      Upon SmartPC deletion or account termination:
+                      Upon Sense PC deletion or account termination:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
@@ -1777,8 +1777,8 @@ const Terms = () => {
                   <div className="space-y-4 p-8">
                     <p className="text-paragraph dark:text-gray-300">
                       Senseminder aims to provide reliable and consistent access
-                      to its SmartPC and SmartStorage services. However, certain
-                      limitations, maintenance activities, and external
+                      to its Sense PC and SmartStorage services. However,
+                      certain limitations, maintenance activities, and external
                       dependencies may impact service availability. This section
                       outlines our commitments and disclaimers related to uptime
                       and access.
@@ -1797,7 +1797,7 @@ const Terms = () => {
                     <p className="text-paragraph dark:text-gray-300 mt-2">
                       We follow the AWS Service Level Agreements, and as such,
                       we aim to deliver approximately 99% uptime on a monthly
-                      basis for both SmartPC and SmartStorage services.
+                      basis for both Sense PC and SmartStorage services.
                     </p>
                     <p className="text-paragraph dark:text-gray-300 mt-2">
                       However, you acknowledge and agree that:
@@ -1995,8 +1995,8 @@ const Terms = () => {
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
-                        Amazon Web Services (AWS) – for infrastructure (SmartPC,
-                        SmartStorage)
+                        Amazon Web Services (AWS) – for infrastructure (Sense
+                        PC, SmartStorage)
                       </li>
                       <li>Stripe – for secure payment processing</li>
                       <li>
@@ -2121,7 +2121,7 @@ const Terms = () => {
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
-                        All active SmartPC instances and SmartStorage data will
+                        All active Sense PC instances and SmartStorage data will
                         be permanently deleted
                       </li>
                       <li>
@@ -2175,7 +2175,7 @@ const Terms = () => {
                       <li>
                         Immediately suspend your account or service access
                       </li>
-                      <li>Block access to SmartPCs or SmartStorage</li>
+                      <li>Block access to Sense PCs or SmartStorage</li>
                       <li>
                         Begin a review or investigation into your activity
                       </li>
@@ -2209,7 +2209,7 @@ const Terms = () => {
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
-                        All associated SmartPCs, disks, and SmartStorage data
+                        All associated Sense PCs, disks, and SmartStorage data
                         will be permanently deleted
                       </li>
                       <li>
@@ -2258,7 +2258,7 @@ const Terms = () => {
                       All rights, title, and interest in and to:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
-                      <li>SmartPC and SmartStorage technologies</li>
+                      <li>Sense PC and SmartStorage technologies</li>
                       <li>Backend systems and APIs</li>
                       <li>Web, desktop app, and mobile interfaces</li>
                       <li>Business processes and workflows</li>
@@ -2356,10 +2356,10 @@ const Terms = () => {
                       “As-Is” and “As-Available” Disclaimer
                     </h3>
                     <p className="text-paragraph dark:text-gray-300 mt-2">
-                      The Senseminder platform, including SmartPC, SmartStorage,
-                      dashboards, apps, and APIs, is provided on an “as-is” and
-                      “as-available” basis, without warranties of any kind,
-                      either express or implied.
+                      The Senseminder platform, including Sense PC,
+                      SmartStorage, dashboards, apps, and APIs, is provided on
+                      an “as-is” and “as-available” basis, without warranties of
+                      any kind, either express or implied.
                     </p>
                     <p className="text-paragraph dark:text-gray-300 mt-2">
                       We do not guarantee that:
@@ -2520,10 +2520,10 @@ const Terms = () => {
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>
                         Content you upload, store, or distribute through
-                        SmartStorage or SmartPC
+                        SmartStorage or Sense PC
                       </li>
                       <li>
-                        Software or licenses you install or use within SmartPC
+                        Software or licenses you install or use within Sense PC
                       </li>
                       <li>
                         Illegal, fraudulent, harmful, or negligent activity
