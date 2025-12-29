@@ -13,11 +13,11 @@ import HistoryFilters from "./history-filters";
 import { useHistoryData } from "../hooks/use-history-data";
 import HistoryLoadMoreButton from "./history-load-more-button";
 
-import type { UsageHistory } from "../types";
+import type { StorageUsageHistory } from "../types";
 
 export function SmartStorageUsageHistoryTab() {
   const { filteredHistory, date, setDate, loading, hasMore, fetchHistory } =
-    useHistoryData<UsageHistory>({
+    useHistoryData<StorageUsageHistory>({
       lazyQueryHook: useLazySearchUsageHistoryQuery,
       additionalParams: { isStorageHistory: true },
     });

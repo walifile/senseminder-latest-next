@@ -36,17 +36,17 @@ const FEATURES = [
   {
     icon: "calender",
     title: "Daily Plan",
-    desc: "Simple flat rate billed every 24 hours. Perfect for consistent daily workflows.",
+    desc: "Flat daily rate that includes up to 10 hours of usage per day.",
   },
   {
     icon: "calender-2",
     title: "Monthly Plan",
-    desc: "A fixed monthly price that auto-renews. Best for always-on or full-time desktops.",
+    desc: "Flat monthly rate that includes up to 180 hours of usage per month.",
   },
   {
     icon: "storage",
     title: "Sense Cloud",
-    desc: "No fixed plans - pay only for your highest cloud storage tier usage each month",
+    desc: "No fixed plans — pay based on your highest cloud storage tier usage each month.",
   },
   {
     icon: "billing",
@@ -274,7 +274,7 @@ export default function PCCostCalculator() {
                 {/* Storage */}
                 <Field.Select
                   name="storage"
-                  label="Storage"
+                  label="Storage (SSD)"
                   description="Choose storage capacity"
                   tooltipText={
                     selectedStorage
@@ -288,9 +288,8 @@ export default function PCCostCalculator() {
               </div>
             </div>
 
-            <p className="text-sm">
-              * All prices are in USD and billed by the hour. Monthly estimates
-              are based on 24/7 usage.
+            <p className="text-xs text-muted-foreground">
+              * All prices are in USD. Hourly is billed per hour of usage. Daily is a flat rate (up to 10 hours/day) and Monthly is a flat rate (up to 180 hours/month).
             </p>
           </div>
 
@@ -339,7 +338,7 @@ export default function PCCostCalculator() {
                       )?.label || null,
                   },
                   {
-                    label: "Storage",
+                    label: "Storage (SSD)",
                     value:
                       storageOptions.find((s) => s.value === watch("storage"))
                         ?.label || null,

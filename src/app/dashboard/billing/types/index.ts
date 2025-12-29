@@ -29,6 +29,7 @@ export interface UsageHistory {
   promoDeduction: string;
   cashbackDeduction: string;
   balanceDeduction: string;
+  partialCharge?: boolean;
 }
 
 export type RechargeEventType =
@@ -74,7 +75,7 @@ export interface Recharge {
   };
 }
 
-export interface UsageHistory {
+export interface StorageUsageHistory {
   timestamp: string;
   billingAmount: string;
   billingPlan: string;

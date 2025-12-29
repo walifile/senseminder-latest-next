@@ -328,7 +328,7 @@ const SmartPcConfigForm = ({
             {/* Storage */}
             <div className="space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <Label className="text-sm font-semibold">Storage</Label>
+                <Label className="text-sm font-semibold">Storage (SSD)</Label>
 
                 {isResize && isStorageOnly && existingStorage && (
                   <FieldChangePreview

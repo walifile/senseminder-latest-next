@@ -197,13 +197,18 @@ export function SmartPCUsageHistoryTab() {
 
                       {/* Amount (centered) */}
                       <td className="px-4 py-4">
-                        <div className="flex justify-center">
+                        <div className="flex flex-col items-center gap-1">
                           <Badge
                             variant="outline"
                             className="font-medium tabular-nums whitespace-nowrap rounded-full px-3 py-1"
                           >
                             {fCurrency(usage.billingAmount)}
                           </Badge>
+                          {usage.partialCharge && (
+                            <span className="text-xs text-muted-foreground">
+                              (partial charge)
+                            </span>
+                          )}
                         </div>
                       </td>
 

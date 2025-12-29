@@ -1,11 +1,8 @@
-
 "use client";
 
-import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
-import { isDev } from "@/constants/initial-values";
 
 import { Logger } from "@/lib/utils/logger";
 import { checkOnboarded } from "@/lib/utils/checkOnboarded";
@@ -31,9 +28,9 @@ export default function HomePage() {
   }, [router]);
 
   return (
-
     <>
-      {isDev ? (
+      <Home />
+      {/* {isDev ? (
         <Home />
       ) : (
         <main className="relative min-h-screen text-white">
@@ -251,7 +248,7 @@ export default function HomePage() {
             </div>
           </footer>
         </main>
-      )}
+      )} */}
     </>
   );
 }

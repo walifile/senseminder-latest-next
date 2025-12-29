@@ -68,14 +68,14 @@ const PLAN_COPY: Record<
     label: "Daily",
     price: "$5.94",
     unit: "/day",
-    tagline: "Ideal for day-long projects",
+    tagline: "Best for a full workday session",
     estimateNote: "Estimated based on your current configuration",
     included: [
-      "24-hour continuous access",
+      "Includes up to 10 hours/day",
       "Savings up to 10% vs hourly",
       "Support included",
     ],
-  },
+  },  
   monthly: {
     label: "Monthly",
     price: "$178.24",
@@ -83,11 +83,11 @@ const PLAN_COPY: Record<
     tagline: "Best value for regular users",
     estimateNote: "Estimated based on your current configuration",
     included: [
-      "30-day continuous access.",
-      "Saving up to 10% vs daily.",
-      "Support included.",
+      "Includes up to 180 hours/month",
+      "Savings up to 15% vs Hourly",
+      "Support included",
     ],
-  },
+  },  
 };
 
 const PLAN_ORDER: BillingPlan[] = ["hourly", "daily", "monthly"];

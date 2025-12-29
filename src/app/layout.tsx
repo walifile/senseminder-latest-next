@@ -1,6 +1,3 @@
-
-
-
 "use client";
 
 import "../styles/globals.css";
@@ -8,7 +5,6 @@ import "../styles/globals.css";
 import AuthGuard from "@/guards/auth-guard";
 import { usePathname } from "next/navigation";
 import { ReduxProvider } from "@/redux/provider";
-import { isDev } from "@/constants/initial-values";
 import { AmplifyProvider } from "@/providers/AmplifyProvider";
 import { Inter, Poppins, Space_Grotesk } from "next/font/google";
 import { WebSocketProvider } from "@/providers/WebSocketProvider";
@@ -43,53 +39,52 @@ export default function RootLayout({
   const pathname = usePathname();
 
   // Special case: root landing page in prod
-  if (pathname === "/" && !isDev) {
-    return (
-      <html
-        lang="en"
-        className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable} dark overflow-x-hidden md:overflow-x-visible`}
-      >
-        <head>
-          <title>SensePC</title>
-          <meta name="description" content="SensePC Application" />
+  // if (pathname === "/" && !isDev) {
+  //   return (
+  //     <html
+  //       lang="en"
+  //       className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable} dark overflow-x-hidden md:overflow-x-visible`}
+  //     >
+  //       <head>
+  //         <title>SensePC</title>
+  //         <meta name="description" content="SensePC Application" />
 
-          <link
-            rel="apple-touch-icon"
-            sizes="180x180"
-            href="/favicon/apple-touch-icon.png"
-          />
-          <link
-            rel="icon"
-            type="image/png"
-            sizes="32x32"
-            href="/favicon/favicon-32x32.png"
-          />
-          <link
-            rel="icon"
-            type="image/png"
-            sizes="16x16"
-            href="/favicon/favicon-16x16.png"
-          />
-          <link rel="manifest" href="/favicon/site.webmanifest" />
-          <link rel="shortcut icon" href="/favicon/favicon.ico" />
-        </head>
-        <body suppressHydrationWarning className="font-inter overflow-hidden">
-          {children}
-        </body>
-      </html>
-    );
-  }
+  //         <link
+  //           rel="apple-touch-icon"
+  //           sizes="180x180"
+  //           href="/favicon/apple-touch-icon.png"
+  //         />
+  //         <link
+  //           rel="icon"
+  //           type="image/png"
+  //           sizes="32x32"
+  //           href="/favicon/favicon-32x32.png"
+  //         />
+  //         <link
+  //           rel="icon"
+  //           type="image/png"
+  //           sizes="16x16"
+  //           href="/favicon/favicon-16x16.png"
+  //         />
+  //         <link rel="manifest" href="/favicon/site.webmanifest" />
+  //         <link rel="shortcut icon" href="/favicon/favicon.ico" />
+  //       </head>
+  //       <body suppressHydrationWarning className="font-inter overflow-hidden">
+  //         {children}
+  //       </body>
+  //     </html>
+  //   );
+  // }
 
   // Routes that should be true fullscreen (no chrome, no page scroll)
-  const isLandingProd = pathname === "/" && !isDev;
+  // const isLandingProd = pathname === "/" && !isDev;
   const hideChrome =
-    pathname.startsWith("/pc-viewer") ||
-    pathname.startsWith("/welcome") ||
-    isLandingProd;
+    pathname.startsWith("/pc-viewer") || pathname.startsWith("/welcome");
+  // ||
+  // isLandingProd;
 
   const isAuth = pathname.startsWith("/auth");
   const isDashboard = pathname.startsWith("/dashboard");
-
 
   // Body classes — lock only on the pages that need it
   const bodyClass = hideChrome
@@ -99,7 +94,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable} dark overflow-x-hidden md:overflow-x-visible`}
+      className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable}  overflow-x-hidden md:overflow-x-visible`}
     >
       <head>
         <title>SensePC</title>
@@ -129,47 +124,44 @@ export default function RootLayout({
           <AmplifyProvider>
             <WebSocketProvider>
               <ThemeWrapper>
-               <AuthGuard>
-                {hideChrome ? (
-                  // 🔹 Fullscreen pages (pc-viewer, welcome, landing in prod)
-                  <div className="h-full">{children}</div>
-                ) : isAuth || isDashboard ? (
-                  <div className="flex min-h-screen flex-col">
-                    <Navbar />
-                    <main
-                      className={`flex-1 flex flex-col ${
-                        isAuth ? "justify-center" : ""
-                      }`}
-                    >
-                      {children}
-                    </main>
-                    <Footer />
-                  </div>
-                ) : (
-                  // 🔹 All other normal pages: apply public light/dark bg
-                  <div className="relative min-h-screen w-full overflow-hidden">
-                    {/* Background layer */}
-                    <div className="pointer-events-none absolute inset-0 z-0">
-                      <div className="block dark:hidden">
-                        <PublicLightBackground />
-                      </div>
-                      <div className="hidden dark:block">
-                        <PublicDarkBackground />
-                      </div>
-                    </div>
-
-                    {/* Content layer */}
-                    <div className="relative z-30 flex min-h-screen flex-col">
+                <AuthGuard>
+                  {hideChrome ? (
+                    // 🔹 Fullscreen pages (pc-viewer, welcome, landing in prod)
+                    <div className="h-full">{children}</div>
+                  ) : isAuth || isDashboard ? (
+                    <div className="flex min-h-screen flex-col">
                       <Navbar />
-                      <main className="flex-1 flex flex-col">
+                      <main
+                        className={`flex-1 flex flex-col ${
+                          isAuth ? "justify-center" : ""
+                        }`}
+                      >
                         {children}
                       </main>
                       <Footer />
                     </div>
-                  </div>
-                )}
-              </AuthGuard>
+                  ) : (
+                    // 🔹 All other normal pages: apply public light/dark bg
+                    <div className="relative min-h-screen w-full overflow-hidden">
+                      {/* Background layer */}
+                      <div className="pointer-events-none absolute inset-0 z-0">
+                        <div className="block dark:hidden">
+                          <PublicLightBackground />
+                        </div>
+                        <div className="hidden dark:block">
+                          <PublicDarkBackground />
+                        </div>
+                      </div>
 
+                      {/* Content layer */}
+                      <div className="relative z-30 flex min-h-screen flex-col">
+                        <Navbar />
+                        <main className="flex-1 flex flex-col">{children}</main>
+                        <Footer />
+                      </div>
+                    </div>
+                  )}
+                </AuthGuard>
               </ThemeWrapper>
             </WebSocketProvider>
           </AmplifyProvider>
@@ -178,7 +170,6 @@ export default function RootLayout({
     </html>
   );
 }
-
 
 // import "../styles/globals.css";
 

@@ -1,4 +1,3 @@
-
 // src/app/build-sensepc/page.tsx
 
 /* eslint perfectionist/sort-imports: "off" */
@@ -54,11 +53,29 @@ import { fetchEstimate } from "./api/fetch-estimate";
 import { osOptions, storageOptions, locationOptions } from "./data";
 import CostSummary from "./_components/cost-summary";
 
-import {ArrowUpRight } from "lucide-react";
-
+import { ArrowUpRight } from "lucide-react";
 
 const selectIconWrapper =
   "pointer-events-none absolute left-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center";
+
+/* ---------------- Typography (fonts only) ---------------- */
+const HERO_TITLE =
+  "font-space-grotesk font-bold text-[26px] leading-[32px] md:text-[34px] md:leading-[40px] lg:text-[44px] lg:leading-[52px]";
+const HERO_SUBTITLE =
+  "font-inter text-paragraph text-[14px] leading-[22px] md:text-[16px] md:leading-[26px] lg:text-[18px] lg:leading-[28px]";
+
+const SECTION_TITLE =
+  "font-space-grotesk font-semibold text-slate-900 dark:text-white text-[18px] leading-[24px] md:text-[22px] md:leading-[30px]";
+const SECTION_SUBTITLE =
+  "font-inter text-slate-600 dark:text-slate-400 text-[14px] leading-[22px] md:text-[16px] md:leading-[26px]";
+
+const FIELD_LABEL =
+  "font-inter font-medium text-slate-900 dark:text-slate-300 text-[14px] leading-[22px]";
+
+// Fixes “Location” select looking different (and keeps all selects consistent)
+const SELECT_TRIGGER_TYPO =
+  "font-inter text-[16px] leading-[24px] text-slate-900 dark:text-white";
+const SELECT_ITEM_TYPO = "font-inter text-[14px] leading-[20px]";
 
 export default function BuildSensePcPage() {
   const router = useRouter();
@@ -258,7 +275,7 @@ export default function BuildSensePcPage() {
       while (true) {
         const fetchResult = await refetchRemoteDesktops();
         if (fetchResult.status === "fulfilled") break;
-         
+
         await new Promise((res) => setTimeout(res, 2000));
       }
 
@@ -296,20 +313,18 @@ export default function BuildSensePcPage() {
         />
       </div>
 
-
-
-    {/* Ellipse 3 – center glow dark mode only */}
-    <div
-      className="pointer-events-none absolute hidden dark:md:block
+      {/* Ellipse 3 – center glow dark mode only */}
+      <div
+        className="pointer-events-none absolute hidden dark:md:block
                 left-1/3 top-[16vh] -z-10"
-      aria-hidden
-    >
-      <img
-        src="/assets/build-sensepc/Ellipse 3.svg"
-        alt=""
-        className="block h-full w-full max-w-none"
-      />
-    </div>
+        aria-hidden
+      >
+        <img
+          src="/assets/build-sensepc/Ellipse 3.svg"
+          alt=""
+          className="block h-full w-full max-w-none"
+        />
+      </div>
 
       <div
         className="pointer-events-none absolute inset-x-0
@@ -329,710 +344,509 @@ export default function BuildSensePcPage() {
       {/* Content container (navbar + footer come from global layout) */}
       <div className="relative w-full px-4 md:px-6 pt-20 md:pt-16 lg:pt-48 pb-16 md:pb-20">
         <div className="mx-auto w-full max-w-[1200px] 2xl:max-w-[1360px] space-y-8 lg:space-y-10">
-
-    <PublicCard
-      className={cn(
-        "relative w-full overflow-hidden",
-        "px-5 md:px-7 lg:px-8 py-4 md:py-5 lg:py-6",
-        // make the whole card text sensible in light & dark
-        "text-slate-900 dark:text-slate-50",
-      )}
-    >
-      <div
-        className="pointer-events-none absolute inset-0 flex items-center dark:hidden"
-        aria-hidden
-      >
-        <div className="w-[50%]">
-          <img
-            src="/assets/build-sensepc/Ellipse 11.svg"
-            alt=""
-            className="block w-full h-auto max-w-none"
-          />
-        </div>
-      </div>
-
-      <div className="relative z-10 grid items-center gap-4 lg:gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-        {/* Left: breadcrumb + title + subtitle */}
-        <div className="space-y-3 md:space-y-4 lg:space-y-5">
-          {/* Breadcrumb – Inter 16/24, link in #2530F0 */}
-          <p className="font-inter text-[14px] leading-[20px] md:text-[16px] md:leading-[24px] text-paragraph">
-            <span className="text-link-primary">Home</span>
-            <span>{` - `}</span>
-            <span>Build Smartpc</span>
-          </p>
-
-          {/* Main heading – Space Grotesk, ~60/85 on large screens */}
-          <h1
+          <PublicCard
             className={cn(
-              "font-space-grotesk font-bold",
-              // mobile: smaller but still strong
-              "text-[28px] leading-[34px]",
-              // md: scale up nicely
-              "md:text-[40px] md:leading-[48px]",
-              // lg: match Figma spec closely
-              "lg:text-[60px] lg:leading-[85px]",
-              "text-slate-900 dark:text-white",
+              "relative w-full overflow-hidden",
+              "px-5 md:px-7 lg:px-8 py-4 md:py-5 lg:py-6",
+              "text-slate-900 dark:text-slate-50",
             )}
           >
-            Build your&nbsp;Sense PC
-          </h1>
+            <div
+              className="pointer-events-none absolute inset-0 flex items-center dark:hidden"
+              aria-hidden
+            >
+              <div className="w-[50%]">
+                <img
+                  src="/assets/build-sensepc/Ellipse 11.svg"
+                  alt=""
+                  className="block w-full h-auto max-w-none"
+                />
+              </div>
+            </div>
 
-          {/* Subtitle – Inter 24/40 on large screens */}
-          <p
-            className={cn(
-              "font-inter text-paragraph",
-              // mobile
-              "text-[14px] leading-[22px]",
-              // md
-              "md:text-[18px] md:leading-[28px]",
-              // lg ≈ Figma 24/40
-              "lg:text-[24px] lg:leading-[40px]",
-            )}
-          >
-            Configure in minutes — priced with a built-in estimator.
-          </p>
-        </div>
+            <div className="relative z-10 grid items-center gap-4 lg:gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+              {/* Left: breadcrumb + title + subtitle */}
+              <div className="space-y-3 md:space-y-4 lg:space-y-5">
+                <p className="font-inter text-[14px] leading-[20px] md:text-[16px] md:leading-[24px] text-paragraph">
+                  <span className="text-link-primary">Home</span>
+                  <span>{` - `}</span>
+                  <span>Build Smartpc</span>
+                </p>
 
-        {/* Right: illustration */}
-        <div className="flex items-center justify-end">
-          <Image
-            src="/assets/build-sensepc/hero-illustration.svg"
-            alt="Build Sense PC illustration"
-            width={200}
-            height={200}
-            priority
-            className="w-[180px] md:w-[190px] lg:w-[200px] h-auto object-contain"
-          />
-        </div>
-      </div>
-    </PublicCard>
-        <Form {...methods} control={control}>
+                <h1 className={cn(HERO_TITLE, "text-slate-900 dark:text-white")}>
+                  Build your&nbsp;Sense PC
+                </h1>
 
-            
-          <form onSubmit={onSubmit} className="space-y-10">
+                <p className={cn(HERO_SUBTITLE)}>
+                  Configure in minutes — priced with a built-in estimator.
+                </p>
+              </div>
 
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] items-start">
-              {/* ---------- LEFT COLUMN ---------- */}
+              {/* Right: illustration */}
+              <div className="flex items-center justify-end">
+                <Image
+                  src="/assets/build-sensepc/hero-illustration.svg"
+                  alt="Build Sense PC illustration"
+                  width={200}
+                  height={200}
+                  priority
+                  className="w-[180px] md:w-[190px] lg:w-[200px] h-auto object-contain"
+                />
+              </div>
+            </div>
+          </PublicCard>
+
+          <Form {...methods} control={control}>
+            <form onSubmit={onSubmit} className="space-y-10">
+              <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] items-start">
+                {/* ---------- LEFT COLUMN ---------- */}
                 <PublicCard className="px-4 md:px-5 lg:px-6 py-5 md:py-6 lg:py-7">
                   <div className="space-y-5">
-                  {/* 1) Basic Information */}
-                  <PublicCard
-                    className={cn(
-                      "space-y-4 px-5 md:px-6 py-5 md:py-6 rounded-2xl border",
-                      // light mode
-                      "bg-[rgba(82,32,222,0.09)] border-[rgba(37,48,240,0.1)]",
-                      // dark mode
-                      "dark:bg-[rgba(255,255,255,0.02)] dark:border-[rgba(255,255,255,0.1)]",
-                    )}
-                  >
-                    <header className="space-y-1.5">
-                      {/* Section title – Space Grotesk 32 / 42 (Figma) */}
-                      <h2
-                        className={cn(
-                          "font-space-grotesk font-semibold text-slate-900 dark:text-white",
-                          "text-[20px] leading-[26px] md:text-[32px] md:leading-[42px]",
-                        )}
-                      >
-                        Basic Information
-                      </h2>
+                    {/* 1) Basic Information */}
+                    <PublicCard
+                      className={cn(
+                        "space-y-4 px-5 md:px-6 py-5 md:py-6 rounded-2xl border",
+                        "bg-[rgba(82,32,222,0.09)] border-[rgba(37,48,240,0.1)]",
+                        "dark:bg-[rgba(255,255,255,0.02)] dark:border-[rgba(255,255,255,0.1)]",
+                      )}
+                    >
+                      <header className="space-y-1.5">
+                        <h2 className={cn(SECTION_TITLE)}>Basic Information</h2>
+                        <p className={cn(SECTION_SUBTITLE)}>
+                          Name your Sense PC and choose an operating system.
+                        </p>
+                      </header>
 
-                      {/* Section subtitle – Inter 18 / 32 (Figma) */}
-                      <p
-                        className={cn(
-                          "font-inter text-slate-600 dark:text-slate-400",
-                          "text-[14px] leading-[22px] md:text-[18px] md:leading-[32px]",
-                        )}
-                      >
-                        Name your Sense PC and choose an operating system.
-                      </p>
-                    </header>
+                      <div className="h-px bg-[#2530f0]/10 dark:bg-white/10" />
 
-                    <div className="h-px bg-[#2530f0]/10 dark:bg-white/10" />
-
-                    <div className="space-y-4">
-                      {/* PC Name */}
-                      <FormField
-                        control={control}
-                        name="pcName"
-                        render={({ field }) => (
-                          <FormItem className="space-y-1.5">
-                            {/* Field label – Inter 14 / 22, medium (Figma) */}
-                            <FormLabel
-                              className={cn(
-                                "font-inter font-medium text-slate-900 dark:text-slate-300",
-                                "text-[14px] leading-[22px]",
-                              )}
-                            >
-                              PC Name
-                            </FormLabel>
-
-                            <FormControl>
-                              <div className="relative">
-                                {/* icon on the left */}
-                                <span className={selectIconWrapper}>
-                                  <Image
-                                    src="/assets/svg/build-sensepc/pc-name.svg"
-                                    alt="PC name icon"
-                                    width={20}
-                                    height={20}
-                                  />
-                                </span>
-
-                                <Input
-                                {...field}
-                                id="pcName"
-                                type="text"
-                                placeholder="E.g., Design-Workstation-1"
-                                uiSize="form"
-                                className="pl-11"
-                              />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Operating System */}
-                      <FormField
-                        control={control}
-                        name="operatingSystem"
-                        render={({ field }) => (
-                          <FormItem className="space-y-1.5">
-                            {/* Field label – same style as PC Name */}
-                            <FormLabel
-                              className={cn(
-                                "font-inter font-medium text-slate-900 dark:text-slate-300",
-                                "text-[14px] leading-[22px]",
-                              )}
-                            >
-                              Operating System
-                            </FormLabel>
-
-                            <FormControl>
-                              <div className="relative">
-                                {/* OS icon */}
-                                <span className={selectIconWrapper}>
-                                  <Image
-                                    src="/assets/svg/build-sensepc/os.svg"
-                                    alt="Operating system icon"
-                                    width={20}
-                                    height={20}
-                                  />
-                                </span>
-{/* 
-                                <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value}
-                                >
-                                  <SelectTrigger
-                                    id="operatingSystem"
-                                    className={cn(
-                                      selectTriggerBase,
-                                      "pl-11",
-                                      // make sure select text is Inter 16 like Figma
-                                      "text-[16px]",
-                                    )}
-                                  >
-                                    <SelectValue placeholder="Select OS" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {osOptions.map((opt) => (
-                                      <SelectItem key={opt.value} value={opt.value}>
-                                        {opt.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select> */}
-
-
-                                <Select onValueChange={field.onChange} value={field.value}>
-  <SelectTrigger id="operatingSystem" variant="form" className="pl-11">
-    <SelectValue placeholder="Select OS" />
-  </SelectTrigger>
-
-  <SelectContent variant="form">
-    {osOptions.map((opt) => (
-      <SelectItem key={opt.value} value={opt.value}>
-        {opt.label}
-      </SelectItem>
-    ))}
-  </SelectContent>
-</Select>
-
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </PublicCard>
-
-                  {/* 2) Hardware Configuration */}
-                  <PublicCard
-                    className={cn(
-                      "space-y-4 px-5 md:px-6 py-5 md:py-6 rounded-2xl border",
-                      "bg-[rgba(82,32,222,0.09)] border-[rgba(37,48,240,0.1)]",
-                      "dark:bg-[rgba(255,255,255,0.02)] dark:border-[rgba(255,255,255,0.1)]",
-                    )}
-                  >
-                    <header className="space-y-1.5">
-                      <h2
-                        className={cn(
-                          "font-space-grotesk font-semibold text-slate-900 dark:text-white",
-                          "text-[20px] leading-[26px] md:text-[32px] md:leading-[42px]",
-                        )}
-                      >
-                        Hardware Configuration
-                      </h2>
-                      <p
-                        className={cn(
-                          "font-inter text-slate-600 dark:text-slate-400",
-                          "text-[14px] leading-[22px] md:text-[18px] md:leading-[32px]",
-                        )}
-                      >
-                        Choose your computing resources.
-                      </p>
-                    </header>
-
-                    <div className="h-px bg-[#2530f0]/10 dark:bg-white/10" />
-
-                    <div className="space-y-4">
-                      {/* Linux distribution (only for Linux OS) */}
-                      {isLinuxOS && (
+                      <div className="space-y-4">
+                        {/* PC Name */}
                         <FormField
                           control={control}
-                          name="linuxCategory"
-                          render={({ field }) => {
-                            const linuxOptions = Object.keys(
-                              (
-                                apiCpuCategories as Record<string, Record<string, unknown>>
-                              )?.Linux || {},
-                            );
+                          name="pcName"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1.5">
+                              <FormLabel className={cn(FIELD_LABEL)}>
+                                PC Name
+                              </FormLabel>
 
-                            return (
-                              <FormItem className="space-y-1.5">
-                                <FormLabel
-                                  className={cn(
-                                    "font-inter font-medium text-slate-900 dark:text-slate-300",
-                                    "text-[14px] leading-[22px]",
-                                  )}
-                                >
-                                  Linux Distribution
-                                </FormLabel>
-                                <FormControl>
-                                  {/* <Select
+                              <FormControl>
+                                <div className="relative">
+                                  <span className={selectIconWrapper}>
+                                    <Image
+                                      src="/assets/svg/build-sensepc/pc-name.svg"
+                                      alt="PC name icon"
+                                      width={20}
+                                      height={20}
+                                    />
+                                  </span>
+
+                                  <Input
+                                    {...field}
+                                    id="pcName"
+                                    type="text"
+                                    placeholder="E.g., Design-Workstation-1"
+                                    uiSize="form"
+                                    className="pl-11"
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Operating System */}
+                        <FormField
+                          control={control}
+                          name="operatingSystem"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1.5">
+                              <FormLabel className={cn(FIELD_LABEL)}>
+                                Operating System
+                              </FormLabel>
+
+                              <FormControl>
+                                <div className="relative">
+                                  <span className={selectIconWrapper}>
+                                    <Image
+                                      src="/assets/svg/build-sensepc/os.svg"
+                                      alt="Operating system icon"
+                                      width={20}
+                                      height={20}
+                                    />
+                                  </span>
+
+                                  <Select
                                     onValueChange={field.onChange}
                                     value={field.value}
                                   >
                                     <SelectTrigger
-                                      id="linuxCategory"
-                                      className={cn(
-                                        selectTriggerBase,
-                                        "text-[16px]",
-                                      )}
+                                      id="operatingSystem"
+                                      variant="form"
+                                      className={cn("pl-11", SELECT_TRIGGER_TYPO)}
                                     >
-                                      <SelectValue placeholder="Select Linux distribution" />
+                                      <SelectValue placeholder="Select OS" />
                                     </SelectTrigger>
-                                    <SelectContent>
-                                      {linuxOptions.map((key) => (
-                                        <SelectItem key={key} value={key}>
-                                          {key}
+
+                                    <SelectContent variant="form">
+                                      {osOptions.map((opt) => (
+                                        <SelectItem
+                                          key={opt.value}
+                                          value={opt.value}
+                                          className={cn(SELECT_ITEM_TYPO)}
+                                        >
+                                          {opt.label}
                                         </SelectItem>
                                       ))}
                                     </SelectContent>
-                                  </Select> */}
-<Select onValueChange={field.onChange} value={field.value}>
-  <SelectTrigger id="linuxCategory" variant="form">
-    <SelectValue placeholder="Select Linux distribution" />
-  </SelectTrigger>
+                                  </Select>
+                                </div>
+                              </FormControl>
 
-  <SelectContent variant="form">
-    {linuxOptions.map((key) => (
-      <SelectItem key={key} value={key}>
-        {key}
-      </SelectItem>
-    ))}
-  </SelectContent>
-</Select>
-
-
-
-
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            );
-                          }}
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
+                      </div>
+                    </PublicCard>
+
+                    {/* 2) Hardware Configuration */}
+                    <PublicCard
+                      className={cn(
+                        "space-y-4 px-5 md:px-6 py-5 md:py-6 rounded-2xl border",
+                        "bg-[rgba(82,32,222,0.09)] border-[rgba(37,48,240,0.1)]",
+                        "dark:bg-[rgba(255,255,255,0.02)] dark:border-[rgba(255,255,255,0.1)]",
                       )}
+                    >
+                      <header className="space-y-1.5">
+                        <h2 className={cn(SECTION_TITLE)}>
+                          Hardware Configuration
+                        </h2>
+                        <p className={cn(SECTION_SUBTITLE)}>
+                          Choose your computing resources.
+                        </p>
+                      </header>
 
-                      {/* CPU */}
-                      <FormField
-                        control={control}
-                        name="cpu"
-                        render={({ field }) => (
-                          <FormItem className="space-y-1.5">
-                            <FormLabel
-                              className={cn(
-                                "font-inter font-medium text-slate-900 dark:text-slate-300",
-                                "text-[14px] leading-[22px]",
-                              )}
-                            >
-                              CPU
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <span className={selectIconWrapper}>
-                                  <Image
-                                    src="/assets/svg/build-sensepc/cpu.svg"
-                                    alt="CPU icon"
-                                    width={20}
-                                    height={20}
-                                  />
-                                </span>
-                                {/* <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value}
-                                >
-                                  <SelectTrigger
-                                    id="cpu"
-                                    className={cn(
-                                      selectTriggerBase,
-                                      "pl-11",
-                                      "text-[16px]",
-                                    )}
+                      <div className="h-px bg-[#2530f0]/10 dark:bg-white/10" />
+
+                      <div className="space-y-4">
+                        {/* Linux distribution (only for Linux OS) */}
+                        {isLinuxOS && (
+                          <FormField
+                            control={control}
+                            name="linuxCategory"
+                            render={({ field }) => {
+                              const linuxOptions = Object.keys(
+                                (
+                                  apiCpuCategories as Record<
+                                    string,
+                                    Record<string, unknown>
                                   >
-                                    <SelectValue placeholder="Select CPU" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {cpuOptionsForOS.map((opt) => (
-                                      <SelectItem
-                                        key={opt.value}
-                                        value={opt.value}
+                                )?.Linux || {},
+                              );
+
+                              return (
+                                <FormItem className="space-y-1.5">
+                                  <FormLabel className={cn(FIELD_LABEL)}>
+                                    Linux Distribution
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Select
+                                      onValueChange={field.onChange}
+                                      value={field.value}
+                                    >
+                                      <SelectTrigger
+                                        id="linuxCategory"
+                                        variant="form"
+                                        className={cn(SELECT_TRIGGER_TYPO)}
                                       >
-                                        {opt.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select> */}
+                                        <SelectValue placeholder="Select Linux distribution" />
+                                      </SelectTrigger>
 
-<Select onValueChange={field.onChange} value={field.value}>
-  <SelectTrigger id="cpu" variant="form" className="pl-11">
-    <SelectValue placeholder="Select CPU" />
-  </SelectTrigger>
-
-  <SelectContent variant="form">
-    {cpuOptionsForOS.map((opt) => (
-      <SelectItem key={opt.value} value={opt.value}>
-        {opt.label}
-      </SelectItem>
-    ))}
-  </SelectContent>
-</Select>
-
-
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                                      <SelectContent variant="form">
+                                        {linuxOptions.map((key) => (
+                                          <SelectItem
+                                            key={key}
+                                            value={key}
+                                            className={cn(SELECT_ITEM_TYPO)}
+                                          >
+                                            {key}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              );
+                            }}
+                          />
                         )}
-                      />
 
-                      {/* Storage (SSD) */}
-                      <FormField
-                        control={control}
-                        name="storage"
-                        render={({ field }) => (
-                          <FormItem className="space-y-1.5">
-                            <FormLabel
-                              className={cn(
-                                "font-inter font-medium text-slate-900 dark:text-slate-300",
-                                "text-[14px] leading-[22px]",
-                              )}
-                            >
-                              Storage (SSD)
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <span className={selectIconWrapper}>
-                                  <Image
-                                    src="/assets/svg/build-sensepc/storage.svg"
-                                    alt="Storage icon"
-                                    width={20}
-                                    height={20}
-                                  />
-                                </span>
-                                {/* <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value}
-                                >
-                                  <SelectTrigger
-                                    id="storage"
-                                    className={cn(
-                                      selectTriggerBase,
-                                      "pl-11",
-                                      "text-[16px]",
-                                    )}
+                        {/* CPU */}
+                        <FormField
+                          control={control}
+                          name="cpu"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1.5">
+                              <FormLabel className={cn(FIELD_LABEL)}>
+                                CPU + Memory
+                              </FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <span className={selectIconWrapper}>
+                                    <Image
+                                      src="/assets/svg/build-sensepc/cpu.svg"
+                                      alt="CPU icon"
+                                      width={20}
+                                      height={20}
+                                    />
+                                  </span>
+
+                                  <Select
+                                    onValueChange={field.onChange}
+                                    value={field.value}
                                   >
-                                    <SelectValue placeholder="Select storage size" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {storageOptions.map((opt) => (
+                                    <SelectTrigger
+                                      id="cpu"
+                                      variant="form"
+                                      className={cn("pl-11", SELECT_TRIGGER_TYPO)}
+                                    >
+                                      <SelectValue placeholder="Select CPU" />
+                                    </SelectTrigger>
+
+                                    <SelectContent variant="form">
+                                      {cpuOptionsForOS.map((opt) => (
+                                        <SelectItem
+                                          key={opt.value}
+                                          value={opt.value}
+                                          className={cn(SELECT_ITEM_TYPO)}
+                                        >
+                                          {opt.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Storage (SSD) */}
+                        <FormField
+                          control={control}
+                          name="storage"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1.5">
+                              <FormLabel className={cn(FIELD_LABEL)}>
+                                Storage (SSD)
+                              </FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <span className={selectIconWrapper}>
+                                    <Image
+                                      src="/assets/svg/build-sensepc/storage.svg"
+                                      alt="Storage icon"
+                                      width={20}
+                                      height={20}
+                                    />
+                                  </span>
+
+                                  <Select
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                  >
+                                    <SelectTrigger
+                                      id="storage"
+                                      variant="form"
+                                      className={cn("pl-11", SELECT_TRIGGER_TYPO)}
+                                    >
+                                      <SelectValue placeholder="Select storage size" />
+                                    </SelectTrigger>
+
+                                    <SelectContent variant="form">
+                                      {storageOptions.map((opt) => (
+                                        <SelectItem
+                                          key={opt.value}
+                                          value={opt.value}
+                                          className={cn(SELECT_ITEM_TYPO)}
+                                        >
+                                          {opt.label}
+                                          {opt.pricePerHour
+                                            ? ` — $${opt.pricePerHour}/hr`
+                                            : ""}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </PublicCard>
+
+                    {/* 3) Location */}
+                    <PublicCard
+                      className={cn(
+                        "space-y-4 px-5 md:px-6 py-5 md:py-6 rounded-2xl border",
+                        "bg-[rgba(82,32,222,0.09)] border-[rgba(37,48,240,0.1)]",
+                        "dark:bg-[rgba(255,255,255,0.02)] dark:border-[rgba(255,255,255,0.1)]",
+                      )}
+                    >
+                      <header className="space-y-1.5">
+                        <h2 className={cn(SECTION_TITLE)}>Location</h2>
+                        <p className={cn(SECTION_SUBTITLE)}>
+                          Select the closest region for low latency.
+                        </p>
+                      </header>
+
+                      <div className="h-px bg-[#2530f0]/10 dark:bg-white/10" />
+
+                      <div className="space-y-4">
+                        <FormField
+                          control={control}
+                          name="region"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1.5">
+                              <FormLabel className={cn(FIELD_LABEL)}>
+                                Region
+                              </FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <span className={selectIconWrapper}>
+                                    <Image
+                                      src="/assets/svg/build-sensepc/region.svg"
+                                      alt="Region icon"
+                                      width={20}
+                                      height={20}
+                                    />
+                                  </span>
+
+                                  <Select
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                  >
+                                    <SelectTrigger
+                                      id="region"
+                                      variant="form"
+                                      className={cn("pl-11", SELECT_TRIGGER_TYPO)}
+                                    >
+                                      <SelectValue placeholder="Select region" />
+                                    </SelectTrigger>
+
+                                    <SelectContent variant="form">
+                                      {locationOptions.map((opt) => (
+                                        <SelectItem
+                                          key={opt.value}
+                                          value={opt.value}
+                                          className={cn(SELECT_ITEM_TYPO)}
+                                        >
+                                          {opt.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </PublicCard>
+
+                    {/* 4) Billing Plan */}
+                    <PublicCard
+                      className={cn(
+                        "space-y-4 px-5 md:px-6 py-5 md:py-6 rounded-2xl border",
+                        "bg-[rgba(82,32,222,0.09)] border-[rgba(37,48,240,0.1)]",
+                        "dark:bg-[rgba(255,255,255,0.02)] dark:border-[rgba(255,255,255,0.1)]",
+                      )}
+                    >
+                      <header className="space-y-1.5">
+                        <h2 className={cn(SECTION_TITLE)}>Billing Plan</h2>
+                        <p className={cn(SECTION_SUBTITLE)}>
+                          Choose how you&apos;d like to be billed.
+                        </p>
+                      </header>
+
+                      <div className="h-px bg-[#2530f0]/10 dark:bg-white/10" />
+
+                      <div className="space-y-4">
+                        <FormField
+                          control={control}
+                          name="billingPlan"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1.5">
+                              <FormLabel className={cn(FIELD_LABEL)}>
+                                Billing Plan
+                              </FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <span className={selectIconWrapper}>
+                                    <Image
+                                      src="/assets/svg/build-sensepc/bill.svg"
+                                      alt="Billing icon"
+                                      width={20}
+                                      height={20}
+                                    />
+                                  </span>
+
+                                  <Select
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                  >
+                                    <SelectTrigger
+                                      id="billingPlan"
+                                      variant="form"
+                                      className={cn("pl-11", SELECT_TRIGGER_TYPO)}
+                                    >
+                                      <SelectValue placeholder="Select billing plan" />
+                                    </SelectTrigger>
+
+                                    <SelectContent variant="form">
                                       <SelectItem
-                                        key={opt.value}
-                                        value={opt.value}
+                                        value="hourly"
+                                        className={cn(SELECT_ITEM_TYPO)}
                                       >
-                                        {opt.label}
-                                        {opt.pricePerHour
-                                          ? ` — $${opt.pricePerHour}/hr`
-                                          : ""}
+                                        Hourly
                                       </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select> */}
-                                <Select onValueChange={field.onChange} value={field.value}>
-  <SelectTrigger id="storage" variant="form" className="pl-11">
-    <SelectValue placeholder="Select storage size" />
-  </SelectTrigger>
-
-  <SelectContent variant="form">
-    {storageOptions.map((opt) => (
-      <SelectItem key={opt.value} value={opt.value}>
-        {opt.label}
-        {opt.pricePerHour ? ` — $${opt.pricePerHour}/hr` : ""}
-      </SelectItem>
-    ))}
-  </SelectContent>
-</Select>
-
-
-
-
-
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </PublicCard>
-
-                  {/* 3) Location */}
-                  <PublicCard
-                    className={cn(
-                      "space-y-4 px-5 md:px-6 py-5 md:py-6 rounded-2xl border",
-                      "bg-[rgba(82,32,222,0.09)] border-[rgba(37,48,240,0.1)]",
-                      "dark:bg-[rgba(255,255,255,0.02)] dark:border-[rgba(255,255,255,0.1)]",
-                    )}
-                  >
-                    <header className="space-y-1.5">
-                      <h2
-                        className={cn(
-                          "font-space-grotesk font-semibold text-slate-900 dark:text-white",
-                          "text-[20px] leading-[26px] md:text-[32px] md:leading-[42px]",
-                        )}
-                      >
-                        Location
-                      </h2>
-                      <p
-                        className={cn(
-                          "font-inter text-slate-600 dark:text-slate-400",
-                          "text-[14px] leading-[22px] md:text-[18px] md:leading-[32px]",
-                        )}
-                      >
-                        Select the closest region for low latency.
-                      </p>
-                    </header>
-
-                    <div className="h-px bg-[#2530f0]/10 dark:bg-white/10" />
-
-                    <div className="space-y-4">
-                      <FormField
-                        control={control}
-                        name="region"
-                        render={({ field }) => (
-                          <FormItem className="space-y-1.5">
-                            <FormLabel
-                              className={cn(
-                                "font-inter font-medium text-slate-900 dark:text-slate-300",
-                                "text-[14px] leading-[22px]",
-                              )}
-                            >
-                              Region
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <span className={selectIconWrapper}>
-                                  <Image
-                                    src="/assets/svg/build-sensepc/region.svg"
-                                    alt="Region icon"
-                                    width={20}
-                                    height={20}
-                                  />
-                                </span>
-                                {/* <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value}
-                                >
-                                  <SelectTrigger
-                                    id="region"
-                                    className={cn(
-                                      selectTriggerBase,
-                                      "pl-11",
-                                      "text-[16px]",
-                                    )}
-                                  >
-                                    <SelectValue placeholder="Select region" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {locationOptions.map((opt) => (
                                       <SelectItem
-                                        key={opt.value}
-                                        value={opt.value}
+                                        value="daily"
+                                        className={cn(SELECT_ITEM_TYPO)}
                                       >
-                                        {opt.label}
+                                        Daily
                                       </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select> */}
+                                      <SelectItem
+                                        value="monthly"
+                                        className={cn(SELECT_ITEM_TYPO)}
+                                      >
+                                        Monthly
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </PublicCard>
 
-
-                                <Select onValueChange={field.onChange} value={field.value}>
-  <SelectTrigger id="region" variant="form" className="pl-11">
-    <SelectValue placeholder="Select region" />
-  </SelectTrigger>
-
-  <SelectContent variant="form">
-    {locationOptions.map((opt) => (
-      <SelectItem key={opt.value} value={opt.value}>
-        {opt.label}
-      </SelectItem>
-    ))}
-  </SelectContent>
-</Select>
-
-
-
-
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </PublicCard>
-
-                  {/* 4) Billing Plan */}
-                  <PublicCard
-                    className={cn(
-                      "space-y-4 px-5 md:px-6 py-5 md:py-6 rounded-2xl border",
-                      "bg-[rgba(82,32,222,0.09)] border-[rgba(37,48,240,0.1)]",
-                      "dark:bg-[rgba(255,255,255,0.02)] dark:border-[rgba(255,255,255,0.1)]",
-                    )}
-                  >
-                    <header className="space-y-1.5">
-                      <h2
-                        className={cn(
-                          "font-space-grotesk font-semibold text-slate-900 dark:text-white",
-                          "text-[20px] leading-[26px] md:text-[32px] md:leading-[42px]",
-                        )}
-                      >
-                        Billing Plan
-                      </h2>
-                      <p
-                        className={cn(
-                          "font-inter text-slate-600 dark:text-slate-400",
-                          "text-[14px] leading-[22px] md:text-[18px] md:leading-[32px]",
-                        )}
-                      >
-                        Choose how you&apos;d like to be billed.
-                      </p>
-                    </header>
-
-                    <div className="h-px bg-[#2530f0]/10 dark:bg-white/10" />
-
-                    <div className="space-y-4">
-                      <FormField
-                        control={control}
-                        name="billingPlan"
-                        render={({ field }) => (
-                          <FormItem className="space-y-1.5">
-                            <FormLabel
-                              className={cn(
-                                "font-inter font-medium text-slate-900 dark:text-slate-300",
-                                "text-[14px] leading-[22px]",
-                              )}
-                            >
-                              Billing Plan
-                            </FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <span className={selectIconWrapper}>
-                                  <Image
-                                    src="/assets/svg/build-sensepc/bill.svg"
-                                    alt="Billing icon"
-                                    width={20}
-                                    height={20}
-                                  />
-                                </span>
-                                {/* <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value}
-                                >
-                                  <SelectTrigger
-                                    id="billingPlan"
-                                    className={cn(
-                                      selectTriggerBase,
-                                      "pl-11",
-                                      "text-[16px]",
-                                    )}
-                                  >
-                                    <SelectValue placeholder="Select billing plan" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="hourly">Hourly</SelectItem>
-                                    <SelectItem value="daily">Daily</SelectItem>
-                                    <SelectItem value="monthly">Monthly</SelectItem>
-                                  </SelectContent>
-                                </Select> */}
-
-
-
-                              <Select onValueChange={field.onChange} value={field.value}>
-                                <SelectTrigger id="billingPlan" variant="form" className="pl-11">
-                                  <SelectValue placeholder="Select billing plan" />
-                                </SelectTrigger>
-
-                                <SelectContent variant="form">
-                                  <SelectItem value="hourly">Hourly</SelectItem>
-                                  <SelectItem value="daily">Daily</SelectItem>
-                                  <SelectItem value="monthly">Monthly</SelectItem>
-                                </SelectContent>
-                              </Select>
-
-
-
-
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </PublicCard>
-
-                    {/* Build section (unchanged structure, still within outer card) */}
+                    {/* Build section */}
                     <div className="pt-4 mt-1 border-t border-white/5 space-y-3">
                       <div>
-                     <h3 className="text-base md:text-lg font-semibold text-slate-900 dark:text-white">
-                      Build
-                    </h3>
-                        <p className="mt-1 text-xs md:text-sm text-slate-400">
+                        <h3 className="font-space-grotesk text-[18px] leading-[24px] md:text-[20px] md:leading-[28px] font-semibold text-slate-900 dark:text-white">
+                          Build
+                        </h3>
+                        <p className="mt-1 font-inter text-[14px] leading-[20px] md:text-[16px] md:leading-[24px] text-slate-600 dark:text-slate-400">
                           We&apos;ll spin up your Sense PC securely.
                         </p>
                       </div>
@@ -1040,7 +854,7 @@ export default function BuildSensePcPage() {
                       <Button
                         type="submit"
                         size="lg"
-                        className="w-full rounded-full text-sm font-medium inline-flex items-center justify-center gap-1.5"
+                        className="w-full rounded-full font-inter text-[16px] leading-[24px] font-medium inline-flex items-center justify-center gap-2"
                         disabled={isCreating || isLoading}
                         aria-disabled={isCreating || isLoading}
                       >
@@ -1055,7 +869,7 @@ export default function BuildSensePcPage() {
                       </Button>
 
                       {error && (
-                        <p className="mt-2 text-xs md:text-sm text-red-500">
+                        <p className="mt-2 font-inter text-[14px] leading-[20px] md:text-[16px] md:leading-[24px] text-red-500">
                           Error getting estimate.
                         </p>
                       )}
@@ -1063,7 +877,7 @@ export default function BuildSensePcPage() {
                   </div>
                 </PublicCard>
 
-                {/* ---------- RIGHT COLUMN: JUST CostSummary (no extra layer) ---------- */}
+                {/* ---------- RIGHT COLUMN: JUST CostSummary ---------- */}
                 <div ref={asideRef} className="lg:sticky lg:top-28 self-start">
                   <CostSummary
                     isResize={false}

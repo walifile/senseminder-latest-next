@@ -37,8 +37,8 @@ const CostSummarySmall = ({
   handleEstimate,
   estimateData,
   isEstimating,
-  cpuLabel,
-  storageLabel,
+  // cpuLabel,
+  // storageLabel,
 }: Props) => {
   /* ----- price helpers (same logic as big CostSummary) ----- */
   const getPrice = (resource: "instance" | "storage" | "total") => {
@@ -51,22 +51,21 @@ const CostSummarySmall = ({
         ? "pricePerDay"
         : "pricePerMonth";
 
-    const decimals = billingPlan === "hourly" ? 3 : 2;
-    const price = estimateData?.[resource]?.[planKey];
+  const price = estimateData?.[resource]?.[planKey];
 
-    return price != null ? `$${price.toFixed(decimals)}` : "-";
+  return price != null ? `$${price.toFixed(2)}` : "-";
   };
 
   // Labels & values (reuse wiring from main cost-summary.tsx)
-  const storageLeftLabel = isResize ? "Storage (current)" : "Storage";
-  const cpuRightValue = cpuLabel ?? getPrice("instance");
-  const storageRightValue = storageLabel ?? getPrice("storage");
+  const storageLeftLabel = isResize ? "Storage (SSD) (current)" : "Storage (SSD)";
+  const cpuRightValue = getPrice("instance");
+  const storageRightValue = getPrice("storage");
   const totalRightValue = getPrice("total");
 
   // Bottom note: keep the resize / non-resize text behavior
   const bottomNote = isResize
     ? "Changes take a few minutes. You'll see the new CPU once the PC starts again."
-    : "You can resize later. Some changes require the PC to be stopped.";
+    : "Resizing is available on the Hourly plan only. Some changes require the PC to be stopped.";
 
   return (
     <section className="flex flex-col gap-6">
@@ -133,7 +132,7 @@ const CostSummarySmall = ({
                   "text-[#454545] dark:text-[color:var(--paragraph,#b9c2d5)]"
                 )}
               >
-                CPU
+                CPU + Memory
               </span>
               <span
                 className={cn(

@@ -8,12 +8,7 @@ import { ThemeProvider } from "@/components/shared/layout/theme-provider";
 
 export function ThemeWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="dark"
-      enableSystem={false}
-      forcedTheme="dark"
-    >
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       <TooltipProvider>
         {children}
         <Toaster />

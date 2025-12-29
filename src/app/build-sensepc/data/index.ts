@@ -192,10 +192,12 @@ export const cpuOptions: Record<string, Option[]> = {
 // ];
 
 export const storageOptions: Option[] = [
-  { value: "120", label: "120 GB" },
+  // { value: "120", label: "120 GB" },
   { value: "220", label: "220 GB" },
   { value: "300", label: "300 GB" },
+  { value: "400", label: "400 GB" },
   { value: "500", label: "500 GB" },
+  { value: "1000", label: "1000 GB" },
   // { value: "256", label: "256 GB", pricePerHour: 0.1 },
   // { value: "512", label: "512 GB", pricePerHour: 0.2 },
   // { value: "1024", label: "1 TB", pricePerHour: 0.4 },
@@ -322,15 +324,15 @@ export const pcTemplates = [
 ];
 
 export const timeOptions = [
-  { value: "none", label: "none" },
+  // { value: "none", label: "none" },
   { value: "15", label: "15 minutes" },
   { value: "30", label: "30 minutes" },
   { value: "45", label: "45 minutes" },
   { value: "60", label: "1 hour" },
-  { value: "120", label: "2 hours" },
-  { value: "180", label: "3 hours" },
-  { value: "240", label: "4 hours" },
-  { value: "360", label: "6 hours" },
+  // { value: "120", label: "2 hours" },
+  // { value: "180", label: "3 hours" },
+  // { value: "240", label: "4 hours" },
+  // { value: "360", label: "6 hours" },
 ];
 
 // const cpuOptions = [

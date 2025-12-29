@@ -131,7 +131,7 @@ const QuickStats = () => {
                 <>
                   <div className="space-y-1">
                     <p className="text-xl font-semibold tracking-tight md:text-2xl">
-                      Get $50.00 Promotion &amp; Cashback Rewards
+                      Get up to $10.00 in promotional credit!
                     </p>
                     <p className="text-sm text-white/90 md:text-base">
                       Claim your free credits to start using SensePC today!

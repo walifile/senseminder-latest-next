@@ -6,7 +6,7 @@ import { Logger } from "@/lib/utils/logger";
 
 import { routes, publicRoutes } from "./constants/routes";
 import { firstLoginGuard } from "./middleware/firstLoginGuard";
-import { passwordProtectionMiddleware } from "./middleware/password-protection";
+// import { passwordProtectionMiddleware } from "./middleware/password-protection";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -40,7 +40,8 @@ export async function middleware(request: NextRequest) {
 
   // Treat entries ending with "/" as prefixes, except the root "/".
   const isPublicRoute = publicRoutes.some(
-    (r) => pathname === r || (r !== "/" && r.endsWith("/") && pathname.startsWith(r))
+    (r) =>
+      pathname === r || (r !== "/" && r.endsWith("/") && pathname.startsWith(r))
   );
   if (!isPublicRoute && !isAuthenticated) {
     const loginUrl = new URL(routes?.signIn, request.url);
@@ -52,10 +53,10 @@ export async function middleware(request: NextRequest) {
     return firstLoginResponse;
   }
 
-  const passwordProtectionResponse = passwordProtectionMiddleware(request);
-  if (passwordProtectionResponse) {
-    return passwordProtectionResponse;
-  }
+  // const passwordProtectionResponse = passwordProtectionMiddleware(request);
+  // if (passwordProtectionResponse) {
+  //   return passwordProtectionResponse;
+  // }
 
   return NextResponse.next();
 }

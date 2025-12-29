@@ -192,14 +192,14 @@ const CostCalculator = () => {
                       emoji: "📅",
                       color: "text-blue-600",
                       description:
-                        "Simple flat rate billed every 24 hours. Perfect for consistent daily workflows.",
+                        "Flat daily rate that includes up to 10 hours of usage per day.",
                     },
                     {
                       label: "Monthly Plan",
                       emoji: "📆",
                       color: "text-emerald-600",
                       description:
-                        "A fixed monthly price that auto-renews. Best for always-on or full-time desktops.",
+                        "Flat monthly rate that includes up to 180 hours of usage per month.",
                     },
                     {
                       label: "Sense Cloud",
@@ -327,7 +327,7 @@ const CostCalculator = () => {
                   {/* Storage */}
                   <Field.Select
                     name="storage"
-                    label="Storage"
+                    label="Storage (SSD)"
                     description="Choose storage capacity"
                     tooltipText={
                       selectedStorage
@@ -341,8 +341,7 @@ const CostCalculator = () => {
                   {/* Note about pricing */}
                   <div className="pt-2 border-t">
                     <p className="text-xs text-muted-foreground">
-                      * All prices are in USD and billed by the hour. Monthly
-                      estimates are based on 24/7 usage.
+                      * All prices are in USD. Hourly is billed per hour of usage. Daily is a flat rate (up to 10 hours/day) and Monthly is a flat rate (up to 180 hours/month).
                     </p>
                   </div>
                 </div>
@@ -435,7 +434,7 @@ const CostCalculator = () => {
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="text-sm text-muted-foreground">
-                            Storage
+                            Storage (SSD)
                           </div>
                           <div className="font-medium text-sm mt-0.5">
                             {storageOptions.find(

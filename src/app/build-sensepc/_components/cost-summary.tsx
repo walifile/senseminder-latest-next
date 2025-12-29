@@ -35,8 +35,8 @@ const CostSummary = ({
   handleEstimate,
   estimateData,
   isEstimating,
-  cpuLabel,
-  storageLabel,
+  // cpuLabel,
+  // storageLabel,
 }: Props) => {
   /* ----- price helpers (from old code) ----- */
   const getPrice = (resource: "instance" | "storage" | "total") => {
@@ -49,16 +49,15 @@ const CostSummary = ({
         ? "pricePerDay"
         : "pricePerMonth";
 
-    const decimals = billingPlan === "hourly" ? 3 : 2;
-    const price = estimateData?.[resource]?.[planKey];
+  const price = estimateData?.[resource]?.[planKey];
 
-    return price != null ? `$${price.toFixed(decimals)}` : "-";
+  return price != null ? `$${price.toFixed(2)}` : "-";
   };
 
   // Left labels (same logic as old code for Storage / Storage (current))
-  const storageLeftLabel = isResize ? "Storage (current)" : "Storage";
-  const cpuRightValue = cpuLabel ?? getPrice("instance");
-  const storageRightValue = storageLabel ?? getPrice("storage");
+  const storageLeftLabel = isResize ? "Storage (SSD) (current)" : "Storage (SSD)";
+  const cpuRightValue = getPrice("instance");
+  const storageRightValue = getPrice("storage");  
   const totalRightValue = getPrice("total");
 
   return (
@@ -114,7 +113,7 @@ const CostSummary = ({
           >
             <div className="flex items-center justify-between pb-2 border-b border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.2)]">
               <span className="text-[#7d7d7d] dark:text-[color:var(--paragraph,#b9c2d5)]">
-                CPU
+                CPU + Memory
               </span>
               <span className="text-[#020816] dark:text-white text-right">
                 {cpuRightValue}
@@ -190,7 +189,7 @@ const CostSummary = ({
                 PC starts again.
               </>
             ) : (
-              <>You can resize later. Some changes require the PC to be stopped.</>
+              <>Resizing is available on the Hourly plan only. Some changes require the PC to be stopped.</>
             )}
           </div>
         </div>

@@ -206,7 +206,7 @@ const Footer = () => {
 
         <div className="pt-4 border-t border-[#F8F8F8]/25">
           <p className="text-center text-[#F8F8F8] text-sm font-['Inter']">
-            © {currentYear} sensepc. All rights reserved.
+            © {currentYear} sensepc. All rights reserved. <span className="opacity-80">v1.9.0-beta</span>
           </p>
         </div>
       </div>

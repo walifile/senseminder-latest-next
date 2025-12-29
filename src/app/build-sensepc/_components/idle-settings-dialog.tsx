@@ -108,7 +108,7 @@ const IdleSettingsDialog: React.FC<IdleSettingsDialogProps> = ({
 
           <DialogDescription className="text-[14px] leading-5 tracking-[-0.2px]">
             Set the idle timeout duration for {selectedInstance?.systemName}.
-            The PC will be suspended after being idle for the specified
+            The PC will be STOPPED after being idle for the specified
             duration.
           </DialogDescription>
         </DialogHeader>
