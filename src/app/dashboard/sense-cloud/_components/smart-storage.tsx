@@ -65,6 +65,12 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 
 import { useSelector } from "react-redux";
 
@@ -99,6 +105,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePaginationItems } from "@/hooks/usePaginationItems";
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 import GradientSearchInput from "@/components/shared/inputs/gradient-search-input";
 
@@ -134,6 +141,7 @@ const CloudStorage = () => {
   const router = useRouter();
   const { toast } = useToast();
   const userId = useSelector((state: RootState) => state.auth.user?.id);
+  const isMobile = useIsMobile();
 
   const [selectedCategory, setSelectedCategory] = useState("All Files");
   const [searchQuery, setSearchQuery] = useState("");
@@ -150,6 +158,7 @@ const CloudStorage = () => {
   const [showNewFolderDialog, setShowNewFolderDialog] = useState(false);
   const [selectedFileForShare, setSelectedFileForShare] =
     useState<FileItem | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // table
   const [page, setPage] = useState(1);
@@ -342,6 +351,9 @@ const CloudStorage = () => {
     setSelectedFiles([]);
     setPage(1);
     setLimit(10);
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
   };
 
   const handleMoveSelected = (file: FileItem) => {
@@ -768,6 +780,22 @@ const CloudStorage = () => {
         data-testid="dashboard-sense-cloud-smart-storage"
         className="relative !border-0 gradient-outline-border bg-[rgba(37,48,240,0.07)] dark:bg-[rgba(255,255,255,0.03)]"
       >
+        <Drawer open={sidebarOpen} onOpenChange={setSidebarOpen}>
+          <DrawerContent className="pb-6">
+            <DrawerHeader className="px-6 pb-2">
+              <DrawerTitle className="text-base font-semibold">
+                Categories
+              </DrawerTitle>
+            </DrawerHeader>
+            <div className="px-2">
+              <SidebarPanel
+                selectedCategory={selectedCategory}
+                onSelectCategory={handleCategorySelection}
+                onUploadClick={handleUpload}
+              />
+            </div>
+          </DrawerContent>
+        </Drawer>
         {/* <CardHeader className="pb-2">
           <div className="flex justify-between items-center">
             <div>
@@ -809,11 +837,13 @@ const CloudStorage = () => {
               </div>
             )}
 
-            <SidebarPanel
-              selectedCategory={selectedCategory}
-              onSelectCategory={handleCategorySelection}
-              onUploadClick={handleUpload}
-            />
+            {isMobile ? null : (
+              <SidebarPanel
+                selectedCategory={selectedCategory}
+                onSelectCategory={handleCategorySelection}
+                onUploadClick={handleUpload}
+              />
+            )}
 
             <div className="flex-1 overflow-hidden flex flex-col">
               <div className="border-b border-border p-6 flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -825,6 +855,17 @@ const CloudStorage = () => {
                     >
                       <ArrowLeft className="h-5 w-5 text-muted-foreground" />
                     </button>
+                  )}
+                  {isMobile && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSidebarOpen(true)}
+                      className="h-10 px-3 text-base [&_svg]:size-4 gap-2"
+                    >
+                      <ListFilter className="h-4 w-4" />
+                      Categories
+                    </Button>
                   )}
                   <h3 className="flex-shrink-0 text-2xl font-semibold">
                     {selectedFolder
