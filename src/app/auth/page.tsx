@@ -183,7 +183,7 @@ export default function LoginPage() {
 
   return (
     <>
-      <div className="w-full px-4 md:px-6 pt-10 md:pt-18 lg:pt-40 xl:pt-[100px] 2xl:pt-[122px] pb-16 md:pb-20">
+      <div className="w-full px-4 md:px-6 pt-24 md:pt-18 lg:pt-40 xl:pt-[100px] 2xl:pt-[122px] pb-16 md:pb-20">
         {/* Overall width wrapper */}
         <div className="mx-auto w-full max-w-[960px] lg:max-w-[1040px] xl:max-w-[1200px] 2xl:max-w-[1369px]">
           {/* Outer card now uses PublicCard for bg + border + glass logic */}

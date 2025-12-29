@@ -125,7 +125,7 @@ export default function SignUpPage() {
 
   return (
     <>
-      <div className="w-full px-4 md:px-6 pt-10 md:pt-14 lg:pt-[140px] pb-16 md:pb-20">
+      <div className="w-full px-4 md:px-6 pt-24 md:pt-14 lg:pt-[140px] pb-16 md:pb-20">
         <div className="mx-auto w-full max-w-[1369px]">
           {/* ✅ Outer card now uses PublicCard for bg + border + glass (same as login) */}
           <PublicCard

@@ -7,7 +7,7 @@ import type { RootState } from "@/redux/store";
 import Link from "next/link";
 import { routes } from "@/constants/routes";
 import { usePathname } from "next/navigation";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -23,11 +23,27 @@ import ProfileDropdown from "./profile-dropdown";
 const Navbar = () => {
   const pathname = usePathname();
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // const menuRef = useRef<HTMLDivElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);
+  
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -96,7 +112,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile top bar */}
-          <div className="flex items-center space-x-2 md:hidden">
+          <div className="flex items-center space-x-2 md:hidden relative">
             <ThemeToggle />
             {isAuthenticated ? (
               <ProfileDropdown />
@@ -116,51 +132,51 @@ const Navbar = () => {
               className="rounded-full"
               onClick={toggleMobileMenu}
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              ref={buttonRef}
             >
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
+            {/* Mobile menu */}
+            {mobileMenuOpen && (
+              <div className="md:hidden absolute top-full right-0 mt-2 border rounded">
+                <div
+                  className="
+                    pt-1 pb-2 space-y-0.5
+                    backdrop-blur-[17px] backdrop-filter
+                    bg-white
+                    dark:bg-[#010526]
+                    border-t border-[rgba(255,255,255,0.1)]
+                  "
+                >
+                  {isAuthenticated && (
+                    <Button variant="ghost" className="text-sm w-full justify-start rounded-none" asChild>
+                      <Link href={routes.dashboard} className="nav-text-link">
+                        Home
+                      </Link>
+                    </Button>
+                  )}
+                  <Button variant="ghost" className="text-sm w-full justify-start rounded-none" asChild>
+                    <Link
+                      href={isAuthenticated ? routes.storage : routes.smartStorage}
+                      className="nav-text-link"
+                    >
+                      Sense Cloud
+                    </Link>
+                  </Button>
+                  <Button variant="ghost" className="text-sm w-full justify-start rounded-none" asChild>
+                    <Link
+                      href={isAuthenticated ? routes.dashboard : routes.buildPc}
+                      className="nav-text-link"
+                    >
+                      Build Sense PC
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden">
-          <div
-            className="
-              px-2 pt-1 pb-2 space-y-0.5 sm:px-3
-              backdrop-blur-[17px] backdrop-filter
-              bg-white
-              dark:bg-[rgba(255,255,255,0.04)]
-              border-t border-[rgba(255,255,255,0.1)]
-            "
-          >
-            {isAuthenticated && (
-              <Button variant="ghost" className="text-sm w-full justify-start" asChild>
-                <Link href={routes.dashboard} className="nav-text-link">
-                  Home
-                </Link>
-              </Button>
-            )}
-            <Button variant="ghost" className="text-sm w-full justify-start" asChild>
-              <Link
-                href={isAuthenticated ? routes.storage : routes.smartStorage}
-                className="nav-text-link"
-              >
-                Sense Cloud
-              </Link>
-            </Button>
-            <Button variant="ghost" className="text-sm w-full justify-start" asChild>
-              <Link
-                href={isAuthenticated ? routes.dashboard : routes.buildPc}
-                className="nav-text-link"
-              >
-                Build Sense PC
-              </Link>
-            </Button>
-          </div>
-        </div>
-      )}
     </nav>
   );
 };
