@@ -22,8 +22,8 @@ function BillingPageInner() {
 
   return (
       <div data-testid="dashboard-billing-page" className="space-y-8">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+      <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
             <h1 className="justify-start text-black dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8">
               Billing & Payments
             </h1>
@@ -38,7 +38,7 @@ function BillingPageInner() {
           </Button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex w-full items-center gap-2 sm:w-auto">
           <StripeProvider>
             <PaymentMethodDialog />
           </StripeProvider>

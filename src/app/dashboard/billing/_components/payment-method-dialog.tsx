@@ -293,7 +293,7 @@ export function PaymentMethodDialog() {
     <>
       <Button
         onClick={() => setOpen(true)}
-        className="gap-2 font-['Space_Grotesk'] font-bold"
+        className="w-full gap-2 font-['Space_Grotesk'] text-sm font-bold sm:w-auto sm:text-base"
         data-testid="billing-add-payment-method-button"
       >
         <CreditCard className="h-4 w-4" />
