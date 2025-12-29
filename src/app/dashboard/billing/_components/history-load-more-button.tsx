@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   loading: boolean;
@@ -7,14 +8,15 @@ interface Props {
 
 const HistoryLoadMoreButton = ({ loading, fetchHistory }: Props) => (
   <div className="flex justify-center pt-4">
-    <button
+    <Button
+      size="sm"
       data-testid="dashboard-billing-history-load-more"
-      className="text-sm px-4 py-2 rounded-md bg-primary text-white disabled:opacity-50"
+      className="w-full gap-2 font-['Space_Grotesk'] text-sm font-bold sm:w-auto"
       onClick={() => fetchHistory(true)}
       disabled={loading}
     >
       {loading ? "Loading..." : "Load More"}
-    </button>
+    </Button>
   </div>
 );
 
