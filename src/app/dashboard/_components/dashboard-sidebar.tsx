@@ -130,9 +130,9 @@ const DashboardSidebar = () => {
           variant="outline"
           size="icon"
           onClick={toggleMobileSidebar}
-          className="h-10 w-10 rounded-full"
+          className="h-14 w-14 rounded-full"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="!h-6 !w-6" />
         </Button>
         <Link
           data-testid="dashboard-header-logo-link"
