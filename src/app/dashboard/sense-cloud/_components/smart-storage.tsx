@@ -842,6 +842,16 @@ const CloudStorage = () => {
             )}
 
             <div className="flex-1 overflow-hidden flex flex-col">
+              {isMobile && (
+                <div className="px-6 pt-6">
+                  <h1 className="font-['Space_Grotesk'] font-bold text-2xl text-[#020816] dark:text-white">
+                    Sense Cloud
+                  </h1>
+                  <p className="font-['Space_Grotesk'] text-base text-[#454545] dark:text-[#b8c2d5]">
+                    Manage your files and folders
+                  </p>
+                </div>
+              )}
               <div className="border-b border-border p-6 flex flex-col md:flex-row flex-wrap gap-4 items-center justify-between">
                 <div className="md:hidden flex items-center gap-4 w-full md:w-auto overflow-x-auto scrollbar-hide">
                   {isMobile && (
