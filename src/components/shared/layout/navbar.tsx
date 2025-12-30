@@ -7,7 +7,7 @@ import type { RootState } from "@/redux/store";
 import Link from "next/link";
 import { routes } from "@/constants/routes";
 import { usePathname } from "next/navigation";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 
