@@ -853,18 +853,29 @@ const CloudStorage = () => {
                 </div>
               )}
               <div className="border-b border-border p-6 flex flex-col md:flex-row flex-wrap gap-4 items-center justify-between">
-                <div className="md:hidden flex items-center gap-4 w-full md:w-auto overflow-x-auto scrollbar-hide">
+                <div className="md:hidden flex items-center justify-between gap-4 w-full">
                   {isMobile && (
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setSidebarOpen(true)}
-                      className="h-10 px-3 text-base [&_svg]:size-4 gap-2"
+                      className="h-14"
                     >
                       <ListFilter className="h-4 w-4" />
                       Categories
                     </Button>
                   )}
+                  <div className="md:ml-auto self-end">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowStoragePlans(true)}
+                      className="h-14"
+                    >
+                      <HardDrive className="h-4 w-4" />
+                      <span>Storage Plans</span>
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-4 w-full md:w-auto mt-4 md:mt-0">
@@ -900,7 +911,7 @@ const CloudStorage = () => {
                     <RefreshCw className="h-4 w-4" />
                     Sync Storage
                   </Button> */}
-                <div className="md:ml-auto self-end mt-4 md:mt-0">
+                <div className="hidden md:flex md:ml-auto self-end mt-4 md:mt-0">
                   <Button
                     variant="outline"
                     size="default"
@@ -913,7 +924,7 @@ const CloudStorage = () => {
                 </div>
               </div>
               {selectedCategory !== "Duplicates" && (
-                <div className="p-4 flex flex-col lg:flex-row flex-wrap gap-4 items-center justify-between">
+                <div className="p-4 flex flex-col lg:flex-row flex-wrap gap-4 items-start lg:items-center justify-between">
                   <div className="flex flex-wrap items-center gap-4 lg:w-auto">
                     {selectedFiles.length > 0 && (
                       <>
