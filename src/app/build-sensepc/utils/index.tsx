@@ -248,3 +248,20 @@ export const validateStorageIncrease = (
 
   return { valid: true };
 };
+
+export function clampPercent(value: number | null | undefined): number {
+  const n = typeof value === "number" && Number.isFinite(value) ? value : 0;
+  return Math.max(0, Math.min(100, n));
+}
+
+
+export function fmtMoney(n?: number, digits: number = 2) {
+  if (n == null) return "-";
+  return `$${n.toFixed(digits)}`;
+}
+
+export function normalizeGB(storageSize?: string | null) {
+  const raw = (storageSize ?? "").trim();
+  const n = parseFloat(raw.replace(/\s*gb/i, ""));
+  return Number.isFinite(n) ? String(n) : "";
+}

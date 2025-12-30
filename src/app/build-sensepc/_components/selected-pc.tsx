@@ -3,7 +3,7 @@
 import type { RootState } from "@/redux/store";
 
 import appConfig from "@/config/app-config";
-import React, { useState, useEffect } from "react";
+import React, { useRef, useMemo, useState, useEffect, useCallback } from "react";
 import {
   useAddBillingPlanMutation,
   useUpdateAutoRenewMutation,
@@ -35,6 +35,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 
+import { clampPercent } from "../utils";
 import { BillingPlanDialog } from "./billing-dialog";
 
 import type { PC, SelectedPcProps } from "../types";
@@ -44,6 +45,8 @@ const { INSTANCE_DETAILS_URL } = appConfig;
 const STAT_CARD_BASE =
   "rounded-[10px] p-4 text-sm bg-[rgba(37,48,240,0.1)] text-[#020816] " +
   "dark:bg-[rgba(255,255,255,0.04)] dark:text-white";
+
+type PcKey = { instanceId?: string; systemName?: string };
 
 const SelectedPc: React.FC<SelectedPcProps> = ({
   selectedPCs,
@@ -57,22 +60,81 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
   const [addBillingPlan] = useAddBillingPlanMutation();
   const [updateAutoRenew] = useUpdateAutoRenewMutation();
 
+  const { user } = useSelector((state: RootState) => state.auth);
+  const isMember = user?.role === "member";
+
   const selectedIndex = selectedPCs[0];
-  const currentPC = selectedIndex != null ? cloudPCs[selectedIndex] : undefined;
+
+  /**
+   * ✅ Sticky selection:
+   * Some parent refresh/poll cycles temporarily clear `selectedPCs` or reorder `cloudPCs`.
+   * If we render based only on `selectedPCs.length`, this component disappears and never recovers.
+   */
+  const [stickyKey, setStickyKey] = useState<PcKey | null>(null);
+  const selectedKeyRef = useRef<PcKey | null>(null);
+
+  const findIdxByKey = useCallback((arr: PC[], key: PcKey | null) => {
+    if (!key) return -1;
+    return arr.findIndex((p) => {
+      if (key.instanceId && p.instanceId) return p.instanceId === key.instanceId;
+      if (key.systemName && p.systemName) return p.systemName === key.systemName;
+      return false;
+    });
+  }, []);
+
+  // Prefer index selection; fall back to sticky key selection
+  const effectiveIndex = useMemo(() => {
+    if (selectedIndex != null && cloudPCs[selectedIndex]) return selectedIndex;
+
+    const key = selectedKeyRef.current ?? stickyKey;
+    const found = findIdxByKey(cloudPCs, key);
+
+    return found >= 0 ? found : null;
+  }, [selectedIndex, cloudPCs, stickyKey, findIdxByKey]);
+
+  const currentPC = effectiveIndex != null ? cloudPCs[effectiveIndex] : undefined;
+
+  // Keep sticky key updated whenever we can resolve a PC
+  useEffect(() => {
+    // Parent selection by index
+    if (selectedIndex != null && cloudPCs[selectedIndex]) {
+      const pcAtIndex = cloudPCs[selectedIndex];
+      const nextKey: PcKey = {
+        instanceId: pcAtIndex.instanceId,
+        systemName: pcAtIndex.systemName,
+      };
+      selectedKeyRef.current = nextKey;
+      setStickyKey(nextKey);
+      return;
+    }
+
+    // Recovered selection by key
+    if (currentPC) {
+      const nextKey: PcKey = {
+        instanceId: currentPC.instanceId,
+        systemName: currentPC.systemName,
+      };
+      selectedKeyRef.current = nextKey;
+      setStickyKey(nextKey);
+    }
+  }, [selectedIndex, cloudPCs, currentPC]);
+
   const currentUserId = currentPC?.userId;
   const currentSystemName = currentPC?.systemName;
 
+  const [showBillingDialog, setShowBillingDialog] = useState(false);
+
+  // ✅ Metrics fetch should NOT depend on `selectedPCs.length` (it can become empty during refresh)
   useEffect(() => {
+    let cancelled = false;
+
     const fetchMetrics = async () => {
-      if (!selectedPCs.length) return;
       if (!currentUserId || !currentSystemName) return;
 
       try {
         const res = await fetch(INSTANCE_DETAILS_URL, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             userId: currentUserId,
             instanceNames: [currentSystemName],
@@ -81,125 +143,110 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
 
         const data = await res.json();
         const matched = data.find(
-          (item: PC) =>
-            item.systemName === currentSystemName && item.instanceId,
+          (item: PC) => item.systemName === currentSystemName && item.instanceId,
         );
 
-        if (matched) {
-          setCloudPCs((prev) => {
-            const idx = selectedIndex;
-            if (idx == null || !prev[idx]) return prev;
+        if (cancelled || !matched) return;
 
-            const prevPC = prev[idx];
+        setCloudPCs((prev) => {
+          const key = selectedKeyRef.current ?? stickyKey;
+          const idx = findIdxByKey(prev, key);
+          if (idx < 0 || !prev[idx]) return prev;
 
-            const updatedPC: PC = {
-              ...prevPC,
-              cpuUsage: parseFloat(matched.cpuUsage.replace("%", "")),
-              memoryUsage: isNaN(
-                parseFloat(matched.memoryUsage?.replace("%", "") || ""),
-              )
-                ? 0
-                : parseFloat(matched.memoryUsage!.replace("%", "")),
-              region: matched.region,
-              uptime: matched.uptime,
-              specs: matched.specs,
-              billingPlan: matched.billingPlan,
-              billingPlanDescription: matched.billingPlanDescription,
-              assignedUser: matched.assignedUser,
-              monthlyBillingTotal: parseFloat(
-                matched?.monthlyBilling?.total ?? "0",
-              ),
-              autoRenew: matched.autoRenew,
-            };
+          const prevPC = prev[idx];
 
-            const isSame =
-              prevPC.cpuUsage === updatedPC.cpuUsage &&
-              prevPC.memoryUsage === updatedPC.memoryUsage &&
-              prevPC.region === updatedPC.region &&
-              prevPC.uptime === updatedPC.uptime &&
-              prevPC.billingPlan === updatedPC.billingPlan &&
-              prevPC.billingPlanDescription ===
-                updatedPC.billingPlanDescription &&
-              prevPC.monthlyBillingTotal === updatedPC.monthlyBillingTotal &&
-              prevPC.autoRenew === updatedPC.autoRenew;
+          const updatedPC: PC = {
+            ...prevPC,
+            cpuUsage: parseFloat(matched.cpuUsage?.replace("%", "") || "0"),
+            memoryUsage: isNaN(parseFloat(matched.memoryUsage?.replace("%", "") || ""))
+              ? 0
+              : parseFloat(matched.memoryUsage!.replace("%", "")),
+            region: matched.region,
+            uptime: matched.uptime,
+            specs: matched.specs,
+            billingPlan: matched.billingPlan,
+            billingPlanDescription: matched.billingPlanDescription,
+            assignedUser: matched.assignedUser,
+            monthlyBillingTotal: parseFloat(matched?.monthlyBilling?.total ?? "0"),
+            autoRenew: matched.autoRenew,
+          };
 
-            if (isSame) return prev;
+          // Avoid unnecessary rerenders
+          const isSame =
+            prevPC.cpuUsage === updatedPC.cpuUsage &&
+            prevPC.memoryUsage === updatedPC.memoryUsage &&
+            prevPC.region === updatedPC.region &&
+            prevPC.uptime === updatedPC.uptime &&
+            prevPC.billingPlan === updatedPC.billingPlan &&
+            prevPC.billingPlanDescription === updatedPC.billingPlanDescription &&
+            prevPC.monthlyBillingTotal === updatedPC.monthlyBillingTotal &&
+            prevPC.autoRenew === updatedPC.autoRenew;
 
-            const next = [...prev];
-            next[idx] = updatedPC;
-            return next;
-          });
-        }
+          if (isSame) return prev;
+
+          const next = [...prev];
+          next[idx] = updatedPC;
+          return next;
+        });
       } catch (err) {
         Logger.error("Failed to load real-time metrics:", err);
       }
     };
 
     fetchMetrics();
-  }, [
-    selectedIndex,
-    currentUserId,
-    currentSystemName,
-    // NOTE: no cloudPCs / setCloudPCs in deps
-  ]);
 
-  const pc = [cloudPCs[selectedIndex!]];
-  const { user } = useSelector((state: RootState) => state.auth);
-  const isMember = user?.role === "member";
-  const [showBillingDialog, setShowBillingDialog] = useState(false);
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUserId, currentSystemName, setCloudPCs, stickyKey, findIdxByKey]);
 
   const handleAutoRenewToggle = async (newAutoRenew: boolean) => {
-    if (!pc[0]?.instanceId) return;
+    const key = selectedKeyRef.current ?? stickyKey;
+    const idx = findIdxByKey(cloudPCs, key);
+    const instanceId = idx >= 0 ? cloudPCs[idx]?.instanceId : undefined;
+
+    if (!instanceId) return;
 
     try {
-      await updateAutoRenew({
-        instanceId: pc[0].instanceId,
-        autoRenew: newAutoRenew,
-      }).unwrap();
+      await updateAutoRenew({ instanceId, autoRenew: newAutoRenew }).unwrap();
 
       setCloudPCs((prev) => {
-        const updated = [...prev];
-        updated[selectedPCs[0]] = {
-          ...updated[selectedPCs[0]],
-          autoRenew: newAutoRenew,
-        };
-        return updated;
+        const i = findIdxByKey(prev, key);
+        if (i < 0 || !prev[i]) return prev;
+
+        const next = [...prev];
+        next[i] = { ...next[i], autoRenew: newAutoRenew };
+        return next;
       });
 
       toast({
         title: "Auto-Renew Updated",
-        description: `Auto-renew has been ${
-          newAutoRenew ? "enabled" : "disabled"
-        } for this instance.`,
+        description: `Auto-renew has been ${newAutoRenew ? "enabled" : "disabled"} for this instance.`,
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: getErrorMessage(
-          error,
-          "Failed to update auto-renew setting.",
-        ),
+        description: getErrorMessage(error, "Failed to update auto-renew setting."),
         variant: "destructive",
       });
     }
   };
 
-  if (!selectedPCs.length || !pc[0]) return null;
+  // ✅ Only hide if we truly cannot resolve a PC at all
+  if (!currentPC) return null;
 
-  const current = pc[0];
-  const formattedOS = current?.specs?.os
-    ? getFriendlyOSName(current.specs.os)
-    : undefined;
+  const current = currentPC;
+  const formattedOS = current?.specs?.os ? getFriendlyOSName(current.specs.os) : undefined;
 
-  const cpuPercent = Math.max(0, Math.min(100, current.cpuUsage ?? 0));
-  const memPercent = Math.max(0, Math.min(100, current.memoryUsage ?? 0));
+  const cpuPercent = clampPercent(current.cpuUsage);
+  const memPercent = clampPercent(current.memoryUsage);
 
   return (
     <motion.div
       initial={{ height: 0, opacity: 0 }}
       animate={{ height: "auto", opacity: 1 }}
       exit={{ height: 0, opacity: 0 }}
-      className="mt-14 font-['Space_Grotesk']"
+      className="mt-14 overflow-hidden font-['Space_Grotesk']"
     >
       <DashboardCard className="w-full overflow-hidden p-4 md:p-5 lg:p-6 font-['Space_Grotesk']">
         {/* ========= SIMPLE HEADER (FIGMA) ========= */}
@@ -214,16 +261,12 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
             className="shrink-0"
             onClick={() => setShowDetails(!showDetails)}
           >
-            {showDetails ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronUp className="h-4 w-4" />
-            )}
+            {showDetails ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
           </Button>
         </div>
 
         {/* ========= BODY: DETAILS ========= */}
-        {showDetails && selectedPCs.length === 1 && (
+        {showDetails && (
           <div className="mt-5 space-y-6">
             {/* ---- METRICS ROW (5 SMALL CARDS) ---- */}
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
@@ -342,9 +385,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
 
             {/* ---- ASSIGNED USER ---- */}
             {!isMember && (
-              <div
-                className={`${STAT_CARD_BASE} flex flex-col justify-between gap-3 md:flex-row md:items-center`}
-              >
+              <div className={`${STAT_CARD_BASE} flex flex-col justify-between gap-3 md:flex-row md:items-center`}>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-muted-foreground" />
@@ -352,6 +393,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                       Assigned User
                     </h4>
                   </div>
+
                   {current.assignedUser ? (
                     <div className="mt-1 flex flex-wrap items-center gap-3">
                       <Avatar className="h-8 w-8">
@@ -359,6 +401,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                           {current.assignedUser.name?.[0] ?? "?"}
                         </AvatarFallback>
                       </Avatar>
+
                       <div className="space-y-0.5 text-sm">
                         <div className="font-['Space_Grotesk'] font-medium text-[#020816] dark:text-white">
                           {current.assignedUser.name}
@@ -398,10 +441,10 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                       Current Billing Plan:
                     </span>
                     <span className="font-['Space_Grotesk'] inline-flex items-center rounded-full bg-[rgba(219,135,0,0.15)] px-4 py-1 text-sm text-[#db8700] dark:bg-[rgba(243,156,18,0.15)] dark:text-[#f39c12]">
-                      {current.billingPlan.charAt(0).toUpperCase() +
-                        current.billingPlan.slice(1)}
+                      {current.billingPlan.charAt(0).toUpperCase() + current.billingPlan.slice(1)}
                     </span>
                   </div>
+
                   {current.billingPlanDescription && (
                     <p className="font-['Space_Grotesk'] text-sm text-[#454545] dark:text-muted-foreground">
                       {current.billingPlanDescription}
@@ -431,6 +474,8 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                   autoRenewEnabled={current.autoRenew}
                   onToggleAutoRenew={handleAutoRenewToggle}
                   onConfirm={async (newPlan) => {
+                    const key = selectedKeyRef.current ?? stickyKey;
+
                     try {
                       const response = await addBillingPlan({
                         instanceId: current.instanceId,
@@ -442,10 +487,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                         | "upgrade"
                         | "downgrade";
 
-                      const descriptions: Record<
-                        "hourly" | "daily" | "monthly",
-                        string
-                      > = {
+                      const descriptions: Record<"hourly" | "daily" | "monthly", string> = {
                         hourly:
                           "Perfect for quick tasks and testing. No commitment, instant start/stop.",
                         daily: "Ideal for day-long projects. ~Savings up to 10% vs hourly.",
@@ -457,8 +499,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
 
                       if (change === "no_change") {
                         title = "No Changes Made";
-                        message =
-                          "You selected the same billing plan. Nothing was changed.";
+                        message = "You selected the same billing plan. Nothing was changed.";
                       } else if (change === "upgrade") {
                         title = "Billing Plan Updated";
                         message = `You've switched to the ${newPlan} plan.`;
@@ -473,24 +514,29 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
 
                       if (change === "upgrade") {
                         setCloudPCs((prev) => {
-                          const updated = [...prev];
-                          updated[selectedPCs[0]] = {
-                            ...updated[selectedPCs[0]],
+                          const idx = findIdxByKey(prev, key);
+                          if (idx < 0 || !prev[idx]) return prev;
+
+                          const next = [...prev];
+                          next[idx] = {
+                            ...next[idx],
                             billingPlan: newPlan,
                             billingPlanDescription: descriptions[newPlan],
                           };
-                          return updated;
+                          return next;
                         });
                       } else if (change === "downgrade") {
                         setCloudPCs((prev) => {
-                          const updated = [...prev];
-                          updated[selectedPCs[0]] = {
-                            ...updated[selectedPCs[0]],
+                          const idx = findIdxByKey(prev, key);
+                          if (idx < 0 || !prev[idx]) return prev;
+
+                          const next = [...prev];
+                          next[idx] = {
+                            ...next[idx],
                             billingPlanDescription:
-                              (updated[selectedPCs[0]]?.billingPlanDescription ??
-                                "") + " (Downgrade scheduled)",
+                              (next[idx]?.billingPlanDescription ?? "") + " (Downgrade scheduled)",
                           };
-                          return updated;
+                          return next;
                         });
                       }
 
@@ -498,10 +544,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                     } catch (error) {
                       toast({
                         title: "Error",
-                        description: getErrorMessage(
-                          error,
-                          "Failed to update billing plan.",
-                        ),
+                        description: getErrorMessage(error, "Failed to update billing plan."),
                         variant: "destructive",
                       });
                     }

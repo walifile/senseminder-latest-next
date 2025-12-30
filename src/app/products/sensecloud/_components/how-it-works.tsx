@@ -14,25 +14,26 @@ const steps = [
   {
     step: "STEP-1",
     icon: "connection_x",
-    title: "Connect the Cloud & Your PC",
+    title: "Sense Cloud Is Ready in Your Account",
     description:
-      "Simply attach Sense Cloud storage to your Sense PC and select your capacity and tier.",
+      "Your file storage is available as soon as you sign in — no setup needed.",
   },
   {
     step: "STEP-2",
     icon: "settings_x",
-    title: " Store & Sync ",
+    title: "Store & Manage Your Files",
     description:
-      "Use your Sense PC or APIs and integrations to save work, assets, and backups directly to Sense Cloud.",
+      "Upload, organize, and access files anytime with built-in duplicate detection to keep things clean.",
   },
   {
     step: "STEP-3",
     icon: "Union_x",
-    title: "Auto-Scale and Optimize ",
+    title: "Backup from SensePC Anytime",
     description:
-      "Capacity and billing adjust automatically as your storage needs grow.",
+      "Move important files from your SensePC into Sense Cloud whenever you want — billing tiers scale automatically with usage.",
   },
 ];
+  
 
 const RentSmarterProcess: React.FC = () => (
   <section className="relative">

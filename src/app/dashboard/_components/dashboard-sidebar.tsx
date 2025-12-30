@@ -172,7 +172,7 @@ const DashboardSidebar = () => {
           >
             {/* Centered logo when expanded */}
             {/* {!collapsed && ( */}
-              <div data-testid="dashboard-sidebar-logo" className="mx-auto">
+              <div data-testid="dashboard-sidebar-logo" className="mx-auto hidden md:block">
                 <Logo sign={collapsed} />
               </div>
             {/* )} */}

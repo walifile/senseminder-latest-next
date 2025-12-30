@@ -138,7 +138,7 @@ const HeroRightCard = () => (
               "font-['Space_Grotesk']"
             )}
           >
-            Workspace-Storage-01
+            Storage
           </p>
 
           <div className="inline-flex items-center gap-2 text-[#2530F0] dark:text-[#13E1EA]">
@@ -158,7 +158,7 @@ const HeroRightCard = () => (
             </span>
             {/* ✅ label font */}
             <span className="text-[16px] leading-6 tracking-[-0.2px] font-semibold font-['Space_Grotesk']">
-              Attached to SensePC
+              Access from SensePC
             </span>
           </div>
         </div>
@@ -209,8 +209,8 @@ const HeroRightCard = () => (
           </div>
 
           <p className="text-[14px] leading-5 tracking-[-0.2px] text-[#071432] dark:text-[#B9C2D5]">
-            SSD-backed performance tuned for desktop workloads, assets, and
-            project files.
+            Fast, durable cloud storage for files, backups, and team sharing — optimized
+            for uploads, downloads, and large folders.
           </p>
         </ProductInfoCard>
 
@@ -238,8 +238,7 @@ const HeroRightCard = () => (
           </div>
 
           <p className="text-[14px] leading-5 tracking-[-0.2px] text-[#071432] dark:text-[#B9C2D5]">
-            Encryption, access controls, and versioning support for safer
-            storage.
+            Encryption, access controls, and built-in data redundancy for safer storage.
           </p>
         </ProductInfoCard>
       </div>

@@ -4,9 +4,12 @@
 "use client";
 
 import * as React from "react";
+import { useGetEstimateMutation } from "@/api/fileManagerAPI";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Dialog,
   DialogTitle,
@@ -19,95 +22,108 @@ import {
 import {
   Check,
   Clock,
+  Loader2,
   AlertCircle,
   CalendarDays,
   CalendarClock,
 } from "lucide-react";
 
-type BillingPlan = "hourly" | "daily" | "monthly";
+import { fmtMoney, normalizeGB } from "../utils";
+import { PLAN_COPY, PLAN_ORDER } from "../data/billing";
+
+import type { BillingPlan } from "../data/billing";
+
+
+
 
 type Props = {
   currentPlan: BillingPlan;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-
-  // Still accepted so we don’t break callers,
-  // even if not used directly in the dialog UI.
   configId?: string;
   storageSize?: string | null;
   region?: string | null;
   autoRenewEnabled?: boolean;
   onToggleAutoRenew?: (enabled: boolean) => void | Promise<void>;
-
   onConfirm: (plan: BillingPlan) => void | Promise<void>;
 };
 
-const PLAN_COPY: Record<
-  BillingPlan,
-  {
-    label: string;
-    price: string;
-    unit: string;
-    tagline: string;
-    estimateNote?: string;
-    included: string[];
-  }
-> = {
-  hourly: {
-    label: "Hourly",
-    price: "$0.247",
-    unit: "/hour",
-    tagline: "Perfect for quick tasks and testing",
-    included: [
-      "Pay only for actual usage",
-      "No minimum commitment",
-      "Support included",
-    ],
-  },
-  daily: {
-    label: "Daily",
-    price: "$5.94",
-    unit: "/day",
-    tagline: "Best for a full workday session",
-    estimateNote: "Estimated based on your current configuration",
-    included: [
-      "Includes up to 10 hours/day",
-      "Savings up to 10% vs hourly",
-      "Support included",
-    ],
-  },  
-  monthly: {
-    label: "Monthly",
-    price: "$178.24",
-    unit: "/month",
-    tagline: "Best value for regular users",
-    estimateNote: "Estimated based on your current configuration",
-    included: [
-      "Includes up to 180 hours/month",
-      "Savings up to 15% vs Hourly",
-      "Support included",
-    ],
-  },  
+
+type TotalEstimate = {
+  pricePerHour?: number;
+  pricePerDay?: number;
+  pricePerMonth?: number;
 };
 
-const PLAN_ORDER: BillingPlan[] = ["hourly", "daily", "monthly"];
+type EstimateData = {
+  instance: TotalEstimate;
+  storage: TotalEstimate;
+  total: TotalEstimate;
+};
+
 
 export const BillingPlanDialog: React.FC<Props> = ({
   currentPlan,
   open,
   onOpenChange,
   onConfirm,
+  configId,
+  storageSize,
+  region,
+  autoRenewEnabled,
+  onToggleAutoRenew,
 }) => {
+  const { toast } = useToast?.() ?? { toast: (_: unknown) => {} };
+
   const [selectedPlan, setSelectedPlan] =
     React.useState<BillingPlan>(currentPlan);
-
-  // ✅ keep this checkbox UI in the main dialog
   const [confirmChecked, setConfirmChecked] = React.useState(false);
 
-  // ✅ confirmation dialog visibility
   const [confirmOpen, setConfirmOpen] = React.useState(false);
-
   const [submitting, setSubmitting] = React.useState(false);
+
+  const [getEstimate, estimateResult] = useGetEstimateMutation();
+  const { data: estimateData, isLoading: isEstimateLoading } = estimateResult;
+  const [uiAutoRenew, setUiAutoRenew] = React.useState<boolean>(
+    autoRenewEnabled ?? currentPlan !== "hourly"
+  );
+  const [showDisableRenewConfirm, setShowDisableRenewConfirm] =
+    React.useState(false);
+
+  const retryTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isMountedRef = React.useRef(true);
+
+  React.useEffect(() => () => {
+      isMountedRef.current = false;
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+    }, []);
+
+  const fetchEstimateWithRetry = React.useCallback(
+    async (attempt: number = 0) => {
+      if (!open) return;
+      if (!configId || !storageSize || !region) return;
+
+      try {
+        await getEstimate({
+          configId,
+          storageSize: normalizeGB(storageSize),
+          region,
+        }).unwrap();
+      } catch {
+        if (!isMountedRef.current) return;
+        if (!open) return;
+
+        if (attempt < 2) {
+          const delay = 800 * Math.pow(2, attempt); // 800ms, 1600ms
+          if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+          retryTimerRef.current = setTimeout(() => {
+            fetchEstimateWithRetry(attempt + 1);
+          }, delay);
+        }
+      }
+    },
+    [open, configId, storageSize, region, getEstimate]
+  );
 
   React.useEffect(() => {
     if (open) {
@@ -115,15 +131,21 @@ export const BillingPlanDialog: React.FC<Props> = ({
       setConfirmChecked(false);
       setSubmitting(false);
       setConfirmOpen(false);
+      setUiAutoRenew(autoRenewEnabled ?? currentPlan !== "hourly");
+      setShowDisableRenewConfirm(false);
+
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+      fetchEstimateWithRetry(0);
     } else {
       setConfirmOpen(false);
       setSubmitting(false);
+      setShowDisableRenewConfirm(false);
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
     }
-  }, [open, currentPlan]);
+  }, [open, currentPlan, autoRenewEnabled, fetchEstimateWithRetry]);
 
   const confirmNeeded = selectedPlan === "daily" || selectedPlan === "monthly";
 
-  // ✅ keep original logic: daily/monthly requires checking the confirm row
   const canApply =
     selectedPlan !== currentPlan &&
     (!confirmNeeded || confirmChecked) &&
@@ -131,7 +153,6 @@ export const BillingPlanDialog: React.FC<Props> = ({
 
   const handleApplyClick = () => {
     if (!canApply) return;
-    // ✅ don't reset confirmChecked (user already confirmed in main dialog)
     setConfirmOpen(true);
   };
 
@@ -152,42 +173,115 @@ export const BillingPlanDialog: React.FC<Props> = ({
 
   const planCopy = PLAN_COPY[selectedPlan];
 
-  const ConfirmRow = ({ className }: { className?: string }) => (
-    <button
-      type="button"
-      onClick={() => setConfirmChecked((prev) => !prev)}
+  const renderPrice = (plan: BillingPlan): React.ReactNode => {
+    if (isEstimateLoading) {
+      return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
+    }
+
+    const p = (estimateData as EstimateData | undefined)?.total;
+    if (!p) return "-";
+
+    if (plan === "hourly") return fmtMoney(p.pricePerHour, 3);
+    if (plan === "daily") return fmtMoney(p.pricePerDay, 2);
+    return fmtMoney(p.pricePerMonth, 2);
+  };
+
+
+const ConfirmRow = ({ className }: { className?: string }) => {
+  const id = React.useId();
+
+  return (
+    <div
       className={cn(
         "font-['Space_Grotesk'] flex w-full items-center gap-3 rounded-[10px] border text-left",
         "px-4 py-4 sm:px-4 sm:py-4",
         "bg-[rgba(37,48,240,0.07)] border-[rgba(37,48,240,0.1)]",
         "dark:bg-[rgba(255,255,255,0.04)] dark:border-white/40",
-        confirmChecked &&
-          "border-[#2530f0] bg-[rgba(37,48,240,0.12)] dark:bg-white/10",
+        confirmChecked && "bg-[rgba(37,48,240,0.12)] dark:bg-white/10",
         className
       )}
     >
-      <div
-        className={cn(
-          "flex h-5 w-5 items-center justify-center rounded-[6px] border",
-          confirmChecked
-            ? "border-[#2530f0] bg-[#2530f0] text-white dark:border-white dark:bg-white"
-            : "border-[#020816]/40 bg-transparent dark:border-white/60"
-        )}
-      >
-        {confirmChecked && (
-          <Check className="h-3 w-3 text-white dark:text-[#140947]" />
-        )}
-      </div>
+      <Checkbox
+        id={id}
+        variant="billing"
+        checked={confirmChecked}
+        onCheckedChange={(v) => setConfirmChecked(v === true)}
+      />
 
-      <p className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
+      <label
+        htmlFor={id}
+        className="cursor-pointer select-none font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white"
+      >
         I Understand, Confirm Apply
-      </p>
-    </button>
+      </label>
+    </div>
   );
+};
+
+
+  const AutoRenewSection = () => {
+    const isCurrent = selectedPlan === currentPlan;
+    if (!isCurrent) return null;
+    if (selectedPlan !== "daily" && selectedPlan !== "monthly") return null;
+
+    return (
+      <div className="mt-5 sm:mt-7 space-y-3">
+        <h3 className="font-['Space_Grotesk'] text-base font-semibold tracking-[-0.03em] text-[#020816] dark:text-white">
+          Auto-renew
+        </h3>
+
+        <button
+          type="button"
+          onClick={async () => {
+            const next = !uiAutoRenew;
+
+            if (!next) {
+              setShowDisableRenewConfirm(true);
+              return;
+            }
+
+            setUiAutoRenew(true);
+            if (onToggleAutoRenew) {
+              await onToggleAutoRenew(true);
+            }
+          }}
+          className={cn(
+            "font-['Space_Grotesk'] flex w-full items-center gap-3 rounded-[10px] border text-left",
+            "px-4 py-4 sm:px-4 sm:py-4",
+            "bg-[rgba(37,48,240,0.07)]",
+            "dark:bg-[rgba(255,255,255,0.04)] dark:border-white/40",
+            uiAutoRenew && "bg-[rgba(37,48,240,0.12)] dark:bg-white/10"
+          )}
+        >
+          <Checkbox
+            variant="billing"
+            checked={uiAutoRenew}
+            onCheckedChange={(v) => {
+              const next = Boolean(v);
+
+              if (!next) {
+                setShowDisableRenewConfirm(true);
+                return;
+              }
+
+              setUiAutoRenew(true);
+              void onToggleAutoRenew?.(true);
+            }}
+            className="h-5 w-5 rounded-[6px]"
+          />
+
+          <p className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
+            Enable auto-renew for the next {PLAN_COPY[selectedPlan].label} cycle.
+          </p>
+        </button>
+      </div>
+    );
+  };
+
+  const showChangeUI = selectedPlan !== currentPlan;
 
   return (
     <>
-      {/* MAIN DIALOG */}
       <Dialog
         open={open}
         onOpenChange={(next) => {
@@ -197,15 +291,10 @@ export const BillingPlanDialog: React.FC<Props> = ({
       >
         <DialogContent
           className={cn(
-            // ✅ responsive width
             "w-[calc(100vw-1.5rem)] sm:w-full sm:max-w-[640px]",
-            // ✅ never exceed viewport height
             "max-h-[calc(100dvh-1.5rem)]",
-            // ✅ allow internal layout + scrolling
             "flex flex-col overflow-hidden",
-            // keep existing look
             "border-0 rounded-2xl shadow-xl font-['Space_Grotesk']",
-            // ✅ tighter on small screens
             "px-4 py-4 sm:px-10 sm:py-8"
           )}
         >
@@ -242,8 +331,8 @@ export const BillingPlanDialog: React.FC<Props> = ({
                       plan === "hourly"
                         ? Clock
                         : plan === "daily"
-                          ? CalendarClock
-                          : CalendarDays;
+                        ? CalendarClock
+                        : CalendarDays;
 
                     return (
                       <button
@@ -277,7 +366,7 @@ export const BillingPlanDialog: React.FC<Props> = ({
                 <div className="space-y-2">
                   <div className="flex items-end gap-2">
                     <span className="font-['Space_Grotesk'] text-xl sm:text-2xl font-semibold tracking-[-0.04em] text-[#020816] dark:text-white">
-                      {planCopy.price}
+                      {renderPrice(selectedPlan)}
                     </span>
                     <span className="font-['Space_Grotesk'] text-sm text-[#454545] dark:text-[#b9c2d5]">
                       {planCopy.unit}
@@ -328,7 +417,6 @@ export const BillingPlanDialog: React.FC<Props> = ({
               </ul>
             </div>
 
-            {/* Behavior / confirmation section */}
             <div className="mt-5 sm:mt-7 space-y-3">
               {selectedPlan === "hourly" ? (
                 <div className="rounded-[10px] bg-[rgba(37,48,240,0.07)] px-4 py-4 dark:bg-[rgba(255,255,255,0.04)]">
@@ -349,26 +437,31 @@ export const BillingPlanDialog: React.FC<Props> = ({
                 </div>
               ) : (
                 <>
-                  <div className="rounded-[10px] border border-[rgba(76,194,108,0.39)] bg-[rgba(39,174,96,0.15)] px-4 py-4">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="mt-[2px] h-5 w-5 text-[#020816] dark:text-white" />
-                      <div className="space-y-1">
-                        <p className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
-                          Takes effect immediately
-                        </p>
-                        <p className="font-['Space_Grotesk'] text-sm text-[#454545] dark:text-[#a3a3a3]">
-                          This change will take effect immediately and you will
-                          be charged from the wallet.
-                        </p>
+                  {showChangeUI && (
+                    <>
+                      <div className="rounded-[10px] border border-[rgba(76,194,108,0.39)] bg-[rgba(39,174,96,0.15)] px-4 py-4">
+                        <div className="flex items-start gap-3">
+                          <AlertCircle className="mt-[2px] h-5 w-5 text-[#020816] dark:text-white" />
+                          <div className="space-y-1">
+                            <p className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
+                              Takes effect immediately
+                            </p>
+                            <p className="font-['Space_Grotesk'] text-sm text-[#454545] dark:text-[#a3a3a3]">
+                              This change will take effect immediately and you
+                              will be charged from the wallet.
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* ✅ keep this (not removed) */}
-                  <ConfirmRow />
+                      <ConfirmRow />
+                    </>
+                  )}
                 </>
               )}
             </div>
+
+            <AutoRenewSection />
 
             <div className="h-2" />
           </div>
@@ -391,7 +484,11 @@ export const BillingPlanDialog: React.FC<Props> = ({
               disabled={!canApply}
               className="w-full sm:w-auto font-['Space_Grotesk']"
             >
-              {submitting ? "Applying..." : "Apply"}
+              {selectedPlan === currentPlan
+                ? "Current plan"
+                : submitting
+                ? "Applying..."
+                : "Apply"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -431,7 +528,7 @@ export const BillingPlanDialog: React.FC<Props> = ({
 
               <div className="rounded-[10px] bg-black/5 px-4 py-3 text-sm dark:bg-white/5">
                 <span className="font-semibold">Estimated:</span>{" "}
-                {PLAN_COPY[selectedPlan].price} {PLAN_COPY[selectedPlan].unit}
+                {renderPrice(selectedPlan)} {PLAN_COPY[selectedPlan].unit}
               </div>
 
               {confirmNeeded && (
@@ -467,6 +564,60 @@ export const BillingPlanDialog: React.FC<Props> = ({
               className="w-full sm:w-auto"
             >
               {submitting ? "Processing..." : "Confirm"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={showDisableRenewConfirm}
+        onOpenChange={setShowDisableRenewConfirm}
+      >
+        <DialogContent
+          className={cn(
+            "w-[calc(100vw-1.5rem)] sm:w-full sm:max-w-md",
+            "max-h-[calc(100dvh-1.5rem)]",
+            "flex flex-col overflow-hidden",
+            "rounded-2xl font-['Space_Grotesk']",
+            "px-4 py-4 sm:px-8 sm:py-7"
+          )}
+        >
+          <DialogHeader className="shrink-0 space-y-2">
+            <DialogTitle className="text-lg sm:text-xl font-semibold tracking-[-0.04em]">
+              Disable Auto-renew?
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="text-sm text-muted-foreground">
+            Disabling auto renew will stop the PC as soon as current plan ends.
+          </div>
+
+          <DialogFooter className="mt-4 shrink-0 flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setShowDisableRenewConfirm(false)}
+              className="w-full sm:w-auto"
+              disabled={submitting}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                setShowDisableRenewConfirm(false);
+                setUiAutoRenew(false);
+
+                if (onToggleAutoRenew) {
+                  await onToggleAutoRenew(false);
+                }
+
+                toast({ description: "Auto-renew disabled." });
+              }}
+              className="w-full sm:w-auto"
+              disabled={submitting}
+            >
+              Disable
             </Button>
           </DialogFooter>
         </DialogContent>

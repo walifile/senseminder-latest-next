@@ -10,41 +10,41 @@ import { Check } from "lucide-react";
 const planCards = [
   {
     tag: "Hourly",
-    description: "Great for quick sessions, testing, or occasional work.",
+    description: "Unlimited compute usage — pay per hour while running. SSD/storage continues while stopped so your files and settings stay saved.",
     icon: "/assets/product/sensecloud/sec-5-sync-dark.svg",
   },
   {
     tag: "Daily",
-    description:
-      "Lock in storage you need with consistent pricing for stable, long-running workloads.",
+    description: "Flat daily rate with up to 10 hours/day included — ideal for a full workday routine.",
     icon: "/assets/product/sensecloud/sec-5-verified-dark.svg",
   },
   {
     tag: "Monthly",
-    description:
-      "Storage and compute charges flow into a single SensepC wallet and invoice history.",
+    description: "Flat monthly rate with up to 180 hours/month included — best value for consistent monthly usage.",
     icon: "/assets/product/sensecloud/sec-5-billing-dark.svg",
   },
 ];
 
 const billingHighlights = [
-  "One wallet for all storage",
-  "Clear usage history, you can export anytime",
-  "Auto-renewal options for machines that need to stay running",
-  "SmartStorage pricing that adjusts with your storage needs",
+  "Clear usage history",
+  "One wallet for all usage",
+  "Hourly plan supports anytime PC resize",
+  "SSD pricing that adjusts with your storage needs",
+  "Auto-renewal options for PC that need to stay running",
 ];
 
 const durabilityHighlights = [
-  "Isolated cloud desktops for every user",
+  
   "Encrypted volumes for all SensePC",
-  "Fine-grained access controls and audit-ready logs",
   "Secure, session-based entry points",
+  "Dedicated cloud desktops for every user",
+  "Fine-grained access controls and audit-ready logs",
 ];
 
 const integrationHighlights = [
+  "Unified billing for both compute and storage",
   "Storage tiers that adjust as your needs change",
   "Seamless access from inside your SensePC desktops",
-  "Unified billing for both compute and storage",
 ];
 
 const SmartStoragePricing = () => (
@@ -208,7 +208,7 @@ const SmartStoragePricing = () => (
                   <img alt="" aria-hidden="true" src="/assets/product/sensecloud/sec-5-sync-b-dark.svg" className="h-8 w-8" />
                 </span>
                 <h3 className="font-['Space_Grotesk'] text-2xl font-semibold leading-8 text-[#0B1220] dark:text-white">
-                  SenseStorage Integration
+                  Sense Cloud Integration
                 </h3>
               </div>
 

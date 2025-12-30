@@ -9,7 +9,6 @@ import {
   useUnsubscribeFromNewsletterMutation,
 } from "@/api/newsletterAPI";
 
-import { Logger } from "@/lib/utils/logger";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -47,49 +46,65 @@ export default function NewsletterForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-
+  
     const location = userLocation || {
       country: "unknown",
       city: "unknown",
       ip: "unknown",
     };
-
+  
     const response = await subscribe({
       email,
       location,
       signup: false,
     });
-
+  
     if (!("error" in response)) {
       toast({
         title: "Subscribed!",
         description: "You've successfully subscribed to the newsletter.",
       });
       setEmail("");
-    } else {
-      Logger.log({ else: "Ddffdfdfff" });
-
-      let errorMessage = "Subscription failed. Please try again.";
-
-      if ("error" in response) {
-        const err = response.error as Error & {
-          data?: string | { message: string };
-        };
-
-        if (err.data && typeof err.data === "object" && "message" in err.data) {
-          errorMessage = err.data.message;
-        } else if ("message" in err) {
-          errorMessage = err.message;
-        }
-      }
-
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      return;
     }
-  };
+  
+    let errorMessage = "Subscription failed. Please try again.";
+  
+    const err = response.error as { data?: unknown; message?: string };
+  
+    if (
+      err?.data &&
+      typeof err.data === "object" &&
+      "message" in (err.data as Record<string, unknown>) &&
+      typeof (err.data as { message?: unknown }).message === "string"
+    ) {
+      errorMessage = (err.data as { message: string }).message;
+    } else if (typeof err?.message === "string") {
+      errorMessage = err.message;
+    }
+  
+    const normalized = errorMessage.toLowerCase();
+    const alreadySubscribed =
+      normalized.includes("already") &&
+      (normalized.includes("subscribed") ||
+        normalized.includes("registered") ||
+        normalized.includes("exists"));
+  
+    if (alreadySubscribed) {
+      toast({
+        title: "You’re already subscribed ✅",
+        description: "Looks like this email is already on the list. You’re all set!",
+      });
+      setEmail("");
+      return;
+    }
+  
+    toast({
+      title: "Error",
+      description: errorMessage,
+      variant: "destructive",
+    });
+  };  
 
   useEffect(() => {
     const email = searchParams.get("email");

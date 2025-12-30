@@ -74,7 +74,7 @@ export function useHistoryData<T>({
     setAllHistory([]);
     setLastEvaluatedKey(null);
     fetchHistory(false);
-  }, [date]);
+  }, [date, fetchHistory]);
 
   const filteredHistory = filterFunction
     ? allHistory.filter((item) => filterFunction(item, query))

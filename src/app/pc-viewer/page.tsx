@@ -30,13 +30,13 @@ import {
   Minimize,
   FolderDown,
   MonitorPlay,
-  ChevronLeft,
 } from "lucide-react";
 
 /* ---- Relative ---- */
 import dcv from "../../../public/dcvjs/dcv";
 import FileStorageModal from "./_components/file-storage-modal";
 import { looksLikeDcvConn } from "./_components/file-transfer/types"; // adjust path
+import { DraggableSidebarHandle } from "./_components/draggable-sidebar-handle";
 
 /* ---------------- Types ---------------- */
 
@@ -403,10 +403,6 @@ const DCViewerContent: React.FC = () => {
 
     if (connRef.current) return;
     if (!(sessionId && authToken)) return;
-
-    // setTvEffect("on");
-    // setIsLoading(true);
-    // setConnectionState("RECONNECTING");
     setIsDisconnecting(false);
     setTvEffect(null); // we won't use tvEffect overlays anymore
     setIsLoading(true);
@@ -495,11 +491,6 @@ const DCViewerContent: React.FC = () => {
               setMicSupported(null);
               setMicSupportReason(null);
             }
-
-            // setIsLoading(false);
-            // setIsConnected(true);
-            // handleQualityChange("auto");
-            // setConnectionState("CONNECTED");
             setIsLoading(false);
             setIsDisconnecting(false);
             setIsConnected(true);
@@ -817,21 +808,17 @@ const DCViewerContent: React.FC = () => {
           />
         )}
 
-        {/* Chevron rail (inside pcv-stage for fullscreen) */}
-        {!isSidebarOpen && (
-          <div
-            className="pointer-events-auto fixed right-0 top-0 h-full group z-50"
-            style={{ width: 8 }}
-            onMouseEnter={() => {
-              cancelAutoClose();
-              openSidebar();
-            }}
-          >
-            <div className="absolute -left-4 top-1/2 -translate-y-1/2 rounded-full border border-gray-300 dark:border-gray-700 bg-white/95 dark:bg-gray-800/95 shadow px-1.5 py-1 text-[10px] font-semibold opacity-80 group-hover:opacity-100">
-              <ChevronLeft className="h-3 w-3" />
-            </div>
-          </div>
-        )}
+
+
+      <DraggableSidebarHandle
+        visible={!isSidebarOpen}
+        onOpen={() => {
+          cancelAutoClose();
+          openSidebar();
+        }}
+        storageKey={instanceId ? `sensepc.sidebar.handleY:${instanceId}` : "sensepc.sidebar.handleY"}
+      />
+
 
         {/* Mobile overlay (inside pcv-stage for fullscreen) */}
         {isMobile && isSidebarOpen && (

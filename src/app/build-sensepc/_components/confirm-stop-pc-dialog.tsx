@@ -30,28 +30,40 @@ export const ConfirmStopModal: React.FC<ConfirmStopModalProps> = ({
   isStopping,
 }) => (
   <Dialog open={isOpen} onOpenChange={onClose}>
-    <DialogContent>
+    <DialogContent
+      className="
+        bg-background text-foreground
+        border border-border
+        shadow-lg
+      "
+    >
       <DialogHeader>
-        <DialogTitle className="text-base md:text-lg font-semibold">
+        <DialogTitle className="text-base md:text-lg font-semibold text-foreground">
           You are about to stop{" "}
-          <span className="italic font-bold tracking-tight text-yellow-800 dark:text-yellow-400">
+          <span className="italic font-bold tracking-tight text-amber-700 dark:text-amber-400">
             {desktopName}
           </span>{" "}
-          <span className="not-italic font-medium text-black dark:text-white">
-            computer
-          </span>
-          .
+          <span className="not-italic font-medium text-foreground">computer</span>.
         </DialogTitle>
 
-        <DialogDescription className="mt-2 flex items-start gap-3 text-sm text-yellow-700 bg-yellow-100/80 p-3 rounded-md border border-yellow-200">
-          <AlertTriangle className="h-5 w-5 mt-2.5 text-yellow-600 shrink-0" />
-          <span>
-            If your PC is using an <strong>Hourly Plan</strong>, SSD storage
+        <DialogDescription
+          className="
+            mt-2 flex items-start gap-3 text-sm
+            rounded-md border p-3
+            bg-muted/40 text-foreground
+            border-border
+            dark:bg-muted/20
+          "
+        >
+          <AlertTriangle className="h-5 w-5 mt-0.5 text-amber-600 dark:text-amber-400 shrink-0" />
+          <span className="text-foreground/90">
+            If your PC is using an <strong className="text-foreground">Hourly Plan</strong>, SSD storage
             charges will continue even after stopping your Sense PC, since the
             disk remains allocated to preserve your data.
           </span>
         </DialogDescription>
       </DialogHeader>
+
       <DialogFooter className="gap-2">
         <Button onClick={onClose} variant="outline" disabled={isStopping}>
           Cancel

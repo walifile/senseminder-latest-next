@@ -23,7 +23,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { ArrowUpRight } from "lucide-react";
+import { Check, ArrowUpRight } from "lucide-react";
 
 import { Form, Field } from "@/components/shared/hook-form";
 
@@ -429,35 +429,48 @@ export default function PCCostCalculator() {
             </div>
 
             {/* Benefits */}
-            <div className="space-y-3.5">
-              <h4
-                className="font-space-grotesk font-bold text-lg"
-                data-testid="landing-included-features"
-              >
-                Included with every plan:
-              </h4>
-
-              <div className="grid sm:grid-cols-2 gap-5">
-                {[
-                  "Free data transfer",
-                  "99.9% uptime SLA",
-                  "Security monitoring",
-                  "Customer support",
-                ].map((b, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-2 text-paragraph text-base"
-                  >
-                    <Image
-                      src="/assets/svg/check.svg"
-                      alt="check"
-                      width={20}
-                      height={20}
-                      unoptimized
-                    />
-                    <span>{b}</span>
+            <div className="border-t pt-2">
+              <div className="grid grid-cols-2 gap-3">
+                {/* Left: Included with every plan */}
+                <div>
+                  <h4 className="text-xs font-medium mb-1.5">Included with every plan:</h4>
+                  <div className="space-y-1.5">
+                    {[
+                      "Free data transfer",
+                      "99.9% uptime SLA",
+                      "Customer support",
+                      "Security monitoring",
+                    ].map((feature, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center text-xs text-muted-foreground"
+                      >
+                        <Check className="h-2.5 w-2.5 mr-1 text-primary" />
+                        {feature}
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+
+                {/* Right: Plan limits */}
+                <div>
+                  <h4 className="text-xs font-medium mb-1.5">Plan limits:</h4>
+                  <div className="space-y-1.5">
+                    {[
+                      "Hourly plan: unlimited usage",
+                      "Daily plan: up to 10 hours",
+                      "Monthly plan: up to 180 hours",
+                    ].map((limit, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center text-xs text-muted-foreground"
+                      >
+                        <Check className="h-2.5 w-2.5 mr-1 text-primary" />
+                        {limit}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

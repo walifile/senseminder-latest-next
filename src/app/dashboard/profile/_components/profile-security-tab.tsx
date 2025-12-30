@@ -510,7 +510,7 @@ export const ProfileSecurityTab = () => {
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Authenticator App option */}
               <DashboardCard className={`${optionCardClass} font-['Space_Grotesk']`}>
-                <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3">
                     <div
                       className="flex h-11 w-11 items-center justify-center rounded-[22px]"
@@ -529,7 +529,7 @@ export const ProfileSecurityTab = () => {
                       <p className="text-[16px] font-medium leading-[24px] tracking-[-0.3px] font-['Space_Grotesk']">
                         Authenticator App
                       </p>
-                      <p className="text-[14px] leading-[20px] tracking-[-0.2px] text-muted-foreground font-['Space_Grotesk']">
+                      <p className="text-[14px] leading-[20px] tracking-[-0.2px] text-muted-foreground font-['Space_Grotesk'] break-words">
                         {is2FAEnabled
                           ? "Two-factor authentication is enabled"
                           : "Use an authenticator app to generate one-time codes"}
@@ -586,7 +586,7 @@ export const ProfileSecurityTab = () => {
               {/* Email Authentication option */}
               <DashboardCard className={`${optionCardClass} font-['Space_Grotesk']`}>
                 <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
+                  <div className="flex min-w-0 items-start sm:items-center gap-3">
                     <div
                       className="flex h-11 w-11 items-center justify-center rounded-[22px]"
                       aria-hidden
@@ -599,7 +599,7 @@ export const ProfileSecurityTab = () => {
                       ) : null}
                     </div>
 
-                    <div className="space-y-1">
+                    <div className="min-w-0 space-y-1">
                       <p className="text-[16px] font-medium leading-[24px] tracking-[-0.3px] font-['Space_Grotesk']">
                         Email Authentication
                       </p>
@@ -611,6 +611,7 @@ export const ProfileSecurityTab = () => {
 
                   <Button
                     size="sm"
+                    className="w-full sm:w-auto"
                     variant={isEmailMFAEnabled ? "destructive" : "default"}
                     onClick={handleToggleEmailMFA}
                     type="button"

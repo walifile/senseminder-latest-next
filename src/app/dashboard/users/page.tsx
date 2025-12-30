@@ -53,7 +53,7 @@ const UsersManagementPage = () => {
       >
         <CardContent className="p-0 space-y-6">
           {/* Header */}
-          <div className="flex justify-between items-center p-6 border-b border-black/10 dark:border-border">
+          <div className="flex flex-col gap-4 p-6 border-b border-black/10 dark:border-border md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-2">
               <h1 className="justify-start text-black dark:text-white text-3xl font-semibold font-['Space_Grotesk'] leading-10">
                 User Management
@@ -69,10 +69,10 @@ const UsersManagementPage = () => {
                 </PopoverContent>
               </Popover> */}
             </div>
-            <div className="flex space-x-2">
+            <div className="flex w-full md:w-auto">
               <Button
                 onClick={inviteDialog.onTrue}
-                className="gap-2"
+                className="gap-2 w-full md:w-auto"
                 data-testid="user-management-invite-button"
               >
                 <UserPlus className="h-4 w-4" />

@@ -90,18 +90,21 @@ const ProfileDropdown = () => {
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="flex h-14 w-14 items-center justify-center gap-2 px-0 md:w-auto md:justify-start md:pl-0 md:pr-3"
+              className="flex size-10 items-center justify-center gap-2 px-0
+                        md:h-14 md:w-auto md:justify-start md:pl-0 md:pr-3"
               data-testid="dashboard-user-account-icon"
             >
-              <Avatar className="size-14">
+              <Avatar className="size-10 md:size-14">
                 <AvatarFallback>{getAvatarFallback(user ?? {})}</AvatarFallback>
               </Avatar>
+
               <div className="hidden md:block text-left">
                 <p className="text-base font-medium">
                   {user?.firstName} {user?.lastName}
                 </p>
                 <p className="text-sm text-muted-foreground">{user?.email}</p>
               </div>
+
               <ChevronDown className="h-4 w-4 hidden md:block" />
             </Button>
           </DropdownMenuTrigger>

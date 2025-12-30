@@ -78,7 +78,7 @@ const ProfilePage = () => {
     };
 
     fetchProfile();
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     if (orgEditing && orgInputRef.current) {

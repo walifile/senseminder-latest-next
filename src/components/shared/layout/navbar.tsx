@@ -114,28 +114,31 @@ const Navbar = () => {
           {/* Mobile top bar */}
           <div className="flex items-center space-x-2 md:hidden relative">
             <ThemeToggle />
+
             {isAuthenticated ? (
               <ProfileDropdown />
             ) : (
-              <Button asChild size="icon" className="rounded-full">
+              <Button asChild size="icon" className="rounded-full size-10">
                 <Link
                   href="/auth"
                   aria-label="Sign in"
                   data-testid="home-sign-in-link"
                 >
-                  <CircleUserRound className="h-6 w-6" />
+                  <CircleUserRound className="h-5 w-5" />
                 </Link>
               </Button>
             )}
+
             <Button
               size="icon"
-              className="rounded-full"
+              className="rounded-full size-10"
               onClick={toggleMobileMenu}
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
               ref={buttonRef}
             >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
+
             {/* Mobile menu */}
             {mobileMenuOpen && (
               <div className="md:hidden absolute top-full right-0 mt-2 border rounded">

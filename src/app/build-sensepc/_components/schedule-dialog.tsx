@@ -1,3 +1,5 @@
+
+
 "use client";
 
 import type { Schedule } from "@/api/schedule";
@@ -93,8 +95,13 @@ export default function ScheduleDialog({
     { value: string; label: string }[]
   >([]);
 
+  const closeDialog = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
   useEffect(() => {
     if (!open || !instanceId) return;
+
     setFetching(true);
     getSchedule(instanceId)
       .then((schedule) => {
@@ -154,6 +161,7 @@ export default function ScheduleDialog({
         autoStopTime: autoStopTime || undefined,
         enabled,
       });
+
       onSuccess();
       closeDialog();
     } catch (err) {
@@ -167,9 +175,11 @@ export default function ScheduleDialog({
   const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to delete this schedule?"))
       return;
+
     setLoading(true);
     try {
       await deleteSchedule(instanceId);
+
       onSuccess();
       closeDialog();
     } catch (err) {
@@ -179,6 +189,13 @@ export default function ScheduleDialog({
       setLoading(false);
     }
   };
+
+  // Hide native picker icon but keep it clickable
+  const hideNativePickerIndicator =
+    "[&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:top-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-12 [&::-webkit-calendar-picker-indicator]:cursor-pointer";
+
+  const fieldInputBase =
+    "h-[52px] w-full px-4 text-[16px] leading-6";
 
   const timeInput = (
     label: string,
@@ -190,25 +207,28 @@ export default function ScheduleDialog({
         Auto {label} time{" "}
         <span className="text-xs text-muted-foreground">(optional)</span>
       </Label>
-      <div className="relative flex items-center">
+
+      <div className="relative">
         <Input
           type="time"
           value={value ?? ""}
           onChange={(e) => setter(e.target.value || null)}
-          className="pl-3 pr-10 w-full"
+          className={`${fieldInputBase} pr-20 ${hideNativePickerIndicator}`}
         />
+
         {value && (
           <Button
             type="button"
             size="icon"
             variant="ghost"
-            className="absolute right-1"
+            className="absolute right-11 top-1/2 h-9 w-9 -translate-y-1/2"
             onClick={() => setter(null)}
           >
             <X className="h-4 w-4 text-muted-foreground" />
           </Button>
         )}
-        <Clock className="absolute right-8 h-4 w-4 text-muted-foreground pointer-events-none" />
+
+        <Clock className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       </div>
     </div>
   );
@@ -217,10 +237,6 @@ export default function ScheduleDialog({
     value: selectedTimeZone,
     label: `${selectedTimeZone} (${getOffset(selectedTimeZone)})`,
   };
-
-  const closeDialog = useCallback(() => {
-    onClose();
-  }, [onClose]);
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
@@ -253,25 +269,33 @@ export default function ScheduleDialog({
                 value={selectedTimeZone}
                 onValueChange={setSelectedTimeZone}
               >
-                <SelectTrigger>
+                <SelectTrigger variant="form" className="px-4">
                   <SelectValue placeholder="Pick time zone" />
                 </SelectTrigger>
-                <SelectContent className="max-h-[300px] overflow-y-auto">
-                  <div className="sticky top-0 bg-popover p-2 z-10">
-                    <Input
-                      placeholder="Search by region or UTC offset…"
-                      value={tzSearch}
-                      onChange={(e) => setTzSearch(e.target.value)}
-                      className="pl-8 text-sm"
-                    />
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+
+                <SelectContent
+                  variant="form"
+                  className="max-h-[300px] overflow-y-auto"
+                >
+                  <div className="sticky top-0 z-10 bg-input-surface p-2 dark:bg-select-surface-dark">
+                    <div className="relative">
+                      <Input
+                        placeholder="Search by region or UTC offset…"
+                        value={tzSearch}
+                        onChange={(e) => setTzSearch(e.target.value)}
+                        className="h-10 pl-10 pr-3 text-sm"
+                      />
+                      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    </div>
                   </div>
+
                   <SelectGroup>
                     <SelectLabel>Suggested</SelectLabel>
                     <SelectItem value={suggestedOption.value}>
                       {suggestedOption.label}
                     </SelectItem>
                   </SelectGroup>
+
                   {tzSearch && (
                     <SelectGroup>
                       <SelectLabel>Matching Results</SelectLabel>
@@ -294,10 +318,11 @@ export default function ScheduleDialog({
                   val: "everyday" | "weekdays" | "weekends" | "custom"
                 ) => setScheduleFrequency(val)}
               >
-                <SelectTrigger>
+                <SelectTrigger variant="form" className="px-4">
                   <SelectValue placeholder="Everyday" />
                 </SelectTrigger>
-                <SelectContent>
+
+                <SelectContent variant="form">
                   <SelectItem value="everyday">Everyday</SelectItem>
                   <SelectItem value="weekdays">Weekdays</SelectItem>
                   <SelectItem value="weekends">Weekends</SelectItem>
@@ -314,6 +339,7 @@ export default function ScheduleDialog({
                     const val = idx === 0 ? customStartDate : customEndDate;
                     const setter =
                       idx === 0 ? setCustomStartDate : setCustomEndDate;
+
                     return (
                       <div className="relative" key={label}>
                         <Input
@@ -321,9 +347,9 @@ export default function ScheduleDialog({
                           placeholder={label}
                           value={val}
                           onChange={(e) => setter(e.target.value)}
-                          className="pl-3 pr-10"
+                          className={`${fieldInputBase} pr-14 ${hideNativePickerIndicator}`}
                         />
-                        <Calendar className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+                        <Calendar className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       </div>
                     );
                   })}
@@ -336,7 +362,7 @@ export default function ScheduleDialog({
           </div>
         )}
 
-        <DialogFooter className="flex flex-row gap-2 mt-4">
+        <DialogFooter className="mt-4 flex flex-row gap-2">
           <Button
             onClick={handleSave}
             disabled={loading || fetching}
@@ -344,6 +370,7 @@ export default function ScheduleDialog({
           >
             {existingSchedule ? "Update Schedule" : "Create Schedule"}
           </Button>
+
           {existingSchedule && (
             <Button
               variant="destructive"

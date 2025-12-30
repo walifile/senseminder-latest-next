@@ -23,7 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useBoolean } from "@/hooks/use-boolean";
 
 import { formSchema } from "../schema";
-import CostSummarySmall from "./cost-summary-small";
+import CostSummary from "./cost-summary";
 import { fetchEstimate } from "../api/fetch-estimate";
 import SmartPcConfigForm from "./smart-pc-config-form";
 import ConfirmPurchaseDialog from "./confirm-purchase-dialog";
@@ -354,7 +354,9 @@ const SmartPCConfigDialog = ({
 
             {/* RIGHT: SUMMARY */}
             <div className="md:col-span-5 lg:col-span-4">
-              <CostSummarySmall
+              <CostSummary
+                variant="small"
+
                 isResize={isResize}
                 billingPlan={billingPlan}
                 handleEstimate={handleEstimate}

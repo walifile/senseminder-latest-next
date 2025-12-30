@@ -259,7 +259,7 @@ export default function LoginPage() {
                       </p>
                     </div>
 
-                    <Form methods={methods} onSubmit={handleSubmit(onSubmit)}>
+                    <Form methods={methods} onSubmit={handleSubmit(onSubmit)} submitOnEnter>
                       <div className="space-y-5">
                         {/* Email */}
                         <div className="space-y-1.5">

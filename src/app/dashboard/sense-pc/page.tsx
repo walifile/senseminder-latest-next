@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { RootState } from "@/redux/store";
@@ -6,11 +5,11 @@ import type { InstanceDetail } from "@/api/realtime";
 import type { PC, DesktopInstance } from "@/app/build-sensepc/types";
 
 import { getAssignments } from "@/api/assignpc";
-import React, { useState, useEffect } from "react";
 import { fetchInstanceDetails } from "@/api/realtime";
 import { stableStates } from "@/app/build-sensepc/data";
 import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
 import SelectedPc from "@/app/build-sensepc/_components/selected-pc";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import ScheduleDialog from "@/app/build-sensepc/_components/schedule-dialog";
 import SmartPcToolbar from "@/app/build-sensepc/_components/smart-pc-toolbar";
 import { updateSessionHeartbeat, claimSessionIfAvailable } from "@/api/session";
@@ -78,20 +77,17 @@ const CloudPCPage = () => {
 
   const isPCAssigned = (instanceId: string): boolean =>
     Object.values(assignments).some((pcs) =>
-      pcs.some((pc) => pc.instanceId === instanceId)
+      pcs.some((pc) => pc.instanceId === instanceId),
     );
 
   const userId = useSelector((state: RootState) => state.auth.user?.id);
   const startingInstances = useSelector(
-    (state: RootState) => state.startVM.startingInstances
+    (state: RootState) => state.startVM.startingInstances,
   );
 
   const [shouldPoll, setShouldPoll] = useState(true);
   const [selectedInstance, setSelectedInstance] =
     useState<DesktopInstance | null>(null);
-
-  const [selectedPCs, setSelectedPCs] = useState<number[]>([]);
-  const [showDetails, setShowDetails] = useState(true);
 
   const newPCDialog = useBoolean();
   const scheduleDialog = useBoolean();
@@ -115,7 +111,7 @@ const CloudPCPage = () => {
       refetchOnMountOrArgChange: true,
       refetchOnReconnect: true,
       refetchOnFocus: true,
-    }
+    },
   );
 
   const [cloudPCs, setCloudPCs] = useState<PC[]>([]);
@@ -125,6 +121,85 @@ const CloudPCPage = () => {
   const [realtimePcInfo, setRealtimePcInfo] = useState<
     Record<string, InstanceDetail>
   >({});
+
+  type PcKey = { instanceId?: string; systemName?: string };
+
+  const makeKey = useCallback(
+    (pc?: Partial<PC> | null): PcKey | null =>
+      pc ? { instanceId: pc.instanceId, systemName: pc.systemName } : null,
+    [],
+  );
+  
+  const sameKey = useCallback((a: PcKey | null, b: PcKey | null) => {
+    if (!a || !b) return false;
+    if (a.instanceId && b.instanceId) return a.instanceId === b.instanceId;
+    if (a.systemName && b.systemName) return a.systemName === b.systemName;
+    return false;
+  }, []);  
+
+  const keyString = useCallback(
+    (pc: Partial<PC> | null | undefined): string => {
+      const k = makeKey(pc);
+      return (k?.instanceId || k?.systemName || "").toString();
+    },
+    [makeKey],
+  );  
+
+  const mergeCloudPcs = useCallback(
+    (prev: PC[], incoming: PC[]): PC[] => {
+      const prevMap = new Map<string, PC>();
+      prev.forEach((p) => {
+        const k = keyString(p);
+        if (k) prevMap.set(k, p);
+      });
+  
+      return incoming.map((p) => {
+        const k = keyString(p);
+        const old = k ? prevMap.get(k) : undefined;
+        if (!old) return p;
+  
+        const merged: PC = { ...old, ...p };
+  
+        // Preserve enriched fields if the polling payload is null/undefined for them
+        const preserveIfNil = <K extends keyof PC>(field: K) => {
+          const nextVal = (p as PC)[field] as unknown;
+          if (nextVal === null || nextVal === undefined) {
+            (merged as PC)[field] = (old as PC)[field];
+          }
+        };
+  
+        preserveIfNil("cpuUsage");
+        preserveIfNil("memoryUsage");
+        preserveIfNil("uptime");
+        preserveIfNil("specs");
+        preserveIfNil("billingPlan");
+        preserveIfNil("billingPlanDescription");
+        preserveIfNil("assignedUser");
+        preserveIfNil("monthlyBillingTotal");
+        preserveIfNil("autoRenew");
+        preserveIfNil("region");
+  
+        return merged;
+      });
+    },
+    [keyString],
+  );  
+
+  const [selectedKey, setSelectedKey] = useState<PcKey | null>(null);
+
+  // cloudPCs is the array SelectedPc indexes into
+  const selectedCloudIndex = useMemo(() => {
+    if (!selectedKey) return -1;
+    return cloudPCs.findIndex((p) => sameKey(selectedKey, makeKey(p)));
+  }, [selectedKey, cloudPCs, makeKey, sameKey]);  
+
+  const selectedPCs = selectedCloudIndex >= 0 ? [selectedCloudIndex] : [];
+
+  const [showDetails, setShowDetails] = useState(true);
+  const effectiveShowDetails = selectedPCs.length > 0 && showDetails;
+
+  const selectedPcKey =
+    selectedKey?.instanceId || selectedKey?.systemName || "none";
 
   useEffect(() => {
     const initClientSession = async () => {
@@ -150,7 +225,7 @@ const CloudPCPage = () => {
     }
     const allStable = data.every(
       (instance: DesktopInstance) =>
-        instance.state !== undefined && stableStates.includes(instance.state)
+        instance.state !== undefined && stableStates.includes(instance.state),
     );
     setShouldPoll(!allStable);
   }, [data, isError, error]);
@@ -159,6 +234,12 @@ const CloudPCPage = () => {
     if (storageDialog.value || resizeDialog.value) setShouldPoll(false);
     else setShouldPoll(true);
   }, [storageDialog.value, resizeDialog.value]);
+
+  // ✅ keep cloudPCs in sync with polling data, but DO NOT wipe enriched fields
+  useEffect(() => {
+    if (!Array.isArray(data)) return;
+    setCloudPCs((prev) => mergeCloudPcs(prev, data as PC[]));
+  }, [data, mergeCloudPcs]);  
 
   useEffect(() => {
     if (isError || !data || !apiUserId) return;
@@ -170,7 +251,6 @@ const CloudPCPage = () => {
           if (d.systemName) map[d.systemName] = d;
         });
         setRealtimePcInfo(map);
-        setCloudPCs(data);
       })
       .catch((err) => {
         setRealtimePcInfo({});
@@ -182,19 +262,25 @@ const CloudPCPage = () => {
     if (config.show) newPCDialog.onTrue();
   }, [config.show, newPCDialog]);
 
-  const filteredPCs = Array.isArray(data)
-    ? data.filter((pc: PC) => {
-        const q = searchQuery.toLowerCase();
-        return (
-          pc.systemName?.toLowerCase().includes(q) ||
-          pc.description?.toLowerCase().includes(q) ||
-          pc.region?.toLowerCase().includes(q)
-        );
-      })
-    : [];
+  const basePCs: PC[] =
+    Array.isArray(cloudPCs) && cloudPCs.length
+      ? cloudPCs
+      : Array.isArray(data)
+        ? (data as PC[])
+        : [];
 
-  const handlePCSelection = (index: number) => {
-    setSelectedPCs((prev) => (prev.includes(index) ? [] : [index]));
+  const filteredPCs = basePCs.filter((pc: PC) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      pc.systemName?.toLowerCase().includes(q) ||
+      pc.description?.toLowerCase().includes(q) ||
+      pc.region?.toLowerCase().includes(q)
+    );
+  });
+
+  const handlePCSelection = (pc: PC) => {
+    const key = makeKey(pc);
+    setSelectedKey((prev) => (sameKey(prev, key) ? null : key));
   };
 
   function openPCResizeDialog(pc: DesktopInstance) {
@@ -253,7 +339,7 @@ const CloudPCPage = () => {
           "p-4 md:p-6 lg:p-8",
           "min-h-[480px] md:min-h-[640px] xl:min-h-[804px]",
           // ✅ critical: prevent inner flex children from forcing horizontal scroll
-          "w-full min-w-0 overflow-x-hidden"
+          "w-full min-w-0 overflow-x-hidden",
         )}
       >
         {/* ✅ keep toolbar from forcing width */}
@@ -288,17 +374,19 @@ const CloudPCPage = () => {
             <>
               {/* --- LIST VIEW --- */}
               {viewMode === "list" ? (
- 
-                <div className="space-y-3 min-w-0 pc-list" data-testid="sensepc-pc-list">
+                <div
+                  className="space-y-3 min-w-0 pc-list"
+                  data-testid="sensepc-pc-list"
+                >
                   {(filteredPCs as PC[]).map((pc, index) => {
                     const pcInfo = realtimePcInfo[pc.systemName];
                     const isStarting = isStartingInstance(
                       pc.instanceId,
                       pc.state,
-                      startingInstances
+                      startingInstances,
                     );
                     const statusText = getStatusText(pc.state, isStarting);
-                    const isSelected = selectedPCs.includes(index);
+                    const isSelected = sameKey(selectedKey, makeKey(pc));
 
                     return (
                       <div
@@ -311,9 +399,9 @@ const CloudPCPage = () => {
                             "pc-card",
                             "relative w-full min-w-0 cursor-pointer",
                             "flex flex-col gap-3 px-4 py-4",
-                            "md:flex-row md:items-center md:justify-between md:gap-6"
+                            "md:flex-row md:items-center md:justify-between md:gap-6",
                           )}
-                          onClick={() => handlePCSelection(index)}
+                          onClick={() => handlePCSelection(pc)}
                           data-testid="sensepc-pc-card"
                         >
                           {/* LEFT + MIDDLE */}
@@ -326,7 +414,7 @@ const CloudPCPage = () => {
                               >
                                 <Checkbox
                                   checked={isSelected}
-                                  onCheckedChange={() => handlePCSelection(index)}
+                                  onCheckedChange={() => handlePCSelection(pc)}
                                   className="mt-[2px]"
                                 />
                               </div>
@@ -339,18 +427,18 @@ const CloudPCPage = () => {
                                 <div
                                   className={cn(
                                     "inline-flex items-center gap-[6px] rounded-full px-4 py-[6px] text-[11px] leading-5 tracking-[-0.2px] uppercase",
-                                    getStatusClasses(pc.state, isStarting)
+                                    getStatusClasses(pc.state, isStarting),
                                   )}
                                   data-testid={
                                     statusText === "Running"
                                       ? "sensepc-running-status"
                                       : statusText === "CONNECTED"
-                                      ? "sensepc-connected-status"
-                                      : statusText === "DISCONNECTED"
-                                      ? "sensepc-disconnected-status"
-                                      : statusText === "Stopped"
-                                      ? "sensepc-stopped-status"
-                                      : undefined
+                                        ? "sensepc-connected-status"
+                                        : statusText === "DISCONNECTED"
+                                          ? "sensepc-disconnected-status"
+                                          : statusText === "Stopped"
+                                            ? "sensepc-stopped-status"
+                                            : undefined
                                   }
                                 >
                                   {getStatusIcon(pc.state)}
@@ -367,16 +455,21 @@ const CloudPCPage = () => {
                                 "min-w-0 flex-1",
                                 "grid grid-cols-2 gap-x-6 gap-y-2",
                                 "md:grid-cols-4 md:gap-x-8",
-                                "text-[14px] leading-5 tracking-[-0.2px] text-foreground"
+                                "text-[14px] leading-5 tracking-[-0.2px] text-foreground",
                               )}
                             >
                               {/* Uptime */}
-                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                              <TooltipProvider
+                                delayDuration={0}
+                                skipDelayDuration={0}
+                              >
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="min-w-0 flex items-center gap-2">
                                       <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-                                      <span className="truncate">{pcInfo?.uptime || "—"}</span>
+                                      <span className="truncate">
+                                        {pcInfo?.uptime || "—"}
+                                      </span>
                                     </div>
                                   </TooltipTrigger>
                                   <TooltipContent>Uptime</TooltipContent>
@@ -384,12 +477,17 @@ const CloudPCPage = () => {
                               </TooltipProvider>
 
                               {/* Region */}
-                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                              <TooltipProvider
+                                delayDuration={0}
+                                skipDelayDuration={0}
+                              >
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="min-w-0 flex items-center gap-2">
                                       <Shield className="h-4 w-4 text-muted-foreground shrink-0" />
-                                      <span className="truncate">{pcInfo?.region || "—"}</span>
+                                      <span className="truncate">
+                                        {pcInfo?.region || "—"}
+                                      </span>
                                     </div>
                                   </TooltipTrigger>
                                   <TooltipContent>Region</TooltipContent>
@@ -397,18 +495,27 @@ const CloudPCPage = () => {
                               </TooltipProvider>
 
                               {/* Schedule */}
-                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                              <TooltipProvider
+                                delayDuration={0}
+                                skipDelayDuration={0}
+                              >
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="min-w-0 flex items-center gap-2">
                                       <CalendarClock className="h-4 w-4 text-muted-foreground shrink-0" />
                                       {pcInfo?.schedule?.enabled === false ? (
-                                        <span className="truncate">disabled</span>
+                                        <span className="truncate">
+                                          disabled
+                                        </span>
                                       ) : pcInfo?.schedule?.autoStartTime ||
                                         pcInfo?.schedule?.autoStopTime ? (
-                                        <span className="truncate">{formatScheduleTime(pcInfo)}</span>
+                                        <span className="truncate">
+                                          {formatScheduleTime(pcInfo)}
+                                        </span>
                                       ) : (
-                                        <span className="truncate italic">No schedule</span>
+                                        <span className="truncate italic">
+                                          No schedule
+                                        </span>
                                       )}
                                     </div>
                                   </TooltipTrigger>
@@ -417,7 +524,10 @@ const CloudPCPage = () => {
                               </TooltipProvider>
 
                               {/* Idle Timeout */}
-                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                              <TooltipProvider
+                                delayDuration={0}
+                                skipDelayDuration={0}
+                              >
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="min-w-0 flex items-center gap-2">
@@ -440,7 +550,7 @@ const CloudPCPage = () => {
                             className={cn(
                               "flex w-full items-center gap-2",
                               "flex-wrap justify-start",
-                              "md:w-auto md:flex-nowrap md:justify-end"
+                              "md:w-auto md:flex-nowrap md:justify-end",
                             )}
                           >
                             <SmartPcConnectButton
@@ -490,7 +600,6 @@ const CloudPCPage = () => {
                     );
                   })}
                 </div>
-
               ) : (
                 /* --- GRID VIEW --- */
                 <div
@@ -502,10 +611,10 @@ const CloudPCPage = () => {
                     const isStarting = isStartingInstance(
                       pc.instanceId,
                       pc.state,
-                      startingInstances
+                      startingInstances,
                     );
                     const statusText = getStatusText(pc.state, isStarting);
-                    const isSelected = selectedPCs.includes(index);
+                    const isSelected = sameKey(selectedKey, makeKey(pc));
 
                     return (
                       <div
@@ -516,9 +625,9 @@ const CloudPCPage = () => {
                           selected={isSelected}
                           className={cn(
                             "pc-card",
-                            "relative flex w-full min-w-0 flex-col gap-[18px] px-4 py-6"
+                            "relative flex w-full min-w-0 flex-col gap-[18px] px-4 py-6",
                           )}
-                          onClick={() => handlePCSelection(index)}
+                          onClick={() => handlePCSelection(pc)}
                           data-testid="sensepc-pc-card"
                         >
                           {/* header */}
@@ -530,7 +639,7 @@ const CloudPCPage = () => {
                               >
                                 <Checkbox
                                   checked={isSelected}
-                                  onCheckedChange={() => handlePCSelection(index)}
+                                  onCheckedChange={() => handlePCSelection(pc)}
                                   className="" // ✅ removed mt-[2px] so checkbox aligns with name line
                                 />
                               </div>
@@ -544,22 +653,24 @@ const CloudPCPage = () => {
                                   <div
                                     className={cn(
                                       "inline-flex items-center gap-[6px] rounded-full px-4 py-[6px] text-[11px] leading-5 tracking-[-0.2px] uppercase",
-                                      getStatusClasses(pc.state, isStarting)
+                                      getStatusClasses(pc.state, isStarting),
                                     )}
                                     data-testid={
                                       statusText === "Running"
                                         ? "sensepc-running-status"
                                         : statusText === "CONNECTED"
-                                        ? "sensepc-connected-status"
-                                        : statusText === "DISCONNECTED"
-                                        ? "sensepc-disconnected-status"
-                                        : statusText === "Stopped"
-                                        ? "sensepc-stopped-status"
-                                        : undefined
+                                          ? "sensepc-connected-status"
+                                          : statusText === "DISCONNECTED"
+                                            ? "sensepc-disconnected-status"
+                                            : statusText === "Stopped"
+                                              ? "sensepc-stopped-status"
+                                              : undefined
                                     }
                                   >
                                     {getStatusIcon(pc.state)}
-                                    <span data-testid="sensepc-status">{statusText}</span>
+                                    <span data-testid="sensepc-status">
+                                      {statusText}
+                                    </span>
                                   </div>
                                 </div>
                               </div>
@@ -608,7 +719,7 @@ const CloudPCPage = () => {
                               <span>
                                 {typeof pcInfo?.idleTimeout === "number"
                                   ? `Idle Timeout: ${formatIdleTime(
-                                      pcInfo.idleTimeout
+                                      pcInfo.idleTimeout,
                                     )}`
                                   : "—"}
                               </span>
@@ -621,7 +732,10 @@ const CloudPCPage = () => {
 
                             {/* ✅ key fix: wrap actions so Reboot never goes outside */}
                             <div className="flex flex-wrap items-center justify-end gap-2">
-                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                              <TooltipProvider
+                                delayDuration={0}
+                                skipDelayDuration={0}
+                              >
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <span>
@@ -635,8 +749,8 @@ const CloudPCPage = () => {
                                   </TooltipTrigger>
                                   {!isMember && isPCAssigned(pc.instanceId) && (
                                     <TooltipContent>
-                                      This PC is assigned to a member, unassign to
-                                      launch.
+                                      This PC is assigned to a member, unassign
+                                      to launch.
                                     </TooltipContent>
                                   )}
                                 </Tooltip>
@@ -644,7 +758,10 @@ const CloudPCPage = () => {
 
                               {pc.state === "running" ? (
                                 <>
-                                  <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                                  <TooltipProvider
+                                    delayDuration={0}
+                                    skipDelayDuration={0}
+                                  >
                                     <Tooltip>
                                       <TooltipTrigger asChild>
                                         <span>
@@ -655,16 +772,20 @@ const CloudPCPage = () => {
                                           />
                                         </span>
                                       </TooltipTrigger>
-                                      {!isMember && isPCAssigned(pc.instanceId) && (
-                                        <TooltipContent className="text-white text-sm font-semibold px-4 py-2 rounded shadow-md border">
-                                          This PC is assigned to a member. Unassign
-                                          to stop.
-                                        </TooltipContent>
-                                      )}
+                                      {!isMember &&
+                                        isPCAssigned(pc.instanceId) && (
+                                          <TooltipContent className="text-white text-sm font-semibold px-4 py-2 rounded shadow-md border">
+                                            This PC is assigned to a member.
+                                            Unassign to stop.
+                                          </TooltipContent>
+                                        )}
                                     </Tooltip>
                                   </TooltipProvider>
 
-                                  <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                                  <TooltipProvider
+                                    delayDuration={0}
+                                    skipDelayDuration={0}
+                                  >
                                     <Tooltip>
                                       <TooltipTrigger asChild>
                                         <span>
@@ -676,17 +797,21 @@ const CloudPCPage = () => {
                                           />
                                         </span>
                                       </TooltipTrigger>
-                                      {!isMember && isPCAssigned(pc.instanceId) && (
-                                        <TooltipContent className="text-white text-sm font-semibold px-4 py-2 rounded shadow-md border">
-                                          This PC is assigned to a member. Unassign
-                                          to reboot.
-                                        </TooltipContent>
-                                      )}
+                                      {!isMember &&
+                                        isPCAssigned(pc.instanceId) && (
+                                          <TooltipContent className="text-white text-sm font-semibold px-4 py-2 rounded shadow-md border">
+                                            This PC is assigned to a member.
+                                            Unassign to reboot.
+                                          </TooltipContent>
+                                        )}
                                     </Tooltip>
                                   </TooltipProvider>
                                 </>
                               ) : (
-                                <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                                <TooltipProvider
+                                  delayDuration={0}
+                                  skipDelayDuration={0}
+                                >
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <span>
@@ -700,8 +825,8 @@ const CloudPCPage = () => {
                                     </TooltipTrigger>
                                     {!isMember && isPCAssigned(pc.instanceId) && (
                                       <TooltipContent className="text-white text-sm font-semibold px-4 py-2 rounded shadow-md border">
-                                        This PC is assigned to a member. Unassign to
-                                        start.
+                                        This PC is assigned to a member. Unassign
+                                        to start.
                                       </TooltipContent>
                                     )}
                                   </Tooltip>
@@ -721,8 +846,9 @@ const CloudPCPage = () => {
           {/* Details Panel */}
           <div className="min-w-0 overflow-x-hidden">
             <SelectedPc
+              key={selectedPcKey}                 // ✅ resets detail panel when unselect
               selectedPCs={selectedPCs}
-              showDetails={showDetails}
+              showDetails={effectiveShowDetails}  // ✅ hides when no selection
               setShowDetails={setShowDetails}
               cloudPCs={cloudPCs}
               setCloudPCs={setCloudPCs}

@@ -116,7 +116,7 @@ const Footer = () => {
               </h3>
             </div>
 
-            <ul className="flex md:flex-col gap-3 flex-wrap">
+            <ul className="flex flex-col gap-3 md:flex-col md:flex-nowrap">
               {quickLinks.map((link) => (
                 <li key={link.href}>
                   <Link

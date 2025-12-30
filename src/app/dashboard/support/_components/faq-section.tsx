@@ -89,12 +89,12 @@ export default function FAQSection() {
           />
 
           {/* Status Filter */}
-          <div className="flex self-end gap-4">
+          <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-nowrap sm:gap-4 sm:self-end">
             <Button
               variant="outline"
               size="lg"
               onClick={expandAllVisible}
-              className="text-[#020816] dark:text-white"
+              className="w-full sm:w-auto text-[#020816] dark:text-white"
             >
               <div
                 {...supportTabIconProps(
