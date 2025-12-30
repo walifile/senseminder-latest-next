@@ -118,7 +118,7 @@ const DashboardHeader = () => {
             <Link
               data-testid="dashboard-header-billing-link"
               href="/dashboard/billing"
-              className="flex items-center gap-2 ml-5"
+              className="hidden sm:flex items-center gap-2 ml-5"
             >
               <div>
                 {resolvedTheme === "dark" ? (
@@ -130,7 +130,7 @@ const DashboardHeader = () => {
               <div
                 data-testid="dashboard-header-balance"
                 className={cn(
-                  "text-base font-semibold dark:text-white",
+                  "hidden sm:block text-base font-semibold dark:text-white",
                   getBalanceColor()
                 )}
               >
@@ -147,7 +147,7 @@ const DashboardHeader = () => {
               </div>
             </Link>
 
-            <div className="h-7 w-px bg-[rgba(67,67,67,0.10)] dark:bg-white/10" />
+            <div className="hidden sm:block h-7 w-px bg-[rgba(67,67,67,0.10)] dark:bg-white/10" />
             <div className="rounded-full bg-[rgba(37,48,240,0.07)] dark:bg-white/5 flex items-center gap-3 px-2 py-2">
               <button
                 onClick={() => setTheme(resolvedTheme === "light" ? "dark" : "light")}

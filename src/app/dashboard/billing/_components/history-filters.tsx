@@ -42,8 +42,12 @@ const HistoryFilters = ({
       ) : null}
 
       {/* ✅ Date range + refresh */}
-      <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-end lg:w-auto">
-        <DatePickerWithRange date={date} setDate={setDate} />
+      <div className="flex w-full items-center gap-2 sm:w-auto">
+        <DatePickerWithRange
+          date={date}
+          setDate={setDate}
+          className="flex-1 min-w-0 sm:flex-none"
+        />
 
         {onRefresh ? (
           <Button
@@ -52,7 +56,7 @@ const HistoryFilters = ({
             size="icon"
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="h-12 w-12 shrink-0"
+            className="h-10 w-10 shrink-0"
             aria-label="Refresh"
             title="Refresh"
           >

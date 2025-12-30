@@ -16,7 +16,7 @@ const steps = [
     icon: "connection_x",
     title: "Connect the Cloud & Your PC",
     description:
-      "Simply attach Sense Cloud storage to your SmartPC and select your capacity and tier.",
+      "Simply attach Sense Cloud storage to your Sense PC and select your capacity and tier.",
   },
   {
     step: "STEP-2",

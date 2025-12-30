@@ -6,7 +6,6 @@ import { useGetLegalDocumentsQuery } from "@/api/legalDocumentsAPI";
 import { privacySections } from "../data/sections";
 import { Breadcrumb } from "../../home/_components/breadcrumb";
 
-
 const Privacy = () => {
   const { isLoading } = useGetLegalDocumentsQuery();
 
@@ -45,10 +44,7 @@ const Privacy = () => {
     <main className="flex-grow pt-16 md:pt-24 pb-16">
       <div className="container mx-auto px-4 md:px-6">
         <Breadcrumb
-          items={[
-            { label: "Home", href: "/" },
-            { label: "Privacy Policy" },
-          ]}
+          items={[{ label: "Home", href: "/" }, { label: "Privacy Policy" }]}
         />
 
         <div className="flex flex-col md:flex-row gap-10 md:items-stretch">
@@ -100,7 +96,7 @@ const Privacy = () => {
                       services include:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
-                      <li>SmartPC (virtual desktop computing),</li>
+                      <li>Sense PC (virtual desktop computing),</li>
                       <li>SmartStorage (cloud-based personal file storage),</li>
                       <li>
                         Our website, platform dashboard, desktop applications,
@@ -151,7 +147,7 @@ const Privacy = () => {
                   <div className="space-y-4 p-8">
                     <p className="text-paragraph dark:text-gray-300">
                       We collect and process various categories of personal
-                      information in order to deliver and improve our SmartPC
+                      information in order to deliver and improve our Sense PC
                       and SmartStorage services. This information may be
                       collected:
                     </p>
@@ -206,7 +202,7 @@ const Privacy = () => {
                         Clickstream data (navigation paths, session duration)
                       </li>
                       <li>
-                        Connection status and SmartPC/SmartStorage interactions
+                        Connection status and Sense PC/SmartStorage interactions
                       </li>
                     </ul>
                     <p className="text-paragraph dark:text-gray-300">
@@ -246,7 +242,7 @@ const Privacy = () => {
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
                       To better serve our users, we may collect metadata related
-                      to how you use our SmartPC and SmartStorage services,
+                      to how you use our Sense PC and SmartStorage services,
                       including:
                     </p>
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
@@ -254,7 +250,7 @@ const Privacy = () => {
                         System configurations (e.g., selected CPU, RAM, storage)
                       </li>
                       <li>
-                        SmartPC runtime history (e.g., uptime, idle periods)
+                        Sense PC runtime history (e.g., uptime, idle periods)
                       </li>
                       <li>File upload/download behavior</li>
                       <li>Support history and in-app behavior</li>
@@ -282,7 +278,7 @@ const Privacy = () => {
                       Senseminder collects and uses your personal information
                       for a variety of business, legal, and operational
                       purposes, all aligned with our mission to provide secure
-                      and reliable SmartPC and SmartStorage services.
+                      and reliable Sense PC and SmartStorage services.
                       Specifically, we use the information collected:
                     </p>
 
@@ -296,7 +292,7 @@ const Privacy = () => {
                     <ul className="list-disc pl-6 space-y-2 text-black dark:text-white">
                       <li>Authenticate users and manage access permissions</li>
                       <li>
-                        Deliver SmartPC remote desktop access and storage
+                        Deliver Sense PC remote desktop access and storage
                         functionality
                       </li>
                       <li>Create, manage, and bill subscription plans</li>
@@ -863,10 +859,10 @@ const Privacy = () => {
                     <p className="text-paragraph dark:text-gray-300">
                       Senseminder does not knowingly collect or solicit personal
                       information from individuals under the age of 16. Our
-                      services, including SmartPC and SmartStorage, are intended
-                      for use only by individuals who are 16 years of age or
-                      older, or by those who have obtained the consent of a
-                      legal guardian.
+                      services, including Sense PC and SmartStorage, are
+                      intended for use only by individuals who are 16 years of
+                      age or older, or by those who have obtained the consent of
+                      a legal guardian.
                     </p>
 
                     <h3 className="text-xl font-medium text-black dark:text-white">
@@ -939,11 +935,11 @@ const Privacy = () => {
                       1. Global Infrastructure
                     </h3>
                     <p className="text-paragraph dark:text-gray-300">
-                      To provide our SmartPC and SmartStorage services with high
-                      availability and performance, we may store and process
-                      your data in the United States or other countries where
-                      our cloud infrastructure or partners operate. This may
-                      involve transferring your information across national
+                      To provide our Sense PC and SmartStorage services with
+                      high availability and performance, we may store and
+                      process your data in the United States or other countries
+                      where our cloud infrastructure or partners operate. This
+                      may involve transferring your information across national
                       borders, including outside of your country or region of
                       residence.
                     </p>
@@ -1049,7 +1045,7 @@ const Privacy = () => {
                       <li>
                         <strong>Contractual necessity</strong> – to provide and
                         operate our services and fulfill agreements with you
-                        (e.g., SmartPC subscriptions, user account access).
+                        (e.g., Sense PC subscriptions, user account access).
                       </li>
                       <li>
                         <strong>Legitimate interests</strong> – to improve our
