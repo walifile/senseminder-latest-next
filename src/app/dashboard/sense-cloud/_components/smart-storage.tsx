@@ -25,6 +25,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 // import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
+  Drawer,
+  DrawerTitle,
+  DrawerHeader,
+  DrawerContent,
+} from "@/components/ui/drawer";
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -65,12 +71,6 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
 
 import { useSelector } from "react-redux";
 
@@ -102,10 +102,10 @@ import {
 } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePaginationItems } from "@/hooks/usePaginationItems";
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 import GradientSearchInput from "@/components/shared/inputs/gradient-search-input";
 
@@ -487,9 +487,8 @@ const CloudStorage = () => {
       }).unwrap();
 
       toast({
-        title: `${fileNames.length} ${
-          fileNames.length === 1 ? "item" : "items"
-        } deleted`,
+        title: `${fileNames.length} ${fileNames.length === 1 ? "item" : "items"
+          } deleted`,
         description: "The selected files and folders have been moved to trash.",
         variant: "destructive",
       });
@@ -522,9 +521,8 @@ const CloudStorage = () => {
 
       toast({
         title: file.starred ? "Unstarred" : "Starred",
-        description: `"${file.fileName}" was ${
-          file.starred ? "removed from" : "added to"
-        } your starred items`,
+        description: `"${file.fileName}" was ${file.starred ? "removed from" : "added to"
+          } your starred items`,
       });
     } catch (err) {
       Logger.error("Star/unstar error:", err);
@@ -672,9 +670,8 @@ const CloudStorage = () => {
 
         toast({
           title: `Files ${operation === "copy" ? "Copied" : "Moved"}`,
-          description: `${fileIds.length} file(s) ${
-            operation === "copy" ? "copied" : "moved"
-          } successfully`,
+          description: `${fileIds.length} file(s) ${operation === "copy" ? "copied" : "moved"
+            } successfully`,
         });
 
         setSelectedFiles([]);
@@ -818,9 +815,8 @@ const CloudStorage = () => {
         <CardContent className="p-0">
           <div
             data-testid="dashboard-sense-cloud-content"
-            className={`flex flex-col lg:flex-row min-h-[600px] relative ${
-              isDragging ? "bg-muted/50" : ""
-            }`}
+            className={`flex flex-col lg:flex-row min-h-[600px] relative ${isDragging ? "bg-muted/50" : ""
+              }`}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -846,16 +842,8 @@ const CloudStorage = () => {
             )}
 
             <div className="flex-1 overflow-hidden flex flex-col">
-              <div className="border-b border-border p-6 flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div className="flex items-center gap-4 w-full overflow-x-auto scrollbar-hide">
-                  {selectedFolder && (
-                    <button
-                      onClick={handleCloseFolder}
-                      className="flex items-center"
-                    >
-                      <ArrowLeft className="h-5 w-5 text-muted-foreground" />
-                    </button>
-                  )}
+              <div className="border-b border-border p-6 flex flex-col md:flex-row flex-wrap gap-4 items-center justify-between">
+                <div className="md:hidden flex items-center gap-4 w-full md:w-auto overflow-x-auto scrollbar-hide">
                   {isMobile && (
                     <Button
                       variant="outline"
@@ -867,12 +855,22 @@ const CloudStorage = () => {
                       Categories
                     </Button>
                   )}
+                </div>
+
+                <div className="flex items-center gap-4 w-full md:w-auto mt-4 md:mt-0">
+                  {selectedFolder && (
+                    <button
+                      onClick={handleCloseFolder}
+                      className="flex items-center"
+                    >
+                      <ArrowLeft className="h-5 w-5 text-muted-foreground" />
+                    </button>
+                  )}
                   <h3 className="flex-shrink-0 text-2xl font-semibold">
                     {selectedFolder
                       ? selectedFolder?.fileName
                       : selectedCategory}
                   </h3>
-
                   {selectedCategory !== "Duplicates" && (
                     <GradientSearchInput
                       value={searchQuery}
@@ -882,8 +880,9 @@ const CloudStorage = () => {
                       name="searchstorage"
                     />
                   )}
+                </div>
 
-                  {/* <Button
+                {/* <Button
                     variant="outline"
                     size="default"
                     onClick={() => refetch()}
@@ -891,22 +890,21 @@ const CloudStorage = () => {
                     <RefreshCw className="h-4 w-4" />
                     Sync Storage
                   </Button> */}
-                  <div className="md:ml-auto">
-                    <Button
-                      variant="outline"
-                      size="default"
-                      onClick={() => setShowStoragePlans(true)}
-                      className="h-14"
-                    >
-                      <HardDrive className="h-4 w-4" />
-                      <span>Storage Plans</span>
-                    </Button>
-                  </div>
+                <div className="md:ml-auto self-end mt-4 md:mt-0">
+                  <Button
+                    variant="outline"
+                    size="default"
+                    onClick={() => setShowStoragePlans(true)}
+                    className="h-14"
+                  >
+                    <HardDrive className="h-4 w-4" />
+                    <span>Storage Plans</span>
+                  </Button>
                 </div>
               </div>
               {selectedCategory !== "Duplicates" && (
-                <div className="p-4 flex flex-col lg:flex-row gap-4 items-center justify-between overflow-x-auto scrollbar-hide">
-                  <div className="flex items-center gap-4 w-full lg:w-auto">
+                <div className="p-4 flex flex-col lg:flex-row flex-wrap gap-4 items-center justify-between">
+                  <div className="flex flex-wrap items-center gap-4 lg:w-auto">
                     {selectedFiles.length > 0 && (
                       <>
                         <Button
@@ -1147,7 +1145,7 @@ const CloudStorage = () => {
                       </DropdownMenuContent>
                     </DropdownMenu> */}
                   </div>
-                  <div className="flex w-full justify-end gap-2">
+                  <div className="flex ml-auto gap-2">
                     <Button
                       size="sm"
                       variant="ghost"
@@ -1195,7 +1193,7 @@ const CloudStorage = () => {
                                       : "w-full gap-2"
                                   }
                                   data-testid="storage-share-button"
-                                  // className={"w-full"}
+                                // className={"w-full"}
                                 >
                                   <Share2 className="h-4 w-4" />
                                   Share
@@ -1354,11 +1352,10 @@ const CloudStorage = () => {
                                           (file, index) => (
                                             <TableRow
                                               key={file.id}
-                                              className={`hover:bg-muted/50 ${
-                                                dragOverFolderId === file.id
-                                                  ? "bg-muted ring-2 ring-primary"
-                                                  : ""
-                                              }`}
+                                              className={`hover:bg-muted/50 ${dragOverFolderId === file.id
+                                                ? "bg-muted ring-2 ring-primary"
+                                                : ""
+                                                }`}
                                               onDoubleClick={() => {
                                                 if (
                                                   file.fileType !== "folder"
@@ -1374,9 +1371,9 @@ const CloudStorage = () => {
                                               onDragOver={(e) =>
                                                 file.fileType === "folder"
                                                   ? handleFolderDragOver(
-                                                      e,
-                                                      file.id
-                                                    )
+                                                    e,
+                                                    file.id
+                                                  )
                                                   : undefined
                                               }
                                               onDragLeave={(e) =>
@@ -1410,11 +1407,10 @@ const CloudStorage = () => {
                                                     title:
                                                       "Click to open folder",
                                                   })}
-                                                  className={`flex items-center gap-2 ${
-                                                    file.fileType ===
-                                                      "folder" &&
+                                                  className={`flex items-center gap-2 ${file.fileType ===
+                                                    "folder" &&
                                                     "cursor-pointer"
-                                                  }`}
+                                                    }`}
                                                   onClick={() => {
                                                     if (
                                                       file.fileType === "folder"
@@ -1503,17 +1499,17 @@ const CloudStorage = () => {
                                                       <>
                                                         {file.fileType !==
                                                           "folder" && (
-                                                          <DropdownMenuItem
-                                                            onClick={() =>
-                                                              setFilePreview(
-                                                                file
-                                                              )
-                                                            }
-                                                          >
-                                                            <Eye className="h-4 w-4 mr-2" />
-                                                            View
-                                                          </DropdownMenuItem>
-                                                        )}
+                                                            <DropdownMenuItem
+                                                              onClick={() =>
+                                                                setFilePreview(
+                                                                  file
+                                                                )
+                                                              }
+                                                            >
+                                                              <Eye className="h-4 w-4 mr-2" />
+                                                              View
+                                                            </DropdownMenuItem>
+                                                          )}
 
                                                         <DropdownMenuItem
                                                           disabled={
@@ -1536,7 +1532,7 @@ const CloudStorage = () => {
                                                           }}
                                                         >
                                                           {downloadingFile ===
-                                                          file.fileName ? (
+                                                            file.fileName ? (
                                                             <>
                                                               <Loader2 className="h-4 w-4 mr-2 animate-spin text-primary" />
                                                               Downloading...
@@ -1570,11 +1566,11 @@ const CloudStorage = () => {
 
                                                         {selectedFiles.length !==
                                                           1 && (
-                                                          <TooltipContent side="left">
-                                                            You can only share
-                                                            one file at a time
-                                                          </TooltipContent>
-                                                        )}
+                                                            <TooltipContent side="left">
+                                                              You can only share
+                                                              one file at a time
+                                                            </TooltipContent>
+                                                          )}
                                                       </Tooltip>
                                                     </TooltipProvider>
 
@@ -1613,30 +1609,30 @@ const CloudStorage = () => {
                                                     <DropdownMenuSeparator />
                                                     {file.fileType !==
                                                       "folder" && (
-                                                      <DropdownMenuItem
-                                                        onClick={() =>
-                                                          handleMoveSelected(
-                                                            file
-                                                          )
-                                                        }
-                                                      >
-                                                        <FolderIcon className="h-4 w-4 mr-2" />
-                                                        Move Selected
-                                                      </DropdownMenuItem>
-                                                    )}
+                                                        <DropdownMenuItem
+                                                          onClick={() =>
+                                                            handleMoveSelected(
+                                                              file
+                                                            )
+                                                          }
+                                                        >
+                                                          <FolderIcon className="h-4 w-4 mr-2" />
+                                                          Move Selected
+                                                        </DropdownMenuItem>
+                                                      )}
                                                     {file.fileType !==
                                                       "folder" && (
-                                                      <DropdownMenuItem
-                                                        onClick={() =>
-                                                          handleCopySelected(
-                                                            file
-                                                          )
-                                                        }
-                                                      >
-                                                        <Copy className="h-4 w-4 mr-2" />
-                                                        Copy Selected
-                                                      </DropdownMenuItem>
-                                                    )}
+                                                        <DropdownMenuItem
+                                                          onClick={() =>
+                                                            handleCopySelected(
+                                                              file
+                                                            )
+                                                          }
+                                                        >
+                                                          <Copy className="h-4 w-4 mr-2" />
+                                                          Copy Selected
+                                                        </DropdownMenuItem>
+                                                      )}
                                                     <DropdownMenuItem
                                                       className="text-destructive"
                                                       onClick={() => {
@@ -1701,8 +1697,8 @@ const CloudStorage = () => {
                                     {pagination.total === 0
                                       ? 0
                                       : (pagination.page - 1) *
-                                          pagination.limit +
-                                        1}{" "}
+                                      pagination.limit +
+                                      1}{" "}
                                     to{" "}
                                     {Math.min(
                                       pagination.page * pagination.limit,
@@ -1838,8 +1834,8 @@ const CloudStorage = () => {
               </Tabs>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </CardContent >
+      </Card >
 
       <FilePreviewDialog
         file={filePreview}
@@ -1984,8 +1980,8 @@ const CloudStorage = () => {
         folderPath={folderPath}
         prefillFiles={droppedFiles}
         prefillToken={dropSession}
-        // handleFileUpload={handleFileUpload}
-        // uploadProgress={uploadProgress}
+      // handleFileUpload={handleFileUpload}
+      // uploadProgress={uploadProgress}
       />
 
       {/* Storage Sync Dialog */}
@@ -2004,7 +2000,7 @@ const CloudStorage = () => {
         open={showNewFolderDialog}
         onOpenChange={setShowNewFolderDialog}
         folderPath={folderPath}
-        // onCreate={handleCreateFolder}
+      // onCreate={handleCreateFolder}
       />
     </>
   );

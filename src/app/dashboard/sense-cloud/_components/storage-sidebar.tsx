@@ -5,7 +5,6 @@ import { useGetUsageQuery } from "@/api/fileManagerAPI";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { useSelector } from "react-redux";
 
@@ -114,8 +113,8 @@ export function SidebarPanel({
         <h3 className="font-['Space_Grotesk'] mb-4 text-base font-semibold">
           Categories
         </h3>
-        <ScrollArea className="pr-2">
-          <div className="space-y-2">
+        <div className="pr-2">
+          <div className="space-y-2 max-h-[40vh] md:max-h-max overflow-y-auto md:overflow-hidden">
             {categories.map((category) => (
               <Button
                 key={category.name}
@@ -132,7 +131,7 @@ export function SidebarPanel({
               </Button>
             ))}
           </div>
-        </ScrollArea>
+        </div>
       </div>
     </div>
   );
