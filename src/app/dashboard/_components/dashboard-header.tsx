@@ -90,7 +90,7 @@ const DashboardHeader = () => {
   return (
     <header
       data-testid="dashboard-header"
-      className="sticky top-0 z-40 h-20 flex items-center justify-between px-4 md:px-6 backdrop-blur"
+      className="sticky top-0 z-30 h-20 flex items-center justify-between px-4 md:px-6 backdrop-blur"
     >
       <div className="md:hidden w-10" />
 

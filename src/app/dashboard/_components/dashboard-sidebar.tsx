@@ -124,7 +124,7 @@ const DashboardSidebar = () => {
   return (
     <>
       {/* Mobile Menu Toggle */}
-      <div className="fixed top-4 left-4 z-50 flex gap-4 md:hidden">
+      <div className="fixed top-4 left-4 z-40 flex gap-4 md:hidden">
         <Button
           data-testid="dashboard-sidebar-mobile-toggle"
           variant="outline"
@@ -156,7 +156,7 @@ const DashboardSidebar = () => {
       <aside
         data-testid="dashboard-sidebar"
         className={cn(
-          "fixed top-0 bottom-0 left-0 z-50 md:relative transition-all duration-300 bg-blue-700/5 dark:bg-[#010526] border-r-[1px]",
+          "fixed top-0 bottom-0 left-0 z-[9999] md:relative transition-all duration-300 bg-blue-700/5 dark:bg-[#010526] border-r-[1px]",
           collapsed ? "w-20" : "w-64 p-7",
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
@@ -172,7 +172,7 @@ const DashboardSidebar = () => {
           >
             {/* Centered logo when expanded */}
             {/* {!collapsed && ( */}
-              <div data-testid="dashboard-sidebar-logo" className="mx-auto hidden md:block">
+              <div data-testid="dashboard-sidebar-logo" className="mx-auto">
                 <Logo sign={collapsed} />
               </div>
             {/* )} */}
