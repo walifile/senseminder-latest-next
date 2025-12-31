@@ -18,17 +18,6 @@ const TAB_ICON = {
 
 const BillingHistory = () => {
   const [activeTab, setActiveTab] = useState("recharge");
-  const activeLabel = useMemo(() => {
-    switch (activeTab) {
-      case "usage":
-        return "Sense PC Billing";
-      case "storage-usage":
-        return "Sense Cloud Billing";
-      case "recharge":
-      default:
-        return "Wallet Recharge";
-    }
-  }, [activeTab]);
 
   return (
     <DashboardCard
@@ -64,7 +53,10 @@ const BillingHistory = () => {
                   <img
                     src={TAB_ICON.recharge}
                     alt=""
-                    className="h-[18px] w-[18px] shrink-0 filter invert dark:invert-0"
+                    className={cn(
+                      "h-[18px] w-[18px] shrink-0 filter dark:invert-0",
+                      activeTab === "recharge" ? "" : "invert"
+                    )}
                   />
                   Wallet Recharge
                 </TabsTrigger>
@@ -73,7 +65,10 @@ const BillingHistory = () => {
                   <img
                     src={TAB_ICON.usage}
                     alt=""
-                    className="h-[18px] w-[18px] shrink-0 filter invert dark:invert-0"
+                    className={cn(
+                      "h-[18px] w-[18px] shrink-0 filter dark:invert-0",
+                      activeTab === "usage" ? "" : "invert"
+                    )}
                   />
                   Sense PC Billing
                 </TabsTrigger>
@@ -82,7 +77,10 @@ const BillingHistory = () => {
                   <img
                     src={TAB_ICON["storage-usage"]}
                     alt=""
-                    className="h-[18px] w-[18px] shrink-0 filter invert dark:invert-0"
+                    className={cn(
+                      "h-[18px] w-[18px] shrink-0 filter dark:invert-0",
+                      activeTab === "storage-usage" ? "" : "invert"
+                    )}
                   />
                   Sense Cloud Billing
                 </TabsTrigger>
