@@ -227,7 +227,9 @@ const QuickRecharge = () => {
                     showConfirm.onTrue();
                   }}
                   data-testid={
-                    amount === 20 ? "billing-quick-recharge-20-button" : undefined
+                    amount === 20
+                      ? "billing-quick-recharge-20-button"
+                      : undefined
                   }
                 >
                   <span className="text-[22px] font-medium leading-8 tracking-[-0.3px]">
@@ -354,7 +356,10 @@ const QuickRecharge = () => {
         open={showAutoRechargeConfig.value}
         onOpenChange={showAutoRechargeConfig.onToggle}
       >
-        <DialogContent data-testid="dashboard-billing-auto-recharge-dialog" className="font-['Space_Grotesk']">
+        <DialogContent
+          data-testid="dashboard-billing-auto-recharge-dialog"
+          className="font-['Space_Grotesk']"
+        >
           <DialogHeader>
             <DialogTitle>Configure Auto-Recharge</DialogTitle>
             <DialogDescription>
@@ -404,7 +409,10 @@ const QuickRecharge = () => {
           if (!open) setShowDisableAutoRechargeConfirm(false);
         }}
       >
-        <DialogContent data-testid="dashboard-billing-auto-recharge-disable-dialog" className="font-['Space_Grotesk']">
+        <DialogContent
+          data-testid="dashboard-billing-auto-recharge-disable-dialog"
+          className="font-['Space_Grotesk']"
+        >
           <DialogHeader>
             <DialogTitle>Turn off auto-recharge?</DialogTitle>
             <DialogDescription>
@@ -437,12 +445,15 @@ const QuickRecharge = () => {
 
       {/* Recharge Confirmation Dialog */}
       <Dialog open={showConfirm.value} onOpenChange={showConfirm.onToggle}>
-        <DialogContent data-testid="dashboard-billing-recharge-confirm-dialog" className="font-['Space_Grotesk']">
+        <DialogContent
+          data-testid="dashboard-billing-recharge-confirm-dialog"
+          className="font-['Space_Grotesk']"
+        >
           <DialogHeader>
             <DialogTitle>Confirm Recharge</DialogTitle>
             <DialogDescription>
-              Are you sure you want to add <strong>${selectedAmount ?? 0}</strong>{" "}
-              to your wallet?
+              Are you sure you want to add{" "}
+              <strong>${selectedAmount ?? 0}</strong> to your wallet?
             </DialogDescription>
           </DialogHeader>
 
@@ -450,8 +461,8 @@ const QuickRecharge = () => {
             <Checkbox
               id="autoRecharge"
               checked={addFundsAutoRechargeEnabled}
-              onCheckedChange={(checked) =>
-                setAddFundsAutoRechargeEnabled(checked === true)
+              onCheckedChange={() =>
+                setAddFundsAutoRechargeEnabled(!addFundsAutoRechargeEnabled)
               }
               variant="default"
               size="sm"
