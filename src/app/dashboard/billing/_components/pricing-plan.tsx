@@ -272,6 +272,7 @@ const PricingPlan = () => {
                     min={1}
                     max={50}
                     step={1}
+                    variant="blue"
                     className="w-full"
                   />
                 </div>
