@@ -180,11 +180,16 @@ const UserTable = ({ loading, filteredUsers }: Props) => {
                         icon: UserCheck,
                         onClick: () => Logger.log("Change Role clicked"),
                       },
-                      {
-                        label: "Resend Invite",
-                        icon: Mail,
-                        onClick: () => Logger.log("Resend Invite clicked"),
-                      },
+                      ...(user.status?.toLowerCase() === "pending"
+                        ? [
+                            {
+                              label: "Resend Invite",
+                              icon: Mail,
+                              onClick: () =>
+                                Logger.log("Resend Invite clicked"),
+                            },
+                          ]
+                        : []),
                       {
                         label: "Delete",
                         icon: UserX,

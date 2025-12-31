@@ -122,8 +122,12 @@ const ManagePcDialog = ({
             {selectedUser
               ? ` ${selectedUser.firstName || ""} ${
                   selectedUser.lastName || ""
-                } (${selectedUser.email})`
+                } (`
               : ""}
+            {selectedUser ? (
+              <span className="normal-case">{selectedUser.email}</span>
+            ) : null}
+            {selectedUser ? ")" : ""}
           </DialogTitle>
           <DialogDescription>
             Assign or unassign SensePC for this member.
