@@ -447,14 +447,14 @@ const QuickRecharge = () => {
           </DialogHeader>
 
           <div className="flex items-center gap-2 rounded-md bg-muted/40 px-3 py-2 text-xs">
-            <input
-              type="checkbox"
+            <Checkbox
               id="autoRecharge"
-              className="h-4 w-4 accent-[#2530F0]"
               checked={addFundsAutoRechargeEnabled}
-              onChange={() =>
-                setAddFundsAutoRechargeEnabled(!addFundsAutoRechargeEnabled)
+              onCheckedChange={(checked) =>
+                setAddFundsAutoRechargeEnabled(checked === true)
               }
+              variant="default"
+              size="sm"
               data-testid="billing-auto-recharge-checkbox"
             />
             <label
