@@ -40,7 +40,7 @@ const VARIANT_ROOT: Record<CheckboxVariant, string> = {
 
 const SIZE_ROOT: Record<CheckboxSize, string> = {
   sm: "h-4 w-4",
-  md: "h-5 w-5 rounded-[6px]",
+  md: "h-5 w-5 rounded-[6px] p-[2px]",
 };
 
 const ICON_CLASS: Record<CheckboxSize, string> = {

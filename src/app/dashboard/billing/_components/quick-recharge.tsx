@@ -13,6 +13,7 @@ import { Logger } from "@/lib/utils/logger";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { DashboardCard } from "@/components/ui/dashboard/dashboard-card";
 import {
@@ -302,16 +303,21 @@ const QuickRecharge = () => {
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  className="h-5 w-5 rounded-[4px] accent-[#2530F0]"
+                <Checkbox
+                  id="auto-recharge-enabled"
                   checked={autoRechargeEnabled}
-                  onChange={handleAutoRechargeToggle}
+                  onCheckedChange={() => handleAutoRechargeToggle()}
+                  size="md"
+                  variant="default"
+                  className="rounded-[4px]"
                 />
 
-                <span className="text-[16px] tracking-[-0.3px] text-muted-foreground dark:text-[#B9C2D5]">
+                <label
+                  htmlFor="auto-recharge-enabled"
+                  className="text-[16px] tracking-[-0.3px] text-muted-foreground dark:text-[#B9C2D5] cursor-pointer select-none"
+                >
                   Enable auto-recharge when balance drops below $10
-                </span>
+                </label>
               </div>
 
               {autoRechargeEnabled && (
