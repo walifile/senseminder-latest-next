@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { DateRange } from "react-day-picker";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 
 import { Logger } from "@/lib/utils/logger";
 import { toast } from "@/components/ui/use-toast";
@@ -25,6 +25,10 @@ export function useHistoryData<T>({
   const [lastEvaluatedKey, setLastEvaluatedKey] = useState<string | null>(null);
 
   const [fetchHistoryTrigger, { isLoading: loading }] = lazyQueryHook();
+  const stableAdditionalParams = useMemo(
+    () => additionalParams,
+    [JSON.stringify(additionalParams)]
+  );
 
   const fetchHistory = useCallback(async (isLoadMore = false) => {
     try {
@@ -36,7 +40,7 @@ export function useHistoryData<T>({
         to: date?.to,
         limit: 5,
         startingAfter,
-        ...additionalParams,
+        ...stableAdditionalParams,
       };
 
       const result = await fetchHistoryTrigger(params).unwrap();
@@ -68,7 +72,7 @@ export function useHistoryData<T>({
         description: message,
       });
     }
-  }, [date, lastEvaluatedKey, additionalParams, fetchHistoryTrigger]);
+  }, [date, lastEvaluatedKey, stableAdditionalParams, fetchHistoryTrigger]);
 
   useEffect(() => {
     setAllHistory([]);

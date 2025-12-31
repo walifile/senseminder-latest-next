@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import DashboardSearch from "@/components/ui/dashboard/search";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 
-import { RotateCw } from "lucide-react";
+import { RotateCcw, RotateCw } from "lucide-react";
 
 interface Props {
   date: DateRange | undefined;
@@ -48,6 +48,19 @@ const HistoryFilters = ({
           setDate={setDate}
           className="flex-1 min-w-0 sm:flex-none"
         />
+
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => setDate(undefined)}
+          disabled={!date?.from && !date?.to}
+          className="h-10 w-10 shrink-0"
+          aria-label="Reset date range"
+          title="Reset date range"
+        >
+          <RotateCcw className="h-5 w-5" />
+        </Button>
 
         {onRefresh ? (
           <Button
