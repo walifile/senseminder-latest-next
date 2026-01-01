@@ -14,14 +14,14 @@ const FeedbackSlider = ({ open, onClose }: Props) => (
     <div
       data-testid="dashboard-feedback-overlay"
       onClick={onClose}
-      className={`fixed inset-0 bg-black/40 transition-opacity ${
+      className={`fixed inset-0 bg-black/40 transition-opacity z-[9999] ${
         open ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
     />
 
     <div
       data-testid="dashboard-feedback-slider"
-      className={`fixed top-16 right-0 h-full w-full max-w-md bg-background shadow-xl border-l transition-transform duration-300 ${
+      className={`fixed top-0 right-0 h-full w-full max-w-md bg-background shadow-xl border-l transition-transform duration-300 z-[99999] ${
         open ? "translate-x-0" : "translate-x-full"
       }`}
       role="dialog"
