@@ -23,7 +23,6 @@ const socialLinks = [
 const quickLinks = [
   { href: "/about", text: "About Us", icon: "about-us-icon" },
   { href: "/contact", text: "Contact", icon: "contact-icon" },
-  { href: "/tutorials", text: "Tutorials", icon: "tutorials-icon" },
   { href: "/privacy", text: "Privacy Policy", icon: "privacy-policy-icon" },
   { href: "/terms", text: "Terms of Service", icon: "terms-icon" },
 ];
