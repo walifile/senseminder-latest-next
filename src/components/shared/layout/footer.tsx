@@ -23,6 +23,7 @@ const socialLinks = [
 const quickLinks = [
   { href: "/about", text: "About Us", icon: "about-us-icon" },
   { href: "/contact", text: "Contact", icon: "contact-icon" },
+  { href: "/tutorials", text: "Tutorials", icon: "tutorials-icon" },
   { href: "/privacy", text: "Privacy Policy", icon: "privacy-policy-icon" },
   { href: "/terms", text: "Terms of Service", icon: "terms-icon" },
 ];
@@ -30,6 +31,7 @@ const quickLinks = [
 const product = [
   { icon: "computer1", text: "Sense PC", href: "/products/sensepc" },
   { icon: "storage", text: "Sense Cloud", href: "/products/sensecloud" },
+  { icon: "tutorials-icon", text: "Tutorials", href: "/tutorials" },
 ];
 
 // ✅ routes where we want the footer but WITHOUT the glow blobs
