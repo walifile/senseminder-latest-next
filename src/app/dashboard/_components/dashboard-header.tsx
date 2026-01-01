@@ -190,9 +190,11 @@ const DashboardHeader = () => {
                       <Image src="/assets/icons/bell.svg" alt="Notifications Bell Icon" width={24} height={24} />
                     )}
                     {hasUnread && (
-                      <span className="absolute -top-1 -right-1 min-h-[16px] min-w-[16px] rounded-full bg-[#2f6bff] text-[10px] font-semibold flex items-center justify-center text-white px-[5px]">
-                        {unreadCount}
-                      </span>
+                      <div className="absolute -top-1 -right-1 min-h-[20px] min-w-[20px] leading-[0] rounded-[50%] bg-[#2f6bff] text-[10px] font-semibold flex items-center justify-center text-white px-[5px]">
+                        <span>
+                          {unreadCount}
+                        </span>
+                      </div>
                     )}
                   </Button>
                 </div>
