@@ -446,7 +446,7 @@ const QuickRecharge = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex items-center gap-2 rounded-md bg-muted/40 px-3 py-2 text-xs">
+          <div className="flex items-center gap-2 rounded-md bg-[#2530F01A] dark:bg-muted/40 px-5 py-[18px] text-xs">
             <Checkbox
               id="autoRecharge"
               checked={addFundsAutoRechargeEnabled}

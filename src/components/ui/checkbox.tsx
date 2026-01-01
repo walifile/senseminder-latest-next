@@ -24,8 +24,8 @@ const VARIANT_ROOT: Record<CheckboxVariant, string> = {
   default: cn(
     "h-4 w-4 rounded-[3px]",
     "border border-[#9CA3AF] bg-transparent",
-    "dark:border-[#2530F0]",
-    "data-[state=checked]:bg-[#2530F0] data-[state=checked]:border-[#2530F0] data-[state=checked]:text-white",
+    "dark:border-white",
+    "data-[state=checked]:bg-[#2530F0] data-[state=checked]:border-[#2530F0] dark:data-[state=checked]:border-[#2530F0] data-[state=checked]:text-white",
     "focus-visible:ring-[#2530F0]"
   ),
   billing: cn(
