@@ -1442,10 +1442,11 @@ def handle_share(event):
         '1min': 60,
         '1minute': 60,
         '60s': 60,
+        '1hour': 3600,
         '1day': 86400,
         '7days': 604800,
         '30days': 2592000,
-        'never': 315360000,
+        '365days': 31536000,
     }
     expiry_seconds = expiry_map.get(expiry, expiry_map['7days'])
 
