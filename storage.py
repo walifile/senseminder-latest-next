@@ -1641,8 +1641,8 @@ def handle_cancel_share(event):
                 try:
                     file_metadata_table.update_item(
                         Key={'id': key},
-                        UpdateExpression="SET #st=:priv REMOVE shared, sharePermissions, sharePassword, shareExpiry",
-                        ExpressionAttributeNames={'#st': 'status'},
+                        UpdateExpression="SET #st=:priv REMOVE #sh, sharePermissions, sharePassword, shareExpiry",
+                        ExpressionAttributeNames={'#st': 'status', '#sh': 'shared'},
                         ExpressionAttributeValues={':priv': 'private'}
                     )
                 except Exception as e2:
@@ -1655,8 +1655,8 @@ def handle_cancel_share(event):
                     try:
                         file_metadata_table.update_item(
                             Key={'id': it['id']},
-                            UpdateExpression="SET #st=:priv REMOVE shared, sharePermissions, sharePassword, shareExpiry",
-                            ExpressionAttributeNames={'#st': 'status'},
+                            UpdateExpression="SET #st=:priv REMOVE #sh, sharePermissions, sharePassword, shareExpiry",
+                            ExpressionAttributeNames={'#st': 'status', '#sh': 'shared'},
                             ExpressionAttributeValues={':priv': 'private'}
                         )
                     except Exception as e3:
@@ -1667,8 +1667,8 @@ def handle_cancel_share(event):
                 if meta:
                     file_metadata_table.update_item(
                         Key={'id': key},
-                        UpdateExpression="SET #st=:priv REMOVE shared, sharePermissions, sharePassword, shareExpiry",
-                        ExpressionAttributeNames={'#st': 'status'},
+                        UpdateExpression="SET #st=:priv REMOVE #sh, sharePermissions, sharePassword, shareExpiry",
+                        ExpressionAttributeNames={'#st': 'status', '#sh': 'shared'},
                         ExpressionAttributeValues={':priv': 'private'}
                     )
     except Exception as e:
