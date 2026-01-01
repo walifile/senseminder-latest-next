@@ -325,7 +325,7 @@ const SmartPCConfigDialog = ({
           style={{
             transform: `translate(calc(-50% + ${drag.x}px), calc(-50% + ${drag.y}px))`,
           }}
-          className="sm:max-w-[1080px] max-h-[95vh] overflow-hidden p-0"
+          className="sm:max-w-[1080px] max-h-[95vh] overflow-hidden p-0 gap-0"
         >
           {/* Header (drag handle) */}
           <SmartPcConfigDialogHeader
@@ -337,7 +337,7 @@ const SmartPCConfigDialog = ({
 
           {/* Body (scrollable); footer is outside to avoid covering Billing */}
           <div
-            className="grid items-start gap-6 lg:gap-8 px-6 pt-6 pb-40 md:grid-cols-12 max-h-[calc(95vh-64px)] overflow-y-auto"
+            className="grid items-start gap-6 lg:gap-8 px-6 pt-6 pb-6 md:grid-cols-12 max-h-[60vh] overflow-y-auto"
             data-cancel-drag
           >
             {/* LEFT: FORM */}
