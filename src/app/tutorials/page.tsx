@@ -29,7 +29,7 @@ const tutorials: Tutorial[] = [
     videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%201.mp4",
     youtubeUrl: "https://youtube.com",
     thumbnail: "/assets/images/gettingStartedWithSensePc.png",
-    category: "Start here",
+    category: "Basic",
     difficulty: "Beginner",
     uploadDate: "2025-12-25",
     lastUpdated: "2025-12-25",
@@ -44,7 +44,7 @@ const tutorials: Tutorial[] = [
     videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%203.mp4",
     youtubeUrl: "https://youtube.com/watch?v=performance",
     thumbnail: "/assets/images/optimizing.jpg",
-    category: "Start here",
+    category: "Sense PC Overview",
     difficulty: "Beginner",
     uploadDate: "2025-12-25",
     lastUpdated: "2025-12-25",
@@ -59,7 +59,7 @@ const tutorials: Tutorial[] = [
     videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%202.mp4",
     youtubeUrl: "https://youtube.com/watch?v=storage",
     thumbnail: "/assets/images/storageManagement.png",
-    category: "Start here",
+    category: "Storage",
     difficulty: "Beginner",
     uploadDate: "2025-12-25",
     lastUpdated: "2025-12-25",
@@ -72,17 +72,22 @@ const TutorialsPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedDifficulty, setSelectedDifficulty] = useState("all");
 
+  const normalizeTag = (value: string) => value.trim().toLowerCase();
+
   const filteredTutorials = useMemo(
     () =>
       tutorials.filter((tutorial) => {
         const matchesSearch =
           tutorial.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           tutorial.description.toLowerCase().includes(searchQuery.toLowerCase());
+        const normalizedCategory = normalizeTag(tutorial.category);
+        const normalizedDifficulty = normalizeTag(tutorial.difficulty);
         const matchesCategory =
-          selectedCategory === "all" || tutorial.category === selectedCategory;
+          selectedCategory === "all" ||
+          normalizedCategory === normalizeTag(selectedCategory);
         const matchesDifficulty =
           selectedDifficulty === "all" ||
-          tutorial.difficulty === selectedDifficulty;
+          normalizedDifficulty === normalizeTag(selectedDifficulty);
         return matchesSearch && matchesCategory && matchesDifficulty;
       }),
     [searchQuery, selectedCategory, selectedDifficulty]
@@ -102,7 +107,7 @@ const TutorialsPage = () => {
       <div className="pointer-events-none absolute -top-24 left-0 h-[220px] w-[440px] rounded-[50%] bg-[#4027E5] opacity-40 blur-[160px]" />
       <div className="pointer-events-none absolute -top-28 right-0 h-[220px] w-[440px] rounded-[50%] bg-[#9C05BF] opacity-35 blur-[160px]" />
 
-      <div className="relative container py-14 space-y-10 font-['Space_Grotesk']">
+      <div className="relative container pt-28 pb-14 md:pt-32 md:pb-16 space-y-10 font-['Space_Grotesk']">
         <div className="space-y-3">
           <p className="text-sm uppercase tracking-[0.2em] text-white/70">
             Tutorials
@@ -115,7 +120,7 @@ const TutorialsPage = () => {
           </h1>
           <p className="max-w-2xl text-white/70 text-base md:text-lg">
             Watch quick, practical walkthroughs and master the platform in
-            minutes. Start here and level up as you go.
+            minutes.
           </p>
         </div>
 
@@ -137,9 +142,12 @@ const TutorialsPage = () => {
                 <SelectTrigger className="w-full sm:w-[180px]" variant="pill">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent variant="pill">
                   {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
+                    <SelectItem
+                      key={category}
+                      value={normalizeTag(category)}
+                    >
                       {category.charAt(0).toUpperCase() + category.slice(1)}
                     </SelectItem>
                   ))}
@@ -153,9 +161,12 @@ const TutorialsPage = () => {
                 <SelectTrigger className="w-full sm:w-[180px]" variant="pill">
                   <SelectValue placeholder="Difficulty" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent variant="pill">
                   {difficulties.map((difficulty) => (
-                    <SelectItem key={difficulty} value={difficulty}>
+                    <SelectItem
+                      key={difficulty}
+                      value={normalizeTag(difficulty)}
+                    >
                       {difficulty.charAt(0).toUpperCase() +
                         difficulty.slice(1)}
                     </SelectItem>
@@ -188,11 +199,6 @@ const TutorialsPage = () => {
                 <p className="text-sm md:text-base text-white/70 line-clamp-2">
                   {tutorial.description}
                 </p>
-                <div className="flex flex-wrap items-center gap-2 text-xs text-white/60">
-                  <span>{tutorial.category}</span>
-                  <span className="h-1 w-1 rounded-full bg-white/40" />
-                  <span>{tutorial.difficulty}</span>
-                </div>
               </div>
 
               <div className="border-t border-white/10 px-5 py-4 text-xs md:text-sm text-white/60">
