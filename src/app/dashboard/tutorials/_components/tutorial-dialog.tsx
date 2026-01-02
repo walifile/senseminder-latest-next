@@ -79,6 +79,7 @@ export const TutorialDialog = ({ tutorial }: TutorialDialogProps) => (
         <video src={tutorial.videoUrl}
           controls
           autoPlay
+          playsInline
           className="w-full h-full"
           controlsList="nodownload"
         />
