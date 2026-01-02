@@ -362,7 +362,7 @@ export default function ScheduleDialog({
           </div>
         )}
 
-        <DialogFooter className="mt-4 flex flex-row gap-2">
+        <DialogFooter className="mt-4 flex flex-col md:flex-col gap-2 sm:space-x-0">
           <Button
             onClick={handleSave}
             disabled={loading || fetching}
