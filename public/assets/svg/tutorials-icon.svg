@@ -1,16 +1,40 @@
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
   <defs>
-    <linearGradient id="tutorials_gradient" x1="3" y1="3" x2="21" y2="21" gradientUnits="userSpaceOnUse">
+    <linearGradient
+      id="tutorials_gradient"
+      x1="2"
+      y1="2"
+      x2="22"
+      y2="22"
+      gradientUnits="userSpaceOnUse"
+    >
       <stop offset="0" stop-color="#8086F3"/>
       <stop offset="0.5" stop-color="#4C55F8"/>
       <stop offset="1" stop-color="#D971FF"/>
     </linearGradient>
   </defs>
-  <circle cx="12" cy="12" r="8.5" stroke="url(#tutorials_gradient)" stroke-width="1.8" fill="none"/>
-  <path
-    d="M10 8.8L15.5 12L10 15.2Z"
+
+  <!-- Enlarged outer circle -->
+  <circle
+    cx="12"
+    cy="12"
+    r="9.6"
     stroke="url(#tutorials_gradient)"
-    stroke-width="1.8"
+    stroke-width="2"
+    fill="none"
+  />
+
+  <!-- Enlarged play icon -->
+  <path
+    d="M9.4 8.2L16.6 12L9.4 15.8Z"
+    stroke="url(#tutorials_gradient)"
+    stroke-width="2"
     stroke-linejoin="round"
     fill="none"
   />
