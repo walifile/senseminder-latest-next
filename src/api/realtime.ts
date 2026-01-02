@@ -20,6 +20,12 @@ export interface InstanceSpecs {
   os: string;
 }
 
+export interface UptimeInfo {
+  maxUptimeHours: string;
+  currentUptimeHours: string;
+  billingPlan: string;
+}
+
 export interface InstanceDetail {
   systemName: string;
   instanceId?: string;
@@ -27,6 +33,7 @@ export interface InstanceDetail {
   schedule?: ScheduleInfo;
   region?: string;
   uptime?: string;
+  uptimeInfo?: UptimeInfo;
   idleTimeout?: number;
   cpuUsage?: string;
   memoryUsage?: string;

@@ -56,6 +56,8 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
   const [loadingUnassign, setLoadingUnassign] = useState(false);
 
+  Logger.debug("AssignUserDialog render:", { setLoadingAssign });
+
   const { data, isLoading } = useGetUsersQuery(undefined, {
     skip: !open,
   });
@@ -92,7 +94,7 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
   // For member list: filter only members
   const memberUsers = useMemo(
     () => users.filter((u) => u.role === "member"),
-    [users],
+    [users]
   );
 
   const filteredMembers = useMemo(() => {
@@ -226,7 +228,9 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
 
           <DialogHeader className="relative">
             <DialogTitle className="flex flex-col gap-1">
-              <span className="text-sm text-muted-foreground">Assign Sense PC</span>
+              <span className="text-sm text-muted-foreground">
+                Assign Sense PC
+              </span>
               <span className="text-[18px] leading-[26px] font-semibold text-foreground">
                 {titleName}
               </span>
@@ -264,7 +268,9 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
         {/* Body */}
         <div className="px-6 py-5">
           {isLoading ? (
-            <div className="text-sm text-muted-foreground">Loading members...</div>
+            <div className="text-sm text-muted-foreground">
+              Loading members...
+            </div>
           ) : (
             <div className="space-y-5">
               {/* Current Assignment Actions */}
@@ -305,7 +311,9 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
                       size="sm"
                       className="rounded-full"
                       onClick={() => {
-                        const el = document.getElementById("sensepc-member-search");
+                        const el = document.getElementById(
+                          "sensepc-member-search"
+                        );
                         el?.focus?.();
                       }}
                       disabled={loadingAssign}
@@ -361,7 +369,7 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
                         className={cn(
                           "group rounded-2xl border p-4",
                           "bg-background/60 dark:bg-background/30",
-                          "transition hover:border-indigo-500/30 hover:bg-indigo-500/[0.04]",
+                          "transition hover:border-indigo-500/30 hover:bg-indigo-500/[0.04]"
                         )}
                       >
                         <div className="flex items-center justify-between gap-4">
@@ -371,7 +379,7 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
                               className={cn(
                                 "h-10 w-10 shrink-0 rounded-full border",
                                 "flex items-center justify-center",
-                                "bg-indigo-500/[0.08] text-indigo-600 dark:text-indigo-300",
+                                "bg-indigo-500/[0.08] text-indigo-600 dark:text-indigo-300"
                               )}
                               aria-hidden
                             >
@@ -393,20 +401,29 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
                           {/* Right */}
                           <div className="flex items-center gap-2">
                             {already && (
-                              <Badge variant="secondary" className="rounded-full">
+                              <Badge
+                                variant="secondary"
+                                className="rounded-full"
+                              >
                                 Current
                               </Badge>
                             )}
 
                             <Button
-                              disabled={already || isRowLoading || loadingUnassign}
+                              disabled={
+                                already || isRowLoading || loadingUnassign
+                              }
                               variant={already ? "secondary" : "default"}
                               size="sm"
                               className="rounded-full"
                               onClick={() => assignToMember(u)}
                               data-testid="sensepc-assign-confirm-button"
                             >
-                              {already ? "Already Assigned" : isRowLoading ? "Assigning..." : "Assign"}
+                              {already
+                                ? "Already Assigned"
+                                : isRowLoading
+                                ? "Assigning..."
+                                : "Assign"}
                             </Button>
                           </div>
                         </div>
@@ -423,7 +440,11 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
 
         {/* Footer */}
         <DialogFooter className="px-6 py-4">
-          <Button onClick={closeDialog} variant="outline" className="rounded-full">
+          <Button
+            onClick={closeDialog}
+            variant="outline"
+            className="rounded-full"
+          >
             Close
           </Button>
         </DialogFooter>

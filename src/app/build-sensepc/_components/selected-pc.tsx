@@ -426,8 +426,17 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                   }}
                   className="h-9 rounded-full bg-gradient-to-l from-[#a801ba] to-[#2530f0] px-6 text-sm text-white hover:opacity-90 font-['Space_Grotesk']"
                 >
-                  <Plus className="mr-1 h-4 w-4" />
-                  Assign
+                  {current.assignedUser ? (
+                    <>
+                      <Users className="mr-1 h-4 w-4" />
+                      Manage user
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="mr-1 h-4 w-4" />
+                      Assign user
+                    </>
+                  )}
                 </Button>
               </div>
             )}
@@ -461,7 +470,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                     setShowBillingDialog(true);
                   }}
                 >
-                  Change Plan
+                  Manage Plan
                 </Button>
 
                 <BillingPlanDialog
@@ -489,9 +498,9 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
 
                       const descriptions: Record<"hourly" | "daily" | "monthly", string> = {
                         hourly:
-                          "Perfect for quick tasks and testing. No commitment, instant start/stop.",
-                        daily: "Ideal for day-long projects. ~Savings up to 10% vs hourly.",
-                        monthly: "Best value for regular users. ~Saving up to 10% vs daily.",
+                          "Unlimited usage — pay per hour while running. Great for quick tasks.",
+                        daily: "Ideal for day-long projects. ~Savings up to 10% vs Hourly.",
+                        monthly: "Best value for regular users. ~Saving up to 15% vs Hourly.",
                       };
 
                       let title = "Billing Plan";

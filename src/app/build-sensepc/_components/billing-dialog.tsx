@@ -301,7 +301,7 @@ const ConfirmRow = ({ className }: { className?: string }) => {
           {/* TOP */}
           <DialogHeader className="flex shrink-0 flex-row items-start justify-between gap-3 p-0">
             <DialogTitle className="font-['Space_Grotesk'] text-lg sm:text-xl font-semibold tracking-[-0.04em] text-[#020816] dark:text-white">
-              Change Plan
+              Manage Plan
             </DialogTitle>
           </DialogHeader>
 

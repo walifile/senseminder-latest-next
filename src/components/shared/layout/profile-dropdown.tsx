@@ -91,10 +91,11 @@ const ProfileDropdown = () => {
             <Button
               variant="ghost"
               className="flex size-10 items-center justify-center gap-2 px-0
-                        md:h-14 md:w-auto md:justify-start md:pl-0 md:pr-3"
+                        md:size-10 md:w-auto md:items-center md:justify-start md:pl-0 md:pr-3"
+
               data-testid="dashboard-user-account-icon"
             >
-              <Avatar className="size-10 md:size-14">
+              <Avatar className="size-10 md:size-10">
                 <AvatarFallback>{getAvatarFallback(user ?? {})}</AvatarFallback>
               </Avatar>
 

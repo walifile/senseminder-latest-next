@@ -156,7 +156,7 @@ export default function SmartStoragePage() {
               <CardHeader>
                 <CardTitle>Welcome to Sense Cloud Intelligent Tier</CardTitle>
                 <CardDescription>
-                  Start free with 20GB — just pay for your highest tier usage
+                  Start 20GB — just pay for your highest tier usage
                   each month, no fixed plans.
                 </CardDescription>
               </CardHeader>
