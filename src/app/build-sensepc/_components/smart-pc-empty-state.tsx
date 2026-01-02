@@ -26,7 +26,7 @@ const SmartPCEmptyState: React.FC<SmartPCEmptyStateProps> = ({
         ? "No Sense PCs match your search criteria. Try adjusting your search terms."
         : "Get started by building your first Sense PC. Check out our tutorials to learn more about Sense PC features."}
     </p>
-    <div className="flex gap-4">
+    <div className="flex gap-4 flex-wrap justify-center">
       {!isMember && (
         <Button onClick={handleShowNewPCDialog} data-testid="sensepc-build-button">
           <Plus className="h-4 w-4 mr-2" />

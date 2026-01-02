@@ -25,7 +25,7 @@ const SmartPcToolbar = ({
 }: Props) => (
   <div className="flex flex-col gap-5 font-['Space_Grotesk']">
     {/* Header row: title + subtitle + primary button */}
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex flex-wrap items-center justify-between gap-4">
       <div className="flex flex-col gap-1">
         <h1 className="font-['Space_Grotesk'] text-[32px] font-semibold tracking-[-0.5px] text-[#020816] dark:text-white">
           Sense PCs
@@ -38,10 +38,10 @@ const SmartPcToolbar = ({
       {!isMember && (
         <Button
           onClick={handleShowNewPCDialog}
-          className="hidden sm:inline-flex rounded-full px-7 py-4 bg-gradient-to-l from-[#a801ba] to-[#2530f0] text-[16px] font-medium leading-6 text-white hover:opacity-95 font-['Space_Grotesk']"
+          className="hidden sm:inline-flex rounded-full px-7 py-4 ml-auto bg-gradient-to-l from-[#a801ba] to-[#2530f0] text-[16px] font-medium leading-6 text-white hover:opacity-95 font-['Space_Grotesk']"
           data-testid="sensepc-build-button"
         >
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="h-4 w-4" />
           Build Sense PC
         </Button>
       )}
