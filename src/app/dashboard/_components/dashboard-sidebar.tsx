@@ -156,7 +156,7 @@ const DashboardSidebar = () => {
       <aside
         data-testid="dashboard-sidebar"
         className={cn(
-          "fixed top-0 bottom-0 left-0 z-[45] md:relative transition-all duration-300 bg-blue-700/5 dark:bg-[#010526] border-r-[1px]",
+          "fixed top-0 bottom-0 left-0 z-[45] md:relative transition-all duration-300 bg-white dark:bg-[#010526] border-r-[1px]",
           collapsed ? "w-20" : "w-64 p-7",
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
@@ -216,7 +216,7 @@ const DashboardSidebar = () => {
                   !mobileOpen ? "hidden" : "flex"
                 )}
               >
-                <X className="h-5 w-5" />
+                <X className="h-5 w-5 text-white" />
               </div>
             </div>
           </div>
