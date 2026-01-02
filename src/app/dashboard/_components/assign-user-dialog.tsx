@@ -53,6 +53,8 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
   >({});
   const [loadingAssign, setLoadingAssign] = useState(false);
   const [query, setQuery] = useState("");
+  const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
+  const [loadingUnassign, setLoadingUnassign] = useState(false);
 
   const { data, isLoading } = useGetUsersQuery(undefined, {
     skip: !open,
@@ -131,7 +133,7 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
   // Assign to a member
   const assignToMember = async (user: ApiUser) => {
     if (!pc) return;
-    setLoadingAssign(true);
+    setLoadingUserId(user.id);
 
     // If assigned to another, unassign first
     if (assignedUser && assignedUser.id !== user.id) {
@@ -146,7 +148,7 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
           title: "Failed to unassign before assigning",
           variant: "destructive",
         });
-        setLoadingAssign(false);
+        setLoadingUserId(null);
         return;
       }
     }
@@ -172,14 +174,14 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
         description: getErrorMessage(e),
       });
     } finally {
-      setLoadingAssign(false);
+      setLoadingUserId(null);
     }
   };
 
   // Unassign from current user
   const unassign = async () => {
     if (!pc || !assignedUser) return;
-    setLoadingAssign(true);
+    setLoadingUnassign(true);
     try {
       await unassignPC({
         instanceId: pc.instanceId,
@@ -198,7 +200,7 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
         description: getErrorMessage(e),
       });
     } finally {
-      setLoadingAssign(false);
+      setLoadingUnassign(false);
     }
   };
 
@@ -293,9 +295,9 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
                       size="sm"
                       className="rounded-full"
                       onClick={unassign}
-                      disabled={loadingAssign}
+                      disabled={loadingUnassign || loadingUserId !== null}
                     >
-                      {loadingAssign ? "Unassigning..." : "Unassign"}
+                      {loadingUnassign ? "Unassigning..." : "Unassign"}
                     </Button>
                   ) : (
                     <Button
@@ -350,6 +352,7 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
                   {filteredMembers.map((u) => {
                     const already = !!assignedUser && assignedUser.id === u.id;
                     const name = memberLabel(u);
+                    const isRowLoading = loadingUserId === u.id;
 
                     return (
                       <div
@@ -396,18 +399,14 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
                             )}
 
                             <Button
-                              disabled={already || loadingAssign}
+                              disabled={already || isRowLoading || loadingUnassign}
                               variant={already ? "secondary" : "default"}
                               size="sm"
                               className="rounded-full"
                               onClick={() => assignToMember(u)}
                               data-testid="sensepc-assign-confirm-button"
                             >
-                              {already
-                                ? "Already Assigned"
-                                : loadingAssign
-                                  ? "Assigning..."
-                                  : "Assign"}
+                              {already ? "Already Assigned" : isRowLoading ? "Assigning..." : "Assign"}
                             </Button>
                           </div>
                         </div>
