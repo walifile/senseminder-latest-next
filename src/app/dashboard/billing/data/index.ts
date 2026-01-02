@@ -20,24 +20,16 @@ export const billingPlans = [
     name: "Hourly",
     description: "Perfect for quick tasks and testing",
     icon: Clock,
-    features: [
-      "Pay only for actual usage",
-      "No minimum commitment",
-      "Support included",
-    ],
+    features: ["Unlimited usage — pay per hour while running", "Great for quick tasks, testing, and flexible start/stop", "Support included"],
   },
   {
     id: "daily",
     name: "Daily",
-    description: "Best for a full workday session",
+    description: "Ideal for day-long projects",
     price: "9.99",
     unit: "day",
     icon: CalendarDays,
-    features: [
-      "Includes up to 10 hours/day",
-      "Great for day-long projects",
-      "Support included",
-    ],
+    features: ["Up to 10 hours/day included", "Ideal for a full workday session without hourly tracking", "Savings up to 10% vs Hourly"],
   },
   {
     id: "monthly",
@@ -46,11 +38,7 @@ export const billingPlans = [
     price: "179.99",
     unit: "month",
     icon: Calendar,
-    features: [
-      "Includes up to 180 hours/month",
-      "Best for frequent usage",
-      "Support included",
-    ],
+    features: ["Up to 180 hours/month included", "Best for consistent monthly usage and predictable budgeting", "Savings up to 15% vs Hourly"],
   },
 ];
 

@@ -29,6 +29,7 @@ import {
   formatIdleTime,
   getStatusClasses,
   extractStorageGiB,
+  formatUptimeHours,
   formatScheduleTime,
   isStartingInstance,
 } from "@/app/build-sensepc/utils";
@@ -468,7 +469,9 @@ const CloudPCPage = () => {
                                     <div className="min-w-0 flex items-center gap-2">
                                       <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
                                       <span className="truncate">
-                                        {pcInfo?.uptime || "—"}
+                                        {pcInfo?.uptimeInfo
+                                          ? `${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.currentUptimeHours))} / ${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.maxUptimeHours))}`
+                                          : pcInfo?.uptime || "—"}
                                       </span>
                                     </div>
                                   </TooltipTrigger>
@@ -693,7 +696,11 @@ const CloudPCPage = () => {
                           <div className="grid grid-cols-2 gap-x-6 gap-y-[14px] text-[14px] leading-5 tracking-[-0.2px]">
                             <div className="flex items-center gap-2 text-foreground">
                               <Clock className="h-4 w-4 text-muted-foreground" />
-                              <span>{pcInfo?.uptime || "—"}</span>
+                              <span>
+                                {pcInfo?.uptimeInfo
+                                  ? `${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.currentUptimeHours))} / ${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.maxUptimeHours))}`
+                                  : pcInfo?.uptime || "—"}
+                              </span>
                             </div>
 
                             <div className="flex items-center gap-2 text-foreground">

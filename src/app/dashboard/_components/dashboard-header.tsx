@@ -61,6 +61,8 @@ const DashboardHeader = () => {
     if (n.route) router.push(n.route);
   };
 
+  const HEADER_ICON_BTN = "h-10 w-10 min-h-[40px] min-w-[40px] shrink-0";
+  const HEADER_ICON_IMG = 18;  
   // useEffect(() => {
   //   // const handleSidebarCollapse = (event: CustomEvent) => {
   //   //   setSidebarCollapsed(event.detail.collapsed);
@@ -114,11 +116,11 @@ const DashboardHeader = () => {
           data-testid="dashboard-header-balance-card"
           className="rounded-full border border-[#A801BA] dark:border-fuchsia-700 bg-[rgba(37,48,240,0.07)] dark:bg-white/5 "
         >
-          <div className="flex items-center gap-3 rounded-full p-1 backdrop-blur supports-[backdrop-filter]:bg-white/75 dark:supports-[backdrop-filter]:bg-white/5 dark:shadow-[6px_16px_50px_6px_rgba(38,57,136,0.06)]">
+          <div className="flex items-center gap-2 rounded-full p-[2px] pr-0 backdrop-blur supports-[backdrop-filter]:bg-white/75 dark:supports-[backdrop-filter]:bg-white/5 dark:shadow-[6px_16px_50px_6px_rgba(38,57,136,0.06)]">
             <Link
               data-testid="dashboard-header-billing-link"
               href="/dashboard/billing"
-              className="hidden sm:flex items-center gap-2 ml-5"
+              className="hidden sm:flex items-center gap-2 ml-4"
             >
               <div>
                 {resolvedTheme === "dark" ? (
@@ -148,56 +150,53 @@ const DashboardHeader = () => {
             </Link>
 
             <div className="hidden sm:block h-7 w-px bg-[rgba(67,67,67,0.10)] dark:bg-white/10" />
-            <div className="rounded-full bg-[rgba(37,48,240,0.07)] dark:bg-white/5 flex items-center gap-3 px-2 py-2">
-              <button
-                onClick={() => setTheme(resolvedTheme === "light" ? "dark" : "light")}
-                data-testid="dashboard-header-theme-toggle"
-                className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center transition-colors bg-[#2530f0] text-white shadow-[0_10px_24px_-12px_rgba(37,48,240,0.65)]"
-                )}
-                aria-label={
-                  resolvedTheme === "light" ? "Switch to dark mode" : "Switch to light mode"
-                }
-              >
-                {resolvedTheme === "dark" ? (
-                  <Image src="/assets/icons/sun.svg" alt="Sun Icon" width={24} height={24} />
-                ) : (
-                  <Image src="/assets/icons/moon.svg" alt="Moon Icon" width={24} height={24} />
-                )}
-              </button>
-            </div>
+              <div className="rounded-full bg-[rgba(37,48,240,0.07)] dark:bg-white/5 flex items-center p-[2px] -ml-1">
+                <button
+                  onClick={() => setTheme(resolvedTheme === "light" ? "dark" : "light")}
+                  data-testid="dashboard-header-theme-toggle"
+                  className={cn(
+                    HEADER_ICON_BTN,
+                    "rounded-full flex items-center justify-center transition-colors",
+                    "bg-[#2530f0] text-white",
+                    "ring-1 ring-white/25 dark:ring-white/15",
+                    "shadow-[0_10px_24px_-12px_rgba(37,48,240,0.65)]"
+                  )}
+                  aria-label={resolvedTheme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+                >
+                  {resolvedTheme === "dark" ? (
+                    <Image src="/assets/icons/sun.svg" alt="Sun Icon" width={HEADER_ICON_IMG} height={HEADER_ICON_IMG} />
+                  ) : (
+                    <Image src="/assets/icons/moon.svg" alt="Moon Icon" width={HEADER_ICON_IMG} height={HEADER_ICON_IMG} />
+                  )}
+                </button>
+              </div>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <div className="relative rounded-full bg-gradient-to-br dark:bg-white/5 dark:from-white/5 dark:via-white/5 dark:to-white/5 from-[#e9ecff] via-[#dfe5ff] to-[#d9dcff] shadow-[0_12px_26px_-14px_rgba(37,48,240,0.55)]">
-                  <div
-                    className="pointer-events-none absolute inset-[3px] rounded-full border border-white/40 dark:border-transparent"
-                    aria-hidden
-                  />
-                  <div
-                    className="pointer-events-none absolute inset-[9px] rounded-full bg-white/25 dark:bg-transparent"
-                    aria-hidden
-                  />
-                  <Button
-                    data-testid="dashboard-header-notifications-trigger"
-                    variant="ghost"
-                    size="icon"
-                    className="relative h-[46px] w-[46px] rounded-full bg-gradient-to-b dark:bg-white/5 dark:from-white/5 dark:to-white/5 from-[#e9ecff] to-[#dfe5ff] text-[#2530f0] dark:text-white hover:bg-[#d4d9ff] shadow-none [&_svg]:size-6"
-                  >
-                    {resolvedTheme === "dark" ? (
-                      <Image src="/assets/icons/bell-dark.svg" alt="Notifications Dark Bell Icon" width={24} height={24} />
-                    ) : (
-                      <Image src="/assets/icons/bell.svg" alt="Notifications Bell Icon" width={24} height={24} />
-                    )}
-                    {hasUnread && (
-                      <div className="absolute -top-1 -right-1 min-h-[20px] min-w-[20px] leading-[0] rounded-[50%] bg-[#2f6bff] text-[10px] font-semibold flex items-center justify-center text-white px-[5px]">
-                        <span>
-                          {unreadCount}
-                        </span>
-                      </div>
-                    )}
-                  </Button>
-                </div>
+                <Button
+                  data-testid="dashboard-header-notifications-trigger"
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    HEADER_ICON_BTN,
+                    "relative rounded-full mr-1",
+                    "bg-gradient-to-b dark:bg-white/5 dark:from-white/5 dark:to-white/5 from-[#e9ecff] to-[#dfe5ff]",
+                    "text-[#2530f0] dark:text-white hover:bg-[#d4d9ff] shadow-none",
+                    "ring-1 ring-white/35 dark:ring-white/10"
+                  )}
+                >
+                  {resolvedTheme === "dark" ? (
+                    <Image src="/assets/icons/bell-dark.svg" alt="Notifications Dark Bell Icon" width={HEADER_ICON_IMG} height={HEADER_ICON_IMG} />
+                  ) : (
+                    <Image src="/assets/icons/bell.svg" alt="Notifications Bell Icon" width={HEADER_ICON_IMG} height={HEADER_ICON_IMG} />
+                  )}
+
+                  {hasUnread && (
+                    <span className="absolute -top-1 -right-1 min-h-[16px] min-w-[16px] rounded-full bg-[#2f6bff] text-[10px] font-semibold flex items-center justify-center text-white px-[5px]">
+                      {unreadCount}
+                    </span>
+                  )}
+                </Button>
               </DropdownMenuTrigger>
 
               <DropdownMenuContent

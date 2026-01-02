@@ -75,7 +75,6 @@ const DashboardSidebar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const stripQuery = (p: string) => p.split("?")[0];
 
-
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
     if (window) {
@@ -130,9 +129,9 @@ const DashboardSidebar = () => {
           variant="outline"
           size="icon"
           onClick={toggleMobileSidebar}
-          className="h-14 w-14 rounded-full"
+          className="h-10 w-10 rounded-full"
         >
-          <Menu className="!h-6 !w-6" />
+          <Menu className="h-5 w-5" />
         </Button>
         <Link
           data-testid="dashboard-header-logo-link"
@@ -166,15 +165,16 @@ const DashboardSidebar = () => {
           {/* Sidebar Header */}
           <div
             data-testid="dashboard-sidebar-header"
-            className={cn("relative h-[90px] px-4 flex items-center"
-              , collapsed ? "my-3.5 justify-center" : "mb-7 justify-between"
+            className={cn(
+              "relative h-[90px] px-4 flex items-center",
+              collapsed ? "my-3.5 justify-center" : "mb-7 justify-between"
             )}
           >
             {/* Centered logo when expanded */}
             {/* {!collapsed && ( */}
-              <div data-testid="dashboard-sidebar-logo" className="mx-auto">
-                <Logo sign={collapsed} />
-              </div>
+            <div data-testid="dashboard-sidebar-logo" className="mx-auto">
+              <Logo sign={collapsed} />
+            </div>
             {/* )} */}
 
             {/* Right-side controls (collapse + mobile close) */}
@@ -182,7 +182,9 @@ const DashboardSidebar = () => {
               data-testid="dashboard-sidebar-controls"
               className={cn(
                 "absolute inset-y-0 right-0 flex items-center pr-0.5 md:pr-1",
-                collapsed ? "translate-x-[25px] translate-y-2/3 transition-transform duration-200" : "translate-x-[50px] transition-transform duration-200"
+                collapsed
+                  ? "translate-x-[25px] translate-y-2/3 transition-transform duration-200"
+                  : "translate-x-[50px] transition-transform duration-200"
               )}
             >
               <Button
@@ -235,14 +237,14 @@ const DashboardSidebar = () => {
                 item.name === "Sense PC"
                   ? "sensepc-sidebar-link"
                   : item.name === "Sense Cloud"
-                    ? "sensepc-storage-sidebar-link"
-                    : item.name === "Users"
-                      ? "sensepc-users-sidebar-link"
-                      : item.name === "Security & Privacy"
-                        ? "dashboard-security-privacy-link"
-                        : item.name === "Support"
-                          ? "support-sidebar-link"
-                          : defaultTestId;
+                  ? "sensepc-storage-sidebar-link"
+                  : item.name === "Users"
+                  ? "sensepc-users-sidebar-link"
+                  : item.name === "Security & Privacy"
+                  ? "dashboard-security-privacy-link"
+                  : item.name === "Support"
+                  ? "support-sidebar-link"
+                  : defaultTestId;
 
               return (
                 <Link
@@ -258,12 +260,17 @@ const DashboardSidebar = () => {
                   )}
                 >
                   <item.icon
-                    className={cn("h-5 w-5", collapsed ? "mx-auto" : "mr-[6px]")}
+                    className={cn(
+                      "h-5 w-5",
+                      collapsed ? "mx-auto" : "mr-[6px]"
+                    )}
                   />
                   {!collapsed && (
                     <span
                       data-testid={
-                        item.name === "Billing" ? "sensepc-wallet-icon" : undefined
+                        item.name === "Billing"
+                          ? "sensepc-wallet-icon"
+                          : undefined
                       }
                     >
                       {item.name}

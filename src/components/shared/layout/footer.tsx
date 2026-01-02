@@ -23,6 +23,7 @@ const socialLinks = [
 const quickLinks = [
   { href: "/about", text: "About Us", icon: "about-us-icon" },
   { href: "/contact", text: "Contact", icon: "contact-icon" },
+  { href: "/tutorials", text: "Tutorials", icon: "tutorials-icon" },
   { href: "/privacy", text: "Privacy Policy", icon: "privacy-policy-icon" },
   { href: "/terms", text: "Terms of Service", icon: "terms-icon" },
 ];
@@ -30,12 +31,10 @@ const quickLinks = [
 const product = [
   { icon: "computer1", text: "Sense PC", href: "/products/sensepc" },
   { icon: "storage", text: "Sense Cloud", href: "/products/sensecloud" },
-  { icon: "tutorials-icon", text: "Tutorials", href: "/tutorials" },
 ];
 
 // ✅ routes where we want the footer but WITHOUT the glow blobs
 const noGlowRoutes = ["/build-sensepc", "/contact"];
-
 
 const Footer = () => {
   const pathname = usePathname();
@@ -112,7 +111,9 @@ const Footer = () => {
                 unoptimized
               />
               {/* ✅ heading font */}
-              <h3 className={`${HEADING_FONT} text-base font-semibold text-white`}>
+              <h3
+                className={`${HEADING_FONT} text-base font-semibold text-white`}
+              >
                 Quick Links
               </h3>
             </div>
@@ -151,7 +152,9 @@ const Footer = () => {
                 unoptimized
               />
               {/* ✅ heading font */}
-              <h3 className={`${HEADING_FONT} text-base font-semibold text-white`}>
+              <h3
+                className={`${HEADING_FONT} text-base font-semibold text-white`}
+              >
                 Products
               </h3>
             </div>
@@ -194,7 +197,9 @@ const Footer = () => {
                 unoptimized
               />
               {/* ✅ heading font */}
-              <h3 className={`${HEADING_FONT} text-base font-semibold text-white`}>
+              <h3
+                className={`${HEADING_FONT} text-base font-semibold text-white`}
+              >
                 Newsletter
               </h3>
             </div>
@@ -207,7 +212,8 @@ const Footer = () => {
 
         <div className="pt-4 border-t border-[#F8F8F8]/25">
           <p className="text-center text-[#F8F8F8] text-sm font-['Inter']">
-            © {currentYear} sensepc. All rights reserved. <span className="opacity-80">v1.9.0-beta</span>
+            © {currentYear} sensepc. All rights reserved.{" "}
+            <span className="opacity-80">v1.9.0-beta</span>
           </p>
         </div>
       </div>

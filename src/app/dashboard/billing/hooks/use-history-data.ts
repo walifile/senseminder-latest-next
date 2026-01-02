@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { DateRange } from "react-day-picker";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 
 import { Logger } from "@/lib/utils/logger";
 import { toast } from "@/components/ui/use-toast";
@@ -78,7 +78,7 @@ export function useHistoryData<T>({
     setAllHistory([]);
     setLastEvaluatedKey(null);
     fetchHistory(false);
-  }, [date, fetchHistory]);
+  }, [date]);
 
   const filteredHistory = filterFunction
     ? allHistory.filter((item) => filterFunction(item, query))

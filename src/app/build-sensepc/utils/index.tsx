@@ -49,6 +49,24 @@ export const formatUptime = (seconds: number): string => {
   return `${minutes}m`;
 };
 
+export const formatUptimeHours = (hours: number): string => {
+  const totalMinutes = Math.floor(hours * 60);
+
+  if (totalMinutes < 60) {
+    // Less than 1 hour - show only minutes
+    return `${totalMinutes}m`;
+  }
+
+  const hoursPart = Math.floor(totalMinutes / 60);
+  const minutesPart = totalMinutes % 60;
+
+  if (minutesPart === 0) {
+    return `${hoursPart}h`;
+  }
+
+  return `${hoursPart}h ${minutesPart}m`;
+};
+
 export const getStatusClasses = (state: PC["status"], isStarting: boolean) => {
   if (isStarting) return "bg-yellow-500/10 text-yellow-500";
 

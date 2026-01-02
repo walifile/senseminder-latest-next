@@ -1,23 +1,23 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import {
+  type Tutorial,
+  TutorialDialog,
+} from "@/app/dashboard/tutorials/_components/tutorial-dialog";
+
+import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectItem,
+  SelectValue,
+  SelectContent,
+  SelectTrigger,
+} from "@/components/ui/select";
 
 import { motion } from "framer-motion";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import GradientSearchInput from "@/components/shared/inputs/gradient-search-input";
-import { cn } from "@/lib/utils";
-
-import {
-  TutorialDialog,
-  type Tutorial,
-} from "@/app/dashboard/tutorials/_components/tutorial-dialog";
 
 const tutorials: Tutorial[] = [
   {
