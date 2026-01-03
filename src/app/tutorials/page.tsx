@@ -103,13 +103,13 @@ const TutorialsPage = () => {
   ];
 
   return (
-    <div className="relative min-h-screen bg-[#020817] text-white">
+    <div className="relative min-h-screen bg-white dark:bg-[rgba(255,255,255,0.03)] backdrop-blur-[32px]">
       <div className="pointer-events-none absolute -top-24 left-0 h-[220px] w-[440px] rounded-[50%] bg-[#4027E5] opacity-40 blur-[160px]" />
       <div className="pointer-events-none absolute -top-28 right-0 h-[220px] w-[440px] rounded-[50%] bg-[#9C05BF] opacity-35 blur-[160px]" />
 
       <div className="relative container pt-28 pb-14 md:pt-32 md:pb-16 space-y-10 font-['Space_Grotesk']">
         <div className="space-y-3">
-          <p className="text-sm uppercase tracking-[0.2em] text-white/70">
+          <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground dark:text-white/70">
             Tutorials
           </p>
           <h1 className="text-3xl md:text-5xl font-bold leading-tight">
@@ -118,7 +118,7 @@ const TutorialsPage = () => {
               the fast way
             </span>
           </h1>
-          <p className="max-w-2xl text-white/70 text-base md:text-lg">
+          <p className="max-w-2xl text-muted-foreground dark:text-white/70 text-base md:text-lg">
             Watch quick, practical walkthroughs and master the platform in
             minutes.
           </p>
@@ -193,15 +193,15 @@ const TutorialsPage = () => {
               <TutorialDialog tutorial={tutorial} />
 
               <div className="px-5 py-5 space-y-2">
-                <h3 className="text-lg md:text-xl font-semibold text-white">
+                <h3 className="text-lg md:text-xl font-semibold text-black dark:text-white">
                   {tutorial.title}
                 </h3>
-                <p className="text-sm md:text-base text-white/70 line-clamp-2">
+                <p className="text-sm md:text-base text-muted-foreground dark:text-white/70 line-clamp-2">
                   {tutorial.description}
                 </p>
               </div>
 
-              <div className="border-t border-white/10 px-5 py-4 text-xs md:text-sm text-white/60">
+              <div className="border-t border-[rgba(37,48,240,0.30)] dark:border-[rgba(255,255,255,0.10)] px-5 py-4 text-xs md:text-sm text-muted-foreground dark:text-white/60">
                 <div className="flex items-center justify-between">
                   <span>
                     Uploaded: {new Date(tutorial.uploadDate).toLocaleDateString()}

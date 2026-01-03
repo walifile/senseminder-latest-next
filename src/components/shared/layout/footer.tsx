@@ -34,7 +34,7 @@ const product = [
 ];
 
 // ✅ routes where we want the footer but WITHOUT the glow blobs
-const noGlowRoutes = ["/build-sensepc", "/contact"];
+const noGlowRoutes = ["/build-sensepc", "/contact", "/tutorials"];
 
 const Footer = () => {
   const pathname = usePathname();
