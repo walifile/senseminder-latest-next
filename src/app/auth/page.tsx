@@ -1,4 +1,3 @@
-
 // src/app/auth/page.tsx
 
 "use client";
@@ -152,12 +151,12 @@ export default function LoginPage() {
 
         sessionStorage.setItem(
           "tempUserMFA",
-          JSON.stringify(response.signInResult),
+          JSON.stringify(response.signInResult)
         );
         sessionStorage.setItem("mfaEmail", email);
         sessionStorage.setItem(
           "mfaOptions",
-          JSON.stringify(response.mfaOptions),
+          JSON.stringify(response.mfaOptions)
         );
 
         setIsMfaSelectOpen(true);
@@ -191,7 +190,7 @@ export default function LoginPage() {
             className={cn(
               "relative mx-auto w-full max-w-[1320px]",
               // keep layout/padding here, card visuals come from PublicCard
-              "px-[20px] md:px-[30px] pt-[30px] pb-[30px]",
+              "px-[20px] md:px-[30px] pt-[30px] pb-[30px]"
             )}
           >
             {/* Light-mode ellipse glow on top-right of card */}
@@ -259,7 +258,11 @@ export default function LoginPage() {
                       </p>
                     </div>
 
-                    <Form methods={methods} onSubmit={handleSubmit(onSubmit)} submitOnEnter>
+                    <Form
+                      methods={methods}
+                      onSubmit={handleSubmit(onSubmit)}
+                      submitOnEnter
+                    >
                       <div className="space-y-5">
                         {/* Email */}
                         <div className="space-y-1.5">
@@ -288,7 +291,7 @@ export default function LoginPage() {
                         <div className="space-y-1.5">
                           <div className="relative">
                             <Lock className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                           <Input
+                            <Input
                               id="password"
                               type="password"
                               placeholder="Password"
@@ -299,7 +302,6 @@ export default function LoginPage() {
                               aria-invalid={!!errors.password}
                               className="pl-11 pr-11"
                             />
-
                           </div>
                           {errors.password && (
                             <p className="text-xs text-red-500">

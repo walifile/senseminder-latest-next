@@ -283,3 +283,44 @@ export function normalizeGB(storageSize?: string | null) {
   const n = parseFloat(raw.replace(/\s*gb/i, ""));
   return Number.isFinite(n) ? String(n) : "";
 }
+
+
+export function formatCycleDateUTC(iso?: string | null) {
+  if (!iso) return null;
+  const hasTz =
+    /[zZ]$/.test(iso) || /[+-]\d{2}:\d{2}$/.test(iso) || /[+-]\d{4}$/.test(iso);
+
+  const safeIso = hasTz ? iso : `${iso}Z`;
+
+  const d = new Date(safeIso);
+  if (Number.isNaN(d.getTime())) return null;
+
+  const formatted = d.toLocaleString("en-US", {
+    timeZone: "UTC",
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  return `${formatted} UTC`;
+}
+
+
+
+export const isFiniteNumber = (v: unknown): v is number =>
+  typeof v === "number" && Number.isFinite(v);
+
+export const truncateTo = (value: number, decimals: number) => {
+  const factor = 10 ** decimals;
+  const epsilon = 1e-9;
+  return Math.trunc((value + epsilon) * factor) / factor;
+};
+
+export const formatUsd = (value: number, decimals: number) => {
+  const truncated = truncateTo(value, decimals);
+  const normalized = Object.is(truncated, -0) ? 0 : truncated;
+  return `$${normalized.toFixed(decimals)}`;
+};

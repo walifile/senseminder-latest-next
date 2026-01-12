@@ -56,7 +56,7 @@ const PricingPlan = () => {
   const [selectedServer, setSelectedServer] = useState("us-east");
 
   // ✅ follow develop "info"
-  const serverLocations = [{ id: "us-east", name: "East Coast" }];
+  const serverLocations = [{ id: "us-east", name: "New York" }];
 
   // ✅ develop pricing logic
   const PRICE_TIER_1 = 0.25;
@@ -112,7 +112,7 @@ const PricingPlan = () => {
         <div className="flex flex-col gap-4 px-6 pt-5 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1">
             <p className="justify-start text-2xl font-bold leading-8">
-              Only Pay For What You Use
+              Only pay for what you use
             </p>
             <p className="text-[16px] leading-6 tracking-[-0.3px] text-[#454545] dark:text-[#B9C2D5]">
               Choose your service and preferred billing cycle

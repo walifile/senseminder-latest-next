@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useSearchParams } from "next/navigation";
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/components/ui/dashboard/dashboard-card";
 import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 
-import { Edit2, UserRound, ShieldCheck } from "lucide-react";
+import { UserRound, ShieldCheck } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
 
@@ -27,6 +28,11 @@ type Profile = {
   organization: string;
   role: string;
 };
+
+const ICONS = {
+  orgEditLight: "/assets/dashboard/write-light.svg",
+  orgEditDark: "/assets/dashboard/write-dark.svg",
+} as const;
 
 const ProfilePage = () => {
   const { toast } = useToast();
@@ -112,6 +118,7 @@ const ProfilePage = () => {
       lastName: rest.join(" ") || "",
     };
   }
+
   const handleSave = async () => {
     setSaving(true);
 
@@ -215,6 +222,9 @@ const ProfilePage = () => {
   const headerDescClass =
     "text-[16px] leading-[24px] tracking-[-0.3px] text-muted-foreground";
 
+  const orgTextClass =
+    "truncate text-[24px] font-bold leading-8 tracking-[-0.4px] font-['Space_Grotesk']";
+
   return (
     <DashboardCard
       data-testid="dashboard-profile-page"
@@ -239,6 +249,10 @@ const ProfilePage = () => {
                       onSubmit={prevent}
                       className="flex w-full flex-wrap items-center gap-2"
                     >
+                      <span className={orgTextClass} data-testid="org-prefix">
+                        Organization:
+                      </span>
+
                       <Input
                         ref={orgInputRef}
                         value={orgInput}
@@ -271,11 +285,8 @@ const ProfilePage = () => {
                     </form>
                   ) : (
                     <>
-                      <span
-                        className="truncate text-[24px] font-bold leading-8 tracking-[-0.4px]"
-                        data-testid="org-label"
-                      >
-                        {profile?.organization || "Organization"}
+                      <span className={orgTextClass} data-testid="org-label">
+                        {profile?.organization || ""}
                       </span>
 
                       {canEditOrg && (
@@ -288,7 +299,20 @@ const ProfilePage = () => {
                           data-testid="org-edit"
                           type="button"
                         >
-                          <Edit2 className="h-5 w-5" />
+                          {/* Light icon */}
+                          <img
+                            src={ICONS.orgEditLight}
+                            alt=""
+                            aria-hidden
+                            className="h-5 w-5 dark:hidden"
+                          />
+                          {/* Dark icon */}
+                          <img
+                            src={ICONS.orgEditDark}
+                            alt=""
+                            aria-hidden
+                            className="hidden h-5 w-5 dark:block"
+                          />
                         </Button>
                       )}
                     </>
@@ -329,8 +353,7 @@ const ProfilePage = () => {
           <TabsContent value="account" className="m-0 space-y-6">
             <ProfileAccountTab
               profile={profile}
-              setProfile={setProfile} // ✅ add
-
+              setProfile={setProfile}
               loading={loading}
               saving={saving}
               fullName={fullName}

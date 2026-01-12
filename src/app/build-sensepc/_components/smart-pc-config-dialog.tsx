@@ -29,6 +29,8 @@ import SmartPcConfigForm from "./smart-pc-config-form";
 import ConfirmPurchaseDialog from "./confirm-purchase-dialog";
 import SmartPcConfigDialogHeader from "./smart-pc-config-dialog-header";
 import { osOptions, storageOptions, locationOptions } from "../data";
+import type { BillingPlan } from "../data/billing";
+
 // import { useGetSmartPcConfigQuery } from "@/api/smartPCConfigAPI";
 import {
   makeResizeRequest,
@@ -243,7 +245,7 @@ const SmartPCConfigDialog = ({
 
       toast({
         title: "Resize submitted",
-        description: `${selectedInstance?.systemName} is updating its CPU & Memory. It does not take more than 60 seconds.`,
+        description: `${selectedInstance?.systemName} is updating its CPU & Memory. It does not take more than 60 seconds. Please start your computer.`,
       });
 
       onSuccess();
@@ -358,7 +360,7 @@ const SmartPCConfigDialog = ({
                 variant="small"
 
                 isResize={isResize}
-                billingPlan={billingPlan}
+                billingPlan={billingPlan as BillingPlan}
                 handleEstimate={handleEstimate}
                 estimateData={estimateData}
                 isEstimating={isEstimating}

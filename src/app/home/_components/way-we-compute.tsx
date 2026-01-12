@@ -66,7 +66,6 @@ const WayWeCompute = () => {
           width={600}
           height={400}
           className="size-full"
-          priority
         />
       </motion.div>
     </motion.div>

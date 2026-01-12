@@ -25,6 +25,12 @@ import {
 
 import { useToast } from "@/hooks/use-toast";
 
+import {
+  formatLastActivity,
+  isFederatedIdToken,
+  getChangePasswordErrorMessage,
+} from "../utils";
+
 const ICONS = {
   password: "/assets/dashboard/password.svg",
   securityQuestion: "/assets/dashboard/security.svg",
@@ -34,77 +40,6 @@ const ICONS = {
   connectedDevices: "/assets/dashboard/connector.svg",
 } as const;
 
-const getClientTimeZone = (): string => {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-  } catch {
-    return "UTC";
-  }
-};
-
-const toDateSafe = (value: unknown): Date | null => {
-  if (!value) return null;
-
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? null : value;
-  }
-
-  // number: could be seconds or milliseconds
-  if (typeof value === "number") {
-    const ms = value < 1_000_000_000_000 ? value * 1000 : value;
-    const d = new Date(ms);
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-
-  // string: could be ISO or numeric epoch
-  if (typeof value === "string") {
-    const s = value.trim();
-    if (!s) return null;
-
-    if (/^\d+$/.test(s)) {
-      const n = Number(s);
-      const ms = n < 1_000_000_000_000 ? n * 1000 : n;
-      const d = new Date(ms);
-      return Number.isNaN(d.getTime()) ? null : d;
-    }
-
-    const d = new Date(s);
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-
-  return null;
-};
-
-const formatLastActivity = (value: unknown): string => {
-  const d = toDateSafe(value);
-  if (!d) return "Unknown";
-
-  const tz = getClientTimeZone();
-
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      timeZone: tz,
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-      timeZoneName: "short",
-    }).format(d);
-  } catch {
-    return new Intl.DateTimeFormat(undefined, {
-      timeZone: "UTC",
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-      timeZoneName: "short",
-    }).format(d);
-  }
-};
 
 export const ProfileSecurityTab = () => {
   const { toast } = useToast();
@@ -112,6 +47,8 @@ export const ProfileSecurityTab = () => {
   // Security & 2FA/session states
   const [sessions, setSessions] = useState<SmartPCSession[]>([]);
   const [isFederatedUser, setIsFederatedUser] = useState(false);
+  const isMfaSupported = !isFederatedUser;
+
 
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -155,14 +92,7 @@ export const ProfileSecurityTab = () => {
         const idToken = session.tokens?.idToken?.toString();
         if (!idToken) return;
 
-        const decoded = JSON.parse(atob(idToken.split(".")[1]));
-        const isFederated =
-          Array.isArray(decoded?.identities) &&
-          decoded.identities.some((id: { providerType: string }) =>
-            ["google", "apple"].includes(id.providerType?.toLowerCase())
-          );
-
-        setIsFederatedUser(isFederated);
+        setIsFederatedUser(isFederatedIdToken(idToken));
       } catch (err) {
         Logger.error("Failed to decode token for federated check:", err);
       }
@@ -170,6 +100,7 @@ export const ProfileSecurityTab = () => {
 
     checkFederatedStatus();
   }, []);
+
 
   useEffect(() => {
     const checkMFAPreference = async () => {
@@ -277,16 +208,17 @@ export const ProfileSecurityTab = () => {
 
   // Figma-like card styles (still using DashboardCard)
   const primaryCardClass =
-    "rounded-[10px] border border-[rgba(37,48,240,0.10)] bg-[rgba(37,48,240,0.07)] p-5 dark:bg-[rgba(255,255,255,0.03)] dark:border-[rgba(255,255,255,0.08)]";
+    "rounded-[10px] border border-brand-blue-10 bg-brand-blue-07 p-5 dark:bg-public-card-bg-dark dark:border-border-white-08";
+
 
   const sectionTitleClass =
     "text-[20px] font-semibold leading-[30px] tracking-[-0.3px] font-['Space_Grotesk']";
 
   const sectionDescClass =
     "text-[16px] leading-[24px] tracking-[-0.3px] text-muted-foreground font-['Space_Grotesk']";
-
   const optionCardClass =
-    "rounded-[10px] border border-[rgba(37,48,240,0.07)] bg-[rgba(255,255,255,0.50)] p-6 dark:bg-[rgba(255,255,255,0.06)] dark:border-[rgba(255,255,255,0.10)]";
+    "rounded-[10px] border border-brand-blue-07 !bg-surface-white-75 p-6 backdrop-blur-[2px] dark:!bg-public-card-bg-dark dark:border-border-white-10";
+
 
   const TitleWithIcon = ({
     iconSrc,
@@ -373,16 +305,13 @@ export const ProfileSecurityTab = () => {
                           "You can now log out and log back in with your new password.",
                       });
                     } catch (err) {
-                      const message =
-                        err instanceof Error
-                          ? err.message
-                          : "Failed to change password.";
-                      toast({
-                        title: "Error",
-                        description: message,
-                        variant: "destructive",
-                      });
-                    } finally {
+                        toast({
+                          title: "Unable to change password",
+                          description: getChangePasswordErrorMessage(err),
+                          variant: "destructive",
+                        });
+                      } finally {
+
                       setChangingPassword(false);
                     }
                   }}
@@ -495,7 +424,7 @@ export const ProfileSecurityTab = () => {
         />
 
         {/* MFA */}
-        <DashboardCard className="rounded-[10px] border border-[rgba(37,48,240,0.10)] bg-[rgba(37,48,240,0.07)] p-6 dark:bg-[rgba(255,255,255,0.03)] dark:border-[rgba(255,255,255,0.08)] font-['Space_Grotesk']">
+        <DashboardCard className="rounded-[10px] border border-brand-blue-10 bg-brand-blue-07 p-6 dark:bg-public-card-bg-dark dark:border-border-white-08 font-['Space_Grotesk']">
           <div className="space-y-4">
             <div className="space-y-1">
               <TitleWithIcon
@@ -505,42 +434,56 @@ export const ProfileSecurityTab = () => {
               <p className={sectionDescClass}>
                 Choose your preferred authentication method
               </p>
+              {isFederatedUser ? (
+                <p className="text-sm text-muted-foreground">
+                  MFA setup is not available for accounts created with Google/Apple sign-in.
+                </p>
+              ) : null}
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-2">
-              {/* Authenticator App option */}
-              <DashboardCard className={`${optionCardClass} font-['Space_Grotesk']`}>
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="flex h-11 w-11 items-center justify-center rounded-[22px]"
-                      aria-hidden
-                    >
-                      {ICONS.mfaAuthenticator ? (
-                        <img
-                          src={ICONS.mfaAuthenticator}
-                          alt=""
-                          aria-hidden
-                        />
-                      ) : null}
-                    </div>
-
-                    <div className="space-y-1">
-                      <p className="text-[16px] font-medium leading-[24px] tracking-[-0.3px] font-['Space_Grotesk']">
-                        Authenticator App
-                      </p>
-                      <p className="text-[14px] leading-[20px] tracking-[-0.2px] text-muted-foreground font-['Space_Grotesk'] break-words">
-                        {is2FAEnabled
-                          ? "Two-factor authentication is enabled"
-                          : "Use an authenticator app to generate one-time codes"}
-                      </p>
-                    </div>
+           <div className="grid gap-6 lg:grid-cols-2">
+            {/* Authenticator App option */}
+            <DashboardCard className={`${optionCardClass} font-['Space_Grotesk']`}>
+              <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+                <div className="flex items-start gap-3 sm:items-center">
+                  <div
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[22px]"
+                    aria-hidden
+                  >
+                    {ICONS.mfaAuthenticator ? (
+                      <img src={ICONS.mfaAuthenticator} alt="" aria-hidden />
+                    ) : null}
                   </div>
 
+                  <div className="min-w-0 space-y-1">
+                    <p className="text-[16px] font-medium leading-[24px] tracking-[-0.3px] font-['Space_Grotesk']">
+                      Authenticator App
+                    </p>
+                    <p className="break-words text-[14px] leading-[20px] tracking-[-0.2px] text-muted-foreground font-['Space_Grotesk']">
+                      {is2FAEnabled
+                        ? "Two-factor authentication is enabled"
+                        : "Use an authenticator app to generate one-time codes"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="sm:justify-self-end">
                   <Button
                     size="sm"
+                    className="w-full sm:w-auto"
                     variant={is2FAEnabled ? "destructive" : "default"}
+                    disabled={!isMfaSupported}
                     onClick={() => {
+                      if (!isMfaSupported) {
+                        toast({
+                          title: "Not available",
+                          description:
+                            "MFA setup is not supported for Google/Apple sign-in accounts.",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+
                       if (is2FAEnabled) handleDisableTotp();
                       else setShowTotpDialog(true);
                     }}
@@ -555,65 +498,73 @@ export const ProfileSecurityTab = () => {
                       {is2FAEnabled ? "Disable" : "Setup"}
                     </span>
                   </Button>
-
-                  <MfaTotpDialog
-                    open={showTotpDialog}
-                    onClose={() => setShowTotpDialog(false)}
-                    onComplete={async () => {
-                      setShowTotpDialog(false);
-                      try {
-                        await updateMFAPreference({
-                          totp: "NOT_PREFERRED",
-                          email: isEmailMFAEnabled ? "NOT_PREFERRED" : "DISABLED",
-                        });
-
-                        const result = await fetchMFAPreference();
-                        Logger.log("MFA preference result (onComplete):", result);
-
-                        const isTOTPEnabled =
-                          result.enabled?.includes("TOTP") ||
-                          result.preferred === "TOTP";
-
-                        setIs2FAEnabled(isTOTPEnabled);
-                      } catch (err) {
-                        Logger.error("Error fetching MFA (onComplete):", err);
-                      }
-                    }}
-                  />
                 </div>
-              </DashboardCard>
+              </div>
 
-              {/* Email Authentication option */}
-              <DashboardCard className={`${optionCardClass} font-['Space_Grotesk']`}>
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex min-w-0 items-start sm:items-center gap-3">
-                    <div
-                      className="flex h-11 w-11 items-center justify-center rounded-[22px]"
-                      aria-hidden
-                    >
-                      {ICONS.mfaEmail ? (
-                        <img
-                          src={ICONS.mfaEmail}
-                          aria-hidden
-                        />
-                      ) : null}
-                    </div>
+              <MfaTotpDialog
+                open={showTotpDialog}
+                onClose={() => setShowTotpDialog(false)}
+                onComplete={async () => {
+                  setShowTotpDialog(false);
+                  try {
+                    await updateMFAPreference({
+                      totp: "NOT_PREFERRED",
+                      email: isEmailMFAEnabled ? "NOT_PREFERRED" : "DISABLED",
+                    });
 
-                    <div className="min-w-0 space-y-1">
-                      <p className="text-[16px] font-medium leading-[24px] tracking-[-0.3px] font-['Space_Grotesk']">
-                        Email Authentication
-                      </p>
-                      <p className="text-[14px] leading-[20px] tracking-[-0.2px] text-muted-foreground font-['Space_Grotesk']">
-                        Receive codes via email
-                      </p>
-                    </div>
+                    const result = await fetchMFAPreference();
+                    Logger.log("MFA preference result (onComplete):", result);
+
+                    const isTOTPEnabled =
+                      result.enabled?.includes("TOTP") || result.preferred === "TOTP";
+
+                    setIs2FAEnabled(isTOTPEnabled);
+                  } catch (err) {
+                    Logger.error("Error fetching MFA (onComplete):", err);
+                  }
+                }}
+              />
+            </DashboardCard>
+
+            {/* Email Authentication option */}
+            <DashboardCard className={`${optionCardClass} font-['Space_Grotesk']`}>
+              <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+                <div className="flex items-start gap-3 sm:items-center">
+                  <div
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[22px]"
+                    aria-hidden
+                  >
+                    {ICONS.mfaEmail ? <img src={ICONS.mfaEmail} alt="" aria-hidden /> : null}
                   </div>
 
+                  <div className="min-w-0 space-y-1">
+                    <p className="text-[16px] font-medium leading-[24px] tracking-[-0.3px] font-['Space_Grotesk']">
+                      Email Authentication
+                    </p>
+                    <p className="text-[14px] leading-[20px] tracking-[-0.2px] text-muted-foreground font-['Space_Grotesk']">
+                      Receive codes via email
+                    </p>
+                  </div>
+                </div>
+
+                <div className="sm:justify-self-end">
                   <Button
                     size="sm"
                     className="w-full sm:w-auto"
                     variant={isEmailMFAEnabled ? "destructive" : "default"}
-                    onClick={handleToggleEmailMFA}
+                    disabled={!isMfaSupported}
+                    onClick={() => {
+                      if (!isMfaSupported) {
+                        toast({
+                          title: "Not available",
+                          description:
+                            "Email MFA is not supported for Google/Apple sign-in accounts.",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      handleToggleEmailMFA();
+                    }}
                     type="button"
                     data-testid={
                       isEmailMFAEnabled
@@ -626,13 +577,15 @@ export const ProfileSecurityTab = () => {
                     </span>
                   </Button>
                 </div>
-              </DashboardCard>
-            </div>
+              </div>
+            </DashboardCard>
+          </div>
+
           </div>
         </DashboardCard>
 
         {/* Connected Devices */}
-        <DashboardCard className="rounded-[10px] border border-[rgba(37,48,240,0.10)] bg-[rgba(37,48,240,0.07)] p-6 dark:bg-[rgba(255,255,255,0.03)] dark:border-[rgba(255,255,255,0.08)] font-['Space_Grotesk']">
+        <DashboardCard className="rounded-[10px] border border-brand-blue-10 bg-brand-blue-07 p-6 dark:bg-public-card-bg-dark dark:border-border-white-08 font-['Space_Grotesk']">
           <div className="flex h-full flex-col gap-4">
             <TitleWithIcon
               iconSrc={ICONS.connectedDevices}

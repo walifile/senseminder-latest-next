@@ -20,21 +20,21 @@
     </linearGradient>
   </defs>
 
-  <!-- Outer circle -->
+  <!-- Enlarged outer circle -->
   <circle
     cx="12"
     cy="12"
-    r="7.2"
+    r="9.6"
     stroke="url(#tutorials_gradient)"
-    stroke-width="1.4"
+    stroke-width="2"
     fill="none"
   />
 
-  <!-- Play icon -->
+  <!-- Enlarged play icon -->
   <path
-    d="M10.4 9.6L14.2 12L10.4 14.4Z"
+    d="M9.4 8.2L16.6 12L9.4 15.8Z"
     stroke="url(#tutorials_gradient)"
-    stroke-width="1.4"
+    stroke-width="2"
     stroke-linejoin="round"
     fill="none"
   />

@@ -35,6 +35,18 @@ interface SignUpFormData {
   // organization?: string;
 }
 
+// const shouldPreferPrivateSession = () => {
+//   if (typeof navigator === "undefined") {
+//     return false;
+//   }
+
+//   const ua = navigator.userAgent || "";
+//   const isIOSDevice = /iPad|iPhone|iPod/.test(ua);
+//   const isIPadOS = ua.includes("Mac") && navigator.maxTouchPoints > 1;
+
+//   return isIOSDevice || isIPadOS;
+// };
+
 export const handleSignUp = async (formData: SignUpFormData) => {
   try {
     store.dispatch(setLoading(true));
@@ -310,7 +322,13 @@ export const handleGoogleSignUp = async () => {
     store.dispatch(setLoading(true));
 
     // Sign up with Google
-    await signInWithRedirect({ provider: "Google" });
+    // const redirectOptions = shouldPreferPrivateSession()
+    //   ? { preferPrivateSession: true }
+    //   : undefined;
+    await signInWithRedirect({
+      provider: "Google",
+      // options: { preferPrivateSession: true },
+    });
 
     return { success: true };
   } catch (error) {

@@ -1,6 +1,4 @@
-
 // import React from "react";
-
 
 // const PublicDarkBackground: React.FC = () => (
 //   <>
@@ -31,7 +29,6 @@
 //     />
 //   </div>
 
-
 //   <div
 //     className="
 //       pointer-events-none
@@ -46,7 +43,6 @@
 //       className="block h-full w-full max-w-none"
 //     />
 //   </div>
-
 
 //     <div className="pointer-events-none absolute max-w-none">
 //       <img
@@ -84,20 +80,6 @@
 // );
 
 // export default PublicDarkBackground;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 "use client";
 

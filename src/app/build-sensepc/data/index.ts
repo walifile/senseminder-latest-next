@@ -204,7 +204,8 @@ export const storageOptions: Option[] = [
 ];
 
 export const locationOptions: Option[] = [
-  { value: "us-east-1", label: "East Coast" },
+  { value: "us-east-1", label: "New York" },
+  // { value: "us-west-2", label: "California" },
   // { value: "us-west", label: "US West (San Francisco)" },
   // { value: "eu-central", label: "EU Central (Frankfurt)" },
   // { value: "ap-southeast", label: "Asia Pacific (Singapore)" },
@@ -215,8 +216,9 @@ export const stableStates = ["running", "stopped"];
 // unused
 
 export const regionOptions = [
-  { value: "us-east", label: "US East" },
-  { value: "eu-central", label: "EU Central" },
+  { value: "us-east", label: "New York" },
+  { value: "us-west", label: "California" },
+  { value: "eu-central", label: "Europe" },
 ];
 
 export const mockUsers: AssignedUser[] = [
@@ -325,6 +327,7 @@ export const pcTemplates = [
 
 export const timeOptions = [
   // { value: "none", label: "none" },
+  { value: "10", label: "10 minutes" },
   { value: "15", label: "15 minutes" },
   { value: "30", label: "30 minutes" },
   { value: "45", label: "45 minutes" },

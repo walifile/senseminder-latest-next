@@ -1,7 +1,12 @@
 "use client";
 
- 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { routes } from "@/constants/routes";
+
+import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
+import { checkOnboarded } from "@/lib/utils/checkOnboarded";
 
 import { ArrowUpRight } from "lucide-react";
 
@@ -21,6 +26,23 @@ import RentSmarterProcess from "./rent-smarter-process";
 
 export default function HomePage() {
   const onGetStarted = useGetStartedNav();
+
+  const router = useRouter();
+
+  useEffect(() => {
+    async function handleRedirect() {
+      try {
+        const onboarded = await checkOnboarded();
+        if (onboarded === false) {
+          router.replace(routes.welcome);
+        }
+      } catch (err) {
+        Logger.error("Onboarding check failed:", err);
+      }
+    }
+
+    handleRedirect();
+  }, [router]);
   return (
     <MainLayout>
       <Hero
@@ -39,7 +61,8 @@ export default function HomePage() {
           </span>
         </p>
         <p className="text-paragraph text-base md:text-2xl w-full md:w-[85%]">
-          Build a high-performing cloud computer in minutes with Sense PC. No hardware. No security threat. No overpaying.
+          Build a high-performing cloud computer in minutes with Sense PC. No
+          hardware. No security threat. No overpaying.
         </p>
       </Hero>
       <FutureOfComputing />
@@ -81,5 +104,3 @@ export default function HomePage() {
     </MainLayout>
   );
 }
-
-

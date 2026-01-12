@@ -1,3 +1,22 @@
+
+export type BillingCycle = {
+  startTime?: string | null;
+  endTime?: string | null;
+};
+
+export type TotalEstimate = {
+  pricePerHour?: number;
+  pricePerDay?: number;
+  pricePerMonth?: number;
+};
+
+export type EstimateData = {
+  instance: TotalEstimate;
+  storage: TotalEstimate;
+  total: TotalEstimate;
+};
+
+
 export interface Option {
   value: string;
   label: string;
@@ -28,7 +47,7 @@ export type PC = {
 
   name?: string;
   template?: string;
-  uptime?: number;
+  uptime?: string;
   cpuUsage?: number;
   memoryUsage?: number;
   cost?: number;
@@ -36,6 +55,10 @@ export type PC = {
   idleTimeout?: number; // minutes until PC goes to sleep
   billingPlan?: string;
   billingPlanDescription?: string;
+  billingCycle?: {
+    startTime?: string | null;
+    endTime?: string | null;
+  } | null;
   schedule?: {
     enabled: boolean;
     autoStartTime?: string;
@@ -77,7 +100,7 @@ export interface CloudPC {
     | "stopped"
     | "idle"
     | "not_running";
-  uptime: number;
+  uptime?: string;
   cpuUsage: number;
   memoryUsage: number;
   region: string;

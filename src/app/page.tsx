@@ -1,32 +1,15 @@
-"use client";
+import type { Metadata } from "next";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { routes } from "@/constants/routes";
-
-import { Logger } from "@/lib/utils/logger";
-import { checkOnboarded } from "@/lib/utils/checkOnboarded";
-
+import { homeMeta } from "./seo/metadata";
 import Home from "../app/home/_components/main-page";
 
+export const metadata: Metadata = {
+  title: homeMeta.title,
+  description: homeMeta.description,
+  keywords: homeMeta.keywords,
+};
+
 export default function HomePage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    async function handleRedirect() {
-      try {
-        const onboarded = await checkOnboarded();
-        if (onboarded === false) {
-          router.replace(routes.welcome);
-        }
-      } catch (err) {
-        Logger.error("Onboarding check failed:", err);
-      }
-    }
-
-    handleRedirect();
-  }, [router]);
-
   return (
     <>
       <Home />

@@ -201,7 +201,7 @@ const NotificationsPage = () => {
                 Notifications
               </h1>
               <p className="text-muted-foreground">
-                Manage your Cloud Computer
+                Manage your notifications
               </p>
             </div>
             <div className="flex space-x-2">

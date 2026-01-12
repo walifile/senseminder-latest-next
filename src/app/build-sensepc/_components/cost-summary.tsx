@@ -1,36 +1,35 @@
 
 // src/app/build-sensepc/_components/cost-summary.tsx
 
+"use client";
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PublicCard } from "@/components/ui/public-card";
 
 import { ArrowUpRight } from "lucide-react";
 
-type totalType = {
-  pricePerHour?: number;
-  pricePerDay?: number;
-  pricePerMonth?: number;
-};
+import { formatUsd, truncateTo, isFiniteNumber } from "../utils";
 
-type estimateDataType = {
-  instance: totalType;
-  storage: totalType;
-  total: totalType;
-};
+import type { BillingPlan } from "../data/billing";
+import type { EstimateData, TotalEstimate } from "../types";
+
+
 
 type CostSummaryVariant = "default" | "small";
 
 type Props = {
   isResize: boolean;
-  billingPlan: string;
+  billingPlan: BillingPlan;
   handleEstimate: () => void;
-  estimateData: estimateDataType | null;
+  estimateData: EstimateData | null;
   isEstimating: boolean;
   cpuLabel?: string;
   storageLabel?: string;
   variant?: CostSummaryVariant;
 };
+
+
 
 const CostSummary = ({
   isResize,
@@ -38,41 +37,60 @@ const CostSummary = ({
   handleEstimate,
   estimateData,
   isEstimating,
-
+  cpuLabel,
+  storageLabel,
   variant = "default",
 }: Props) => {
-  /* ----- price helpers (from old code) ----- */
-  const getPrice = (resource: "instance" | "storage" | "total") => {
+  const getPlanKey = (): keyof TotalEstimate =>
+  billingPlan === "hourly"
+    ? "pricePerHour"
+    : billingPlan === "daily"
+    ? "pricePerDay"
+    : "pricePerMonth";
+
+  const getDisplayPrice = (resource: "instance" | "storage" | "total") => {
     if (isEstimating) return "...";
+    if (!estimateData) return "-";
 
-    const planKey =
-      billingPlan === "hourly"
-        ? "pricePerHour"
-        : billingPlan === "daily"
-        ? "pricePerDay"
-        : "pricePerMonth";
+    const planKey = getPlanKey();
 
-    const price = estimateData?.[resource]?.[planKey];
+    if (resource === "total") {
+      const rawInstance = estimateData.instance?.[planKey];
+      const rawStorage = estimateData.storage?.[planKey];
 
-    return price != null ? `$${price.toFixed(2)}` : "-";
+      if (isFiniteNumber(rawInstance) && isFiniteNumber(rawStorage)) {
+        const total =
+          truncateTo(rawInstance, 2) + truncateTo(rawStorage, 2);
+          return formatUsd(total, 2);
+      }
+
+      const rawTotal = estimateData.total?.[planKey];
+      return isFiniteNumber(rawTotal) ? formatUsd(rawTotal, 2) : "-";
+    }
+
+    const raw = estimateData[resource]?.[planKey];
+    return isFiniteNumber(raw) ? formatUsd(raw, 2) : "-";
   };
 
-  // Shared values (same logic)
-  const storageLeftLabel = isResize ? "Storage (SSD) (current)" : "Storage (SSD)";
-  const cpuRightValue = getPrice("instance");
-  const storageRightValue = getPrice("storage");
-  const totalRightValue = getPrice("total");
+  const storageLeftLabel = storageLabel
+    ? storageLabel
+    : isResize
+    ? "Storage (SSD) (current)"
+    : "Storage (SSD)";
 
-  // Small variant needs this exact string behavior
+  const cpuLeftLabel = cpuLabel ?? "CPU + Memory";
+
+  const cpuRightValue = getDisplayPrice("instance");
+  const storageRightValue = getDisplayPrice("storage");
+  const totalRightValue = getDisplayPrice("total");
+
   const bottomNote = isResize
     ? "Changes take a few minutes. You'll see the new CPU once the PC starts again."
     : "Resizing is available on the Hourly plan only. Some changes require the PC to be stopped.";
 
-
   if (variant === "small") {
     return (
       <section className="flex flex-col gap-6">
-        {/* Header: Summary + subtitle */}
         <div className="space-y-1">
           <h2
             className={cn(
@@ -99,15 +117,14 @@ const CostSummary = ({
             "relative overflow-hidden",
             "rounded-[16px]",
             "bg-[#E6E8FF]",
-
-            "dark:bg-transparent", // remove light bg under gradient
+            "dark:bg-transparent",
             "dark:bg-gradient-to-l",
-            "dark:from-[#2530F0]/25 dark:to-[#A801BA]/15", // ⬅ Figma colours
+            "dark:from-[#2530F0]/25 dark:to-[#A801BA]/15",
             "dark:outline dark:outline-1 dark:-outline-offset-1 dark:outline-white/20",
             "dark:backdrop-blur-2xl"
           )}
         >
-          {/* Decorative ellipse (optional subtle glow) */}
+          {/* Decorative ellipse */}
           <div
             className="pointer-events-none absolute -right-24 -bottom-32 opacity-60"
             aria-hidden
@@ -131,7 +148,7 @@ const CostSummary = ({
                     "text-[#454545] dark:text-[color:var(--paragraph,#b9c2d5)]"
                   )}
                 >
-                  CPU + Memory
+                  {cpuLeftLabel}
                 </span>
                 <span
                   className={cn(
@@ -198,7 +215,7 @@ const CostSummary = ({
               </div>
             </div>
 
-            {/* Button + runtime note */}
+            {/* Button + note */}
             <div className="flex flex-col items-center gap-3">
               <Button
                 type="button"
@@ -231,7 +248,7 @@ const CostSummary = ({
           </div>
         </div>
 
-        {/* Bottom helper note outside the card */}
+        {/* Bottom note */}
         <p
           className={cn(
             "font-inter font-normal",
@@ -277,7 +294,6 @@ const CostSummary = ({
             <p
               className={cn(
                 "font-inter text-[#7d7d7d] dark:text-[color:var(--paragraph,#b9c2d5)]",
-                // Figma: 16 / 24
                 "text-[14px] leading-[22px] md:text-[16px] md:leading-[24px]"
               )}
             >
@@ -286,7 +302,7 @@ const CostSummary = ({
             </p>
           </header>
 
-          {/* Top divider */}
+          {/* Divider */}
           <div className="h-px bg-[rgba(0,0,0,0.15)] dark:bg-[rgba(255,255,255,0.2)]" />
 
           {/* Rows */}
@@ -298,9 +314,12 @@ const CostSummary = ({
           >
             <div className="flex items-center justify-between pb-2 border-b border-[rgba(0,0,0,0.15)] dark:border-[rgba(255,255,255,0.2)]">
               <span className="text-[#7d7d7d] dark:text-[color:var(--paragraph,#b9c2d5)]">
-                CPU + Memory
+                {cpuLeftLabel}
               </span>
-              <span className="text-[#020816] dark:text-white text-right">
+              <span
+                className="text-[#020816] dark:text-white text-right"
+                data-testid="sensepc-cpu-price"
+              >
                 {cpuRightValue}
               </span>
             </div>
@@ -309,7 +328,10 @@ const CostSummary = ({
               <span className="text-[#7d7d7d] dark:text-[color:var(--paragraph,#b9c2d5)]">
                 {storageLeftLabel}
               </span>
-              <span className="text-[#020816] dark:text-white text-right">
+              <span
+                className="text-[#020816] dark:text-white text-right"
+                data-testid="sensepc-storage-price"
+              >
                 {storageRightValue}
               </span>
             </div>
@@ -319,13 +341,16 @@ const CostSummary = ({
               <span className="text-[#7d7d7d] dark:text-[color:var(--paragraph,#b9c2d5)]">
                 Total
               </span>
-              <span className="text-[#020816] dark:text-white text-right">
+              <span
+                className="text-[#020816] dark:text-white text-right"
+                data-testid="sensepc-total-price"
+              >
                 {totalRightValue}
               </span>
             </div>
           </div>
 
-          {/* Divider under rows */}
+          {/* Divider */}
           <div className="h-px bg-[rgba(0,0,0,0.15)] dark:bg-[rgba(255,255,255,0.2)]" />
 
           {/* Button + note */}
@@ -384,4 +409,3 @@ const CostSummary = ({
 };
 
 export default CostSummary;
-

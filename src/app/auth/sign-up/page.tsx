@@ -178,7 +178,7 @@ export default function SignUpPage() {
                     {/* Heading */}
                     <div className="mb-8 text-center">
                       <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl">
-                        Create an Account
+                        Create an account
                       </h1>
                       <p className="mt-2 text-[0.95rem] md:text-base text-slate-500 dark:text-slate-300">
                         Enter your details to create your Sense PC account

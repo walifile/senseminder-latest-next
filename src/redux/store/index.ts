@@ -11,6 +11,7 @@ import { newsletterAPI } from "@/api/newsletterAPI";
 import { vmManagementAPI } from "@/api/vmManagement";
 import { fileManagerAPI } from "@/api/fileManagerAPI";
 import { firstTimeSetupAPI } from "@/api/first-time-setup";
+import { smartPCIdleSettingsAPI } from "@/api/smartPC-Idle-settings";
 import { legalDocumentsAPI } from "@/api/legalDocumentsAPI";
 import { smartPCConfigAPI } from "@/api/smartPCConfigAPI";
 
@@ -50,6 +51,7 @@ interface RootStateType {
   [userAPI.reducerPath]: ReturnType<typeof userAPI.reducer>;
   [feedbackAPI.reducerPath]: ReturnType<typeof feedbackAPI.reducer>;
   [firstTimeSetupAPI.reducerPath]: ReturnType<typeof firstTimeSetupAPI.reducer>;
+  [smartPCIdleSettingsAPI.reducerPath]: ReturnType<typeof smartPCIdleSettingsAPI.reducer>;
   [smartPCConfigAPI.reducerPath]: ReturnType<typeof smartPCConfigAPI.reducer>;
 }
 
@@ -74,6 +76,7 @@ const rootReducer = combineReducers({
   [userAPI.reducerPath]: userAPI.reducer,
   [feedbackAPI.reducerPath]: feedbackAPI.reducer,
   [firstTimeSetupAPI.reducerPath]: firstTimeSetupAPI.reducer,
+  [smartPCIdleSettingsAPI.reducerPath]: smartPCIdleSettingsAPI.reducer,
   [smartPCConfigAPI.reducerPath]: smartPCConfigAPI.reducer,
 });
 
@@ -97,6 +100,7 @@ export const store = configureStore({
       userAPI.middleware,
       feedbackAPI.middleware,
       firstTimeSetupAPI.middleware,
+      smartPCIdleSettingsAPI.middleware,
       smartPCConfigAPI.middleware
     ),
 });

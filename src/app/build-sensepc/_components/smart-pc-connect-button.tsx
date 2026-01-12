@@ -44,10 +44,11 @@ const SmartPcConnectButton = ({
 
     try {
       const response = await launchVM({ instanceId, userId }).unwrap();
-      dispatch(setLaunchVMResponse({ instanceId, response, pcName }));
-      const encodedSession = btoa(instanceId);
+      const sessionKey = pcName?.trim() || instanceId;
+      dispatch(setLaunchVMResponse({ sessionKey, response, pcName }));
+      const pcParam = encodeURIComponent(sessionKey);
       window.open(
-        `${routes?.pcViewer}?session=${encodedSession}`,
+        `${routes?.pcViewer}?pc=${pcParam}`,
         "_blank",
         "noopener,noreferrer"
       );

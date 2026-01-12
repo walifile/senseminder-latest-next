@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 
-import { Plus, Monitor, GraduationCap } from "lucide-react";
+import { Monitor, HammerIcon, GraduationCap } from "lucide-react";
 
 type SmartPCEmptyStateProps = {
   isMember: boolean;
@@ -29,7 +29,7 @@ const SmartPCEmptyState: React.FC<SmartPCEmptyStateProps> = ({
     <div className="flex gap-4 flex-wrap justify-center">
       {!isMember && (
         <Button onClick={handleShowNewPCDialog} data-testid="sensepc-build-button">
-          <Plus className="h-4 w-4 mr-2" />
+          <HammerIcon className="h-4 w-4 mr-2" />
           Build Sense PC
         </Button>
       )}

@@ -1,7 +1,15 @@
-import React from "react";
+import type { Metadata } from "next";
+
+import { homeMeta } from "@/app/seo/metadata";
 
 import HomePage from "./_components/main-page";
 
-const Home = () => <HomePage />;
+export const metadata: Metadata = {
+  title: homeMeta.title,
+  description: homeMeta.description,
+  keywords: homeMeta.keywords,
+};
 
-export default Home;
+export default function Home() {
+  return <HomePage />;
+}

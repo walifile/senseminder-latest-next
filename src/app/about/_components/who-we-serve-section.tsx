@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import React from "react";
@@ -127,7 +125,6 @@ export function WhoWeServeSection() {
                 src="/assets/images/ashfak-ahmed.png"
                 alt="Ashfak Ahmed"
                 fill
-                priority
                 className="object-cover"
                 sizes="228px"
               />
@@ -174,10 +171,10 @@ export function WhoWeServeSection() {
                 </div>
               ) : null}
 
-              <p className="font-space-grotesk text-[24px] font-bold leading-[32px] tracking-[-0.5px] text-[#020816] dark:text-white md:text-[32px] md:leading-[42px]">
+              <p className="font-space-grotesk text-[20px] font-bold leading-[32px] tracking-[-0.5px] text-[#020816] dark:text-white md:text-[32px] md:leading-[42px]">
                 Ashfak Ahmed
               </p>
-              <p className="mt-2 font-inter text-[16px] font-normal leading-[28px] tracking-[-0.4px] text-[#7D7D7D] dark:text-[#B9C2D5] md:text-[24px] md:leading-[40px]">
+              <p className="mt-2 font-inter text-[14px] font-normal leading-[28px] tracking-[-0.4px] text-[#7D7D7D] dark:text-[#B9C2D5] md:text-[24px] md:leading-[40px]">
                 Founder &amp; CEO, Senseminder
               </p>
             </GlassCard>
@@ -209,7 +206,7 @@ export function WhoWeServeSection() {
             ) : null}
 
             <div className="relative z-10 flex flex-col gap-4">
-              <h2 className="font-space-grotesk text-[28px] font-semibold leading-[36px] tracking-[-1px] text-[#020816] dark:text-white md:text-[40px] md:leading-[48px] lg:text-[48px] lg:leading-[56px]">
+              <h2 className="font-space-grotesk text-[26px] font-semibold leading-[34px] tracking-[-1px] text-[#020816] dark:text-white md:text-[36px] md:leading-[44px] lg:text-[42px] lg:leading-[50px]">
                 Who Can Use Our Platform
               </h2>
 
@@ -220,7 +217,6 @@ export function WhoWeServeSection() {
                   </li>
                 ))}
               </ul>
-
             </div>
           </GlassCard>
         </div>
@@ -271,7 +267,7 @@ export function WhoWeServeSection() {
           ) : null}
 
           <div className="relative z-10 flex flex-col gap-4">
-            <h2 className="font-space-grotesk text-[28px] font-semibold leading-[36px] tracking-[-1px] text-[#020816] dark:text-white md:text-[40px] md:leading-[48px] lg:text-[48px] lg:leading-[56px]">
+            <h2 className="font-space-grotesk text-[26px] font-semibold leading-[34px] tracking-[-1px] text-[#020816] dark:text-white md:text-[36px] md:leading-[44px] lg:text-[42px] lg:leading-[50px]">
               What’s Next
             </h2>
 

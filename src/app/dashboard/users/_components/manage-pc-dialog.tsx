@@ -142,7 +142,7 @@ const ManagePcDialog = ({
               No user selected.
             </div>
           ) : smartPCs.length === 0 ? (
-            <div className="italic">No SmartPCs available to assign.</div>
+            <div className="italic">No PCs available to assign.</div>
           ) : (
             <div className="space-y-3">
               {smartPCs.map((pc: PC) => {

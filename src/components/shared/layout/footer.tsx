@@ -33,7 +33,6 @@ const product = [
   { icon: "storage", text: "Sense Cloud", href: "/products/sensecloud" },
 ];
 
-// ✅ routes where we want the footer but WITHOUT the glow blobs
 const noGlowRoutes = ["/build-sensepc", "/contact", "/tutorials"];
 
 const Footer = () => {

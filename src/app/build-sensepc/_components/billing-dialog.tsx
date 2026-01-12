@@ -1,6 +1,4 @@
 
-// build-smartpc/src/app/build-smartpc/_components/billing-dialog.tsx
-
 "use client";
 
 import * as React from "react";
@@ -28,10 +26,11 @@ import {
   CalendarClock,
 } from "lucide-react";
 
-import { fmtMoney, normalizeGB } from "../utils";
 import { PLAN_COPY, PLAN_ORDER } from "../data/billing";
+import { formatUsd, truncateTo, normalizeGB, isFiniteNumber, formatCycleDateUTC } from "../utils";
 
 import type { BillingPlan } from "../data/billing";
+import type { BillingCycle, EstimateData } from "../types";
 
 
 
@@ -44,22 +43,17 @@ type Props = {
   storageSize?: string | null;
   region?: string | null;
   autoRenewEnabled?: boolean;
+  billingCycle?: BillingCycle | null;
   onToggleAutoRenew?: (enabled: boolean) => void | Promise<void>;
   onConfirm: (plan: BillingPlan) => void | Promise<void>;
 };
 
-
-type TotalEstimate = {
-  pricePerHour?: number;
-  pricePerDay?: number;
-  pricePerMonth?: number;
+const PLAN_PRIORITY: Record<BillingPlan, number> = {
+  hourly: 1,
+  daily: 2,
+  monthly: 3,
 };
 
-type EstimateData = {
-  instance: TotalEstimate;
-  storage: TotalEstimate;
-  total: TotalEstimate;
-};
 
 
 export const BillingPlanDialog: React.FC<Props> = ({
@@ -69,6 +63,7 @@ export const BillingPlanDialog: React.FC<Props> = ({
   onConfirm,
   configId,
   storageSize,
+  billingCycle,
   region,
   autoRenewEnabled,
   onToggleAutoRenew,
@@ -84,6 +79,7 @@ export const BillingPlanDialog: React.FC<Props> = ({
 
   const [getEstimate, estimateResult] = useGetEstimateMutation();
   const { data: estimateData, isLoading: isEstimateLoading } = estimateResult;
+
   const [uiAutoRenew, setUiAutoRenew] = React.useState<boolean>(
     autoRenewEnabled ?? currentPlan !== "hourly"
   );
@@ -93,10 +89,13 @@ export const BillingPlanDialog: React.FC<Props> = ({
   const retryTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const isMountedRef = React.useRef(true);
 
-  React.useEffect(() => () => {
+  React.useEffect(
+    () => () => {
       isMountedRef.current = false;
       if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
-    }, []);
+    },
+    []
+  );
 
   const fetchEstimateWithRetry = React.useCallback(
     async (attempt: number = 0) => {
@@ -144,12 +143,18 @@ export const BillingPlanDialog: React.FC<Props> = ({
     }
   }, [open, currentPlan, autoRenewEnabled, fetchEstimateWithRetry]);
 
-  const confirmNeeded = selectedPlan === "daily" || selectedPlan === "monthly";
+  const isChanging = selectedPlan !== currentPlan;
 
-  const canApply =
-    selectedPlan !== currentPlan &&
-    (!confirmNeeded || confirmChecked) &&
-    !submitting;
+  const isDowngrade =
+    isChanging && PLAN_PRIORITY[selectedPlan] < PLAN_PRIORITY[currentPlan];
+
+  const isUpgrade =
+    isChanging && PLAN_PRIORITY[selectedPlan] > PLAN_PRIORITY[currentPlan];
+
+  const confirmNeeded =
+    isUpgrade && (selectedPlan === "daily" || selectedPlan === "monthly");
+
+  const canApply = isChanging && (!confirmNeeded || confirmChecked) && !submitting;
 
   const handleApplyClick = () => {
     if (!canApply) return;
@@ -178,46 +183,73 @@ export const BillingPlanDialog: React.FC<Props> = ({
       return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
     }
 
-    const p = (estimateData as EstimateData | undefined)?.total;
-    if (!p) return "-";
+    const data = estimateData as EstimateData | undefined;
+    const instance = data?.instance;
+    const storage = data?.storage;
+    if (!instance || !storage) return "-";
 
-    if (plan === "hourly") return fmtMoney(p.pricePerHour, 3);
-    if (plan === "daily") return fmtMoney(p.pricePerDay, 2);
-    return fmtMoney(p.pricePerMonth, 2);
+    const decimals = plan === "hourly" ? 3 : 2;
+
+    const inst =
+      plan === "hourly"
+        ? instance.pricePerHour
+        : plan === "daily"
+        ? instance.pricePerDay
+        : instance.pricePerMonth;
+
+    const ssd =
+      plan === "hourly"
+        ? storage.pricePerHour
+        : plan === "daily"
+        ? storage.pricePerDay
+        : storage.pricePerMonth;
+
+    if (!isFiniteNumber(inst) || !isFiniteNumber(ssd)) return "-";
+
+    // IMPORTANT: recompute total from parts and truncate (ROUND_DOWN) per plan
+    const total =
+      truncateTo(inst, decimals) + truncateTo(ssd, decimals);
+
+    return formatUsd(total, decimals);
   };
 
+  const cycleEndLabel = formatCycleDateUTC(billingCycle?.endTime);
 
-const ConfirmRow = ({ className }: { className?: string }) => {
-  const id = React.useId();
+  const showActiveCycleEnd =
+    selectedPlan === currentPlan &&
+    (currentPlan === "daily" || currentPlan === "monthly") &&
+    Boolean(cycleEndLabel);
 
-  return (
-    <div
-      className={cn(
-        "font-['Space_Grotesk'] flex w-full items-center gap-3 rounded-[10px] border text-left",
-        "px-4 py-4 sm:px-4 sm:py-4",
-        "bg-[rgba(37,48,240,0.07)] border-[rgba(37,48,240,0.1)]",
-        "dark:bg-[rgba(255,255,255,0.04)] dark:border-white/40",
-        confirmChecked && "bg-[rgba(37,48,240,0.12)] dark:bg-white/10",
-        className
-      )}
-    >
-      <Checkbox
-        id={id}
-        variant="billing"
-        checked={confirmChecked}
-        onCheckedChange={(v) => setConfirmChecked(v === true)}
-      />
+  const ConfirmRow = ({ className }: { className?: string }) => {
+    const id = React.useId();
 
-      <label
-        htmlFor={id}
-        className="cursor-pointer select-none font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white"
+    return (
+      <div
+        className={cn(
+          "font-['Space_Grotesk'] flex w-full items-center gap-3 rounded-[10px] border text-left",
+          "px-4 py-4 sm:px-4 sm:py-4",
+          "bg-[rgba(37,48,240,0.07)] border-[rgba(37,48,240,0.1)]",
+          "dark:bg-[rgba(255,255,255,0.04)] dark:border-white/40",
+          confirmChecked && "bg-[rgba(37,48,240,0.12)] dark:bg-white/10",
+          className
+        )}
       >
-        I Understand, Confirm Apply
-      </label>
-    </div>
-  );
-};
+        <Checkbox
+          id={id}
+          variant="billing"
+          checked={confirmChecked}
+          onCheckedChange={(v) => setConfirmChecked(v === true)}
+        />
 
+        <label
+          htmlFor={id}
+          className="cursor-pointer select-none font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white"
+        >
+          I Understand, Confirm Apply
+        </label>
+      </div>
+    );
+  };
 
   const AutoRenewSection = () => {
     const isCurrent = selectedPlan === currentPlan;
@@ -377,6 +409,15 @@ const ConfirmRow = ({ className }: { className?: string }) => {
                     {planCopy.tagline}
                   </p>
 
+                  {showActiveCycleEnd && (
+                    <div className="flex items-center gap-2 text-xs text-[#454545] dark:text-[#b9c2d5]">
+                      <CalendarClock className="h-4 w-4 opacity-80" />
+                      <span className="font-['Space_Grotesk']">
+                        Current cycle ends: {cycleEndLabel}
+                      </span>
+                    </div>
+                  )}
+
                   {planCopy.estimateNote && (
                     <div className="flex items-center gap-2 text-xs text-[#454545] dark:text-[#b9c2d5]">
                       <AlertCircle className="h-4 w-4 opacity-80" />
@@ -396,7 +437,6 @@ const ConfirmRow = ({ className }: { className?: string }) => {
               </div>
             </div>
 
-            {/* What's included */}
             <div className="mt-5 sm:mt-7 space-y-3">
               <h3 className="font-['Space_Grotesk'] text-base font-semibold tracking-[-0.03em] text-[#020816] dark:text-white">
                 What&apos;s included
@@ -419,42 +459,84 @@ const ConfirmRow = ({ className }: { className?: string }) => {
 
             <div className="mt-5 sm:mt-7 space-y-3">
               {selectedPlan === "hourly" ? (
-                <div className="rounded-[10px] bg-[rgba(37,48,240,0.07)] px-4 py-4 dark:bg-[rgba(255,255,255,0.04)]">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="mt-[2px] h-5 w-5 text-[#020816] dark:text-white" />
-                    <div className="space-y-1">
-                      <p className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
-                        Hourly billing behavior
-                      </p>
-                      <p className="font-['Space_Grotesk'] text-sm text-[#454545] dark:text-[#a3a3a3]">
-                        With Hourly Plan you will not get charged for Stopped
-                        computer CPU and Memory. However, SSD charges will
-                        continue, since the disk remains allocated to preserve
-                        your data.
-                      </p>
+                <>
+                  <div className="rounded-[10px] bg-[rgba(37,48,240,0.07)] px-4 py-4 dark:bg-[rgba(255,255,255,0.04)]">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="mt-[2px] h-5 w-5 text-[#020816] dark:text-white" />
+                      <div className="space-y-1">
+                        <p className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
+                          Hourly billing behavior
+                        </p>
+                        <p className="font-['Space_Grotesk'] text-sm text-[#454545] dark:text-[#a3a3a3]">
+                          With Hourly Plan you will not get charged for Stopped
+                          computer CPU and Memory. However, SSD charges will
+                          continue, since the disk remains allocated to preserve
+                          your data.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+
+                  {showChangeUI && isDowngrade && (
+                    <div className="rounded-[10px] border border-[rgba(219,135,0,0.35)] bg-[rgba(219,135,0,0.12)] px-4 py-4">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="mt-[2px] h-5 w-5 text-[#020816] dark:text-white" />
+                        <div className="space-y-1">
+                          <p className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
+                            Takes effect after current plan ends
+                          </p>
+                          <p className="font-['Space_Grotesk'] text-sm text-[#454545] dark:text-[#a3a3a3]">
+                            This downgrade will apply after your current billing
+                            cycle finishes
+                            {cycleEndLabel ? ` (ends: ${cycleEndLabel}).` : "."}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
               ) : (
                 <>
                   {showChangeUI && (
                     <>
-                      <div className="rounded-[10px] border border-[rgba(76,194,108,0.39)] bg-[rgba(39,174,96,0.15)] px-4 py-4">
+                      <div
+                        className={cn(
+                          "rounded-[10px] border px-4 py-4",
+                          isDowngrade
+                            ? "border-[rgba(219,135,0,0.35)] bg-[rgba(219,135,0,0.12)]"
+                            : "border border-[rgba(76,194,108,0.39)] bg-[rgba(39,174,96,0.15)]"
+                        )}
+                      >
                         <div className="flex items-start gap-3">
                           <AlertCircle className="mt-[2px] h-5 w-5 text-[#020816] dark:text-white" />
                           <div className="space-y-1">
                             <p className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
-                              Takes effect immediately
+                              {isDowngrade
+                                ? "Takes effect after current plan ends"
+                                : "Takes effect immediately"}
                             </p>
+
                             <p className="font-['Space_Grotesk'] text-sm text-[#454545] dark:text-[#a3a3a3]">
-                              This change will take effect immediately and you
-                              will be charged from the wallet.
+                              {isDowngrade ? (
+                                <>
+                                  This downgrade will apply after your current
+                                  billing cycle finishes
+                                  {cycleEndLabel
+                                    ? ` (ends: ${cycleEndLabel}).`
+                                    : "."}
+                                </>
+                              ) : (
+                                <>
+                                  This change will take effect immediately and
+                                  you will be charged from the wallet.
+                                </>
+                              )}
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      <ConfirmRow />
+                      {confirmNeeded && <ConfirmRow />}
                     </>
                   )}
                 </>
@@ -531,12 +613,18 @@ const ConfirmRow = ({ className }: { className?: string }) => {
                 {renderPrice(selectedPlan)} {PLAN_COPY[selectedPlan].unit}
               </div>
 
-              {confirmNeeded && (
+              {isDowngrade ? (
+                <p className="text-sm">
+                  This is a downgrade request. It will apply after your current
+                  billing cycle
+                  {cycleEndLabel ? ` (ends: ${cycleEndLabel}).` : "."}
+                </p>
+              ) : confirmNeeded ? (
                 <p className="text-sm">
                   This change takes effect immediately and will be charged from
                   your wallet.
                 </p>
-              )}
+              ) : null}
             </DialogDescription>
           </DialogHeader>
 
@@ -590,6 +678,7 @@ const ConfirmRow = ({ className }: { className?: string }) => {
 
           <div className="text-sm text-muted-foreground">
             Disabling auto renew will stop the PC as soon as current plan ends.
+            {cycleEndLabel ? ` (Ends: ${cycleEndLabel})` : ""}
           </div>
 
           <DialogFooter className="mt-4 shrink-0 flex flex-col gap-3 sm:flex-row sm:justify-end">

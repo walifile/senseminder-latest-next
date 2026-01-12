@@ -1,7 +1,15 @@
-import React from "react";
+import type { Metadata } from "next";
+
+import { aboutMeta } from "@/app/seo/metadata";
 
 import AboutPage from "./_components/main-page";
 
-const About = () => <AboutPage />;
+export const metadata: Metadata = {
+  title: aboutMeta.title,
+  description: aboutMeta.description,
+  keywords: aboutMeta.keywords,
+};
 
-export default About;
+export default function About() {
+  return <AboutPage />;
+}

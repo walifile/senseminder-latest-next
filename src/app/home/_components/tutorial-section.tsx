@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, { useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,6 @@ import {
 } from "@/components/ui/dialog";
 
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { TutorialCard } from "./tutorial-card";
 
@@ -20,7 +20,8 @@ const tutorials = [
     id: 1,
     title: "Introduce Sense PC",
     duration: "0:56",
-    description: "Build a powerful cloud PC in minutes and access it from any browser, on any device, from anywhere—no hardware needed.",
+    description:
+      "Build a powerful cloud PC in minutes and access it from any browser, on any device, from anywhere—no hardware needed.",
     image: "/assets/images/gettingStartedWithSensePc.png",
     videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%201.mp4",
     youtubeUrl: "https://youtube.com",
@@ -29,7 +30,8 @@ const tutorials = [
     id: 2,
     title: "How Sense PC works",
     duration: "1:30",
-    description: "See how SensePC delivers fast performance with built-in security—plus user management, billing, support ticketing, and in-app tutorials after login.",
+    description:
+      "See how SensePC delivers fast performance with built-in security—plus user management, billing, support ticketing, and in-app tutorials after login.",
     image: "/assets/images/optimizing.jpg",
     videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%203.mp4",
     youtubeUrl: "https://youtube.com",
@@ -38,7 +40,8 @@ const tutorials = [
     id: 3,
     title: "Introduce Sense Cloud",
     duration: "0:50",
-    description: "Securely store, organize, preview, and share files with smart cloud storage that stays synced across all your devices.",
+    description:
+      "Securely store, organize, preview, and share files with smart cloud storage that stays synced across all your devices.",
     image: "/assets/images/storageManagement.png",
     videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%202.mp4",
     youtubeUrl: "https://youtube.com",
@@ -51,43 +54,43 @@ const TutorialSection = () => {
   >(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
+  // const [canScrollLeft, setCanScrollLeft] = useState(false);
+  // const [canScrollRight, setCanScrollRight] = useState(false);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
-  const checkScrollButtons = () => {
-    if (carouselRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-    }
-  };
+  // const checkScrollButtons = () => {
+  //   if (carouselRef.current) {
+  //     const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+  //     setCanScrollLeft(scrollLeft > 0);
+  //     setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+  //   }
+  // };
 
-  React.useEffect(() => {
-    checkScrollButtons();
-    const carousel = carouselRef.current;
-    if (carousel) {
-      carousel.addEventListener("scroll", checkScrollButtons);
-      window.addEventListener("resize", checkScrollButtons);
-      return () => {
-        carousel.removeEventListener("scroll", checkScrollButtons);
-        window.removeEventListener("resize", checkScrollButtons);
-      };
-    }
-    return undefined;
-  }, []);
+  // React.useEffect(() => {
+  //   checkScrollButtons();
+  //   const carousel = carouselRef.current;
+  //   if (carousel) {
+  //     carousel.addEventListener("scroll", checkScrollButtons);
+  //     window.addEventListener("resize", checkScrollButtons);
+  //     return () => {
+  //       carousel.removeEventListener("scroll", checkScrollButtons);
+  //       window.removeEventListener("resize", checkScrollButtons);
+  //     };
+  //   }
+  //   return undefined;
+  // }, []);
 
-  const scroll = (direction: "left" | "right") => {
-    if (carouselRef.current) {
-      const scrollAmount = carouselRef.current.offsetWidth * 0.8;
-      carouselRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-      setTimeout(checkScrollButtons, 300);
-    }
-  };
+  // const scroll = (direction: "left" | "right") => {
+  //   if (carouselRef.current) {
+  //     const scrollAmount = carouselRef.current.offsetWidth * 0.8;
+  //     carouselRef.current.scrollBy({
+  //       left: direction === "left" ? -scrollAmount : scrollAmount,
+  //       behavior: "smooth",
+  //     });
+  //     setTimeout(checkScrollButtons, 300);
+  //   }
+  // };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientX);
@@ -132,43 +135,32 @@ const TutorialSection = () => {
             className="max-md:w-full space-y-3 md:space-y-2.5"
           >
             <h4 className="font-space-grotesk font-semibold text-2xl md:text-4xl text-center md:text-left">
-              New to Sense PC? {" "}
+              New to Sense PC?{" "}
               <span className="text-transparent bg-clip-text bg-[linear-gradient(290.5deg,#D971FF_-70.94%,#4C55F8_10.02%,#8086F3_115.42%)]">
                 Start Here
               </span>
             </h4>
 
             <p className="text-paragraph text-center md:text-left text-base md:text-2xl">
-              Our tutorial videos show you how to set up and optimize your cloud desktop easily.
+              Our tutorial videos show you how to set up and optimize your cloud
+              desktop easily.
             </p>
           </motion.div>
 
-          {/* Navigation Buttons - Only show on desktop */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
-            className="hidden md:flex items-center gap-3"
+            className="hidden md:flex items-center"
           >
             <Button
-              size="lg"
-              variant={canScrollLeft ? "default" : "outline"}
-              className="w-fit px-4 rounded-full"
-              onClick={() => scroll("left")}
-              disabled={!canScrollLeft}
+              asChild
+              size="sm"
+              variant="outline"
+              className="rounded-full px-4"
             >
-              <ArrowLeft />
-            </Button>
-
-            <Button
-              size="lg"
-              variant={canScrollRight ? "default" : "outline"}
-              className="w-fit px-4 rounded-full"
-              onClick={() => scroll("right")}
-              disabled={!canScrollRight}
-            >
-              <ArrowRight />
+              <Link href="/tutorials">View all tutorials</Link>
             </Button>
           </motion.div>
         </div>

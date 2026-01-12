@@ -79,7 +79,9 @@ const TutorialsPage = () => {
       tutorials.filter((tutorial) => {
         const matchesSearch =
           tutorial.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          tutorial.description.toLowerCase().includes(searchQuery.toLowerCase());
+          tutorial.description
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase());
         const normalizedCategory = normalizeTag(tutorial.category);
         const normalizedDifficulty = normalizeTag(tutorial.difficulty);
         const matchesCategory =
@@ -144,10 +146,7 @@ const TutorialsPage = () => {
                 </SelectTrigger>
                 <SelectContent variant="pill">
                   {categories.map((category) => (
-                    <SelectItem
-                      key={category}
-                      value={normalizeTag(category)}
-                    >
+                    <SelectItem key={category} value={normalizeTag(category)}>
                       {category.charAt(0).toUpperCase() + category.slice(1)}
                     </SelectItem>
                   ))}
@@ -167,8 +166,7 @@ const TutorialsPage = () => {
                       key={difficulty}
                       value={normalizeTag(difficulty)}
                     >
-                      {difficulty.charAt(0).toUpperCase() +
-                        difficulty.slice(1)}
+                      {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -204,10 +202,12 @@ const TutorialsPage = () => {
               <div className="border-t border-[rgba(37,48,240,0.30)] dark:border-[rgba(255,255,255,0.10)] px-5 py-4 text-xs md:text-sm text-muted-foreground dark:text-white/60">
                 <div className="flex items-center justify-between">
                   <span>
-                    Uploaded: {new Date(tutorial.uploadDate).toLocaleDateString()}
+                    Uploaded:{" "}
+                    {new Date(tutorial.uploadDate).toLocaleDateString()}
                   </span>
                   <span>
-                    Updated: {new Date(tutorial.lastUpdated).toLocaleDateString()}
+                    Updated:{" "}
+                    {new Date(tutorial.lastUpdated).toLocaleDateString()}
                   </span>
                 </div>
               </div>

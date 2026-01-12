@@ -22,7 +22,7 @@ const StorageCostCalculator = () => {
   const [latencyMap, setLatencyMap] = useState<Record<string, number>>({});
   const [latencyLoading, setLatencyLoading] = useState(true);
 
-  const serverLocations = [{ id: "us-east", name: "East Coast" }];
+  const serverLocations = [{ id: "us-east", name: "New York" }];
 
   const PING_TARGETS = useMemo<Record<string, string>>(
     () => ({

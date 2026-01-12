@@ -4,9 +4,9 @@ import type { RootState } from "@/redux/store";
 import type { FormValues, BaseFormValues } from "@/app/build-sensepc/schema";
 
 import Image from "next/image";
-import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
+import React, { useMemo, useState, useEffect } from "react";
 import { baseFormSchema } from "@/app/build-sensepc/schema";
 import { useGetEstimateMutation } from "@/api/fileManagerAPI";
 import { useGetSmartPcConfigQuery } from "@/api/smartPCConfigAPI";
@@ -16,6 +16,7 @@ import { osOptions, storageOptions, locationOptions } from "@/app/build-sensepc/
 import { cn } from "@/lib/utils";
 import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -54,6 +55,15 @@ const FEATURES = [
     desc: "All charges are deducted from your Sense PC wallet at each billing cycle.",
   },
 ];
+
+type CpuOpt = { value: string; label: string };
+
+// Strict GPU detection: only configs ending with ".GPU"
+const isGpuString = (s?: unknown): boolean =>
+  typeof s === "string" && s.trim().toLowerCase().endsWith(".gpu");
+
+const isGpuOption = (opt: CpuOpt): boolean =>
+  isGpuString(opt.value) || isGpuString(opt.label);
 
 export default function PCCostCalculator() {
   const router = useRouter();
@@ -125,22 +135,39 @@ export default function PCCostCalculator() {
 
   // Fetch API cpuOptions via RTK Query
   const { data: apiConfig } = useGetSmartPcConfigQuery();
-  const apiCpuOptions = apiConfig?.cpuOptions || {};
-  const apiCpuCategories = apiConfig?.cpuCategories || {};
 
-  const linuxCategoryCpuOptions =
-    (
-      apiCpuCategories as Record<
-        string,
-        Record<string, { value: string; label: string }[]>
-      >
-    )?.Linux?.[`${selectedLinuxCategory}`] || [];
+  const apiCpuOptions = useMemo(
+    () => apiConfig?.cpuOptions ?? {},
+    [apiConfig?.cpuOptions]
+  );
 
-  const cpuOptionsForOS = isLinuxOS
-    ? linuxCategoryCpuOptions
-    : (apiCpuOptions as Record<string, { value: string; label: string }[]>)[
-        selectedOS
-      ] || [];
+  const apiCpuCategories = useMemo(
+    () => apiConfig?.cpuCategories ?? {},
+    [apiConfig?.cpuCategories]
+  );
+
+  const linuxCategoryCpuOptions = useMemo(
+    () =>
+      (
+        (
+          apiCpuCategories as Record<
+            string,
+            Record<string, { value: string; label: string }[]>
+          >
+        )?.Linux?.[`${selectedLinuxCategory}`] ?? []
+      ),
+    [apiCpuCategories, selectedLinuxCategory]
+  );  
+
+  const cpuOptionsForOS = useMemo(
+    () =>
+      (isLinuxOS
+        ? linuxCategoryCpuOptions
+        : ((apiCpuOptions as Record<string, { value: string; label: string }[]>)[
+            selectedOS
+          ] ?? [])),
+    [apiCpuOptions, isLinuxOS, linuxCategoryCpuOptions, selectedOS]
+  );  
 
   useEffect(() => {
     setValue("cpu", "");
@@ -158,6 +185,47 @@ export default function PCCostCalculator() {
     (opt) => opt.value === values.storage
   );
 
+  const [showGpuOnly, setShowGpuOnly] = useState(false);
+
+  const hasAnyGpuOptions = useMemo(
+    () => cpuOptionsForOS.some(isGpuOption),
+    [cpuOptionsForOS]
+  );
+  
+  const gpuCpuOptions = useMemo(
+    () => cpuOptionsForOS.filter(isGpuOption),
+    [cpuOptionsForOS]
+  );
+  
+  const nonGpuCpuOptions = useMemo(
+    () => cpuOptionsForOS.filter((o) => !isGpuOption(o)),
+    [cpuOptionsForOS]
+  );
+  
+  const displayedCpuOptions = useMemo(() => {
+    if (!hasAnyGpuOptions) return cpuOptionsForOS;
+  
+    if (showGpuOnly) return gpuCpuOptions.length ? gpuCpuOptions : cpuOptionsForOS;
+  
+    return nonGpuCpuOptions.length ? nonGpuCpuOptions : cpuOptionsForOS;
+  }, [cpuOptionsForOS, hasAnyGpuOptions, showGpuOnly, gpuCpuOptions, nonGpuCpuOptions]);
+  
+  // If OS/category has no GPU, force toggle off
+  useEffect(() => {
+    if (!hasAnyGpuOptions && showGpuOnly) setShowGpuOnly(false);
+  }, [hasAnyGpuOptions, showGpuOnly]);
+  
+  // If user already selected a CPU and it becomes hidden by the filter, keep it valid
+  useEffect(() => {
+    const currentCpu = watch("cpu");
+    if (!currentCpu) return;
+  
+    const stillValid = displayedCpuOptions.some((o) => o.value === currentCpu);
+    if (!stillValid && displayedCpuOptions.length > 0) {
+      setValue("cpu", displayedCpuOptions[0].value, { shouldValidate: true });
+    }
+  }, [displayedCpuOptions, setValue, watch]);
+  
   return (
     <>
       {/* Feature tiles */}
@@ -195,7 +263,7 @@ export default function PCCostCalculator() {
                 className="font-space-grotesk font-bold text-2xl"
                 data-testid="landing-choose-configurations-section"
               >
-                Choose Configurations
+                Select Configurations
               </h3>
 
               <Separator className="bg-[#02081633] dark:bg-[#FFFFFF33]" />
@@ -205,7 +273,7 @@ export default function PCCostCalculator() {
                 <Field.Select
                   name="operatingSystem"
                   label="Operating System"
-                  description="Choose your preferred operating system"
+                  description="Select your preferred operating system"
                   tooltipText={
                     selectedOSOption
                       ? `Selected: ${selectedOSOption.label}`
@@ -238,29 +306,46 @@ export default function PCCostCalculator() {
                   />
                 )}
 
-                {/* CPU */}
-                <Field.Select
-                  name="cpu"
-                  label="CPU & Memory"
-                  description="Select processing power and memory"
-                  tooltipText={
-                    values.cpu
-                      ? `Selected: ${values.cpu}`
-                      : "No CPU & Memory selected"
-                  }
-                  options={cpuOptionsForOS}
-                  placeholder={
-                    selectedOS ? "Select CPU & Memory" : "Select OS first"
-                  }
-                  className="gap-4"
-                  triggerTestId="landing-cpu-memory-dropdown"
-                />
+                {/* CPU + Memory */}
+                <div className="space-y-3">
+                  {/* Label */}
+                  <div className="space-y-1">
+                    <div className="text-sm font-medium text-foreground">CPU + Memory</div>
+                  </div>
+
+                  {/* ✅ Checkbox BETWEEN label and dropdown */}
+                  <div className="flex items-center gap-3">
+                    <Checkbox
+                      checked={showGpuOnly}
+                      onCheckedChange={(v) => setShowGpuOnly(Boolean(v))}
+                      disabled={!hasAnyGpuOptions}
+                    />
+                    <p className="text-sm text-paragraph">
+                      Show GPU configurations only
+                      {!hasAnyGpuOptions && (
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          (No GPU options for this OS)
+                        </span>
+                      )}
+                    </p>
+                  </div>
+
+                  {/* Dropdown (no label/description so it doesn't add extra rows) */}
+                  <Field.Select
+                    name="cpu"
+                    tooltipText={values.cpu ? `Selected: ${values.cpu}` : "No CPU & Memory selected"}
+                    options={displayedCpuOptions}
+                    placeholder={selectedOS ? "Select CPU & Memory" : "Select OS"}
+                    className="gap-4"
+                    triggerTestId="landing-cpu-memory-dropdown"
+                  />
+                </div>
 
                 {/* Location */}
                 <Field.Select
                   name="region"
-                  label="Region"
-                  description="Pick your server Region"
+                  label="Location"
+                  description="Select where the PC will be hosted."
                   tooltipText={
                     selectedLocation
                       ? selectedLocation.label
@@ -275,7 +360,7 @@ export default function PCCostCalculator() {
                 <Field.Select
                   name="storage"
                   label="Storage (SSD)"
-                  description="Choose storage capacity"
+                  description="Select storage capacity"
                   tooltipText={
                     selectedStorage
                       ? `${selectedStorage.label} selected`
@@ -319,17 +404,9 @@ export default function PCCostCalculator() {
                   },
                   {
                     label: "CPU & Memory",
-                    value:
-                      (
-                        (
-                          apiCpuOptions as Record<
-                            string,
-                            { value: string; label: string }[]
-                          >
-                        )[watch("operatingSystem")] || []
-                      ).find((cpu) => cpu.value === watch("cpu"))?.label ||
-                      null,
+                    value: cpuOptionsForOS.find((c) => c.value === watch("cpu"))?.label || null,
                   },
+                  
                   {
                     label: "Region",
                     value:

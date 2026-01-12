@@ -55,6 +55,36 @@ import { useBoolean } from "@/hooks/use-boolean";
 
 import AssignUserDialog from "../_components/assign-user-dialog";
 
+const getFriendlyLocation = (region?: unknown): string => {
+  if (typeof region !== "string") return "—";
+
+  const r = region.trim().toLowerCase();
+
+  const map: Record<string, string> = {
+    "us-east-1": "New York",
+    "us-east-2": "Central USA",
+    "us-west-1": "West USA",
+    "us-west-2": "California",
+  };
+
+  return map[r] ?? region;
+};
+
+const isStopped = (state?: unknown): boolean =>
+  typeof state === "string" && state.toLowerCase() === "stopped";
+
+const normalizePlan = (plan?: unknown) =>
+  typeof plan === "string" ? plan.trim().toLowerCase() : "";
+
+const isDailyOrMonthlyPlan = (plan?: unknown) => {
+  const p = normalizePlan(plan);
+  return p === "daily" || p === "monthly";
+};
+
+// show “PC is currently stopped” ONLY for non-daily/monthly plans (ex: hourly)
+const shouldShowStoppedUptimeMessage = (pc: PC) =>
+  isStopped(pc.state) && !isDailyOrMonthlyPlan(pc.billingPlan);
+
 const CloudPCPage = () => {
   const { toast } = useToast();
 
@@ -195,6 +225,8 @@ const CloudPCPage = () => {
   }, [selectedKey, cloudPCs, makeKey, sameKey]);  
 
   const selectedPCs = selectedCloudIndex >= 0 ? [selectedCloudIndex] : [];
+  const selectedPc = selectedCloudIndex >= 0 ? cloudPCs[selectedCloudIndex] : undefined;
+  const selectedPcOs = selectedPc?.specs?.os;
 
   const [showDetails, setShowDetails] = useState(true);
   const effectiveShowDetails = selectedPCs.length > 0 && showDetails;
@@ -398,7 +430,7 @@ const CloudPCPage = () => {
                           selected={isSelected}
                           className={cn(
                             "pc-card",
-                            "relative w-full min-w-0 cursor-pointer",
+                            "relative w-full min-w-0 cursor-pointer overflow-visible",
                             "flex flex-col gap-3 px-4 py-4",
                             "md:flex-row md:items-center md:justify-between md:gap-6",
                           )}
@@ -466,71 +498,68 @@ const CloudPCPage = () => {
                               >
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <div className="min-w-0 flex items-center gap-2">
-                                      <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-                                      <span className="truncate">
-                                        {pcInfo?.uptimeInfo
-                                          ? `${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.currentUptimeHours))} / ${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.maxUptimeHours))}`
-                                          : pcInfo?.uptime || "—"}
-                                      </span>
-                                    </div>
-                                  </TooltipTrigger>
+                                      <div className="min-w-0 flex items-center gap-2">
+                                        <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                                        <span className="truncate">
+                                          {shouldShowStoppedUptimeMessage(pc) ? (
+                                            "Unlimited"
+                                          ) : pcInfo?.uptimeInfo ? (
+                                            `${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.currentUptimeHours))} / ${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.maxUptimeHours))} Max`
+                                          ) : typeof pcInfo?.uptime === "string" &&
+                                            pcInfo.uptime.trim() &&
+                                            pcInfo.uptime.trim().toLowerCase() !== "n/a" ? (
+                                            pcInfo.uptime
+                                          ) : (
+                                            "—"
+                                          )}
+                                        </span>
+                                      </div>
+                                    </TooltipTrigger>
                                   <TooltipContent>Uptime</TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
 
-                              {/* Region */}
-                              <TooltipProvider
-                                delayDuration={0}
-                                skipDelayDuration={0}
-                              >
+                              {/* Location (Region) */}
+                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="min-w-0 flex items-center gap-2">
                                       <Shield className="h-4 w-4 text-muted-foreground shrink-0" />
-                                      <span className="truncate">
-                                        {pcInfo?.region || "—"}
-                                      </span>
+                                      <span className="truncate">{getFriendlyLocation(pcInfo?.region)}</span>
                                     </div>
                                   </TooltipTrigger>
-                                  <TooltipContent>Region</TooltipContent>
+
+                                  <TooltipContent side="top" align="center" className="max-w-[260px]">
+                                    This shows the approximate area where your computer is hosted, based on nearby available data centers to help reduce latency.
+                                  </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
 
                               {/* Schedule */}
-                              <TooltipProvider
-                                delayDuration={0}
-                                skipDelayDuration={0}
-                              >
+                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="min-w-0 flex items-center gap-2">
                                       <CalendarClock className="h-4 w-4 text-muted-foreground shrink-0" />
+
                                       {pcInfo?.schedule?.enabled === false ? (
-                                        <span className="truncate">
-                                          disabled
-                                        </span>
-                                      ) : pcInfo?.schedule?.autoStartTime ||
-                                        pcInfo?.schedule?.autoStopTime ? (
-                                        <span className="truncate">
-                                          {formatScheduleTime(pcInfo)}
-                                        </span>
+                                        <span className="truncate">No schedule</span>
+                                      ) : pcInfo?.schedule?.autoStartTime || pcInfo?.schedule?.autoStopTime ? (
+                                        <span className="truncate">{formatScheduleTime(pcInfo)}</span>
                                       ) : (
-                                        <span className="truncate italic">
-                                          No schedule
-                                        </span>
+                                        <span className="truncate italic">No schedule</span>
                                       )}
                                     </div>
                                   </TooltipTrigger>
-                                  <TooltipContent>Schedule</TooltipContent>
+
+                                  <TooltipContent side="top" align="center" className="max-w-[260px]">
+                                    Schedule controls automatic start/stop times for your PC. You can enable or change it anytime.
+                                  </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
 
                               {/* Idle Timeout */}
-                              <TooltipProvider
-                                delayDuration={0}
-                                skipDelayDuration={0}
-                              >
+                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="min-w-0 flex items-center gap-2">
@@ -542,7 +571,10 @@ const CloudPCPage = () => {
                                       </span>
                                     </div>
                                   </TooltipTrigger>
-                                  <TooltipContent>Idle Timeout</TooltipContent>
+
+                                  <TooltipContent side="top" align="center" className="max-w-[260px]">
+                                    Estimated idle timeout — your PC may automatically stop after this much inactivity to help save cost.
+                                  </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
                             </div>
@@ -628,7 +660,7 @@ const CloudPCPage = () => {
                           selected={isSelected}
                           className={cn(
                             "pc-card",
-                            "relative flex w-full min-w-0 flex-col gap-[18px] px-4 py-6",
+                            "relative flex w-full min-w-0 flex-col gap-[18px] px-4 py-6 overflow-visible",
                           )}
                           onClick={() => handlePCSelection(pc)}
                           data-testid="sensepc-pc-card"
@@ -694,43 +726,86 @@ const CloudPCPage = () => {
 
                           {/* info grid */}
                           <div className="grid grid-cols-2 gap-x-6 gap-y-[14px] text-[14px] leading-5 tracking-[-0.2px]">
-                            <div className="flex items-center gap-2 text-foreground">
-                              <Clock className="h-4 w-4 text-muted-foreground" />
-                              <span>
-                                {pcInfo?.uptimeInfo
-                                  ? `${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.currentUptimeHours))} / ${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.maxUptimeHours))}`
-                                  : pcInfo?.uptime || "—"}
-                              </span>
-                            </div>
+                            {/* Uptime */}
+                            <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="min-w-0 flex items-center gap-2 text-foreground">
+                                    <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                                    <span className="truncate">
+                                      {shouldShowStoppedUptimeMessage(pc) ? (
+                                        "Unlimited"
+                                      ) : pcInfo?.uptimeInfo ? (
+                                        `${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.currentUptimeHours))} / ${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.maxUptimeHours))} Max`
+                                      ) : typeof pcInfo?.uptime === "string" &&
+                                        pcInfo.uptime.trim() &&
+                                        pcInfo.uptime.trim().toLowerCase() !== "n/a" ? (
+                                        pcInfo.uptime
+                                      ) : (
+                                        "—"
+                                      )}
+                                    </span>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent>Uptime</TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
 
-                            <div className="flex items-center gap-2 text-foreground">
-                              <Shield className="h-4 w-4 text-muted-foreground" />
-                              <span>{pcInfo?.region || "—"}</span>
-                            </div>
+                            {/* Location (Region) + Info tooltip */}
+                            <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="min-w-0 flex items-center gap-2 text-foreground">
+                                    <Shield className="h-4 w-4 text-muted-foreground shrink-0" />
+                                    <span className="truncate">{getFriendlyLocation(pcInfo?.region)}</span>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" align="center" className="max-w-[260px]">
+                                  This shows the approximate area where your computer is hosted, based on nearby available data centers to help reduce latency.
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
 
-                            <div className="flex items-center gap-2 text-foreground">
-                              <CalendarClock className="h-4 w-4 text-muted-foreground" />
-                              {pcInfo?.schedule?.autoStartTime ||
-                              pcInfo?.schedule?.autoStopTime ? (
-                                <span>
-                                  {formatScheduleTime(pcInfo)}
-                                  {!pcInfo.schedule.enabled && " (disabled)"}
-                                </span>
-                              ) : (
-                                <span>No schedule configured</span>
-                              )}
-                            </div>
+                            <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex items-center gap-2 text-foreground">
+                                    <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                                    {pcInfo?.schedule?.autoStartTime || pcInfo?.schedule?.autoStopTime ? (
+                                      <span>
+                                        {formatScheduleTime(pcInfo)}
+                                        {!pcInfo.schedule.enabled && " (disabled)"}
+                                      </span>
+                                    ) : (
+                                      <span>No schedule</span>
+                                    )}
+                                  </div>
+                                </TooltipTrigger>
 
-                            <div className="flex items-center gap-2 text-foreground">
-                              <Clock className="h-4 w-4 text-muted-foreground" />
-                              <span>
-                                {typeof pcInfo?.idleTimeout === "number"
-                                  ? `Idle Timeout: ${formatIdleTime(
-                                      pcInfo.idleTimeout,
-                                    )}`
-                                  : "—"}
-                              </span>
-                            </div>
+                                <TooltipContent side="top" align="center" className="max-w-[260px]">
+                                  Schedule controls automatic start/stop times for your PC. You can enable or change it anytime.
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+
+                            <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex items-center gap-2 text-foreground">
+                                    <Clock className="h-4 w-4 text-muted-foreground" />
+                                    <span>
+                                      {typeof pcInfo?.idleTimeout === "number"
+                                        ? `Idle Timeout: ${formatIdleTime(pcInfo.idleTimeout)}`
+                                        : "—"}
+                                    </span>
+                                  </div>
+                                </TooltipTrigger>
+
+                                <TooltipContent side="top" align="center" className="max-w-[260px]">
+                                  Estimated idle timeout — your PC may automatically stop after this much inactivity to help save cost.
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </div>
 
                           {/* actions */}
@@ -878,6 +953,7 @@ const CloudPCPage = () => {
         onClose={idleDialog.onFalse}
         realtimePcInfo={realtimePcInfo}
         selectedInstance={selectedInstance}
+        selectedPcOs={selectedPcOs}   // ✅ NEW
         onSuccess={refetchRemoteDesktops}
       />
 

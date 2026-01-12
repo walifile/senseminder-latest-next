@@ -52,7 +52,6 @@ const ProductHighlights = () => {
           width={600}
           height={400}
           className="w-full md:w-9/12 md:mx-auto relative z-10"
-          priority
         />
 
         <div className="dark:hidden z-0 absolute -top-[400px] -left-[400px] size-1/2 w-[1069.99px] h-[472.71px] opacity-20 -rotate-[11.32deg] blur-[100px] bg-[linear-gradient(270deg,_#BA25F0_4.8%,_#2530F0_46.15%,_#8086F3_100%)]" />
@@ -130,7 +129,6 @@ const ProductHighlights = () => {
           width={600}
           height={400}
           className="w-full md:w-9/12 md:mx-auto relative z-10"
-          priority
         />
 
         <div className="dark:hidden z-0 absolute -top-[400px] -left-[400px] size-1/2 w-[1069.99px] h-[472.71px] opacity-20 -rotate-[11.32deg] blur-[100px] bg-[linear-gradient(270deg,_#BA25F0_4.8%,_#2530F0_46.15%,_#8086F3_100%)]" />

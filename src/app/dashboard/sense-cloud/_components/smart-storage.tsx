@@ -1038,7 +1038,7 @@ const CloudStorage = () => {
                           onValueChange={handleRegionChange}
                         >
                           <DropdownMenuRadioItem value="us-east-1">
-                            East Coast
+                            New York
                           </DropdownMenuRadioItem>
                         </DropdownMenuRadioGroup>
                       </DropdownMenuContent>

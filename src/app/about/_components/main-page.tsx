@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from "next/image";
@@ -21,28 +20,38 @@ export default function AboutPage() {
   return (
     <MainLayout>
       <Hero
-        // ✅ IMPORTANT: remove desktop min-width constraint for mobile
         textMinWidth={0}
         imageSrc="/assets/svg/about-hero-dark.svg"
-        imageWidth={600}
-        imageHeight={400}
+        imageWidth={300}
+        imageHeight={100}
         imageAlt="About illustration"
       >
         <div className="w-full min-w-0 md:min-w-[683px]">
-          <Breadcrumb
-  variant="figma"
-  items={[{ label: "Home", href: "/" }, { label: "About Us" }]}
-/>
+          {/* Breadcrumb with spacing below */}
+          <div className="mb-6 md:mb-8">
+            <Breadcrumb
+              variant="figma"
+              items={[{ label: "Home", href: "/" }, { label: "About Us" }]}
+            />
+          </div>
 
-          <h1 className="w-full break-words font-space-grotesk font-bold text-[#020816] dark:text-white text-[32px] leading-[42px] tracking-[-0.5px] md:text-[72px] md:leading-[85px]">
-            Sense PC Gives You the Power of High-Performing Hardware Without The Cost
+          {/* ✅ 3 lines, same size, same gradient */}
+          <h1 className="font-space-grotesk font-bold text-xl md:text-[50px] leading-[1.10] w-full md:w-[85%]">
+            <span className="text-transparent bg-clip-text bg-[linear-gradient(270deg,_#BA25F0_4.8%,_#2530F0_46.15%,_#8086F3_100%)]">
+              Sense PC Gives You the
+              <br />
+              Power of High-Performing Hardware
+              <br />
+              Without The Cost
+            </span>
           </h1>
-          <p className="w-full font-inter font-normal text-base text-[#7D7D7D] dark:text-[#B9C2D5] md:text-[24px] md:leading-[40px] md:tracking-[-0.4px]">
-            Get the advanced workstation experience without the hardware or the cost.
-            Sense PC gives you a cloud-native remote desktop that you can access whenever
-            you want, from any device.
-          </p>
 
+          {/* sub text (keep yours) */}
+          <p className="mt-4 text-paragraph text-base md:text-xl w-full md:w-[85%]">
+            Get the advanced workstation experience without the hardware or the
+            cost. Sense PC gives you a cloud-native remote desktop that you can
+            access whenever you want, from any device.
+          </p>
         </div>
       </Hero>
 
@@ -53,22 +62,22 @@ export default function AboutPage() {
         padding="px-4 py-20 md:px-6 md:py-16 mb-16 md:mb-32"
         gradient={
           <img
-              src="/assets/svg/about/Ellipse 2-big.svg"
-              alt=""
-              aria-hidden="true"
-              className="
-                pointer-events-none select-none
-                absolute left-1/2 top-0
-                -translate-x-1/2 -translate-y-[55%]
-                z-0
-                hidden dark:md:block
-              "
-            />
+            src="/assets/svg/about/Ellipse 2-big.svg"
+            alt=""
+            aria-hidden="true"
+            className="
+              pointer-events-none select-none
+              absolute left-1/2 top-0
+              -translate-x-1/2 -translate-y-[55%]
+              z-0
+              hidden dark:md:block
+            "
+          />
         }
       >
-        <p className="font-space-grotesk font-semibold text-[48px] leading-[56px] tracking-[-1px] text-[#020816] dark:text-white text-center">
+        <h3 className="font-space-grotesk font-semibold text-2xl md:text-5xl text-[#020816] dark:text-white text-center">
           Join the Next Generation of Cloud Computing
-        </p>
+        </h3>
 
         <div className="mt-6 mx-auto max-w-[57rem] space-y-4 whitespace-pre-wrap text-center font-inter text-[18px] font-normal leading-[32px] tracking-[-0.3px] text-[#7D7D7D] dark:text-[#B9C2D5]">
           <p>
@@ -103,7 +112,6 @@ export default function AboutPage() {
               alt="Gradient"
               fill
               className="object-contain"
-              priority
             />
           </div>
         </div>

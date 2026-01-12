@@ -44,7 +44,6 @@ export default function GetStartedCTA({
             width={320}
             height={320}
             className="absolute w-[140px] h-[93px] md:size-80 top-0 md:-top-5 left-0"
-            priority
           />
 
           <Image
@@ -53,7 +52,6 @@ export default function GetStartedCTA({
             width={320}
             height={320}
             className="absolute w-[140px] h-[93px] md:size-80 -bottom-0 md:-bottom-8 right-0"
-            priority
           />
           {/* className="pointer-events-none size-1/2 md:w-[561px] md:h-[79px] absolute left-1/2 -translate-x-1/2 bottom-2 md:bottom-0 md:left-[15%] md:translate-x-0" */}
 
@@ -65,7 +63,6 @@ export default function GetStartedCTA({
               alt="Gradient"
               fill
               className="object-contain"
-              priority
             />
           </div>
         </motion.div>

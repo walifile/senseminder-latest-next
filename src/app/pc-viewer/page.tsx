@@ -160,8 +160,8 @@ function triggerBrowserDownload(url: string, filename?: string) {
 const DCViewerContent: React.FC = () => {
   const [fileModalOpen, setFileModalOpen] = useState(false);
   const searchParams = useSearchParams();
-  const sessionParam = searchParams.get("session");
-  const instanceId = sessionParam ? atob(sessionParam) : null;
+  const pcParam = searchParams.get("pc");
+  const sessionKey = pcParam ? decodeURIComponent(pcParam) : null;
 
   const [isConnected, setIsConnected] = useState(false);
   const [connectionState, setConnectionState] = useState<ConnectionState>("DISCONNECTED");
@@ -252,7 +252,7 @@ const DCViewerContent: React.FC = () => {
   }
 
   const launchVMResponse = useSelector((state: RootState) =>
-    instanceId ? selectLaunchVMResponse(state, instanceId) : null
+    sessionKey ? selectLaunchVMResponse(state, sessionKey) : null
   );
 
   const sessionId = launchVMResponse?.sessionId;
@@ -816,7 +816,7 @@ const DCViewerContent: React.FC = () => {
           cancelAutoClose();
           openSidebar();
         }}
-        storageKey={instanceId ? `sensepc.sidebar.handleY:${instanceId}` : "sensepc.sidebar.handleY"}
+        storageKey={sessionKey ? `sensepc.sidebar.handleY:${sessionKey}` : "sensepc.sidebar.handleY"}
       />
 
 

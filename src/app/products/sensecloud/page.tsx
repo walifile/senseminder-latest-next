@@ -1,9 +1,15 @@
-"use client";
+import type { Metadata } from "next";
 
-import React from "react";
+import { senseCloudMeta } from "@/app/seo/metadata";
 
-import SensePCPage from "./_components/main-page";
+import SenseCloudPage from "./_components/main-page";
 
-const SensePC = () => <SensePCPage />;
+export const metadata: Metadata = {
+  title: senseCloudMeta.title,
+  description: senseCloudMeta.description,
+  keywords: senseCloudMeta.keywords,
+};
 
-export default SensePC;
+export default function SenseCloud() {
+  return <SenseCloudPage />;
+}

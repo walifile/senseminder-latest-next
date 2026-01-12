@@ -16,12 +16,19 @@ import { toast } from "@/components/ui/use-toast";
 import { getFriendlyOSName } from "@/lib/utils/format-string";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DashboardCard } from "@/components/ui/dashboard/dashboard-card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 import { useSelector } from "react-redux";
 
 import { motion } from "framer-motion";
 import {
   Cpu,
+  Info,
   Plus,
   Users,
   Shield,
@@ -48,6 +55,30 @@ const STAT_CARD_BASE =
 
 type PcKey = { instanceId?: string; systemName?: string };
 
+const getFriendlyLocation = (region?: string) => {
+  if (!region) return "—";
+
+  const r = region.trim().toLowerCase();
+
+  const map: Record<string, string> = {
+    "us-east-1": "New York",
+    "us-east-2": "Central USA",
+    "us-west-1": "West USA",
+    "us-west-2": "California",
+  };
+
+  return map[r] ?? region; // fallback to raw region if unknown
+};
+
+const isGpuPc = (gpu?: string) => {
+  if (!gpu) return false;
+  const g = gpu.trim().toLowerCase();
+  return g !== "none" && g !== "n/a" && g !== "unknown";
+};
+
+const GPU_TEMP_SSD_TOOLTIP =
+  "GPU instances include temporary high-speed storage for graphics workloads. Data in this temporary storage won’t persist if your PC stops or restarts.";
+
 const SelectedPc: React.FC<SelectedPcProps> = ({
   selectedPCs,
   showDetails,
@@ -65,11 +96,6 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
 
   const selectedIndex = selectedPCs[0];
 
-  /**
-   * ✅ Sticky selection:
-   * Some parent refresh/poll cycles temporarily clear `selectedPCs` or reorder `cloudPCs`.
-   * If we render based only on `selectedPCs.length`, this component disappears and never recovers.
-   */
   const [stickyKey, setStickyKey] = useState<PcKey | null>(null);
   const selectedKeyRef = useRef<PcKey | null>(null);
 
@@ -94,7 +120,6 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
 
   const currentPC = effectiveIndex != null ? cloudPCs[effectiveIndex] : undefined;
 
-  // Keep sticky key updated whenever we can resolve a PC
   useEffect(() => {
     // Parent selection by index
     if (selectedIndex != null && cloudPCs[selectedIndex]) {
@@ -124,7 +149,6 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
 
   const [showBillingDialog, setShowBillingDialog] = useState(false);
 
-  // ✅ Metrics fetch should NOT depend on `selectedPCs.length` (it can become empty during refresh)
   useEffect(() => {
     let cancelled = false;
 
@@ -166,6 +190,8 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
             specs: matched.specs,
             billingPlan: matched.billingPlan,
             billingPlanDescription: matched.billingPlanDescription,
+            billingCycle: matched.billingCycle ?? null,
+
             assignedUser: matched.assignedUser,
             monthlyBillingTotal: parseFloat(matched?.monthlyBilling?.total ?? "0"),
             autoRenew: matched.autoRenew,
@@ -180,6 +206,7 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
             prevPC.billingPlan === updatedPC.billingPlan &&
             prevPC.billingPlanDescription === updatedPC.billingPlanDescription &&
             prevPC.monthlyBillingTotal === updatedPC.monthlyBillingTotal &&
+            JSON.stringify(prevPC.billingCycle ?? null) === JSON.stringify(updatedPC.billingCycle ?? null) &&
             prevPC.autoRenew === updatedPC.autoRenew;
 
           if (isSame) return prev;
@@ -249,7 +276,6 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
       className="mt-14 overflow-hidden font-['Space_Grotesk']"
     >
       <DashboardCard className="w-full overflow-hidden p-4 md:p-5 lg:p-6 font-['Space_Grotesk']">
-        {/* ========= SIMPLE HEADER (FIGMA) ========= */}
         <div className="flex items-center justify-between">
           <h3 className="font-['Space_Grotesk'] text-base font-medium text-[#020816] md:text-lg dark:text-white">
             Computer Metrics
@@ -265,10 +291,8 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
           </Button>
         </div>
 
-        {/* ========= BODY: DETAILS ========= */}
         {showDetails && (
           <div className="mt-5 space-y-6">
-            {/* ---- METRICS ROW (5 SMALL CARDS) ---- */}
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
               {/* CPU */}
               <div className={`${STAT_CARD_BASE} flex flex-col justify-between`}>
@@ -317,11 +341,29 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-muted-foreground" />
                   <span className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
-                    Region
+                    Location
                   </span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          className="inline-flex h-5 w-5 items-center justify-center rounded-full hover:bg-white/10"
+                          onClick={(e) => e.stopPropagation()}
+                          aria-label="Location info"
+                        >
+                          <Info className="h-4 w-4 text-muted-foreground" />
+                        </button>
+                      </TooltipTrigger>
+
+                      <TooltipContent side="top" align="center" className="max-w-[260px]">
+                        This shows the approximate area where your computer is hosted, based on nearby available data centers to help reduce latency.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
                 <span className="font-['Space_Grotesk'] mt-2 text-sm text-[#454545] dark:text-muted-foreground">
-                  {current.region || "—"}
+                  {getFriendlyLocation(current.region)}
                 </span>
               </div>
 
@@ -330,11 +372,13 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                 <div className="flex items-center gap-2">
                   <MonitorPlay className="h-4 w-4 text-muted-foreground" />
                   <span className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
-                    Uptime
+                    Uptime (current)
                   </span>
                 </div>
                 <span className="font-['Space_Grotesk'] mt-2 text-sm text-[#454545] dark:text-muted-foreground">
-                  {current.uptime || "N/A"}
+                  {current.uptime?.trim() && current.uptime.trim().toLowerCase() !== "n/a"
+                    ? current.uptime
+                    : "PC is currently stopped"}
                 </span>
               </div>
 
@@ -352,10 +396,8 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
               </div>
             </div>
 
-            {/* ---- DIVIDER ---- */}
             <div className="h-px w-full bg-[rgba(37,48,240,0.1)] dark:bg-white/10" />
 
-            {/* ---- SPECIFICATIONS ---- */}
             <div>
               <h4 className="font-['Space_Grotesk'] text-sm font-medium text-[#020816] dark:text-white">
                 Specifications
@@ -367,23 +409,48 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                   { icon: HardDrive, label: "SSD", value: current.specs?.storage },
                   { icon: Activity, label: "GPU", value: current.specs?.gpu },
                   { icon: Settings, label: "OS", value: formattedOS },
-                ].map(({ icon: Icon, label, value }) => (
-                  <div key={label} className={`${STAT_CARD_BASE} space-y-1`}>
-                    <div className="flex items-center gap-2">
-                      <Icon className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
-                        {label}
+                ].map(({ icon: Icon, label, value }) => {
+                  const showSsdTooltip = label === "SSD" && isGpuPc(current.specs?.gpu);
+
+                  return (
+                    <div key={label} className={`${STAT_CARD_BASE} space-y-1`}>
+                      <div className="flex items-center gap-2">
+                        <Icon className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-['Space_Grotesk'] text-sm font-semibold text-[#020816] dark:text-white">
+                          {label}
+                        </span>
+
+                        {showSsdTooltip && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="inline-flex h-5 w-5 items-center justify-center rounded-full hover:bg-white/10"
+                                  onClick={(e) => e.stopPropagation()}
+                                  aria-label="SSD info"
+                                >
+                                  <Info className="h-4 w-4 text-muted-foreground" />
+                                </button>
+                              </TooltipTrigger>
+
+                              <TooltipContent side="top" align="center" className="max-w-[280px]">
+                                {GPU_TEMP_SSD_TOOLTIP}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                      </div>
+
+                      <span className="font-['Space_Grotesk'] block text-sm text-[#454545] dark:text-muted-foreground">
+                        {value || "—"}
                       </span>
                     </div>
-                    <span className="font-['Space_Grotesk'] block text-sm text-[#454545] dark:text-muted-foreground">
-                      {value || "—"}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
-            {/* ---- ASSIGNED USER ---- */}
             {!isMember && (
               <div className={`${STAT_CARD_BASE} flex flex-col justify-between gap-3 md:flex-row md:items-center`}>
                 <div className="space-y-1">
@@ -441,7 +508,6 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
               </div>
             )}
 
-            {/* ---- BILLING PLAN (BOTTOM) ---- */}
             {!isMember && current.billingPlan && (
               <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
                 <div className="max-w-xl space-y-2">
@@ -459,6 +525,16 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                       {current.billingPlanDescription}
                     </p>
                   )}
+                  {(current.billingPlan === "daily" || current.billingPlan === "monthly") &&
+                  current.billingCycle?.endTime && (
+                    <p className="font-['Space_Grotesk'] text-sm text-[#454545] dark:text-muted-foreground">
+                      Current plan ends (UTC):{" "}
+                      {new Date(current.billingCycle.endTime).toLocaleString("en-US", {
+                        timeZone: "UTC",
+                      })}
+                    </p>
+                  )}
+
                 </div>
 
                 <Button
@@ -482,6 +558,8 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
                   region={current.region}
                   autoRenewEnabled={current.autoRenew}
                   onToggleAutoRenew={handleAutoRenewToggle}
+                  billingCycle={current.billingCycle ?? null}
+
                   onConfirm={async (newPlan) => {
                     const key = selectedKeyRef.current ?? stickyKey;
 

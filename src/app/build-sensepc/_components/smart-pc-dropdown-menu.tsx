@@ -122,6 +122,8 @@ const SmartPcDropdownMenu = ({
   const resizeDisabled = planRestricted || !isStopped;
   const addVolumeDisabled = planRestricted || !isRunning;
   const assignUserDisabled = !isStopped;
+  const idleSettingsDisabled = !isRunning;
+
 
   return (
     <>
@@ -144,18 +146,21 @@ const SmartPcDropdownMenu = ({
             <CalendarClock className="h-4 w-4 mr-2" />
             Schedule
           </DropdownMenuItem>
-
-          {/* Idle Settings */}
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
+              if (idleSettingsDisabled) return;
               setSelectedInstance(pc);
               handleIdle();
             }}
+            className={
+              idleSettingsDisabled ? "opacity-50 cursor-default select-none" : ""
+            }
           >
             <Moon className="h-4 w-4 mr-2" />
             Idle Settings
           </DropdownMenuItem>
+
 
           {/* Reboot */}
           <DropdownMenuItem

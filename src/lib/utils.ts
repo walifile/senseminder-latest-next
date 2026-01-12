@@ -49,3 +49,20 @@ export function getErrorMessage(
 
   return fallback;
 }
+
+
+export function ensureOkInstanceId(instanceId: string) {
+  if (!instanceId || typeof instanceId !== "string") {
+    throw new Error("Missing instanceId.");
+  }
+}
+
+export async function safeJson(response: Response): Promise<unknown> {
+  const text = await response.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return { message: text };
+  }
+}

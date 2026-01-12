@@ -400,7 +400,7 @@ export const CATEGORIES: Category[] = [
             <strong>Promo balance → Cashback balance → Main Wallet</strong>. If
             the combined balances are insufficient, your PC stops until you
             recharge. Promo and Cashback have no cash value, are not refundable,
-            and are usable only for SensePC and SenseStorage charges.
+            and are usable only for Sense PC and Sense Cloud charges.
           </>
         ),
       },

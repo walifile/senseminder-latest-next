@@ -61,8 +61,8 @@ const DashboardHeader = () => {
     if (n.route) router.push(n.route);
   };
 
-  const HEADER_ICON_BTN = "h-10 w-10 min-h-[40px] min-w-[40px] shrink-0";
-  const HEADER_ICON_IMG = 18;  
+  const HEADER_ICON_BTN = "h-10 w-10 min-h-[40px] min-w-[40px] shrink-0 p-0";
+  const HEADER_ICON_IMG = 28;  
   // useEffect(() => {
   //   // const handleSidebarCollapse = (event: CustomEvent) => {
   //   //   setSidebarCollapsed(event.detail.collapsed);
@@ -116,7 +116,7 @@ const DashboardHeader = () => {
           data-testid="dashboard-header-balance-card"
           className="rounded-full border border-[#A801BA] dark:border-fuchsia-700 bg-[rgba(37,48,240,0.07)] dark:bg-white/5 "
         >
-          <div className="flex items-center gap-2 rounded-full p-[2px] pr-0 backdrop-blur supports-[backdrop-filter]:bg-white/75 dark:supports-[backdrop-filter]:bg-white/5 dark:shadow-[6px_16px_50px_6px_rgba(38,57,136,0.06)]">
+          <div className="flex items-center gap-1 md:gap-2 rounded-full p-1 md:p-[2px] backdrop-blur supports-[backdrop-filter]:bg-white/75 dark:supports-[backdrop-filter]:bg-white/5 dark:shadow-[6px_16px_50px_6px_rgba(38,57,136,0.06)]">
             <Link
               data-testid="dashboard-header-billing-link"
               href="/dashboard/billing"
@@ -150,7 +150,7 @@ const DashboardHeader = () => {
             </Link>
 
             <div className="hidden sm:block h-7 w-px bg-[rgba(67,67,67,0.10)] dark:bg-white/10" />
-              <div className="rounded-full bg-[rgba(37,48,240,0.07)] dark:bg-white/5 flex items-center p-[2px] -ml-1">
+              <div className="rounded-full bg-[rgba(37,48,240,0.07)] dark:bg-white/5 flex items-center p-[2px]">
                 <button
                   onClick={() => setTheme(resolvedTheme === "light" ? "dark" : "light")}
                   data-testid="dashboard-header-theme-toggle"
@@ -160,7 +160,7 @@ const DashboardHeader = () => {
                     "bg-[#2530f0] text-white",
                     "ring-1 ring-white/25 dark:ring-white/15",
                     "shadow-[0_10px_24px_-12px_rgba(37,48,240,0.65)]"
-                  )}
+                  )}                  
                   aria-label={resolvedTheme === "light" ? "Switch to dark mode" : "Switch to light mode"}
                 >
                   {resolvedTheme === "dark" ? (
@@ -179,7 +179,7 @@ const DashboardHeader = () => {
                   size="icon"
                   className={cn(
                     HEADER_ICON_BTN,
-                    "relative rounded-full mr-1",
+                    "relative rounded-full mr-1 md:mr-1",
                     "bg-gradient-to-b dark:bg-white/5 dark:from-white/5 dark:to-white/5 from-[#e9ecff] to-[#dfe5ff]",
                     "text-[#2530f0] dark:text-white hover:bg-[#d4d9ff] shadow-none",
                     "ring-1 ring-white/35 dark:ring-white/10"

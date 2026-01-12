@@ -103,7 +103,6 @@ export default {
         "select-item-focus-bg": "#e1dcf8",
         "select-item-focus-bg-dark": "#0d0b36",
 
-        // If you want exact icon/text colors (matching your current code)
         "text-heading": "#020816",
         "text-muted-dark": "#B9C2D5",
         "brand-magenta": "#A801BA",
@@ -113,6 +112,8 @@ export default {
         "surface-white-50": "rgba(255,255,255,0.50)",
         "surface-white-06": "rgba(255,255,255,0.06)",
         "brand-blue-07": "rgba(37,48,240,0.07)",
+        "brand-blue-10": "rgba(37,48,240,0.10)",
+        "surface-white-75": "rgba(255,255,255,0.75)",
 
       },
       borderRadius: {

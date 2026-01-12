@@ -14,14 +14,20 @@ export const PcCard = React.forwardRef<HTMLDivElement, PcCardProps>(
       <div
         ref={ref}
         data-selected={selected ? "true" : "false"}
-        style={style}
+        style={{
+          WebkitBackdropFilter: "blur(32px)",
+          backdropFilter: "blur(32px)",
+          ...style,
+        }}
         className={cn(
-          "pc-card relative", // ✅ add relative so ::before positions correctly
-          "rounded-[20px] backdrop-blur-[32px] backdrop-filter",
-          "border border-transparent",
+          "pc-card relative overflow-hidden",
+          "rounded-[20px]",
           selected
-            ? "bg-[rgba(202,203,223,0.15)] dark:bg-[#12195E]"
-            : "bg-[rgba(37,48,240,0.01)] dark:bg-[rgba(255,255,255,0.03)]",
+            ? "bg-[rgba(202,203,223,0.26)] dark:bg-[#12195E]"
+            : "bg-[rgba(255,255,255,0.24)] dark:bg-[rgba(255,255,255,0.06)]",
+          "border border-black/30 dark:border-white/10",
+          // (optional but helps separation on Safari)
+          "shadow-[0_10px_28px_rgba(15,23,42,0.08)]",
           className
         )}
         {...props}

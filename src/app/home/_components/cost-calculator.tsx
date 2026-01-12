@@ -313,8 +313,8 @@ const CostCalculator = () => {
                   {/* Location */}
                   <Field.Select
                     name="region"
-                    label="Region"
-                    description="Pick your server Region"
+                    label="Location"
+                    description="Select where the PC will be hosted."
                     tooltipText={
                       selectedLocation
                         ? selectedLocation.label

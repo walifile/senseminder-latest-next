@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -37,19 +36,18 @@ export function MissionCard() {
                 width={50}
                 height={50}
                 className="size-full"
-                priority
               />
             }
           >
-
             <p className="w-full font-inter text-[18px] font-normal leading-[32px] tracking-[-0.3px] text-[#7D7D7D] dark:text-[#B9C2D5]">
-              We’re on a mission to remove the friction separating you from high-performing
-              computing and secure cloud storage. We believe that powerful computing
-              shouldn’t require powerful hardware.
+              We’re on a mission to remove the friction separating you from
+              high-performing computing and secure cloud storage. We believe
+              that powerful computing shouldn’t require powerful hardware.
             </p>
 
             <p className="w-full font-inter text-[18px] font-normal leading-[32px] tracking-[-0.3px] text-[#7D7D7D] dark:text-[#B9C2D5]">
-              To make our mission a reality, we have built our platform on real usage,
+              To make our mission a reality, we have built our platform on real
+              usage,
             </p>
 
             <p className="w-full font-inter text-[16px] font-semibold leading-[24px] tracking-[-0.3px] text-[#020816] dark:text-white">
@@ -60,7 +58,6 @@ export function MissionCard() {
                 You only pay for what you use.
               </span>
             </p>
-
           </GradientInfoCard>
 
           {/* Our Vision */}
@@ -73,24 +70,24 @@ export function MissionCard() {
                 width={50}
                 height={50}
                 className="size-full"
-                priority
               />
             }
           >
-
             <p className="w-full font-inter text-[18px] font-normal leading-[32px] tracking-[-0.3px] text-[#7D7D7D] dark:text-[#B9C2D5]">
-              Our vision is to create a computer that launches in seconds, wherever you are.
+              Our vision is to create a computer that launches in seconds,
+              wherever you are.
             </p>
 
             <p className="w-full font-inter text-[18px] font-normal leading-[32px] tracking-[-0.3px] text-[#7D7D7D] dark:text-[#B9C2D5]">
-              No more hardware maintenance, storage issues, or manual upgrades. Your data stays protected with
-              built-in security and a cloud-first design.
+              No more hardware maintenance, storage issues, or manual upgrades.
+              Your data stays protected with built-in security and a cloud-first
+              design.
             </p>
 
             <p className="w-full font-inter text-[18px] font-normal leading-[32px] tracking-[-0.3px] text-[#7D7D7D] dark:text-[#B9C2D5]">
-              And finally, we want to create compute power that scales automatically with your workload.
+              And finally, we want to create compute power that scales
+              automatically with your workload.
             </p>
-
           </GradientInfoCard>
 
           {/* Our Story */}
@@ -104,25 +101,35 @@ export function MissionCard() {
             />
 
             <div className="relative z-10">
-              <GradientInfoCard title="Our Story" rightImage="/assets/svg/about/our-story-1.svg">
+              <GradientInfoCard
+                title="Our Story"
+                rightImage="/assets/svg/about/our-story-1.svg"
+              >
                 <div className="font-inter text-[24px] font-normal leading-[40px] tracking-[-0.4px] text-[#7D7D7D] dark:text-[#B9C2D5]">
-                <p className="mb-4">
-                  In 2020, our founder, Ashfak Ahmed, decided he wanted to solve one of the
-                  cloud computing industry’s most bothersome problems: the fact that powerful
-                  work is limited by local hardware.
-                </p>
+                  <p className="mb-4">
+                    In 2020, our founder, Ashfak Ahmed, decided he wanted to
+                    solve one of the cloud computing industry’s most bothersome
+                    problems: the fact that powerful work is limited by local
+                    hardware.
+                  </p>
 
-                <p className="mb-4">To fix that problem, Ash built Sense PC.</p>
+                  <p className="mb-4">
+                    To fix that problem, Ash built Sense PC.
+                  </p>
 
-                <p>
-                  With his team, he built a cloud-native platform that delivers performance,
-                  flexibility, and freedom that a physical computer can’t match.
-                </p>
-              </div>
-
+                  <p>
+                    With his team, he built a cloud-native platform that
+                    delivers performance, flexibility, and freedom that a
+                    physical computer can’t match.
+                  </p>
+                </div>
 
                 <div className="relative md:w-fit pt-12">
-                  <Button size="default" className="relative w-full !py-4 h-auto" onClick={onGetStarted}>
+                  <Button
+                    size="default"
+                    className="relative w-full !py-4 h-auto"
+                    onClick={onGetStarted}
+                  >
                     Learn More
                     <ArrowUpRight />
                   </Button>

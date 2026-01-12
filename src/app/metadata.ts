@@ -1,9 +1,3 @@
-import type { Metadata } from "next";
+import { appMetadata } from "./seo/metadata";
 
-export const metadata: Metadata = {
-  title: "SmartPC",
-  description: "SmartPC Application",
-  icons: {
-    icon: "/favicon.ico",
-  },
-};
+export const metadata = appMetadata;

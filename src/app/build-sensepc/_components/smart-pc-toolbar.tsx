@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import DashboardSearch from "@/components/ui/dashboard/search";
 
-import { Plus, List, LayoutGrid } from "lucide-react";
+import { List, LayoutGrid, HammerIcon } from "lucide-react";
 
 type Props = {
   isMember: boolean;
@@ -41,7 +41,7 @@ const SmartPcToolbar = ({
           className="hidden sm:inline-flex rounded-full px-7 py-4 ml-auto bg-gradient-to-l from-[#a801ba] to-[#2530f0] text-[16px] font-medium leading-6 text-white hover:opacity-95 font-['Space_Grotesk']"
           data-testid="sensepc-build-button"
         >
-          <Plus className="h-4 w-4" />
+          <HammerIcon className="h-4 w-4" />
           Build Sense PC
         </Button>
       )}

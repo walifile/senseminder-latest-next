@@ -1,9 +1,15 @@
-"use client";
+import type { Metadata } from "next";
 
-import React from "react";
+import { sensePcMeta } from "@/app/seo/metadata";
 
 import SensePCPage from "./_components/main-page";
 
-const SensePC = () => <SensePCPage />;
+export const metadata: Metadata = {
+  title: sensePcMeta.title,
+  description: sensePcMeta.description,
+  keywords: sensePcMeta.keywords,
+};
 
-export default SensePC;
+export default function SensePC() {
+  return <SensePCPage />;
+}

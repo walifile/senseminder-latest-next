@@ -25,7 +25,6 @@ const RentSmarter: React.FC = () => (
           width={640}
           height={578}
           className="w-full h-auto dark:hidden"
-          priority
         />
         {/* Dark mode image */}
         <Image
@@ -34,7 +33,6 @@ const RentSmarter: React.FC = () => (
           width={640}
           height={578}
           className="w-full h-auto hidden dark:block"
-          priority
         />
       </motion.div>
 

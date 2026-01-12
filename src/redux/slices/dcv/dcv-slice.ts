@@ -29,15 +29,15 @@ const dcvSlice = createSlice({
     setLaunchVMResponse: (
       state,
       action: PayloadAction<{
-        instanceId: string;
+        sessionKey: string;
         response: LaunchVMResponse;
         pcName?: string;
       }>
     ) => {
-      const { instanceId, response, pcName } = action.payload;
+      const { sessionKey, response, pcName } = action.payload;
 
-      state.instances[instanceId] = {
-        ...state.instances[instanceId],
+      state.instances[sessionKey] = {
+        ...state.instances[sessionKey],
         ...response,
         ...(pcName ? { pcName } : {}),
       };
@@ -64,8 +64,8 @@ export const {
 // Selectors
 export const selectLaunchVMResponse = (
   state: { dcv: DcvState },
-  instanceId: string
-) => state.dcv.instances[instanceId];
+  sessionKey: string
+) => state.dcv.instances[sessionKey];
 
 export const selectAllLaunchVMResponses = (state: { dcv: DcvState }) =>
   state.dcv.instances;

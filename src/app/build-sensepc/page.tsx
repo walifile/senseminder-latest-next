@@ -1,34 +1,31 @@
-// src/app/build-sensepc/page.tsx
-
-/* eslint perfectionist/sort-imports: "off" */
-
 "use client";
 
 import type { RootState } from "@/redux/store";
 
-import React, { useRef, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-
-import { useSelector } from "react-redux";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-
 import { routes } from "@/constants/routes";
+import { useCreateVMMutation } from "@/api/vmManagement";
+import React, { useRef, useMemo, useEffect } from "react";
 import { FEEDBACK_TRIGGERS } from "@/constants/app-constants";
-
+import { useGetSmartPcConfigQuery } from "@/api/smartPCConfigAPI";
 import {
   useGetEstimateMutation,
   useListRemoteDesktopQuery,
 } from "@/api/fileManagerAPI";
-import { useCreateVMMutation } from "@/api/vmManagement";
-import { useGetSmartPcConfigQuery } from "@/api/smartPCConfigAPI";
 
 import { cn } from "@/lib/utils";
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { PublicCard } from "@/components/ui/public-card";
+import {
+  Select,
+  SelectItem,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+} from "@/components/ui/select";
 import {
   Form,
   FormItem,
@@ -37,23 +34,23 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectItem,
-  SelectValue,
-  SelectTrigger,
-  SelectContent,
-} from "@/components/ui/select";
+
+import { useSelector } from "react-redux";
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import { ArrowUpRight } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
 import { useFeedback } from "@/hooks/use-feedback";
 
-import { formSchema, type FormValues } from "./schema";
-import { fetchEstimate } from "./api/fetch-estimate";
-import { osOptions, storageOptions, locationOptions } from "./data";
 import CostSummary from "./_components/cost-summary";
+import { fetchEstimate } from "./api/fetch-estimate";
+import { formSchema, type FormValues } from "./schema";
+import { osOptions, storageOptions, locationOptions } from "./data";
 
-import { ArrowUpRight } from "lucide-react";
+import type { BillingPlan } from "./data/billing";
 
 const selectIconWrapper =
   "pointer-events-none absolute left-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center";
@@ -84,7 +81,6 @@ export default function BuildSensePcPage() {
 
   const userId = useSelector((state: RootState) => state.auth.user?.id);
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-  const config = useSelector((state: RootState) => state.smartPcConfig);
 
   const [getEstimate, { data, isLoading, error }] = useGetEstimateMutation();
   const { refetch: refetchRemoteDesktops } = useListRemoteDesktopQuery({
@@ -93,24 +89,24 @@ export default function BuildSensePcPage() {
   const [createVM, { isLoading: isCreating }] = useCreateVMMutation();
 
   // Default values using Redux config + static options from ./data
-  const defaultValues: Partial<FormValues> = useMemo(
+  const baseDefaults = useMemo(
     () => ({
       pcName: "",
-      operatingSystem: config.operatingSystem || osOptions[0]?.value || "",
-      cpu: config.cpu || "",
-      storage: config.storage || storageOptions[0]?.value || "",
-      region: config.region || locationOptions[0]?.value || "",
+      operatingSystem: osOptions[0]?.value || "",
+      cpu: "",
+      storage: storageOptions[0]?.value || "",
+      region: locationOptions[0]?.value || "",
       billingPlan: "hourly",
       linuxCategory: "",
     }),
-    [config],
+    []
   );
-
+  
   const methods = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
-    defaultValues,
-  });
+    defaultValues: baseDefaults,
+  });  
 
   const { control, reset, watch, setValue, handleSubmit } = methods;
 
@@ -138,57 +134,121 @@ export default function BuildSensePcPage() {
     [apiConfig?.cpuCategories],
   );
 
-  const linuxCategoryCpuOptions =
-    (
-      apiCpuCategories as Record<
-        string,
-        Record<string, { value: string; label: string }[]>
-      >
-    )?.Linux?.[`${selectedLinuxCategory}`] || [];
+  const linuxCategoryCpuOptions = React.useMemo(
+    () =>
+      (
+        (
+          apiCpuCategories as Record<
+            string,
+            Record<string, { value: string; label: string }[]>
+          >
+        )?.Linux?.[String(selectedLinuxCategory)] || []
+      ),
+    [apiCpuCategories, selectedLinuxCategory]
+  );
+  
+  const cpuOptionsForOS = React.useMemo(
+    () =>
+      (isLinuxOS && selectedLinuxCategory
+        ? linuxCategoryCpuOptions
+        : ((apiCpuOptions as Record<string, { value: string; label: string }[]>)[
+            String(selectedOS)
+          ] || [])),
+    [apiCpuOptions, isLinuxOS, selectedLinuxCategory, selectedOS, linuxCategoryCpuOptions]
+  );   
 
-  const cpuOptionsForOS =
-    isLinuxOS && selectedLinuxCategory
-      ? linuxCategoryCpuOptions
-      : ((apiCpuOptions as Record<string, { value: string; label: string }[]>)[
-          selectedOS
-        ] || []);
+  type CpuOpt = { value: string; label: string };
 
-  // Keep CPU + Linux defaults in sync when OS changes
+  const isGpuString = React.useCallback(
+    (s?: unknown) =>
+      typeof s === "string" && s.trim().toLowerCase().endsWith(".gpu"),
+    []
+  );
+  
+  const isGpuOption = React.useCallback(
+    (opt: CpuOpt) => isGpuString(opt.value) || isGpuString(opt.label),
+    [isGpuString]
+  );            
+
+  const [showGpuOnly, setShowGpuOnly] = React.useState(false);
+
+  const hasAnyGpuOptions = React.useMemo(
+    () => cpuOptionsForOS.some(isGpuOption),
+    [cpuOptionsForOS, isGpuOption]
+  );
+  
+  const displayedCpuOptions = React.useMemo(() => {
+    if (!hasAnyGpuOptions) return cpuOptionsForOS;
+    if (showGpuOnly) return cpuOptionsForOS.filter(isGpuOption);
+  
+    const nonGpu = cpuOptionsForOS.filter((o) => !isGpuOption(o));
+    return nonGpu.length ? nonGpu : cpuOptionsForOS;
+  }, [cpuOptionsForOS, hasAnyGpuOptions, showGpuOnly, isGpuOption]);  
+
   useEffect(() => {
-    if (selectedOS) {
-      if (isLinuxOS) {
+    if (!selectedOS) return;
+
+    const currentLinux = methods.getValues("linuxCategory");
+
+    if (isLinuxOS) {
+      if (!currentLinux) {
         setValue("linuxCategory", "Ubuntu_24.04_LTS_X64", {
           shouldValidate: true,
         });
       }
-      const opts = (apiCpuOptions as Record<string, { value: string }[]>)?.[
-        selectedOS
-      ];
-      if (opts && opts.length > 0) {
-        setValue("cpu", opts[0].value, { shouldValidate: true });
+    } else {
+      if (currentLinux) {
+        setValue("linuxCategory", "", { shouldValidate: true });
       }
     }
-  }, [selectedOS, isLinuxOS, setValue, apiCpuOptions]);
+  }, [selectedOS, isLinuxOS, methods, setValue]);
 
-  // Trigger estimate when key fields change (same as original)
   useEffect(() => {
-    fetchEstimate({
+    // If GPU-only is enabled but no GPU exists, disable it once.
+    if (!hasAnyGpuOptions && showGpuOnly) {
+      setShowGpuOnly(false);
+      return;
+    }
+
+    const current = methods.getValues("cpu");
+    const isValid = displayedCpuOptions.some((o) => o.value === current);
+
+    // Choose first visible option (respects GPU filter)
+    const next = displayedCpuOptions[0]?.value ?? "";
+
+    // Only set if it actually changes something
+    if (!isValid && current !== next) {
+      setValue("cpu", next, { shouldValidate: true });
+    }
+  }, [displayedCpuOptions, hasAnyGpuOptions, showGpuOnly, methods, setValue]);
+
+  const lastEstimateKeyRef = useRef<string>("");
+
+  useEffect(() => {
+    if (!cpu || !storage || !region) return;
+  
+    const key = `${cpu}|${storage}|${region}`;
+    if (lastEstimateKeyRef.current === key) return;
+    lastEstimateKeyRef.current = key;
+  
+    void fetchEstimate({
       methods,
       getEstimate,
       toast,
       showError: false,
     });
-  }, [cpu, storage, region, methods, getEstimate, toast]);
+  }, [cpu, storage, region, methods, getEstimate, toast]);  
 
   // Keep last stable estimate to prevent flicker
   const stableEstimateRef = useRef<typeof data>(null);
+
   useEffect(() => {
     if (data) stableEstimateRef.current = data;
   }, [data]);
 
   const effectiveEstimate = useMemo(
     () => data ?? stableEstimateRef.current,
-    [data],
+    [data]
   );
 
   const handleEstimate = async () => {
@@ -197,7 +257,7 @@ export default function BuildSensePcPage() {
       getEstimate,
       toast,
     });
-  };
+  };      
 
   // Visual click FX on "Refresh Estimate" button (inside CostSummary)
   const asideRef = useRef<HTMLDivElement>(null);
@@ -254,13 +314,17 @@ export default function BuildSensePcPage() {
   const onSubmit = handleSubmit(async (formData: FormValues) => {
     if (!isAuthenticated) {
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to create your Sense PC.",
-        variant: "destructive",
+        title: "Sign in to continue",
+        description: "Please sign in to build your Sense PC — it only takes a moment.",
+        variant: "default",
       });
-      router.push(routes.signIn);
+    
+      setTimeout(() => {
+        router.push(routes.signIn);
+      }, 700);
+    
       return;
-    }
+    }    
 
     try {
       await createVM({
@@ -341,7 +405,6 @@ export default function BuildSensePcPage() {
         </div>
       </div>
 
-      {/* Content container (navbar + footer come from global layout) */}
       <div className="relative w-full px-4 md:px-6 pt-20 md:pt-16 lg:pt-48 pb-16 md:pb-20">
         <div className="mx-auto w-full max-w-[1200px] 2xl:max-w-[1360px] space-y-8 lg:space-y-10">
           <PublicCard
@@ -370,7 +433,7 @@ export default function BuildSensePcPage() {
                 <p className="font-inter text-[14px] leading-[20px] md:text-[16px] md:leading-[24px] text-paragraph">
                   <span className="text-link-primary">Home</span>
                   <span>{` - `}</span>
-                  <span>Build Smartpc</span>
+                  <span>Build Sense PC</span>
                 </p>
 
                 <h1 className={cn(HERO_TITLE, "text-slate-900 dark:text-white")}>
@@ -399,10 +462,8 @@ export default function BuildSensePcPage() {
           <Form {...methods} control={control}>
             <form onSubmit={onSubmit} className="space-y-10">
               <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] items-start">
-                {/* ---------- LEFT COLUMN ---------- */}
                 <PublicCard className="px-4 md:px-5 lg:px-6 py-5 md:py-6 lg:py-7">
                   <div className="space-y-5">
-                    {/* 1) Basic Information */}
                     <PublicCard
                       className={cn(
                         "space-y-4 px-5 md:px-6 py-5 md:py-6 rounded-2xl border",
@@ -445,7 +506,7 @@ export default function BuildSensePcPage() {
                                     {...field}
                                     id="pcName"
                                     type="text"
-                                    placeholder="E.g., Design-Workstation-1"
+                                    placeholder="E.g., My-game-partner"
                                     uiSize="form"
                                     className="pl-11"
                                   />
@@ -479,7 +540,7 @@ export default function BuildSensePcPage() {
 
                                   <Select
                                     onValueChange={field.onChange}
-                                    value={field.value}
+                                    value={field.value ?? ""}
                                   >
                                     <SelectTrigger
                                       id="operatingSystem"
@@ -554,7 +615,7 @@ export default function BuildSensePcPage() {
                                   <FormControl>
                                     <Select
                                       onValueChange={field.onChange}
-                                      value={field.value}
+                                      value={field.value ?? ""}
                                     >
                                       <SelectTrigger
                                         id="linuxCategory"
@@ -590,9 +651,25 @@ export default function BuildSensePcPage() {
                           name="cpu"
                           render={({ field }) => (
                             <FormItem className="space-y-1.5">
-                              <FormLabel className={cn(FIELD_LABEL)}>
-                                CPU + Memory
-                              </FormLabel>
+                              <FormLabel className={cn(FIELD_LABEL)}>CPU + Memory</FormLabel>
+
+                              {/* ✅ GPU checkbox between label and dropdown */}
+                              <div className="flex items-center gap-3 pb-1">
+                                <Checkbox
+                                  checked={showGpuOnly}
+                                  onCheckedChange={(v) => setShowGpuOnly(Boolean(v))}
+                                  disabled={!hasAnyGpuOptions}
+                                />
+                                <p className="text-sm text-slate-700 dark:text-slate-300">
+                                  Show GPU configurations only
+                                  {!hasAnyGpuOptions && (
+                                    <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">
+                                      (No GPU options for this OS)
+                                    </span>
+                                  )}
+                                </p>
+                              </div>
+
                               <FormControl>
                                 <div className="relative">
                                   <span className={selectIconWrapper}>
@@ -604,20 +681,17 @@ export default function BuildSensePcPage() {
                                     />
                                   </span>
 
-                                  <Select
-                                    onValueChange={field.onChange}
-                                    value={field.value}
-                                  >
+                                  <Select onValueChange={field.onChange} value={field.value ?? ""}>
                                     <SelectTrigger
                                       id="cpu"
                                       variant="form"
                                       className={cn("pl-11", SELECT_TRIGGER_TYPO)}
                                     >
-                                      <SelectValue placeholder="Select CPU" />
+                                      <SelectValue placeholder="Select CPU & Memory" />
                                     </SelectTrigger>
 
                                     <SelectContent variant="form">
-                                      {cpuOptionsForOS.map((opt) => (
+                                      {displayedCpuOptions.map((opt) => (
                                         <SelectItem
                                           key={opt.value}
                                           value={opt.value}
@@ -630,6 +704,7 @@ export default function BuildSensePcPage() {
                                   </Select>
                                 </div>
                               </FormControl>
+
                               <FormMessage />
                             </FormItem>
                           )}
@@ -657,7 +732,7 @@ export default function BuildSensePcPage() {
 
                                   <Select
                                     onValueChange={field.onChange}
-                                    value={field.value}
+                                    value={field.value ?? ""}
                                   >
                                     <SelectTrigger
                                       id="storage"
@@ -702,7 +777,7 @@ export default function BuildSensePcPage() {
                       <header className="space-y-1.5">
                         <h2 className={cn(SECTION_TITLE)}>Location</h2>
                         <p className={cn(SECTION_SUBTITLE)}>
-                          Select the closest region for low latency.
+                          Choose a nearby location for better performance.
                         </p>
                       </header>
 
@@ -715,7 +790,7 @@ export default function BuildSensePcPage() {
                           render={({ field }) => (
                             <FormItem className="space-y-1.5">
                               <FormLabel className={cn(FIELD_LABEL)}>
-                                Region
+                                Location
                               </FormLabel>
                               <FormControl>
                                 <div className="relative">
@@ -730,7 +805,7 @@ export default function BuildSensePcPage() {
 
                                   <Select
                                     onValueChange={field.onChange}
-                                    value={field.value}
+                                    value={field.value ?? ""}
                                   >
                                     <SelectTrigger
                                       id="region"
@@ -800,7 +875,7 @@ export default function BuildSensePcPage() {
 
                                   <Select
                                     onValueChange={field.onChange}
-                                    value={field.value}
+                                    value={field.value ?? ""}
                                   >
                                     <SelectTrigger
                                       id="billingPlan"
@@ -877,11 +952,10 @@ export default function BuildSensePcPage() {
                   </div>
                 </PublicCard>
 
-                {/* ---------- RIGHT COLUMN: JUST CostSummary ---------- */}
                 <div ref={asideRef} className="lg:sticky lg:top-28 self-start">
                   <CostSummary
                     isResize={false}
-                    billingPlan={billingPlan}
+                    billingPlan={billingPlan as BillingPlan}
                     handleEstimate={handleEstimateWithFX}
                     estimateData={effectiveEstimate}
                     isEstimating={isLoading}
@@ -893,7 +967,6 @@ export default function BuildSensePcPage() {
         </div>
       </div>
 
-      {/* Only decorates the Refresh Estimate button */}
       <style>{`
         .sm-refresh-btn {
           transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease;

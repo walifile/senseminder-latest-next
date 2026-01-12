@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { routes } from "@/constants/routes";
 
 import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
@@ -18,7 +16,7 @@ import {
 } from "@/lib/services/auth";
 
 const SocailLogin = () => {
-  const router = useRouter();
+  // const router = useRouter();
   const { toast } = useToast();
 
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -29,7 +27,7 @@ const SocailLogin = () => {
       setIsGoogleLoading(true);
       await googleSignUpService();
 
-      router.push(routes?.dashboard);
+      // router.push(routes?.dashboard);
     } catch (err) {
       const error =
         err instanceof Error ? err : new Error("Google sign-up failed.");
@@ -47,7 +45,7 @@ const SocailLogin = () => {
     try {
       setIsAppleLoading(true);
       await appleSignUpService();
-      router.push(routes?.dashboard);
+      // router.push(routes?.dashboard);
     } catch (err) {
       const error =
         err instanceof Error ? err : new Error("Apple sign-up failed.");
