@@ -128,6 +128,7 @@ def lambda_handler(event, context):
         if record:
             is_federated = record.get("federatedUser", False)
             first_login = record.get("firstLogin", False)
+
             # Special case: federated + firstLogin=true → not onboarded
             if is_federated and first_login is True:
                 claims_to_add["custom:onboarded"] = "false"
