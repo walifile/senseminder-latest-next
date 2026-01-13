@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 from botocore.exceptions import ClientError
-from boto3.dynamodb.conditions import Key, Attr
+from boto3.dynamodb.conditions import Key
 
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table("SmartPC-Active-Sessions")
@@ -21,6 +21,8 @@ ALLOWED_ORIGINS = [
 # If nothing valid, default to ["*"]
 if not ALLOWED_ORIGINS:
     ALLOWED_ORIGINS = ["*"]
+
+SESSION_DEDUPE_SECONDS = int(os.environ.get("SESSION_DEDUPE_SECONDS", "60"))
 
 
 def lambda_handler(event, context):
@@ -77,25 +79,30 @@ def lambda_handler(event, context):
 
             # ---------- CLAIM ----------
             if mode == "claim":
-                # Get any unclaimed sessions for user (don’t rely on sort-key order)
-                response = table.query(
-                    KeyConditionExpression=Key("userId").eq(user_id),
-                    FilterExpression=Attr("occupied").not_exists() | Attr("occupied").eq(False),
-                    ScanIndexForward=False,
-                    Limit=25,  # evaluates up to 25 items, returns only matching unclaimed ones
-                )
-                sessions = response.get("Items", [])
+                sessions = list_user_sessions(user_id)
+                now_dt = datetime.utcnow()
+                now = now_dt.isoformat()
+                location = get_geo_from_ip(ip) if ip else {}
 
-                # Pick the first available unclaimed session
-                unclaimed = sessions[0] if sessions else None
-
-                if not unclaimed:
-                    print(
-                        f"[CLAIM] No unclaimed session available for user: {user_id}"
+                recent_match = None
+                if SESSION_DEDUPE_SECONDS > 0:
+                    recent_match = find_recent_session(
+                        sessions, device_name, ip, now_dt, SESSION_DEDUPE_SECONDS
                     )
+
+                unclaimed = None
+                if not recent_match:
+                    unclaimed = next(
+                        (s for s in sessions if not s.get("occupied")),
+                        None,
+                    )
+
+                if recent_match:
+                    session_id = recent_match.get("sessionId")
+                elif unclaimed:
+                    session_id = unclaimed["sessionId"]
+                else:
                     session_id = str(uuid.uuid4())
-                    now = datetime.utcnow().isoformat()
-                    location = get_geo_from_ip(ip) if ip else {}
 
                     item = {
                         "userId": user_id,
@@ -130,10 +137,6 @@ def lambda_handler(event, context):
                         ),
                     }
 
-                session_id = unclaimed["sessionId"]
-                now = datetime.utcnow().isoformat()
-                location = get_geo_from_ip(ip) if ip else {}
-
                 update_expr = "SET occupied = :occ, lastSeen = :now"
                 expr_values = {
                     ":occ": True,
@@ -155,20 +158,25 @@ def lambda_handler(event, context):
                 update_params = {
                     "Key": {"userId": user_id, "sessionId": session_id},
                     "UpdateExpression": update_expr,
-                    "ExpressionAttributeValues": {
-                        **expr_values,
-                        ":false": False,
-                    },
-                    "ConditionExpression": "attribute_not_exists(occupied) OR occupied = :false",
+                    "ExpressionAttributeValues": expr_values,
                 }
 
                 if expr_names:
                     update_params["ExpressionAttributeNames"] = expr_names
 
+                if not recent_match and unclaimed:
+                    update_params["ExpressionAttributeValues"][":false"] = False
+                    update_params["ConditionExpression"] = (
+                        "attribute_not_exists(occupied) OR occupied = :false"
+                    )
+
                 try:
                     table.update_item(**update_params)
                 except ClientError as e:
-                    if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+                    if (
+                        e.response["Error"]["Code"]
+                        == "ConditionalCheckFailedException"
+                    ):
                         # Someone else claimed in the tiny window between query & update
                         print(
                             f"[CLAIM] Conditional check failed for user {user_id}, session {session_id} "
@@ -272,17 +280,11 @@ def lambda_handler(event, context):
         elif method == "GET":
             print(f"[GET] Fetching sessions for user: {user_id}")
 
-            response = table.query(
-                KeyConditionExpression=boto3.dynamodb.conditions.Key("userId").eq(
-                    user_id
-                ),
-                ScanIndexForward=False,
-                Limit=5,
-            )
-            sessions = response.get("Items", [])
+            sessions = list_user_sessions(user_id)
             sorted_sessions = sorted(
                 sessions, key=lambda x: x.get("lastSeen", ""), reverse=True
             )
+            sorted_sessions = sorted_sessions[:5]
 
             return {
                 "statusCode": 200,
@@ -354,3 +356,81 @@ def bad_request(message: str, headers: dict):
         "headers": headers,
         "body": json.dumps({"message": message}),
     }
+
+
+def list_user_sessions(user_id: str):
+    items = []
+    last_key = None
+
+    while True:
+        params = {
+            "KeyConditionExpression": Key("userId").eq(user_id),
+        }
+        if last_key:
+            params["ExclusiveStartKey"] = last_key
+
+        response = table.query(**params)
+        items.extend(response.get("Items", []))
+        last_key = response.get("LastEvaluatedKey")
+        if not last_key:
+            break
+
+    return items
+
+
+def find_recent_session(
+    sessions: list,
+    device_name: str | None,
+    ip: str | None,
+    now_dt: datetime,
+    window_seconds: int,
+):
+    if not sessions or window_seconds <= 0:
+        return None
+
+    for item in sorted(
+        sessions, key=lambda x: x.get("lastSeen", ""), reverse=True
+    ):
+        last_seen = parse_last_seen(item.get("lastSeen"))
+        if not last_seen:
+            continue
+
+        if (now_dt - last_seen).total_seconds() > window_seconds:
+            continue
+
+        if is_same_client(item, device_name, ip):
+            return item
+
+    return None
+
+
+def parse_last_seen(value):
+    if not value:
+        return None
+    if isinstance(value, (int, float)):
+        return datetime.utcfromtimestamp(value)
+    if isinstance(value, str):
+        try:
+            clean = value[:-1] if value.endswith("Z") else value
+            return datetime.fromisoformat(clean)
+        except ValueError:
+            return None
+    return None
+
+
+def is_same_client(item: dict, device_name: str | None, ip: str | None):
+    item_device = item.get("deviceName")
+    item_ip = item.get("ip")
+
+    if ip == "unknown":
+        ip = None
+    if item_ip == "unknown":
+        item_ip = None
+
+    if device_name and item_device and ip and item_ip:
+        return device_name == item_device and ip == item_ip
+    if device_name and item_device:
+        return device_name == item_device
+    if ip and item_ip:
+        return ip == item_ip
+    return False
