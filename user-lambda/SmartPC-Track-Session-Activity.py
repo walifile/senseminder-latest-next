@@ -2,6 +2,7 @@ import json
 import os
 import boto3
 import urllib.request
+import uuid
 from datetime import datetime
 from decimal import Decimal
 from botocore.exceptions import ClientError
@@ -23,7 +24,10 @@ if not ALLOWED_ORIGINS:
 
 
 def lambda_handler(event, context):
-    method = event.get("httpMethod")
+    method = (
+        event.get("httpMethod")
+        or event.get("requestContext", {}).get("http", {}).get("method")
+    )
 
     # Get request origin (case-insensitive header)
     headers_in = event.get("headers") or {}
@@ -45,8 +49,13 @@ def lambda_handler(event, context):
         headers = cors_headers(request_origin)
 
         # ---- Auth / user ----
-        claims = event.get("requestContext", {}).get("authorizer", {}).get("claims", {})
-        user_id = claims.get("sub")
+        authorizer = event.get("requestContext", {}).get("authorizer", {}) or {}
+        claims = (
+            authorizer.get("claims")
+            or authorizer.get("jwt", {}).get("claims")
+            or {}
+        )
+        user_id = claims.get("sub") or claims.get("cognito:username")
         if not user_id:
             print("[AUTH] Missing user_id in authorizer claims")
             return {
@@ -84,7 +93,42 @@ def lambda_handler(event, context):
                     print(
                         f"[CLAIM] No unclaimed session available for user: {user_id}"
                     )
-                    return bad_request("No unclaimed session available.", headers)
+                    session_id = str(uuid.uuid4())
+                    now = datetime.utcnow().isoformat()
+                    location = get_geo_from_ip(ip) if ip else {}
+
+                    item = {
+                        "userId": user_id,
+                        "sessionId": session_id,
+                        "occupied": True,
+                        "lastSeen": now,
+                    }
+                    if ip:
+                        item["ip"] = ip
+                    if device_name:
+                        item["deviceName"] = device_name
+                    if location:
+                        item["location"] = location
+
+                    try:
+                        table.put_item(Item=item)
+                    except ClientError as e:
+                        print(f"[CLAIM][ERROR] Failed to create session: {e}")
+                        raise
+
+                    print(
+                        f"[CLAIM] Created session: {session_id} for user: {user_id} from {ip} | device: {device_name}"
+                    )
+                    return {
+                        "statusCode": 200,
+                        "headers": headers,
+                        "body": json.dumps(
+                            {
+                                "message": "Session created successfully",
+                                "sessionId": session_id,
+                            }
+                        ),
+                    }
 
                 session_id = unclaimed["sessionId"]
                 now = datetime.utcnow().isoformat()
