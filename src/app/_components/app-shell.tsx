@@ -8,8 +8,8 @@ import { AmplifyProvider } from "@/providers/AmplifyProvider";
 import { Inter, Poppins, Space_Grotesk } from "next/font/google";
 import { WebSocketProvider } from "@/providers/WebSocketProvider";
 
-import Navbar from "@/components/shared/layout/navbar";
 import Footer from "@/components/shared/layout/footer";
+import Navbar from "@/components/shared/layout/navbar";
 import { ThemeWrapper } from "@/components/shared/layout/theme-wrapper";
 import PublicDarkBackground from "@/components/shared/layout/public-pages/dark-bg";
 import PublicLightBackground from "@/components/shared/layout/public-pages/light-bg";
@@ -90,8 +90,9 @@ export default function RootLayout({
 
   const isAuth = pathname.startsWith("/auth");
   const isDashboard = pathname.startsWith("/dashboard");
+  const showPublicLayout = !hideChrome && !isAuth && !isDashboard;
 
-  // Body classes — lock only on the pages that need it
+  // Body classes: lock only on the pages that need it
   const bodyClass = hideChrome
     ? "h-full overflow-hidden" // viewer/welcome/landing in prod
     : "min-h-screen overflow-x-hidden"; // normal app pages (scroll allowed)
@@ -99,7 +100,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable}  overflow-x-hidden md:overflow-x-visible`}
+      className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable} overflow-x-hidden md:overflow-x-visible`}
     >
       <head>
         <title>{pageTitle}</title>
@@ -132,40 +133,11 @@ export default function RootLayout({
               <ThemeWrapper>
                 <AuthGuard>
                   {hideChrome ? (
-                    // 🔹 Fullscreen pages (pc-viewer, welcome, landing in prod)
-                    <div className="h-full">{children}</div>
-                  ) : isAuth || isDashboard ? (
-                    <div className="flex min-h-screen flex-col">
-                      <Navbar />
-                      <main
-                        className={`flex-1 flex flex-col ${
-                          isAuth ? "justify-center" : ""
-                        }`}
-                      >
-                        {children}
-                      </main>
-                      <Footer />
-                    </div>
+                    <FullscreenShell>{children}</FullscreenShell>
+                  ) : showPublicLayout ? (
+                    <PublicShell>{children}</PublicShell>
                   ) : (
-                    // 🔹 All other normal pages: apply public light/dark bg
-                    <div className="relative min-h-screen w-full overflow-hidden">
-                      {/* Background layer */}
-                      <div className="pointer-events-none absolute inset-0 z-0">
-                        <div className="block dark:hidden">
-                          <PublicLightBackground />
-                        </div>
-                        <div className="hidden dark:block">
-                          <PublicDarkBackground />
-                        </div>
-                      </div>
-
-                      {/* Content layer */}
-                      <div className="relative z-30 flex min-h-screen flex-col">
-                        <Navbar />
-                        <main className="flex-1 flex flex-col">{children}</main>
-                        <Footer />
-                      </div>
-                    </div>
+                    <ChromeShell centerContent={isAuth}>{children}</ChromeShell>
                   )}
                 </AuthGuard>
               </ThemeWrapper>
@@ -174,5 +146,49 @@ export default function RootLayout({
         </ReduxProvider>
       </body>
     </html>
+  );
+}
+
+type ShellProps = { children: React.ReactNode };
+
+function FullscreenShell({ children }: ShellProps) {
+  return <div className="h-full">{children}</div>;
+}
+
+function ChromeShell({
+  children,
+  centerContent,
+}: ShellProps & { centerContent?: boolean }) {
+  return (
+    <div className="flex min-h-screen flex-col">
+      <Navbar />
+      <main
+        className={`flex-1 flex flex-col ${
+          centerContent ? "justify-center" : ""
+        }`}
+      >
+        {children}
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+function PublicShell({ children }: ShellProps) {
+  return (
+    <div className="relative min-h-screen w-full overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 z-0" aria-hidden>
+        <div className="block dark:hidden">
+          <PublicLightBackground />
+        </div>
+        <div className="hidden dark:block">
+          <PublicDarkBackground />
+        </div>
+      </div>
+
+      <div className="relative z-30">
+        <ChromeShell centerContent={false}>{children}</ChromeShell>
+      </div>
+    </div>
   );
 }
