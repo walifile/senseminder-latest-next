@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 
 import Footer from "@/components/shared/layout/footer";
 import Navbar from "@/components/shared/layout/navbar";
-
 import PublicDarkBackground from "@/components/shared/layout/public-pages/dark-bg";
 import PublicLightBackground from "@/components/shared/layout/public-pages/light-bg";
 
