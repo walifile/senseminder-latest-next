@@ -1,19 +1,28 @@
 import React from "react";
+import Image from "next/image";
 
 const PublicLightBackground: React.FC = () => (
   <>
     <div className="pointer-events-none absolute max-w-none">
-      <img
+      <Image
         src="/assets/authlayout/light/rounded.svg"
         alt=""
+        width={0}
+        height={0}
+        sizes="100vw"
         className="block max-w-none"
+        style={{ width: "auto", height: "auto" }}
       />
     </div>
     <div className="pointer-events-none absolute w-full max-w-none">
-      <img
+      <Image
         src="/assets/authlayout/light/pulse-gradient.png"
         alt=""
-        className="block max-w-none ali w-full h-[305.951px] "
+        width={0}
+        height={0}
+        sizes="100vw"
+        className="block max-w-none w-full h-[305.951px]"
+        style={{ objectFit: "fill" }}
       />
     </div>
     <div
@@ -25,14 +34,14 @@ const PublicLightBackground: React.FC = () => (
         top-[25%]
       "
     >
-      <img
+      <Image
         src="/assets/authlayout/light/right-shad.png"
         alt=""
-        className="block max-w-none 
-        h-[680px] 
-        
-         wali 
-        "
+        width={0}
+        height={0}
+        sizes="100vw"
+        className="block max-w-none h-[680px]"
+        style={{ width: "auto" }}
       />
     </div>
 
@@ -46,10 +55,14 @@ const PublicLightBackground: React.FC = () => (
         transform: "translate(-50%, -50%)",
       }}
     >
-      <img
+      <Image
         src="/assets/authlayout/light/Ellipse 5.svg"
         alt=""
-        className="block h-full w-full max-w-none"
+        width={0}
+        height={0}
+        sizes="100vw"
+        className="block h-full  w-full max-w-none"
+        style={{ objectFit: "fill" }}
       />
     </div>
 
@@ -62,10 +75,14 @@ const PublicLightBackground: React.FC = () => (
           z-0
         "
     >
-      <img
+      <Image
         src="/assets/authlayout/light/Ellipse 2.png"
         alt=""
-        className="block w-full max-w-none"
+        width={0}
+        height={0}
+        sizes="100vw"
+        className="block edf w-full max-w-none"
+        style={{ height: "auto" }}
       />
     </div>
   </>
