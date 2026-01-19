@@ -1,20 +1,23 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
+import { Logger } from "@/lib/utils/logger";
 import { configureAmplify } from "@/config/amplify-config";
 
-import { Logger } from "@/lib/utils/logger";
-
-let isAmplifyConfigured = false;
-
 export function AmplifyProvider({ children }: { children: React.ReactNode }) {
+  const [isConfigured, setIsConfigured] = useState(false);
+
   useEffect(() => {
     Logger.log("typeof window L: " + typeof window);
-    if (typeof window !== "undefined" && !isAmplifyConfigured) {
+    if (typeof window !== "undefined" && !isConfigured) {
       configureAmplify();
-      isAmplifyConfigured = true;
+      setIsConfigured(true);
     }
-  }, []);
+  }, [isConfigured]);
+
+  if (!isConfigured) {
+    return null;
+  }
 
   return <>{children}</>;
 }
