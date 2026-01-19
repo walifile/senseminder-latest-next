@@ -134,12 +134,12 @@ const TutorialSection = () => {
             transition={{ duration: 0.6 }}
             className="max-md:w-full space-y-3 md:space-y-2.5"
           >
-            <h4 className="font-space-grotesk font-semibold text-2xl md:text-4xl text-center md:text-left">
+            <h2 className="font-space-grotesk font-semibold text-2xl md:text-4xl text-center md:text-left">
               New to Sense PC?{" "}
               <span className="text-transparent bg-clip-text bg-[linear-gradient(290.5deg,#D971FF_-70.94%,#4C55F8_10.02%,#8086F3_115.42%)]">
                 Start Here
               </span>
-            </h4>
+            </h2>
 
             <p className="text-paragraph text-center md:text-left text-base md:text-2xl">
               Our tutorial videos show you how to set up and optimize your cloud

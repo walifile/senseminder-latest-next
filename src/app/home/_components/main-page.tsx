@@ -51,7 +51,7 @@ export default function HomePage() {
         imageHeight={400}
         imageAlt="Cloud infrastructure illustration"
       >
-        <p className="font-space-grotesk font-bold text-2xl md:text-[65px] leading-[1.10] w-full md:w-[85%]">
+        <h1 className="font-space-grotesk font-bold text-2xl md:text-[65px] leading-[1.10] w-full md:w-[85%]">
           <span className="text-transparent bg-clip-text bg-[linear-gradient(270deg,_#BA25F0_4.8%,_#2530F0_46.15%,_#8086F3_100%)]">
             Your Computer,
           </span>
@@ -59,7 +59,7 @@ export default function HomePage() {
           <span className="text-transparent bg-clip-text bg-[linear-gradient(270deg,_#BA25F0_4.8%,_#2530F0_46.15%,_#8086F3_100%)]">
             Now in the Cloud
           </span>
-        </p>
+        </h1>
         <p className="text-paragraph text-base md:text-2xl w-full md:w-[85%]">
           Build a high-performing cloud computer in minutes with Sense PC. No
           hardware. No security threat. No overpaying.
@@ -83,10 +83,10 @@ export default function HomePage() {
       {/* <Pricing /> */}
       {/* <CostCalculator /> */}
       <GetStartedCTA>
-        <h3 className="font-space-grotesk font-semibold text-2xl md:text-5xl">
+        <h2 className="font-space-grotesk font-semibold text-2xl md:text-5xl">
           Join The New Cloud Computing Movement
           <br />
-        </h3>
+        </h2>
 
         <Button
           data-testid="home-get-started-button"

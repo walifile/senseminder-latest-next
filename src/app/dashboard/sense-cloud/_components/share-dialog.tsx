@@ -1,6 +1,7 @@
 "use client";
 
 import type { RootState } from "@/redux/store";
+import type { StorageRegion } from "@/constants/storage-regions";
 
 import React, { useState, useEffect } from "react";
 import {
@@ -43,6 +44,7 @@ type ShareDialogProps = {
   onOpenChange: (open: boolean) => void;
   file?: FileItem | null;
   selectedFolder: FileItem | null;
+  region: StorageRegion;
 };
 
 const ShareDialog: React.FC<ShareDialogProps> = ({
@@ -50,6 +52,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
   onOpenChange,
   file,
   selectedFolder,
+  region,
 }) => {
   const { toast } = useToast();
 
@@ -96,7 +99,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
 
     try {
       const result = await shareFile({
-        region: "virginia",
+        region,
         userId,
         ...(file.id && { key: file.id }),
         ...(file.fileName && !file.id && { fileName: file.fileName }),

@@ -52,9 +52,9 @@ const RentSmarterProcess: React.FC = () => {
         transition={{ duration: 0.6 }}
         className="lg:col-span-2 space-y-12"
       >
-        <h4 className="max-w-lg font-space-grotesk font-bold text-2xl md:text-4xl">
+        <h2 className="max-w-lg font-space-grotesk font-bold text-2xl md:text-4xl">
           No More Hardware Just Efficiency
-        </h4>
+        </h2>
 
         <Button size="lg" className="w-full lg:w-fit" onClick={onBuildPc}>
           Build Your Sense PC Now!

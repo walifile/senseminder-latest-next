@@ -16,9 +16,9 @@ export const defaultMeta = {
 };
 
 export const homeMeta = {
-  title: "Build Your Cloud Desktop | Sense PC",
+  title: "Cloud Desktop with Sense PC | Flexible Computing Power",
   description:
-    "Design your ideal online PC with Sense PC's cloud desktop builder. Select your configuration and see real-time pricing.",
+    "Unlock powerful cloud desktops with Sense PC. Secure, scalable, and accessible from any device, empowering you to work with flexibility and performance.",
   keywords: [
     "Virtual desktop",
     "Cloud desktop",
@@ -29,9 +29,9 @@ export const homeMeta = {
 };
 
 export const sensePcMeta = {
-  title: "A Cloud PC Workstation Fit for Your Workflow | SensePC",
+  title: "Cloud VDI Alternative for Secure Desktop Access | Sense PC",
   description:
-    "Your cloud PC your way, from any device. Discover why individuals, teams, and organizations choose SensePC.",
+    "Discover Sense PC, the cloud-based VDI alternative offering scalable, secure desktop computing from any device. No hardware required, pay for what you use.",
   keywords: [
     "Virtual desktop alternative",
     "Shadow PC alternatives",
@@ -48,9 +48,9 @@ export const sensePcMeta = {
 };
 
 export const senseCloudMeta = {
-  title: "Secure Cloud Storage | Sense Cloud",
+  title: "Integrated Cloud Storage for Businesses | Sense Cloud",
   description:
-    "Sense Cloud makes cloud file management easier. Enjoy secure cloud storage for your business at your fingertips with our solution.",
+    "Experience secure, scalable cloud storage with Sense Cloud. Ideal for businesses, it offers cost-effective storage with seamless integration to Sense PC.",
   keywords: [
     "secure cloud storage",
     "cloud storage for business",
@@ -60,10 +60,16 @@ export const senseCloudMeta = {
   ],
 };
 
-export const aboutMeta = {
-  title: "About Sense PC’s Cloud Computing Mission",
+export const buildSensePcMeta = {
+  title: "Build Your Cloud Workstation ,Customizable & Secure|Sense PC",
   description:
-    "Learn how Sense PC is creating the next generation of cloud computing for everyone. Discover our mission and vision for our platform.",
+    "Easily build your cloud workstation with Sense PC. Customize CPU, memory, and storage to suit your needs,with real-time cost estimation and low-latency access.",
+};
+
+export const aboutMeta = {
+  title: "Powerful Cloud Desktops with Remote Access | Sense PC",
+  description:
+    "Experience cloud-first computing with Sense PC. Access high-performance desktops from anywhere, with scalable resources and enterprise-grade security.",
   keywords: [
     "simple cloud computing",
     "reliable cloud computing",

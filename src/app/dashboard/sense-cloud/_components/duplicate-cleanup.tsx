@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { DEFAULT_STORAGE_REGION } from "@/constants/storage-regions";
 import {
   useDedupScanMutation,
   useDedupMergeMutation,
@@ -37,7 +38,7 @@ import type {
 
 const Duplicates: React.FC<DuplicatesProps> = ({
   userId,
-  region = "virginia",
+  region = DEFAULT_STORAGE_REGION,
 }) => {
   const [scan, setScan] = useState<DuplicateScanResponse | null>(null);
   const [loading, setLoading] = useState(false);

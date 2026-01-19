@@ -1,4 +1,5 @@
 import type { RootState } from "@/redux/store";
+import type { StorageRegion } from "@/constants/storage-regions";
 
 import React, { useMemo, useState } from "react";
 import {
@@ -39,6 +40,7 @@ type CopyFilesDialogProps = {
   selectedFiles: string[];
   setSelectedFiles: (ids: string[]) => void;
   selectedFolder: FileItem | null;
+  region: StorageRegion;
 };
 
 const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
@@ -47,6 +49,7 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
   selectedFiles,
   setSelectedFiles,
   selectedFolder,
+  region,
 }) => {
   const { toast } = useToast();
   const userId = useSelector((state: RootState) => state.auth.user?.id);
@@ -65,7 +68,7 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
     path.length > 0 ? path.map((item) => item.fileName).join("/") : "";
 
   const { data, isLoading: isFilesLoading } = useListHierarchyQuery({
-    region: "virginia",
+    region,
     userId,
     folder: folderPath,
   });
@@ -133,7 +136,7 @@ const CopyFilesDialog: React.FC<CopyFilesDialogProps> = ({
 
     try {
       await copyFiles({
-        region: "virginia",
+        region,
         userId,
         sourceFileNames,
         destinationFolder: isRootDestination ? "" : destinationFolder,

@@ -24,6 +24,130 @@ shares_table = dynamodb.Table('SmartPCShares')  # NEW: share control table
 TTL_DAYS = 60
 MAX_STORAGE_BYTES = 1024 ** 4  # 1 TB per-user limit
 
+S3_CLIENTS = {}
+BUCKET_REGION_CACHE = {}
+REGION_CANONICAL = {
+    'virginia': 'virginia',
+    'north virginia': 'virginia',
+    'n virginia': 'virginia',
+    'us-east': 'virginia',
+    'us-east-1': 'virginia',
+    'us east': 'virginia',
+    'us east 1': 'virginia',
+    'oregon': 'oregon',
+    'us-west': 'oregon',
+    'us-west-2': 'oregon',
+    'us west': 'oregon',
+    'us west 2': 'oregon',
+}
+REGION_TO_AWS = {
+    'virginia': 'us-east-1',
+    'oregon': 'us-west-2',
+}
+
+class RegionError(Exception):
+    def __init__(self, message, status_code=400):
+        super().__init__(message)
+        self.status_code = status_code
+
+def _normalize_region(region: str) -> str:
+    if not region:
+        return ''
+    cleaned = region.strip().lower()
+    cleaned = cleaned.replace('_', '-')
+    cleaned = cleaned.replace('(', ' ').replace(')', ' ').replace('.', ' ')
+    cleaned = ' '.join(cleaned.split())
+    return cleaned
+
+def _canonical_region(region: str):
+    norm = _normalize_region(region)
+    if not norm:
+        return None
+    return REGION_CANONICAL.get(norm, norm)
+
+def _aws_region_for(region: str):
+    canonical = _canonical_region(region)
+    if not canonical:
+        return None
+    if canonical in REGION_TO_AWS:
+        return REGION_TO_AWS[canonical]
+    if canonical.startswith('us-'):
+        return canonical
+    return None
+
+def _get_bucket_region(bucket_name: str):
+    if not bucket_name:
+        return None
+    cached = BUCKET_REGION_CACHE.get(bucket_name)
+    if cached:
+        return cached
+    try:
+        resp = s3.get_bucket_location(Bucket=bucket_name)
+        loc = resp.get('LocationConstraint') or 'us-east-1'
+        BUCKET_REGION_CACHE[bucket_name] = loc
+        return loc
+    except Exception as e:
+        print(f"Failed to resolve bucket region for {bucket_name}: {e}")
+        return None
+
+def _get_s3_client(region: str, bucket_name: str = None):
+    aws_region = _aws_region_for(region)
+    if not aws_region and bucket_name:
+        aws_region = _get_bucket_region(bucket_name)
+    if not aws_region:
+        return s3
+    if aws_region not in S3_CLIENTS:
+        S3_CLIENTS[aws_region] = boto3.client('s3', region_name=aws_region)
+    return S3_CLIENTS[aws_region]
+
+def _get_bucket_for_region(region: str) -> str:
+    canonical = _canonical_region(region)
+    if not canonical:
+        raise RegionError('region is required.', 400)
+    bucket_resp = bucket_table.get_item(Key={'region': canonical})
+    if 'Item' not in bucket_resp:
+        raise RegionError(f'No bucket found for region: {canonical}', 404)
+    return bucket_resp['Item']['bucketName']
+
+def _get_active_file_region(user_id: str):
+    if not user_id:
+        return False, None
+    last_key = None
+    while True:
+        if last_key:
+            resp = file_metadata_table.query(
+                IndexName='userId-index',
+                KeyConditionExpression=boto3.dynamodb.conditions.Key('userId').eq(user_id),
+                ExclusiveStartKey=last_key
+            )
+        else:
+            resp = file_metadata_table.query(
+                IndexName='userId-index',
+                KeyConditionExpression=boto3.dynamodb.conditions.Key('userId').eq(user_id)
+            )
+        for item in resp.get('Items', []) or []:
+            if item.get('isDeleted'):
+                continue
+            if item.get('fileType') == 'folder':
+                continue
+            region = _canonical_region(item.get('region')) or item.get('region')
+            return True, region
+        last_key = resp.get('LastEvaluatedKey')
+        if not last_key:
+            break
+    return False, None
+
+def _resolve_region(user_id: str, requested_region: str):
+    requested = _canonical_region(requested_region)
+    if not requested:
+        raise RegionError('region is required.', 400)
+    has_files, active_region = _get_active_file_region(user_id)
+    if has_files:
+        if active_region and requested != active_region:
+            raise RegionError(f'Region locked to {active_region}.', 409)
+        return active_region or requested
+    return requested
+
 # ------------ Helpers (NEW) ------------
 def _iso_now():
     return datetime.now(timezone.utc).isoformat()
@@ -228,7 +352,7 @@ def resolve_key_from_item(it, user_id: str):
 
 
 def add_file_to_zip(s3_key: str, *, bucket_name: str, uploads_prefix: str,
-                    temp_dir: str, zipf, added_keys: set):
+                    temp_dir: str, zipf, added_keys: set, s3_client=None):
     """Add a single S3 object to the open ZipFile, preserving path relative to uploads_prefix."""
     if not s3_key or s3_key.endswith('/'):
         return
@@ -237,7 +361,7 @@ def add_file_to_zip(s3_key: str, *, bucket_name: str, uploads_prefix: str,
 
     # ensure it exists
     try:
-        s3.head_object(Bucket=bucket_name, Key=s3_key)
+        (s3_client or s3).head_object(Bucket=bucket_name, Key=s3_key)
     except Exception as e:
         print(f"[share-multiple] skip missing: {s3_key} ({e})")
         return
@@ -246,7 +370,7 @@ def add_file_to_zip(s3_key: str, *, bucket_name: str, uploads_prefix: str,
     rel = s3_key[len(uploads_prefix):] if s3_key.startswith(uploads_prefix) else s3_key
 
     tmp_file = os.path.join(temp_dir, uuid.uuid4().hex)
-    s3.download_file(bucket_name, s3_key, tmp_file)
+    (s3_client or s3).download_file(bucket_name, s3_key, tmp_file)
     zipf.write(tmp_file, arcname=rel)
     os.remove(tmp_file)
     added_keys.add(s3_key)
@@ -276,18 +400,18 @@ def _strip_existing_counter(base: str):
 def _exists_in_metadata(key: str) -> bool:
     return bool(file_metadata_table.get_item(Key={'id': key}).get('Item'))
 
-def _exists_in_s3(bucket_name: str, key: str) -> bool:
+def _exists_in_s3(bucket_name: str, key: str, s3_client=None) -> bool:
     try:
-        s3.head_object(Bucket=bucket_name, Key=key)
+        (s3_client or s3).head_object(Bucket=bucket_name, Key=key)
         return True
     except Exception:
         return False
 
-def _key_conflicts(bucket_name: str, key: str) -> bool:
+def _key_conflicts(bucket_name: str, key: str, s3_client=None) -> bool:
     # Treat as conflict if present in metadata (any state) OR present in S3
-    return _exists_in_metadata(key) or _exists_in_s3(bucket_name, key)
+    return _exists_in_metadata(key) or _exists_in_s3(bucket_name, key, s3_client=s3_client)
 
-def _ensure_unique_file_key(bucket_name: str, dest_folder_prefix: str, desired_filename: str):
+def _ensure_unique_file_key(bucket_name: str, dest_folder_prefix: str, desired_filename: str, s3_client=None):
     """
     Given a destination folder prefix (ends with '/') and a desired filename,
     return (final_filename, final_key) that does not conflict.
@@ -299,7 +423,7 @@ def _ensure_unique_file_key(bucket_name: str, dest_folder_prefix: str, desired_f
     # Try the plain core first if original didn't already contain a number.
     if n0 is None:
         key0 = f"{dest_folder_prefix}{core}{ext}"
-        if not _key_conflicts_live(bucket_name, key0):
+        if not _key_conflicts_live(bucket_name, key0, s3_client=s3_client):
             return f"{core}{ext}", key0
         start = 1
     else:
@@ -311,11 +435,11 @@ def _ensure_unique_file_key(bucket_name: str, dest_folder_prefix: str, desired_f
     while True:
         cand_name = f"{core} ({i}){ext}"
         cand_key = f"{dest_folder_prefix}{cand_name}"
-        if not _key_conflicts_live(bucket_name, cand_key):
+        if not _key_conflicts_live(bucket_name, cand_key, s3_client=s3_client):
             return cand_name, cand_key
         i += 1
 
-def _ensure_unique_folder_key(bucket_name: str, dest_parent_prefix: str, folder_name: str):
+def _ensure_unique_folder_key(bucket_name: str, dest_parent_prefix: str, folder_name: str, s3_client=None):
     """
     Ensure a unique folder key '.../FolderName/' under dest_parent_prefix (which ends with '/').
     Returns (final_folder_name, final_folder_key_with_trailing_slash).
@@ -327,7 +451,7 @@ def _ensure_unique_folder_key(bucket_name: str, dest_parent_prefix: str, folder_
     # Try core/ first if no number embedded
     if n0 is None:
         key0 = f"{dest_parent_prefix}{core}/"
-        if not _key_conflicts_live(bucket_name, key0):
+        if not _key_conflicts_live(bucket_name, key0, s3_client=s3_client):
             return core, key0
         start = 1
     else:
@@ -337,11 +461,11 @@ def _ensure_unique_folder_key(bucket_name: str, dest_parent_prefix: str, folder_
     while True:
         cand_name = f"{core} ({i})"
         cand_key = f"{dest_parent_prefix}{cand_name}/"
-        if not _key_conflicts_live(bucket_name, cand_key):
+        if not _key_conflicts_live(bucket_name, cand_key, s3_client=s3_client):
             return cand_name, cand_key
         i += 1
 
-def _key_conflicts_live(bucket_name: str, key: str) -> bool:
+def _key_conflicts_live(bucket_name: str, key: str, s3_client=None) -> bool:
     """
     Return True if the key is 'taken' by a live (not soft-deleted) metadata row
     OR if the object already exists in S3. Soft-deleted metadata is ignored.
@@ -350,7 +474,7 @@ def _key_conflicts_live(bucket_name: str, key: str) -> bool:
     if meta and not meta.get('isDeleted'):
         return True
     # If no live metadata, consider it taken only if the object is really in S3
-    return _exists_in_s3(bucket_name, key)
+    return _exists_in_s3(bucket_name, key, s3_client=s3_client)
 
 
 def _ttl_from_iso(iso_str: str, days: int = TTL_DAYS) -> int:
@@ -590,14 +714,16 @@ def handle_upload(event):
     starred = body.get('starred', False)
     folder = body.get('folder', '').strip().strip('/')
 
-    if not region or not file_name or not user_id:
+    if not file_name or not user_id:
         return response(400, {'message': 'Region, fileName, and userId are required.'})
 
-    # Resolve bucket
-    bucket_response = bucket_table.get_item(Key={'region': region})
-    if 'Item' not in bucket_response:
-        return response(404, {'message': f'No bucket found for region: {region}'})
-    bucket_name = bucket_response['Item']['bucketName']
+    try:
+        region = _resolve_region(user_id, region)
+        bucket_name = _get_bucket_for_region(region)
+    except RegionError as e:
+        return response(e.status_code, {'message': str(e)})
+
+    s3_client = _get_s3_client(region, bucket_name)
 
     # Enforce per-user storage limit (1 TB)
     try:
@@ -621,7 +747,7 @@ def handle_upload(event):
     print(f"Initial S3 Key: {key}")
 
     # Auto-rename loop (ignores soft-deleted metadata, still checks S3)
-    while _key_conflicts_live(bucket_name, key):
+    while _key_conflicts_live(bucket_name, key, s3_client=s3_client):
         if ext:
             final_file_name = f"{base_name} ({counter}).{ext}"
         else:
@@ -632,7 +758,7 @@ def handle_upload(event):
     # Presigned upload URL
     params = {'Bucket': bucket_name, 'Key': key, 'ContentType': file_type}
     print(f"Generating pre-signed URL with Bucket: {bucket_name}, Key: {key}, ContentType: {file_type}")
-    upload_url = s3.generate_presigned_url('put_object', Params=params, ExpiresIn=3600)
+    upload_url = s3_client.generate_presigned_url('put_object', Params=params, ExpiresIn=3600)
 
     return response(200, {
         'uploadUrl': upload_url,
@@ -649,7 +775,7 @@ def handle_upload_complete(event):
     starred = False
     key = (body.get('key') or '').strip()
 
-    if not region or not user_id:
+    if not user_id:
         return response(400, {'message': 'Region and userId are required.'})
 
     if not key:
@@ -668,13 +794,16 @@ def handle_upload_complete(event):
     if not key.startswith(f"{user_id}/uploads/"):
         return response(400, {'message': 'Invalid key.'})
 
-    bucket_response = bucket_table.get_item(Key={'region': region})
-    if 'Item' not in bucket_response:
-        return response(404, {'message': f'No bucket found for region: {region}'})
-    bucket_name = bucket_response['Item']['bucketName']
+    try:
+        region = _resolve_region(user_id, region)
+        bucket_name = _get_bucket_for_region(region)
+    except RegionError as e:
+        return response(e.status_code, {'message': str(e)})
+
+    s3_client = _get_s3_client(region, bucket_name)
 
     try:
-        head = s3.head_object(Bucket=bucket_name, Key=key)
+        head = s3_client.head_object(Bucket=bucket_name, Key=key)
     except Exception as e:
         print(f"Upload complete head_object failed for {key}: {e}")
         return response(404, {'message': 'Uploaded object not found. Please retry upload.'})
@@ -697,7 +826,7 @@ def handle_upload_complete(event):
 
     if current_bytes + file_size_bytes > MAX_STORAGE_BYTES:
         try:
-            s3.delete_object(Bucket=bucket_name, Key=key)
+            s3_client.delete_object(Bucket=bucket_name, Key=key)
         except Exception as e:
             print(f"Failed to delete over-quota upload {key}: {e}")
         return response(403, {
@@ -740,19 +869,22 @@ def handle_download(event):
     folder = query.get('folder')   # optional
     raw_key = query.get('key')     # optional
 
-    if not region or not user_id or (not file_name and not raw_key):
+    if not user_id or (not file_name and not raw_key):
         return response(400, {'message': 'region, userId, and fileName or key are required.'})
 
-    bucket_resp = bucket_table.get_item(Key={'region': region})
-    if 'Item' not in bucket_resp:
-        return response(404, {'message': f'No bucket for region {region}'})
-    bucket = bucket_resp['Item']['bucketName']
+    try:
+        region = _resolve_region(user_id, region)
+        bucket = _get_bucket_for_region(region)
+    except RegionError as e:
+        return response(e.status_code, {'message': str(e)})
+
+    s3_client = _get_s3_client(region, bucket)
 
     key = raw_key if raw_key else f"{user_id}/uploads/{(folder.strip('/') + '/' if folder else '')}{file_name}"
     download_name = key.split('/')[-1]
 
     try:
-        url = s3.generate_presigned_url(
+        url = s3_client.generate_presigned_url(
             'get_object',
             Params={
                 'Bucket': bucket,
@@ -784,8 +916,16 @@ def handle_list(event):
         modified_filter = (query_params.get('modified') or '').strip().lower()
         now_utc = datetime.now(timezone.utc)
 
-        if not region or not user_id:
+        if not user_id:
             return response(400, {'message': 'Region and userId are required.'})
+
+        try:
+            region = _resolve_region(user_id, region)
+            bucket_name = _get_bucket_for_region(region)
+        except RegionError as e:
+            return response(e.status_code, {'message': str(e)})
+
+        s3_client = _get_s3_client(region, bucket_name)
 
         print(f"Querying files for userId: {user_id} in region: {region}")
         response_db = file_metadata_table.query(
@@ -797,7 +937,10 @@ def handle_list(event):
             return response(200, {'files': [], 'pagination': {'page': 1, 'limit': limit, 'total': 0, 'pages': 1, 'hasNext': False, 'hasPrevious': False}})
 
         # Region filter + hide soft-deleted
-        files = [item for item in files if item.get('region') == region and not item.get('isDeleted')]
+        files = [
+            item for item in files
+            if _canonical_region(item.get('region')) == region and not item.get('isDeleted')
+        ]
 
         def _filter_items_by_created(items, predicate):
             filtered = []
@@ -933,9 +1076,13 @@ def handle_list(event):
 
             if f.get('fileType') != 'folder':
                 try:
-                    f['previewUrl'] = s3.generate_presigned_url(
+                    f['previewUrl'] = s3_client.generate_presigned_url(
                         'get_object',
-                        Params={'Bucket': f['bucket'], 'Key': f['id'], 'ResponseContentDisposition': 'inline'},
+                        Params={
+                            'Bucket': f.get('bucket', bucket_name),
+                            'Key': f['id'],
+                            'ResponseContentDisposition': 'inline'
+                        },
                         ExpiresIn=300
                     )
                 except Exception as e:
@@ -961,8 +1108,13 @@ def handle_hierarchy(event):
         region = query_params.get('region')
         user_id = query_params.get('userId')
 
-        if not region or not user_id:
+        if not user_id:
             return response(400, {'message': 'Region and userId are required.'})
+
+        try:
+            region = _resolve_region(user_id, region)
+        except RegionError as e:
+            return response(e.status_code, {'message': str(e)})
 
         response_db = file_metadata_table.query(
             IndexName='userId-index',
@@ -975,7 +1127,9 @@ def handle_hierarchy(event):
         # Region + not deleted
         folders = [
             f for f in items
-            if f.get('region') == region and f.get('fileType') == 'folder' and not f.get('isDeleted')
+            if _canonical_region(f.get('region')) == region
+            and f.get('fileType') == 'folder'
+            and not f.get('isDeleted')
         ]
 
         tree = {}
@@ -1019,14 +1173,16 @@ def handle_delete(event):
     folder    = query.get('folder')
     raw_key   = query.get('key')
 
-    if not region or not user_id or (not file_name and not raw_key):
+    if not user_id or (not file_name and not raw_key):
         return response(400, {'message': 'region, userId, and fileName or key are required.'})
 
-    # Bucket
-    bucket_resp = bucket_table.get_item(Key={'region': region})
-    if 'Item' not in bucket_resp:
-        return response(404, {'message': f'No bucket found for region {region}'})
-    bucket_name = bucket_resp['Item']['bucketName']
+    try:
+        region = _resolve_region(user_id, region)
+        bucket_name = _get_bucket_for_region(region)
+    except RegionError as e:
+        return response(e.status_code, {'message': str(e)})
+
+    s3_client = _get_s3_client(region, bucket_name)
 
     # Target key
     key = raw_key if raw_key else f"{user_id}/uploads/{(folder.strip('/') + '/' if folder else '')}{file_name}"
@@ -1063,7 +1219,7 @@ def handle_delete(event):
                     sz = 0
                 total_decrement += sz
                 try:
-                    s3.delete_object(Bucket=bucket_name, Key=ch['id'])
+                    s3_client.delete_object(Bucket=bucket_name, Key=ch['id'])
                 except Exception as e:
                     print(f"S3 delete failed: {ch['id']} -> {e}")
 
@@ -1072,7 +1228,7 @@ def handle_delete(event):
 
         # Best-effort: remove folder marker
         try:
-            s3.delete_object(Bucket=bucket_name, Key=folder_key)
+            s3_client.delete_object(Bucket=bucket_name, Key=folder_key)
         except Exception as e:
             print(f"Failed to delete S3 folder marker {folder_key}: {e}")
 
@@ -1087,7 +1243,7 @@ def handle_delete(event):
         if sz:
             _update_usage_bytes(user_id, -sz)
         try:
-            s3.delete_object(Bucket=bucket_name, Key=key)
+            s3_client.delete_object(Bucket=bucket_name, Key=key)
         except Exception as e:
             print(f"S3 delete failed: {e}")
 
@@ -1147,15 +1303,21 @@ def handle_download_folder(event):
         prefix = f"{user_id}/uploads/{folder.strip('/')}/"
         clean_folder_name = folder.strip('/').replace('/', '_')
 
-    bucket_resp = bucket_table.get_item(Key={'region': region})
-    if 'Item' not in bucket_resp:
-        return response(404, {'message': f'No bucket found for region: {region}'})
-    bucket_name = bucket_resp['Item']['bucketName']
+    try:
+        if user_id:
+            region = _resolve_region(user_id, region)
+        else:
+            region = _canonical_region(region)
+        bucket_name = _get_bucket_for_region(region)
+    except RegionError as e:
+        return response(e.status_code, {'message': str(e)})
+
+    s3_client = _get_s3_client(region, bucket_name)
 
     try:
         objects = []
         folders = set()
-        paginator = s3.get_paginator('list_objects_v2')
+        paginator = s3_client.get_paginator('list_objects_v2')
         for page in paginator.paginate(Bucket=bucket_name, Prefix=prefix):
             contents = page.get('Contents', [])
             if not contents:
@@ -1191,13 +1353,17 @@ def handle_download_folder(event):
                     continue
                 rel_path = k[len(f"{user_id}/uploads/"):]
                 tmp_file = os.path.join(tmp_dir, str(uuid.uuid4()))
-                s3.download_file(bucket_name, k, tmp_file)
+                s3_client.download_file(bucket_name, k, tmp_file)
                 zipf.write(tmp_file, arcname=rel_path)
                 os.remove(tmp_file)
 
         zip_key = f"{user_id}/downloads/{clean_folder_name}.zip"
-        s3.upload_file(zip_path, bucket_name, zip_key)
-        presigned_url = s3.generate_presigned_url('get_object', Params={'Bucket': bucket_name, 'Key': zip_key}, ExpiresIn=3600)
+        s3_client.upload_file(zip_path, bucket_name, zip_key)
+        presigned_url = s3_client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': bucket_name, 'Key': zip_key},
+            ExpiresIn=3600
+        )
 
         print(f"Folder zipped: {zip_key}")
         return response(200, {'downloadUrl': presigned_url})
@@ -1213,14 +1379,16 @@ def handle_delete_multiple(event):
     user_id = body.get('userId')
     items   = body.get('fileNames', [])  # strings or { key | fileName, folder }
 
-    if not region or not user_id or not items:
+    if not user_id or not items:
         return response(400, {'message': 'region, userId, and fileNames are required.'})
 
-    # Bucket
-    bucket_resp = bucket_table.get_item(Key={'region': region})
-    if 'Item' not in bucket_resp:
-        return response(404, {'message': f'No bucket found for region: {region}'})
-    bucket_name = bucket_resp['Item']['bucketName']
+    try:
+        region = _resolve_region(user_id, region)
+        bucket_name = _get_bucket_for_region(region)
+    except RegionError as e:
+        return response(e.status_code, {'message': str(e)})
+
+    s3_client = _get_s3_client(region, bucket_name)
 
     total_decrement = 0               # sum of file sizes we actually delete
     processed_keys = set()            # avoid double-processing in a single request
@@ -1277,22 +1445,22 @@ def handle_delete_multiple(event):
                         total_decrement += sz
                         # delete file object in S3 (best-effort)
                         try:
-                            s3.delete_object(Bucket=bucket_name, Key=ch['id'])
+                            s3_client.delete_object(Bucket=bucket_name, Key=ch['id'])
                         except Exception as e:
                             print(f"[delete-multiple] Failed S3 delete {ch['id']}: {e}")
                     else:
                         # best-effort delete sub-folder marker
                         try:
                             key_to_del = ch['id'] if ch['id'].endswith('/') else ch['id'] + '/'
-                            s3.delete_object(Bucket=bucket_name, Key=key_to_del)
+                            s3_client.delete_object(Bucket=bucket_name, Key=key_to_del)
                         except Exception as e:
                             print(f"[delete-multiple] Failed to delete sub-folder marker {ch['id']}: {e}")
 
-            # Best-effort: remove the S3 folder marker for the root folder
-            try:
-                s3.delete_object(Bucket=bucket_name, Key=folder_key)
-            except Exception as e:
-                print(f"[delete-multiple] Failed to delete folder marker {folder_key}: {e}")
+        # Best-effort: remove the S3 folder marker for the root folder
+        try:
+            s3_client.delete_object(Bucket=bucket_name, Key=folder_key)
+        except Exception as e:
+            print(f"[delete-multiple] Failed to delete folder marker {folder_key}: {e}")
 
         # File branch
         else:
@@ -1303,7 +1471,7 @@ def handle_delete_multiple(event):
                     sz = 0
                 total_decrement += sz
                 try:
-                    s3.delete_object(Bucket=bucket_name, Key=key)
+                    s3_client.delete_object(Bucket=bucket_name, Key=key)
                 except Exception as e:
                     print(f"[delete-multiple] Failed S3 delete {key}: {e}")
 
@@ -1326,13 +1494,16 @@ def handle_create_folder(event):
     user_id = body.get('userId')
     folder_name = body.get('folderName', '').strip().strip('/')
 
-    if not region or not user_id or not folder_name:
+    if not user_id or not folder_name:
         return response(400, {'message': 'region, folderName, and userId are required.'})
 
-    bucket_response = bucket_table.get_item(Key={'region': region})
-    if 'Item' not in bucket_response:
-        return response(404, {'message': f'No bucket found for region: {region}'})
-    bucket_name = bucket_response['Item']['bucketName']
+    try:
+        region = _resolve_region(user_id, region)
+        bucket_name = _get_bucket_for_region(region)
+    except RegionError as e:
+        return response(e.status_code, {'message': str(e)})
+
+    s3_client = _get_s3_client(region, bucket_name)
 
     key = f"{user_id}/uploads/{folder_name}/"
     print(f"Attempting to create folder with S3 key: {key}")
@@ -1342,7 +1513,7 @@ def handle_create_folder(event):
         return response(409, {'message': 'Folder already exists.'})
 
     try:
-        s3.put_object(Bucket=bucket_name, Key=key)
+        s3_client.put_object(Bucket=bucket_name, Key=key)
         file_metadata_table.put_item(
             Item={
                 'id': key,
@@ -1371,8 +1542,13 @@ def handle_star(event, starred=True):
     file_name = body.get('fileName')
     folder    = body.get('folder')
 
-    if not region or not user_id or (not raw_key and not file_name):
+    if not user_id or (not raw_key and not file_name):
         return response(400, {'message': 'region, userId, and fileName or key are required.'})
+
+    try:
+        _resolve_region(user_id, region)
+    except RegionError as e:
+        return response(e.status_code, {'message': str(e)})
 
     key = raw_key if raw_key else f"{user_id}/uploads/{(folder.strip('/') + '/' if folder else '')}{file_name}"
 
@@ -1413,7 +1589,7 @@ def handle_share(event):
     expiry = body.get('expiry', '7days')
     password = body.get('password', '')
 
-    if not region or not user_id:
+    if not user_id:
         return response(400, {'message': 'region and userId are required.'})
 
     if raw_key:
@@ -1425,10 +1601,11 @@ def handle_share(event):
     else:
         return response(400, {'message': 'Either key, fileName, or folder must be provided.'})
 
-    bucket_resp = bucket_table.get_item(Key={'region': region})
-    if 'Item' not in bucket_resp:
-        return response(404, {'message': f'No bucket found for region: {region}'})
-    bucket_name = bucket_resp['Item']['bucketName']
+    try:
+        region = _resolve_region(user_id, region)
+        bucket_name = _get_bucket_for_region(region)
+    except RegionError as e:
+        return response(e.status_code, {'message': str(e)})
 
     item = file_metadata_table.get_item(Key={'id': key}).get('Item')
     if not item or item.get('isDeleted'):
@@ -1485,6 +1662,7 @@ def handle_share(event):
             'type': 'folder',
             'ownerUserId': user_id,
             'bucket': bucket_name,
+            'region': region,
             'objectKey': key,  # folder prefix with trailing '/'
             'permissions': permissions,
             'status': 'active',
@@ -1507,6 +1685,7 @@ def handle_share(event):
             'type': 'file',
             'ownerUserId': user_id,
             'bucket': bucket_name,
+            'region': region,
             'objectKey': key,
             'permissions': permissions,
             'status': 'active',
@@ -1552,6 +1731,7 @@ def handle_share_download(event):
     key = item.get('objectKey')
     if not bucket or not key:
         return response(500, {'message': 'Share is misconfigured'})
+    s3_client = _get_s3_client(item.get('region'), bucket)
 
     # Determine content disposition
     q = event.get('queryStringParameters') or {}
@@ -1563,7 +1743,7 @@ def handle_share_download(event):
 
     # Mint a very short presigned URL (2 minutes)
     try:
-        presigned = s3.generate_presigned_url(
+        presigned = s3_client.generate_presigned_url(
             'get_object',
             Params={
                 'Bucket': bucket,
@@ -1780,14 +1960,16 @@ def handle_share_multiple(event):
     user_id = body.get('userId')
     items   = body.get('items', [])  # strings or dicts: { key? | fileName?, folder? }
 
-    if not region or not user_id or not items:
+    if not user_id or not items:
         return response(400, {'message': 'region, userId and items are required'})
 
-    # Resolve bucket from region
-    bucket_resp = bucket_table.get_item(Key={'region': region})
-    if 'Item' not in bucket_resp:
-        return response(404, {'message': f'No bucket found for region: {region}'})
-    bucket_name = bucket_resp['Item']['bucketName']
+    try:
+        region = _resolve_region(user_id, region)
+        bucket_name = _get_bucket_for_region(region)
+    except RegionError as e:
+        return response(e.status_code, {'message': str(e)})
+
+    s3_client = _get_s3_client(region, bucket_name)
 
     # Build ZIP workspace
     temp_dir = tempfile.mkdtemp()
@@ -1808,7 +1990,7 @@ def handle_share_multiple(event):
                 if is_folder:
                     # list all objects under the folder prefix
                     prefix = key_or_prefix if key_or_prefix.endswith('/') else key_or_prefix + '/'
-                    paginator = s3.get_paginator('list_objects_v2')
+                    paginator = s3_client.get_paginator('list_objects_v2')
                     for page in paginator.paginate(Bucket=bucket_name, Prefix=prefix):
                         for obj in (page.get('Contents') or []):
                             k = obj.get('Key')
@@ -1819,7 +2001,8 @@ def handle_share_multiple(event):
                                     uploads_prefix=uploads_prefix,
                                     temp_dir=temp_dir,
                                     zipf=zipf,
-                                    added_keys=added_keys
+                                    added_keys=added_keys,
+                                    s3_client=s3_client
                                 )
                 else:
                     add_file_to_zip(
@@ -1828,15 +2011,16 @@ def handle_share_multiple(event):
                         uploads_prefix=uploads_prefix,
                         temp_dir=temp_dir,
                         zipf=zipf,
-                        added_keys=added_keys
+                        added_keys=added_keys,
+                        s3_client=s3_client
                     )
 
         # Upload ZIP to same regional bucket under user downloads
         zip_s3_key = f"{user_id}/downloads/{zip_name}"
-        s3.upload_file(zip_path, bucket_name, zip_s3_key)
+        s3_client.upload_file(zip_path, bucket_name, zip_s3_key)
 
         # Presigned link for download
-        presigned_url = s3.generate_presigned_url(
+        presigned_url = s3_client.generate_presigned_url(
             'get_object',
             Params={
                 'Bucket': bucket_name,
@@ -1865,10 +2049,13 @@ def handle_public_shared_list(event):
         if not (_has_active_share_for_key(key) or _has_active_share_for_prefix(key) or _has_shared_metadata_prefix(key)):
             return response(410, {'message': 'This shared link is expired or revoked.'})
 
-        bucket_resp = bucket_table.get_item(Key={'region': region})
-        if 'Item' not in bucket_resp:
-            return response(404, {'message': f'No bucket found for region: {region}'})
-        bucket_name = bucket_resp['Item']['bucketName']
+        try:
+            region = _canonical_region(region)
+            bucket_name = _get_bucket_for_region(region)
+        except RegionError as e:
+            return response(e.status_code, {'message': str(e)})
+
+        s3_client = _get_s3_client(region, bucket_name)
 
         scan = file_metadata_table.scan(
             FilterExpression=boto3.dynamodb.conditions.Attr('id').begins_with(key)
@@ -1891,7 +2078,7 @@ def handle_public_shared_list(event):
                 }
                 if item.get('fileType') != 'folder':
                     try:
-                        entry['previewUrl'] = s3.generate_presigned_url(
+                        entry['previewUrl'] = s3_client.generate_presigned_url(
                             'get_object',
                             Params={'Bucket': bucket_name, 'Key': item['id']},
                             ExpiresIn=300
@@ -1917,14 +2104,16 @@ def handle_move_or_copy(event, operation):
     source_file_names = body.get('sourceFileNames', [])
     destination_folder = body.get('destinationFolder', '').strip('/')
 
-    if not region or not user_id or not source_file_names or destination_folder is None:
+    if not user_id or not source_file_names or destination_folder is None:
         return response(400, {'message': 'region, userId, sourceFileNames, and destinationFolder are required.'})
 
-    # Resolve bucket
-    bucket_resp = bucket_table.get_item(Key={'region': region})
-    if 'Item' not in bucket_resp:
-        return response(404, {'message': f'No bucket found for region: {region}'})
-    bucket_name = bucket_resp['Item']['bucketName']
+    try:
+        region = _resolve_region(user_id, region)
+        bucket_name = _get_bucket_for_region(region)
+    except RegionError as e:
+        return response(e.status_code, {'message': str(e)})
+
+    s3_client = _get_s3_client(region, bucket_name)
 
     # Destination prefix (folder)
     dest_folder_prefix = f"{user_id}/uploads/{destination_folder}/" if destination_folder else f"{user_id}/uploads/"
@@ -1954,11 +2143,16 @@ def handle_move_or_copy(event, operation):
             src_root = source_key if source_key.endswith('/') else source_key + '/'
             # Determine destination root folder name and key (unique)
             src_folder_name = src_root.rstrip('/').split('/')[-1]
-            dest_root_name, dest_root_key = _ensure_unique_folder_key(bucket_name, dest_folder_prefix, src_folder_name)
+            dest_root_name, dest_root_key = _ensure_unique_folder_key(
+                bucket_name,
+                dest_folder_prefix,
+                src_folder_name,
+                s3_client=s3_client
+            )
 
             # Ensure the folder marker exists at destination
             try:
-                s3.put_object(Bucket=bucket_name, Key=dest_root_key)
+                s3_client.put_object(Bucket=bucket_name, Key=dest_root_key)
             except Exception as e:
                 print(f"[move/copy] Failed to create folder marker {dest_root_key}: {e}")
 
@@ -1988,7 +2182,7 @@ def handle_move_or_copy(event, operation):
                     if not dest_child_key.endswith('/'):
                         dest_child_key += '/'
                     try:
-                        s3.put_object(Bucket=bucket_name, Key=dest_child_key)
+                        s3_client.put_object(Bucket=bucket_name, Key=dest_child_key)
                     except Exception as e:
                         print(f"[move/copy] Failed to create sub-folder marker {dest_child_key}: {e}")
 
@@ -2006,7 +2200,7 @@ def handle_move_or_copy(event, operation):
                     if operation == "move":
                         # best-effort delete original marker & soft-delete original metadata with TTL
                         try:
-                            s3.delete_object(Bucket=bucket_name, Key=ch['id'])
+                            s3_client.delete_object(Bucket=bucket_name, Key=ch['id'])
                         except Exception as e:
                             print(f"[move/copy] Failed to delete src sub-folder marker {ch['id']}: {e}")
                         _soft_delete_item(ch)
@@ -2014,7 +2208,7 @@ def handle_move_or_copy(event, operation):
                 else:
                     # file: copy/move the object
                     try:
-                        s3.copy_object(
+                        s3_client.copy_object(
                             Bucket=bucket_name,
                             CopySource={'Bucket': bucket_name, 'Key': ch['id']},
                             Key=dest_child_key
@@ -2043,7 +2237,7 @@ def handle_move_or_copy(event, operation):
                     if operation == "move":
                         # delete original object & soft-delete original metadata with TTL
                         try:
-                            s3.delete_object(Bucket=bucket_name, Key=ch['id'])
+                            s3_client.delete_object(Bucket=bucket_name, Key=ch['id'])
                         except Exception as e:
                             print(f"[move/copy] Failed S3 delete {ch['id']}: {e}")
                         _soft_delete_item(ch)
@@ -2052,7 +2246,7 @@ def handle_move_or_copy(event, operation):
             if operation == "move":
                 _soft_delete_item({'id': src_root})
                 try:
-                    s3.delete_object(Bucket=bucket_name, Key=src_root)
+                    s3_client.delete_object(Bucket=bucket_name, Key=src_root)
                 except Exception as e:
                     print(f"[move/copy] Failed to delete src folder marker {src_root}: {e}")
 
@@ -2064,11 +2258,20 @@ def handle_move_or_copy(event, operation):
         # ---------------------
         filename_only = source_name.split('/')[-1]
         # Find a unique destination file key in the destination folder
-        final_name, dest_key = _ensure_unique_file_key(bucket_name, dest_folder_prefix, filename_only)
+        final_name, dest_key = _ensure_unique_file_key(
+            bucket_name,
+            dest_folder_prefix,
+            filename_only,
+            s3_client=s3_client
+        )
 
         # Copy/move the object
         try:
-            s3.copy_object(Bucket=bucket_name, CopySource={'Bucket': bucket_name, 'Key': source_key}, Key=dest_key)
+            s3_client.copy_object(
+                Bucket=bucket_name,
+                CopySource={'Bucket': bucket_name, 'Key': source_key},
+                Key=dest_key
+            )
         except Exception as e:
             print(f"[move/copy] Failed S3 copy {source_key} -> {dest_key}: {e}")
             continue
@@ -2093,7 +2296,7 @@ def handle_move_or_copy(event, operation):
         if operation == "move":
             # delete source object & soft-delete original metadata with TTL
             try:
-                s3.delete_object(Bucket=bucket_name, Key=source_key)
+                s3_client.delete_object(Bucket=bucket_name, Key=source_key)
             except Exception as e:
                 print(f"[move/copy] Failed S3 delete {source_key}: {e}")
             _soft_delete_item(src_meta)
@@ -2120,7 +2323,7 @@ def handle_rename(event):
     file_name = body.get('fileName')
     folder = body.get('folder')
 
-    if not region or not user_id or not new_name:
+    if not user_id or not new_name:
         return response(400, {'message': 'region, userId, and newName are required.'})
 
     if '/' in new_name:
@@ -2148,10 +2351,13 @@ def handle_rename(event):
     if new_name == current_name:
         return response(200, {'message': 'No change', 'newKey': key, 'newName': current_name})
 
-    bucket_resp = bucket_table.get_item(Key={'region': region})
-    if 'Item' not in bucket_resp:
-        return response(404, {'message': f'No bucket found for region: {region}'})
-    bucket_name = bucket_resp['Item']['bucketName']
+    try:
+        region = _resolve_region(user_id, region)
+        bucket_name = _get_bucket_for_region(region)
+    except RegionError as e:
+        return response(e.status_code, {'message': str(e)})
+
+    s3_client = _get_s3_client(region, bucket_name)
 
     def _update_share_keys(old_prefix: str, new_prefix: str):
         """Update active share records from old key/prefix to new key/prefix."""
@@ -2186,12 +2392,17 @@ def handle_rename(event):
     if is_folder:
         src_root = key if key.endswith('/') else key + '/'
         parent_prefix = src_root.rstrip('/').rsplit('/', 1)[0] + '/'
-        dest_root_name, dest_root_key = _ensure_unique_folder_key(bucket_name, parent_prefix, new_name)
+        dest_root_name, dest_root_key = _ensure_unique_folder_key(
+            bucket_name,
+            parent_prefix,
+            new_name,
+            s3_client=s3_client
+        )
         if dest_root_key == src_root:
             return response(200, {'message': 'No change', 'newKey': src_root, 'newName': dest_root_name})
 
         try:
-            s3.put_object(Bucket=bucket_name, Key=dest_root_key)
+            s3_client.put_object(Bucket=bucket_name, Key=dest_root_key)
         except Exception as e:
             print(f"[rename] Failed to create folder marker {dest_root_key}: {e}")
 
@@ -2218,7 +2429,7 @@ def handle_rename(event):
                 if not dest_child_key.endswith('/'):
                     dest_child_key += '/'
                 try:
-                    s3.put_object(Bucket=bucket_name, Key=dest_child_key)
+                    s3_client.put_object(Bucket=bucket_name, Key=dest_child_key)
                 except Exception as e:
                     print(f"[rename] Failed to create sub-folder marker {dest_child_key}: {e}")
 
@@ -2233,13 +2444,13 @@ def handle_rename(event):
                 file_metadata_table.put_item(Item=new_meta)
 
                 try:
-                    s3.delete_object(Bucket=bucket_name, Key=ch['id'])
+                    s3_client.delete_object(Bucket=bucket_name, Key=ch['id'])
                 except Exception as e:
                     print(f"[rename] Failed to delete src folder marker {ch['id']}: {e}")
                 _soft_delete_item(ch)
             else:
                 try:
-                    s3.copy_object(
+                    s3_client.copy_object(
                         Bucket=bucket_name,
                         CopySource={'Bucket': bucket_name, 'Key': ch['id']},
                         Key=dest_child_key
@@ -2259,14 +2470,14 @@ def handle_rename(event):
                 file_metadata_table.put_item(Item=new_meta)
 
                 try:
-                    s3.delete_object(Bucket=bucket_name, Key=ch['id'])
+                    s3_client.delete_object(Bucket=bucket_name, Key=ch['id'])
                 except Exception as e:
                     print(f"[rename] Failed S3 delete {ch['id']}: {e}")
                 _soft_delete_item(ch)
 
         _soft_delete_item(item)
         try:
-            s3.delete_object(Bucket=bucket_name, Key=src_root)
+            s3_client.delete_object(Bucket=bucket_name, Key=src_root)
         except Exception as e:
             print(f"[rename] Failed to delete src folder marker {src_root}: {e}")
 
@@ -2276,12 +2487,17 @@ def handle_rename(event):
     # File rename
     source_key = key
     parent_prefix = source_key.rsplit('/', 1)[0] + '/'
-    final_name, dest_key = _ensure_unique_file_key(bucket_name, parent_prefix, new_name)
+    final_name, dest_key = _ensure_unique_file_key(
+        bucket_name,
+        parent_prefix,
+        new_name,
+        s3_client=s3_client
+    )
     if dest_key == source_key:
         return response(200, {'message': 'No change', 'newKey': source_key, 'newName': final_name})
 
     try:
-        s3.copy_object(
+        s3_client.copy_object(
             Bucket=bucket_name,
             CopySource={'Bucket': bucket_name, 'Key': source_key},
             Key=dest_key
@@ -2301,7 +2517,7 @@ def handle_rename(event):
     file_metadata_table.put_item(Item=new_meta)
 
     try:
-        s3.delete_object(Bucket=bucket_name, Key=source_key)
+        s3_client.delete_object(Bucket=bucket_name, Key=source_key)
     except Exception as e:
         print(f"[rename] Failed S3 delete {source_key}: {e}")
     _soft_delete_item(item)

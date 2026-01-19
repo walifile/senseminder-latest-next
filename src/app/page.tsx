@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { homeMeta } from "./seo/metadata";
+import { homeJsonLd } from "./seo/schema/home";
 import Home from "../app/home/_components/main-page";
 
 export const metadata: Metadata = {
@@ -12,6 +13,10 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd) }}
+      />
       <Home />
       {/* {isDev ? (
         <Home />

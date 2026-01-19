@@ -1,3 +1,5 @@
+import type { StorageRegion } from "@/constants/storage-regions";
+
 export interface FileItem {
   id: string;
   fileName: string;
@@ -50,7 +52,7 @@ export interface DuplicateScanResponse {
 
 export interface DuplicatesProps {
   userId: string;
-  region?: string;
+  region?: StorageRegion;
 }
 
 export type DuplicateItemLike = {

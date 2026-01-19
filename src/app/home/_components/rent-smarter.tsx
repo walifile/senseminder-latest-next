@@ -43,10 +43,10 @@ const RentSmarter: React.FC = () => (
         transition={{ duration: 0.6 }}
         className="space-y-4 md:space-y-12"
       >
-        <h4 className="font-space-grotesk font-bold text-2xl md:text-4xl">
+        <h2 className="font-space-grotesk font-bold text-2xl md:text-4xl">
           Why Buy
           <br /> Hardware When You Can Run It Into The Cloud?
-        </h4>
+        </h2>
 
         <div className="space-y-4 md:space-y-5">
           <div className="space-y-3 rounded-xl p-4 md:p-8 bg-[#F4F1FF] dark:bg-transparent dark:bg-[linear-gradient(90deg,rgba(55,0,70,0.55)_0%,rgba(7,20,50,1)_100%)]">
@@ -59,9 +59,9 @@ const RentSmarter: React.FC = () => (
                 unoptimized
               />
 
-              <h5 className="font-space-grotesk font-bold text-2xl md:text-3xl">
+              <h3 className="font-space-grotesk font-bold text-2xl md:text-3xl">
                 Problem
-              </h5>
+              </h3>
             </div>
 
             <p className="text-paragraph text-base md:text-lg">
@@ -83,9 +83,9 @@ const RentSmarter: React.FC = () => (
                 unoptimized
               />
 
-              <h5 className="font-space-grotesk font-bold text-2xl md:text-3xl">
+              <h3 className="font-space-grotesk font-bold text-2xl md:text-3xl">
                 Solution
-              </h5>
+              </h3>
             </div>
 
             <p className="text-paragraph text-base md:text-lg">

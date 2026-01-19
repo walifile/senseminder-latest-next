@@ -1,6 +1,7 @@
 "use client";
 
 import type { RootState } from "@/redux/store";
+import type { StorageRegion } from "@/constants/storage-regions";
 
 import React, { useState, useEffect } from "react";
 import { useRenameItemMutation } from "@/api/fileManagerAPI";
@@ -30,6 +31,7 @@ type RenameDialogProps = {
   onOpenChange: (open: boolean) => void;
   file: FileItem | null;
   onRenamed?: (payload: { oldKey: string; newKey: string; newName: string }) => void;
+  region: StorageRegion;
 };
 
 const RenameDialog: React.FC<RenameDialogProps> = ({
@@ -37,6 +39,7 @@ const RenameDialog: React.FC<RenameDialogProps> = ({
   onOpenChange,
   file,
   onRenamed,
+  region,
 }) => {
   const { toast } = useToast();
   const userId = useSelector((state: RootState) => state.auth.user?.id);
@@ -70,7 +73,7 @@ const RenameDialog: React.FC<RenameDialogProps> = ({
 
     try {
       const result = await renameItem({
-        region: "virginia",
+        region,
         userId,
         key: file.id,
         newName: finalName,

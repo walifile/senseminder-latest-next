@@ -37,12 +37,12 @@ const FutureOfComputing = () => (
     <div className="relative space-y-6 md:space-y-12">
       {/* Heading block (no animation) */}
       <div className="space-y-2.5 text-center">
-        <p className="font-space-grotesk font-semibold text-2xl md:text-5xl">
+        <h2 className="font-space-grotesk font-semibold text-2xl md:text-5xl">
           Computing Without{" "}
           <span className="bg-[linear-gradient(270deg,_#BA25F0_4.8%,_#2530F0_46.15%,_#8086F3_100%)] bg-clip-text text-transparent">
             The Hardware
           </span>
-        </p>
+        </h2>
         <p className="text-paragraph text-base md:text-2xl">
           Get a powerful cloud computer — no hardware needed. SensePC cuts e-waste, saves energy, and scales easily.
         </p>

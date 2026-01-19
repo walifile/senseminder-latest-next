@@ -1,6 +1,7 @@
 "use client";
 
 import type { RootState } from "@/redux/store";
+import type { StorageRegion } from "@/constants/storage-regions";
 
 import React, { useMemo, useState } from "react";
 import {
@@ -41,6 +42,7 @@ type MoveFilesDialogProps = {
   selectedFiles: string[];
   setSelectedFiles: (ids: string[]) => void;
   selectedFolder: FileItem | null;
+  region: StorageRegion;
 };
 
 const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
@@ -49,6 +51,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
   selectedFiles,
   setSelectedFiles,
   selectedFolder,
+  region,
 }) => {
   const { toast } = useToast();
   const userId = useSelector((state: RootState) => state.auth.user?.id);
@@ -62,7 +65,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
   //   folder: folderPath,
   // });
   const { data, isLoading: isFilesLoading } = useListHierarchyQuery({
-    region: "virginia",
+    region,
     userId,
   });
 
@@ -157,7 +160,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
       }
 
       const movePayload = {
-        region: "virginia",
+        region,
         userId,
         sourceFileNames,
         destinationFolder: isRootDestination ? "" : destinationFolder,

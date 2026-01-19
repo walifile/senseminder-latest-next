@@ -1,6 +1,7 @@
 "use client";
 
 import type { RootState } from "@/redux/store";
+import type { StorageRegion } from "@/constants/storage-regions";
 
 import React, { useState, useEffect } from "react";
 import { useCreateFolderMutation } from "@/api/fileManagerAPI";
@@ -27,12 +28,14 @@ interface NewFolderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   folderPath: string;
+  region: StorageRegion;
 }
 
 const NewFolderDialog: React.FC<NewFolderDialogProps> = ({
   open,
   onOpenChange,
   folderPath,
+  region,
 }) => {
   const { toast } = useToast();
   const userId = useSelector((state: RootState) => state.auth.user?.id);
@@ -55,7 +58,7 @@ const NewFolderDialog: React.FC<NewFolderDialogProps> = ({
 
     try {
       await createFolder({
-        region: "virginia",
+        region,
         userId,
         folderName: fullFolderPath,
       }).unwrap();

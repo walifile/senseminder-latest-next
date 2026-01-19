@@ -2,6 +2,7 @@ import type { RootState } from "@/redux/store";
 
 import { useState } from "react";
 import { useDeleteFileMutation } from "@/api/fileManagerAPI";
+import { type StorageRegion, DEFAULT_STORAGE_REGION } from "@/constants/storage-regions";
 
 import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,7 @@ interface ConfirmDeleteDialogProps {
   onClose: () => void;
   file: FileItem | null; // ✅ single file or folder
   selectedFolder: FileItem | null;
-  region?: string;
+  region?: StorageRegion;
   onDeleteComplete?: () => void;
 }
 
@@ -32,7 +33,7 @@ const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
   onClose,
   file,
   selectedFolder,
-  region = "virginia",
+  region = DEFAULT_STORAGE_REGION,
   onDeleteComplete,
 }) => {
   const userId = useSelector((state: RootState) => state.auth.user?.id);

@@ -7,6 +7,11 @@ import type { RootState } from "@/redux/store";
 
 import React, { useRef, useState } from "react";
 import { FEEDBACK_TRIGGERS } from "@/constants/app-constants";
+import {
+  STORAGE_REGIONS,
+  type StorageRegion,
+  getStorageRegionLabel,
+} from "@/constants/storage-regions";
 // import { Progress } from "@/components/ui/progress";
 import {
   useUploadFileMutation,
@@ -43,6 +48,9 @@ interface UploadDialogProps {
   folderPath?: string;
   prefillFiles?: File[];
   prefillToken?: number;
+  region: StorageRegion;
+  isRegionLocked?: boolean;
+  onRegionChange?: (region: StorageRegion) => void;
 }
 
 const UploadDialog: React.FC<UploadDialogProps> = ({
@@ -51,10 +59,12 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   folderPath,
   prefillFiles,
   prefillToken,
+  region,
+  isRegionLocked = false,
+  onRegionChange,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [region, setRegion] = useState("north-virginia");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadStatus, setUploadStatus] = useState<
     Record<string, "loading" | "success" | "error">
@@ -68,6 +78,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   const { triggerFeedback } = useFeedback();
 
   const isUploading = Object.values(uploadStatus).includes("loading");
+  const regionLabel = getStorageRegionLabel(region);
 
   const appendFiles = (incoming: File[] | FileList | null) => {
     if (!incoming) return;
@@ -123,7 +134,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
             fileName: file.name,
             fileType: file.type,
             userId: user?.id,
-            region: "virginia",
+            region,
             size: file.size.toString(),
             status: "private",
             starred: false,
@@ -135,7 +146,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
             fileName: finalFileName || file.name,
             fileType: file.type,
             userId: user?.id,
-            region: "virginia",
+            region,
             size: file.size.toString(),
             status: "private",
             starred: false,
@@ -221,15 +232,28 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
             >
               Select Region
             </label>
-            <Select value={region} onValueChange={setRegion}>
+            <Select
+              value={region}
+              onValueChange={(value) =>
+                onRegionChange?.(value as StorageRegion)
+              }
+              disabled={isRegionLocked || !onRegionChange}
+            >
               <SelectTrigger
                 className="w-full h-auto px-5 py-4 text-paragraph text-base font-normal font-['Inter'] leading-6"
                 data-testid="storage-region-dropdown"
               >
-                <SelectValue placeholder="Select a region" />
+                <SelectValue placeholder={regionLabel} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="north-virginia">North Virginia</SelectItem>
+                {STORAGE_REGIONS.map((regionOption) => (
+                  <SelectItem
+                    key={regionOption.value}
+                    value={regionOption.value}
+                  >
+                    {regionOption.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

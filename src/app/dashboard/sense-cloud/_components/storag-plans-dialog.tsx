@@ -2,6 +2,7 @@
 
 import { useGetStoragePricingTierQuery } from "@/api/billing";
 import React, { useMemo, useState, useEffect, useCallback } from "react";
+import { STORAGE_REGIONS, type StorageRegion } from "@/constants/storage-regions";
 
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -32,23 +33,29 @@ import { Info, Server } from "lucide-react";
 type StoragePlansDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  selectedRegion: StorageRegion;
+  isRegionLocked?: boolean;
+  onRegionChange?: (region: StorageRegion) => void;
 };
 
 const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
   open,
   onOpenChange,
+  selectedRegion,
+  isRegionLocked = false,
+  onRegionChange,
 }) => {
   const [storageTier, setStorageTier] = useState(1);
-  const [selectedServer, setSelectedServer] = useState("us-east");
   const [latencyMap, setLatencyMap] = useState<Record<string, number>>({});
   const [latencyLoading, setLatencyLoading] = useState(true);
 
-  const serverLocations = [{ id: "us-east", name: "New York" }];
+  const serverLocations = STORAGE_REGIONS;
 
   const PING_TARGETS = useMemo<Record<string, string>>(
-    () => ({
-      "us-east": "default",
-    }),
+    () =>
+      Object.fromEntries(
+        STORAGE_REGIONS.map((region) => [region.value, "storage"])
+      ),
     []
   );
 
@@ -101,12 +108,6 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
   useEffect(() => {
     if (storagePricingTierResponse?.tier?.tier) {
       setStorageTier(Number(storagePricingTierResponse.tier.tier));
-    }
-    if (storagePricingTierResponse?.lastFileRegion) {
-      const region = storagePricingTierResponse.lastFileRegion.toLowerCase();
-      if (region.includes("virginia") || region.includes("us-east")) {
-        setSelectedServer("us-east");
-      }
     }
   }, [storagePricingTierResponse]);
 
@@ -179,23 +180,29 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
                 </Tooltip>
               </div>
 
-              <Select value={selectedServer} onValueChange={setSelectedServer}>
+              <Select
+                value={selectedRegion}
+                onValueChange={(value) =>
+                  onRegionChange?.(value as StorageRegion)
+                }
+                disabled={isRegionLocked || !onRegionChange}
+              >
                 <SelectTrigger className="rounded-[10px] text-black dark:text-white text-base font-semibold font-['Inter'] leading-6">
                   <SelectValue placeholder="Select a region" />
                 </SelectTrigger>
                 <SelectContent>
                   {serverLocations.map((loc) => (
-                    <SelectItem key={loc.id} value={loc.id}>
+                    <SelectItem key={loc.value} value={loc.value}>
                       <div className="flex items-center justify-between w-full">
                         <div className="flex items-center gap-2">
                           <Server className="h-4 w-4" />
-                          <span>{loc.name}</span>
+                          <span>{loc.label}</span>
                         </div>
                         <span className="text-xs text-[#454545] dark:text-muted-foreground ml-1">
                           {latencyLoading
                             ? "..."
-                            : latencyMap[loc.id] > 0
-                              ? `~${latencyMap[loc.id]}ms`
+                            : latencyMap[loc.value] > 0
+                              ? `~${latencyMap[loc.value]}ms`
                               : "N/A"}
                         </span>
                       </div>
