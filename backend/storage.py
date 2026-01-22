@@ -1333,31 +1333,66 @@ def handle_download_folder(event):
     user_id = query.get('userId')  # optional for public
     folder = query.get('folder')   # for private download
     key = _normalize_key_param(query.get('key'))         # for public shared download
+    share_id = (query.get('shareId') or '').strip()
 
-    if not region:
-        return response(400, {'message': 'region is required.'})
-
-    if not key and (not user_id or not folder):
-        return response(400, {'message': 'Either key (for public) or userId + folder (for private) is required.'})
-
-    if key:
-        prefix = key.rstrip('/') + '/'
+    if share_id:
+        item = shares_table.get_item(Key={'shareId': share_id}, ConsistentRead=True).get('Item')
+        if not item:
+            return response(404, {'message': 'Share not found'})
+        if (item.get('type') or '').strip().lower() not in ('', 'folder'):
+            return response(400, {'message': 'Share is not a folder.'})
+        status = item.get('status', 'active')
+        now_epoch = int(datetime.now(timezone.utc).timestamp())
+        expires_at = int(item.get('expiresAt', 0) or 0)
+        if status != 'active' or (expires_at and now_epoch > expires_at):
+            return response(410, {'message': 'This shared link is expired or revoked.'})
+        root_key = _normalize_key_param(item.get('objectKey') or '').rstrip('/') + '/'
+        if not root_key:
+            return response(500, {'message': 'Share is misconfigured'})
+        if key:
+            key = key.rstrip('/') + '/'
+            if not key.startswith(root_key):
+                return response(403, {'message': 'Shared link does not grant access to this path.'})
+        else:
+            key = root_key
+        prefix = key
         parts = key.strip('/').split('/')
         user_id = parts[0]
         clean_folder_name = parts[-1]
-        # Public path: allow if the folder itself or a parent was shared
-        if not (_has_active_share_for_key(key) or _has_active_share_for_prefix(key) or _has_shared_metadata_prefix(key)):
-            return response(410, {'message': 'This shared link is expired or revoked.'})
+        region = _normalize_stored_region(item.get('region')) or item.get('region')
+        bucket_name = item.get('bucket')
+        if not region:
+            return response(500, {'message': 'Share is misconfigured'})
+        if not bucket_name:
+            bucket_name = _get_bucket_for_region(region)
     else:
-        prefix = f"{user_id}/uploads/{folder.strip('/')}/"
-        clean_folder_name = folder.strip('/').replace('/', '_')
+        if not region:
+            return response(400, {'message': 'region is required.'})
+
+        if not key and (not user_id or not folder):
+            return response(400, {'message': 'Either key (for public) or userId + folder (for private) is required.'})
+
+        if key:
+            prefix = key.rstrip('/') + '/'
+            parts = key.strip('/').split('/')
+            user_id = parts[0]
+            clean_folder_name = parts[-1]
+            # Public path: allow if the folder itself or a parent was shared
+            if not (_has_active_share_for_key(key) or _has_active_share_for_prefix(key) or _has_shared_metadata_prefix(key)):
+                return response(410, {'message': 'This shared link is expired or revoked.'})
+        else:
+            prefix = f"{user_id}/uploads/{folder.strip('/')}/"
+            clean_folder_name = folder.strip('/').replace('/', '_')
 
     try:
-        if user_id:
-            region = _resolve_region(user_id, region)
+        if share_id:
+            bucket_name = bucket_name or _get_bucket_for_region(region)
         else:
-            region = _canonical_region(region)
-        bucket_name = _get_bucket_for_region(region)
+            if user_id:
+                region = _resolve_region(user_id, region)
+            else:
+                region = _canonical_region(region)
+            bucket_name = _get_bucket_for_region(region)
     except RegionError as e:
         return response(e.status_code, {'message': str(e)})
 
@@ -1720,7 +1755,7 @@ def handle_share(event):
             'ttl': ttl_epoch,
         })
         # Keep existing viewer path but return shareId for cancel support
-        share_url = f"/shared-folder-viewer?key={key}&region={region}"
+        share_url = f"/shared-folder-viewer?shareId={share_id}"
     else:
         # Create a cancellable share record and return API-gated link
         now_epoch = int(datetime.now(timezone.utc).timestamp())
@@ -2164,20 +2199,49 @@ def handle_public_shared_list(event):
     try:
         query = event.get('queryStringParameters', {}) or {}
         region = query.get('region')
-        key = _normalize_key_param(query.get('key', '')).rstrip('/') + '/'
+        key_param = _normalize_key_param(query.get('key', ''))
+        share_id = (query.get('shareId') or '').strip()
 
-        if not region or not key:
-            return response(400, {'message': 'region and key are required.'})
+        if share_id:
+            item = shares_table.get_item(Key={'shareId': share_id}, ConsistentRead=True).get('Item')
+            if not item:
+                return response(404, {'message': 'Share not found'})
+            if (item.get('type') or '').strip().lower() not in ('', 'folder'):
+                return response(400, {'message': 'Share is not a folder.'})
+            status = item.get('status', 'active')
+            now_epoch = int(datetime.now(timezone.utc).timestamp())
+            expires_at = int(item.get('expiresAt', 0) or 0)
+            if status != 'active' or (expires_at and now_epoch > expires_at):
+                return response(410, {'message': 'This shared link is expired or revoked.'})
+            root_key = _normalize_key_param(item.get('objectKey') or '').rstrip('/') + '/'
+            if not root_key:
+                return response(500, {'message': 'Share is misconfigured'})
+            if key_param:
+                key = key_param.rstrip('/') + '/'
+                if not key.startswith(root_key):
+                    return response(403, {'message': 'Shared link does not grant access to this path.'})
+            else:
+                key = root_key
+            region = _normalize_stored_region(item.get('region')) or item.get('region')
+            bucket_name = item.get('bucket')
+            if not region:
+                return response(500, {'message': 'Share is misconfigured'})
+            if not bucket_name:
+                bucket_name = _get_bucket_for_region(region)
+        else:
+            key = key_param.rstrip('/') + '/'
+            if not region or not key_param:
+                return response(400, {'message': 'region and key are required.'})
 
-        # Require an active share for this folder (or a parent share)
-        if not (_has_active_share_for_key(key) or _has_active_share_for_prefix(key) or _has_shared_metadata_prefix(key)):
-            return response(410, {'message': 'This shared link is expired or revoked.'})
+            # Require an active share for this folder (or a parent share)
+            if not (_has_active_share_for_key(key) or _has_active_share_for_prefix(key) or _has_shared_metadata_prefix(key)):
+                return response(410, {'message': 'This shared link is expired or revoked.'})
 
-        try:
-            region = _canonical_region(region)
-            bucket_name = _get_bucket_for_region(region)
-        except RegionError as e:
-            return response(e.status_code, {'message': str(e)})
+            try:
+                region = _canonical_region(region)
+                bucket_name = _get_bucket_for_region(region)
+            except RegionError as e:
+                return response(e.status_code, {'message': str(e)})
 
         s3_client = _get_s3_client(region, bucket_name)
 

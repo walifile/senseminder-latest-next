@@ -131,14 +131,16 @@ const StaticStoragePage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const shareId = (searchParams.get("shareId") || "").trim();
   const keyParam = searchParams.get("key") || "";
   const key = safeDecode(keyParam);
   const regionParam = searchParams.get("region") || "";
   const region = (safeDecode(regionParam) || "us-east-1").trim().toLowerCase();
-  const { data, isLoading, isError, error } = usePublicSharedListQuery({
-    key,
-    region,
-  });
+  const { data, isLoading, isError, error } = usePublicSharedListQuery(
+    shareId
+      ? { shareId, ...(key ? { key } : {}) }
+      : { key, region }
+  );
   const [triggerDownloadFolder, { isFetching }] = useLazyDownloadFolderQuery();
 
   const [breadcrumbPath, setBreadcrumbPath] = useState<
@@ -185,7 +187,11 @@ const StaticStoragePage = () => {
     if (fileKey) {
       const params = new URLSearchParams();
       params.set("key", fileKey);
-      if (region) params.set("region", region);
+      if (shareId) {
+        params.set("shareId", shareId);
+      } else if (region) {
+        params.set("region", region);
+      }
       router.push(`/shared-folder-viewer?${params.toString()}`);
       return;
     }
@@ -233,7 +239,11 @@ const StaticStoragePage = () => {
 
     const params = new URLSearchParams();
     params.set("key", newPath);
-    if (region) params.set("region", region);
+    if (shareId) {
+      params.set("shareId", shareId);
+    } else if (region) {
+      params.set("region", region);
+    }
     router.push(`/shared-folder-viewer?${params.toString()}`);
   };
 
@@ -253,7 +263,11 @@ const StaticStoragePage = () => {
 
     const params = new URLSearchParams();
     if (folderPath) params.set("key", folderPath);
-    if (region) params.set("region", region);
+    if (shareId) {
+      params.set("shareId", shareId);
+    } else if (region) {
+      params.set("region", region);
+    }
     const qs = params.toString();
     router.push(`/shared-folder-viewer${qs ? `?${qs}` : ""}`);
   };
@@ -292,10 +306,11 @@ const StaticStoragePage = () => {
     }
 
     try {
-      const res = await triggerDownloadFolder({
-        region,
-        key,
-      }).unwrap();
+      const res = await triggerDownloadFolder(
+        shareId
+          ? { shareId, ...(key ? { key } : {}) }
+          : { region, key }
+      ).unwrap();
 
       if (res?.downloadUrl) {
         window.location.href = res.downloadUrl;

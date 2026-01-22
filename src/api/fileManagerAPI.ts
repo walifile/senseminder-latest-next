@@ -456,12 +456,13 @@ export const fileManagerAPI = createApi({
       invalidatesTags: ["Files"],
     }),
     publicSharedList: builder.query({
-      query: ({ region, key }) => ({
+      query: ({ region, key, shareId }) => ({
         url: "public-shared-list",
         method: "GET",
         params: {
-          region,
-          key,
+          ...(shareId ? { shareId } : {}),
+          ...(key ? { key } : {}),
+          ...(region ? { region } : {}),
         },
       }),
     }),
@@ -606,19 +607,26 @@ export const fileManagerAPI = createApi({
     downloadFolder: builder.query<
       { downloadUrl: string },
       {
-        region: string;
+        region?: string;
         key?: string; // for public/shared
+        shareId?: string; // for public/shared
         userId?: string; // for private
         folder?: string; // for private
       }
     >({
-      query: ({ region, key, userId, folder }) => {
-        const params: Record<string, string> = {
-          region,
-        };
+      query: ({ region, key, shareId, userId, folder }) => {
+        const params: Record<string, string> = {};
+
+        if (shareId && shareId.trim() !== "") {
+          params.shareId = shareId;
+        }
 
         if (key && key.trim() !== "") {
           params.key = key;
+        }
+
+        if (region && region.trim() !== "") {
+          params.region = region;
         }
 
         if (userId && userId.trim() !== "") {
