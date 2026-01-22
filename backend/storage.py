@@ -4,6 +4,7 @@ try:
 except Exception:
     Decimal = None
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 from datetime import datetime, timedelta, timezone
 import zipfile
@@ -87,7 +88,13 @@ def _get_s3_client(region: str, bucket_name: str = None):
     if not aws_region:
         return s3
     if aws_region not in S3_CLIENTS:
-        S3_CLIENTS[aws_region] = boto3.client('s3', region_name=aws_region)
+        endpoint = f"https://s3.{aws_region}.amazonaws.com"
+        S3_CLIENTS[aws_region] = boto3.client(
+            's3',
+            region_name=aws_region,
+            endpoint_url=endpoint,
+            config=Config(s3={'addressing_style': 'virtual'})
+        )
     return S3_CLIENTS[aws_region]
 
 def _get_bucket_for_region(region: str) -> str:
@@ -1498,11 +1505,11 @@ def handle_delete_multiple(event):
                         except Exception as e:
                             print(f"[delete-multiple] Failed to delete sub-folder marker {ch['id']}: {e}")
 
-        # Best-effort: remove the S3 folder marker for the root folder
-        try:
-            s3_client.delete_object(Bucket=bucket_name, Key=folder_key)
-        except Exception as e:
-            print(f"[delete-multiple] Failed to delete folder marker {folder_key}: {e}")
+            # Best-effort: remove the S3 folder marker for the root folder
+            try:
+                s3_client.delete_object(Bucket=bucket_name, Key=folder_key)
+            except Exception as e:
+                print(f"[delete-multiple] Failed to delete folder marker {folder_key}: {e}")
 
         # File branch
         else:

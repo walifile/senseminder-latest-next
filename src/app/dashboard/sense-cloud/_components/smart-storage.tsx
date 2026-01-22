@@ -3,9 +3,12 @@
 import type { RootState } from "@/redux/store";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import { type StorageRegion } from "@/constants/storage-regions";
+import { useRouter } from "next/navigation";
+import {
+  type StorageRegion,
+  getStorageRegionLabel,
+} from "@/constants/storage-regions";
 import {
   useListFilesQuery,
   useStarFileMutation,

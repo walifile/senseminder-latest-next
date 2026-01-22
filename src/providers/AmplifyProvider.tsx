@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Logger } from "@/lib/utils/logger";
 import { configureAmplify } from "@/config/amplify-config";
+
+import { Logger } from "@/lib/utils/logger";
 
 export function AmplifyProvider({ children }: { children: React.ReactNode }) {
   const [isConfigured, setIsConfigured] = useState(false);

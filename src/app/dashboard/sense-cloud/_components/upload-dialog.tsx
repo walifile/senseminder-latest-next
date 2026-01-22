@@ -7,18 +7,18 @@ import type { RootState } from "@/redux/store";
 
 import React, { useRef, useState } from "react";
 import { FEEDBACK_TRIGGERS } from "@/constants/app-constants";
-import {
-  STORAGE_REGIONS,
-  type StorageRegion,
-  type StorageRegionOption,
-  getStorageRegionLabel,
-} from "@/constants/storage-regions";
 // import { Progress } from "@/components/ui/progress";
 import {
   useUploadFileMutation,
   useUploadCompleteMutation,
   useUploadToPresignedUrlMutation,
 } from "@/api/fileManagerAPI";
+import {
+  STORAGE_REGIONS,
+  type StorageRegion,
+  getStorageRegionLabel,
+  type StorageRegionOption,
+} from "@/constants/storage-regions";
 
 import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";

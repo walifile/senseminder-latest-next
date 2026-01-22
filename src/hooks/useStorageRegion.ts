@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { useGetRegionsQuery, useGetUserRegionQuery } from "@/api/fileManagerAPI";
 import {
-  type StorageRegion,
-  type StorageRegionOption,
-  resolveStorageRegion,
   STORAGE_REGIONS,
+  type StorageRegion,
+  resolveStorageRegion,
   DEFAULT_STORAGE_REGION,
+  type StorageRegionOption,
 } from "@/constants/storage-regions";
 
 const STORAGE_REGION_KEY = "sensecloud-storage-region";
