@@ -1,46 +1,50 @@
-import React, { useState } from "react";
-import { Play, Youtube } from "lucide-react";
-import { motion } from "framer-motion";
+"use client";
+
+import Link from "next/link";
+import React, { useRef, useState } from "react";
+
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogContent,
-  DialogHeader,
   DialogTitle,
+  DialogHeader,
+  DialogContent,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+
+import { motion } from "framer-motion";
+
+import { TutorialCard } from "./tutorial-card";
 
 const tutorials = [
   {
     id: 1,
-    title: "Getting Started with SmartPC",
-    duration: "3:45",
-    description: "Learn the basics of setting up your smart PC environment",
-    videoUrl: "/videos/getting-started.mp4",
-    youtubeUrl: "https://youtube.com/watch?v=example1",
+    title: "Introduce Sense PC",
+    duration: "0:56",
+    description:
+      "Build a powerful cloud PC in minutes and access it from any browser, on any device, from anywhere—no hardware needed.",
+    image: "/assets/images/gettingStartedWithSensePc.png",
+    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%201.mp4",
+    youtubeUrl: "https://youtube.com",
   },
   {
     id: 2,
-    title: "Optimizing Your Cloud PC",
-    duration: "4:20",
-    description: "Tips and tricks for better performance",
-    videoUrl: "/videos/optimization.mp4",
-    youtubeUrl: "https://youtube.com/watch?v=example2",
+    title: "How Sense PC works",
+    duration: "1:30",
+    description:
+      "See how SensePC delivers fast performance with built-in security—plus user management, billing, support ticketing, and in-app tutorials after login.",
+    image: "/assets/images/optimizing.jpg",
+    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%203.mp4",
+    youtubeUrl: "https://youtube.com",
   },
   {
     id: 3,
-    title: "Storage Management",
-    duration: "5:15",
-    description: "Efficiently manage your cloud storage space",
-    videoUrl: "/videos/storage.mp4",
-    youtubeUrl: "https://youtube.com/watch?v=example3",
-  },
-  {
-    id: 4,
-    title: "Advanced Features",
-    duration: "6:30",
-    description: "Explore advanced features and customization options",
-    videoUrl: "/videos/advanced.mp4",
-    youtubeUrl: "https://youtube.com/watch?v=example4",
+    title: "Introduce Sense Cloud",
+    duration: "0:50",
+    description:
+      "Securely store, organize, preview, and share files with smart cloud storage that stays synced across all your devices.",
+    image: "/assets/images/storageManagement.png",
+    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%202.mp4",
+    youtubeUrl: "https://youtube.com",
   },
 ];
 
@@ -48,118 +52,234 @@ const TutorialSection = () => {
   const [selectedVideo, setSelectedVideo] = useState<
     (typeof tutorials)[0] | null
   >(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  // const [canScrollLeft, setCanScrollLeft] = useState(false);
+  // const [canScrollRight, setCanScrollRight] = useState(false);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+
+  // const checkScrollButtons = () => {
+  //   if (carouselRef.current) {
+  //     const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+  //     setCanScrollLeft(scrollLeft > 0);
+  //     setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+  //   }
+  // };
+
+  // React.useEffect(() => {
+  //   checkScrollButtons();
+  //   const carousel = carouselRef.current;
+  //   if (carousel) {
+  //     carousel.addEventListener("scroll", checkScrollButtons);
+  //     window.addEventListener("resize", checkScrollButtons);
+  //     return () => {
+  //       carousel.removeEventListener("scroll", checkScrollButtons);
+  //       window.removeEventListener("resize", checkScrollButtons);
+  //     };
+  //   }
+  //   return undefined;
+  // }, []);
+
+  // const scroll = (direction: "left" | "right") => {
+  //   if (carouselRef.current) {
+  //     const scrollAmount = carouselRef.current.offsetWidth * 0.8;
+  //     carouselRef.current.scrollBy({
+  //       left: direction === "left" ? -scrollAmount : scrollAmount,
+  //       behavior: "smooth",
+  //     });
+  //     setTimeout(checkScrollButtons, 300);
+  //   }
+  // };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe && currentIndex < tutorials.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
+
+    if (isRightSwipe && currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+
+    setTouchStart(0);
+    setTouchEnd(0);
+  };
 
   return (
-    <section id="tutorials" className="py-20 bg-background/50 dark:bg-background/80 backdrop-blur-sm">
-      <div className="container relative space-y-6 py-8 md:py-12 lg:py-24 lg:space-y-10">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center bg-primary/10 dark:bg-primary/20 rounded-full mb-4 px-4 py-1.5">
-            <span className="text-sm font-medium text-primary">
-              Video Tutorials
-            </span>
-          </div>
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-3xl md:text-4xl font-bold mb-4"
-          >
-            Learn How to <span className="gradient-text">Get Started</span>
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-lg text-muted-foreground"
-          >
-            Watch our tutorial series to master your smart PC experience
-          </motion.p>
-        </div>
+    <section data-testid="home-tutorial-section" className="relative">
+      <div className="hidden dark:md:block z-0 absolute -top-10 -right-20 w-[195px] h-[357px] opacity-40 bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)] blur-[100px]" />
+      <div className="hidden dark:md:block z-0 absolute -bottom-10 left-32 w-[195px] h-[357px] opacity-40 bg-[#9C05BF] blur-[100px]" />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {tutorials.map((tutorial, index) => (
-            <motion.div
-              key={tutorial.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group relative cursor-pointer"
-              onClick={() => setSelectedVideo(tutorial)}
+      <div className="container my-12 md:my-20 space-y-8 md:space-y-12 overflow-hidden">
+        {/* Header Section */}
+        <div className="flex items-center justify-between gap-2">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+            className="max-md:w-full space-y-3 md:space-y-2.5"
+          >
+            <h2 className="font-space-grotesk font-semibold text-2xl md:text-4xl text-center md:text-left">
+              New to Sense PC?{" "}
+              <span className="text-transparent bg-clip-text bg-[linear-gradient(290.5deg,#D971FF_-70.94%,#4C55F8_10.02%,#8086F3_115.42%)]">
+                Start Here
+              </span>
+            </h2>
+
+            <p className="text-paragraph text-center md:text-left text-base md:text-2xl">
+              Our tutorial videos show you how to set up and optimize your cloud
+              desktop easily.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+            className="hidden md:flex items-center"
+          >
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="rounded-full px-4"
             >
-              <div className="relative aspect-video overflow-hidden rounded-xl bg-gray-900">
-                {/* Gradient Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900">
-                  <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:32px]" />
-                </div>
-
-                {/* Play button overlay */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="rounded-full bg-primary/10 dark:bg-primary/20 p-4 backdrop-blur-sm transition-transform group-hover:scale-110">
-                    <Play className="h-6 w-6 text-primary" />
-                  </div>
-                </div>
-
-                {/* Duration badge */}
-                <div className="absolute bottom-2 right-2 rounded-md bg-black/80 px-2 py-1 text-xs text-white backdrop-blur-sm dark:bg-black/60">
-                  {tutorial.duration}
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <h3 className="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
-                  {tutorial.title}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {tutorial.description}
-                </p>
-              </div>
-            </motion.div>
-          ))}
+              <Link href="/tutorials">View all tutorials</Link>
+            </Button>
+          </motion.div>
         </div>
 
-        {/* Video Dialog */}
+        {/* Desktop Layout - Horizontal Carousel */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          ref={carouselRef}
+          className="hidden md:flex gap-6 overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {tutorials.map((tutorial, index) => (
+            <TutorialCard
+              key={tutorial.id}
+              tutorial={tutorial}
+              index={index}
+              type="desktop"
+              onClick={() => setSelectedVideo(tutorial)}
+            />
+          ))}
+        </motion.div>
+
+        {/* Mobile Layout - Carousel with peek view */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="space-y-8 md:hidden relative overflow-visible"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Carousel container with peek */}
+          <div
+            className="flex gap-4 transition-transform duration-300 ease-out"
+            style={{
+              transform: `translateX(calc(-${currentIndex * 96}% - ${
+                currentIndex * 1
+              }rem + 2%))`,
+            }}
+          >
+            {tutorials.map((tutorial, index) => (
+              <TutorialCard
+                key={tutorial.id}
+                tutorial={tutorial}
+                index={index}
+                type="mobile"
+                onClick={() => {
+                  if (index === currentIndex) {
+                    setSelectedVideo(tutorial);
+                  } else {
+                    setCurrentIndex(index);
+                  }
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Mobile Dots Indicator */}
+          <div className="flex justify-center gap-4">
+            {tutorials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index)}
+                className={`size-4 rounded-full transition-all ${
+                  index === currentIndex
+                    ? "bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)]"
+                    : "bg-[#454545] dark:bg-white"
+                }`}
+              />
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Dialog for video playback */}
         <Dialog
           open={!!selectedVideo}
           onOpenChange={() => setSelectedVideo(null)}
         >
-          <DialogContent className="max-w-4xl">
+          <DialogContent className="max-w-4xl bg-background border-border">
             <DialogHeader>
-              <DialogTitle>{selectedVideo?.title}</DialogTitle>
+              <DialogTitle className="text-foreground">
+                <div className="z-10 space-y-2">
+                  <h3 className="font-space-grotesk font-bold text-xl md:text-2xl">
+                    {selectedVideo?.title}
+                  </h3>
+                  <p className="self-stretch justify-start text-[#454545] dark:text-[#A3A3A3] text-sm font-normal font-['Inter'] leading-5">
+                    {selectedVideo?.description}
+                  </p>
+                </div>
+              </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="aspect-video relative bg-black rounded-lg overflow-hidden">
-                {selectedVideo && (
+            {selectedVideo && (
+              <div className="space-y-4">
+                <div className="aspect-video bg-black rounded-lg overflow-hidden">
                   <video
-                    key={selectedVideo.videoUrl}
                     src={selectedVideo.videoUrl}
                     controls
                     autoPlay
                     className="w-full h-full"
                     controlsList="nodownload"
-                    playsInline
-                  >
-                    Your browser does not support the video tag.
-                  </video>
-                )}
-              </div>
-              {selectedVideo && (
-                <div className="flex justify-end">
+                  />
+                </div>
+                {/* <div className="flex justify-end">
                   <Button
                     variant="outline"
-                    className="flex items-center gap-2"
                     onClick={() =>
                       window.open(selectedVideo.youtubeUrl, "_blank")
                     }
                   >
-                    <Youtube className="h-4 w-4" />
-                    Watch on YouTube
+                    <Youtube /> Watch on YouTube
                   </Button>
-                </div>
-              )}
-            </div>
+                </div> */}
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>

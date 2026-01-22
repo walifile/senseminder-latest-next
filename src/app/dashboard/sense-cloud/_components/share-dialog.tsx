@@ -1,0 +1,364 @@
+"use client";
+
+import type { RootState } from "@/redux/store";
+import type { StorageRegion } from "@/constants/storage-regions";
+
+import React, { useState, useEffect } from "react";
+import {
+  useShareFileMutation,
+  useCancelShareMutation,
+} from "@/api/fileManagerAPI";
+
+import { Logger } from "@/lib/utils/logger";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+// import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectItem,
+  SelectValue,
+  SelectContent,
+  SelectTrigger,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogTitle,
+  DialogFooter,
+  DialogHeader,
+  DialogContent,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
+import { useSelector } from "react-redux";
+
+import { Copy, Loader2, Download } from "lucide-react";
+
+// import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/hooks/use-toast";
+
+import type { FileItem } from "../types";
+
+type ShareDialogProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  file?: FileItem | null;
+  selectedFolder: FileItem | null;
+  region: StorageRegion;
+};
+
+const ShareDialog: React.FC<ShareDialogProps> = ({
+  open,
+  onOpenChange,
+  file,
+  selectedFolder,
+  region,
+}) => {
+  const { toast } = useToast();
+
+  const [sharePermissions, setSharePermissions] = useState<"view" | "edit">(
+    "view"
+  );
+  const [shareExpiry, setShareExpiry] = useState<string>("7days");
+  const [sharePasswordEnabled, setSharePasswordEnabled] = useState(false);
+  const [sharePassword, setSharePassword] = useState("");
+  const [shareLink, setShareLink] = useState("");
+  const [downloadUrl, setDownloadUrl] = useState("");
+  const [isDownloadingShare, setIsDownloadingShare] = useState(false);
+  const [shareId, setShareId] = useState<string | null>(null);
+
+  const userId = useSelector((state: RootState) => state.auth.user?.id);
+  const [shareFile, { isLoading }] = useShareFileMutation();
+  const [cancelShare, { isLoading: isCancelling }] = useCancelShareMutation();
+
+  useEffect(() => {
+    if (!open) {
+      setShareLink("");
+      setDownloadUrl("");
+      setIsDownloadingShare(false);
+      setShareId(null);
+      setSharePermissions("view");
+      setShareExpiry("7days");
+      setSharePassword("");
+      setSharePasswordEnabled(false);
+    }
+  }, [open]);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareLink);
+    toast({
+      title: "Link Copied",
+      description: "The share link has been copied to your clipboard.",
+    });
+  };
+
+  const handleShare = async () => {
+    if (!file || !userId) return;
+
+    const isFolder = file.fileType === "folder";
+
+    try {
+      const result = await shareFile({
+        region,
+        userId,
+        ...(file.id && { key: file.id }),
+        ...(file.fileName && !file.id && { fileName: file.fileName }),
+        ...(selectedFolder && { folder: selectedFolder.fileName }),
+        permissions: sharePermissions,
+        expiry: shareExpiry,
+        ...(sharePasswordEnabled && { password: sharePassword }),
+      }).unwrap();
+
+      let link = result.shareLink;
+      let downloadLink = "";
+      const newShareId = result?.id ? String(result.id) : null;
+
+      // capture shareId for cancellable shares (files and folders)
+      if (newShareId) {
+        setShareId(newShareId);
+      }
+
+      // Prefer a friendly front-end link for file shares: {origin}/shares/{id}/download
+      if (newShareId && isFolder === false && typeof window !== "undefined") {
+        link = `${window.location.origin}/shares/${newShareId}/download`;
+        downloadLink = `${window.location.origin}/api/share/${newShareId}`;
+      } else if (!/^https?:\/\//i.test(link)) {
+        // Fallback: build absolute URL for other cases
+        const base =
+          typeof window !== "undefined" ? window.location.origin : "";
+        link = base ? `${base}${link.startsWith("/") ? "" : "/"}${link}` : link;
+      }
+
+      setShareLink(link);
+      setDownloadUrl(downloadLink || link);
+
+      toast({
+        title: `${isFolder ? "Folder" : "File"} Shared`,
+        description: `Your ${
+          isFolder ? "folder and its contents" : "file"
+        } have been shared successfully.`,
+      });
+    } catch (error) {
+      Logger.error("Share error:", error);
+      toast({
+        title: "Share Failed",
+        description: "Could not share. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCancelShare = async () => {
+    if (!shareId) return;
+    try {
+      await cancelShare({ shareId }).unwrap();
+      setShareId(null);
+      setShareLink("");
+      toast({
+        title: "Share Cancelled",
+        description: "The share link can no longer be used.",
+      });
+    } catch (error) {
+      Logger.error("Cancel share failed:", error);
+      toast({
+        title: "Cancel Failed",
+        description: "Could not cancel the share. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        data-testid="storage-share-modal"
+        className="sm:max-w-[640px]"
+      >
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            Share {file?.fileName}
+          </DialogTitle>
+          <DialogDescription>
+            {file?.fileType === "folder"
+              ? "Create a link to share this folder and all its contents"
+              : "Create a link to share this file with others"}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-4">
+          {shareLink && (
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                {/* Link icon */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path d="M13.5 6.75a.75.75 0 0 1 0 1.5H8.25a2.25 2.25 0 0 0 0 4.5h2a.75.75 0 0 1 0 1.5h-2a3.75 3.75 0 0 1 0-7.5H13.5Zm2.25 3a.75.75 0 0 1 0-1.5h2a3.75 3.75 0 0 1 0 7.5H10.5a.75.75 0 0 1 0-1.5h7.25a2.25 2.25 0 0 0 0-4.5h-2Z" />
+                </svg>
+                Share link
+              </Label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  value={shareLink}
+                  readOnly
+                  className="flex-1 min-w-[60%] font-mono text-xs"
+                />
+                <Button variant="outline" size="sm" onClick={handleCopyLink}>
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy
+                </Button>
+                {file?.fileType !== "folder" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        setIsDownloadingShare(true);
+                        const response = await fetch(downloadUrl || shareLink);
+                        const blob = await response.blob();
+                        const blobUrl = window.URL.createObjectURL(blob);
+
+                        const a = document.createElement("a");
+                        a.href = blobUrl;
+                        a.download = file?.fileName || "download";
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(blobUrl);
+                      } catch (error) {
+                        Logger.error("Download failed:", error);
+                        toast({
+                          title: "Download Error",
+                          description:
+                            "Could not download the file. Try again later.",
+                          variant: "destructive",
+                        });
+                      } finally {
+                        setIsDownloadingShare(false);
+                      }
+                    }}
+                    disabled={isDownloadingShare}
+                  >
+                    {isDownloadingShare ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Downloading...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </>
+                    )}
+                  </Button>
+                )}
+                {shareId && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleCancelShare}
+                    disabled={isCancelling}
+                  >
+                    {isCancelling ? "Cancelling..." : "Cancel Share"}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+          {/* <div className="space-y-2">
+            <Label>Permissions</Label>
+            <RadioGroup
+              value={sharePermissions}
+              onValueChange={(value: "view" | "edit") =>
+                setSharePermissions(value)
+              }
+              className="flex"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="view" id="view" />
+                <Label htmlFor="view">View only</Label>
+              </div>
+              <div className="flex items-center space-x-2 ml-4">
+                <RadioGroupItem value="edit" id="edit" />
+                <Label htmlFor="edit">Can edit</Label>
+              </div>
+            </RadioGroup>
+          </div> */}
+
+          <div className="space-y-2">
+            <Label>Link expires</Label>
+            <Select value={shareExpiry} onValueChange={setShareExpiry}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select expiry" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1hour">1 hour</SelectItem>
+                <SelectItem value="1day">1 day</SelectItem>
+                <SelectItem value="7days">7 days</SelectItem>
+                <SelectItem value="30days">30 days</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password protection</Label>
+              <Switch
+                id="password"
+                checked={sharePasswordEnabled}
+                onCheckedChange={setSharePasswordEnabled}
+              />
+            </div>
+            {sharePasswordEnabled && (
+              <Input
+                placeholder="Enter password"
+                value={sharePassword}
+                onChange={(e) => setSharePassword(e.target.value)}
+              />
+            )}
+          </div> */}
+
+          {/* <div className="space-y-2">
+            <Label>Share with specific people</Label>
+            <div className="flex items-center gap-2">
+              <Input placeholder="Enter email addresses" />
+              <Button variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                Add
+              </Button>
+            </div>
+          </div> */}
+        </div>
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            data-testid="storage-share-close-button"
+          >
+            Cancel
+          </Button>
+          <Button
+            disabled={isLoading}
+            onClick={handleShare}
+            data-testid="storage-share-confirm-button"
+          >
+            {isLoading ? (
+              "Sharing..."
+            ) : (
+              <span className="inline-flex items-center gap-2">
+                {/* Share icon */}
+                Share
+              </span>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default ShareDialog;

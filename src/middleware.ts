@@ -1,7 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { publicRoutes, routes } from "./constants/routes";
+
+import { NextResponse } from "next/server";
+
+import { Logger } from "@/lib/utils/logger";
+
+import { routes, publicRoutes } from "./constants/routes";
+import { firstLoginGuard } from "./middleware/firstLoginGuard";
+// import { passwordProtectionMiddleware } from "./middleware/password-protection";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -20,31 +25,46 @@ export async function middleware(request: NextRequest) {
   );
   let hasAuthState = false;
   if (authStateCookie) {
+    let authState = null;
+
     try {
-      const authState = JSON.parse(authStateCookie.value);
-      hasAuthState = authState.isAuthenticated && authState.token;
-    } catch (e) {
-      console.error("Invalid auth state cookie");
-      // If there's an error parsing the cookie, force a redirect to login
-      const loginUrl = new URL(routes?.signIn, request.url);
-      loginUrl.searchParams.set("from", pathname);
-      return NextResponse.redirect(loginUrl);
+      authState = JSON.parse(authStateCookie.value);
+    } catch {
+      Logger.warn("Invalid JSON in auth.state cookie:", authStateCookie.value);
     }
+
+    hasAuthState = authState?.isAuthenticated && authState?.token;
   }
 
   const isAuthenticated = hasCognitoToken && hasAuthState;
 
-  const isPublicRoute = publicRoutes.includes(pathname);
-
+  // Treat entries ending with "/" as prefixes, except the root "/".
+  const isPublicRoute = publicRoutes.some(
+    (r) =>
+      pathname === r || (r !== "/" && r.endsWith("/") && pathname.startsWith(r))
+  );
   if (!isPublicRoute && !isAuthenticated) {
     const loginUrl = new URL(routes?.signIn, request.url);
     loginUrl.searchParams.set("from", pathname);
     return NextResponse.redirect(loginUrl);
   }
+  const firstLoginResponse = await firstLoginGuard(request);
+  if (firstLoginResponse) {
+    return firstLoginResponse;
+  }
+
+  // const passwordProtectionResponse = passwordProtectionMiddleware(request);
+  // if (passwordProtectionResponse) {
+  //   return passwordProtectionResponse;
+  // }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.).*)"],
+  matcher: [
+    "/",
+    "/dashboard/:path*", // ensures all dashboard routes are captured
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.).*)", // catch-all fallback
+  ],
 };

@@ -1,8 +1,10 @@
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Check, ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
 import Link from "next/link";
+import React, { useState } from "react";
+
+import { Button } from "@/components/ui/button";
+
+import { motion } from "framer-motion";
+import { Check, ArrowRight } from "lucide-react";
 
 const PricingCard = ({
   name,

@@ -1,0 +1,170 @@
+"use client";
+
+import type { RootState } from "@/redux/store";
+import type { StorageRegion } from "@/constants/storage-regions";
+
+import React, { useState, useEffect } from "react";
+import { useShareFilesMutation } from "@/api/fileManagerAPI";
+
+import { Logger } from "@/lib/utils/logger";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+// import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectItem,
+  SelectValue,
+  SelectContent,
+  SelectTrigger,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogTitle,
+  DialogFooter,
+  DialogHeader,
+  DialogContent,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
+import { useSelector } from "react-redux";
+
+import { Copy } from "lucide-react";
+
+// import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/hooks/use-toast";
+
+import type { FileItem } from "../types";
+
+type ShareDialogProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  files: FileItem[];
+  selectedFiles: string[];
+  selectedFolder: FileItem | null;
+  region: StorageRegion;
+};
+
+const BulkShareDialog: React.FC<ShareDialogProps> = ({
+  open,
+  onOpenChange,
+  files,
+  selectedFolder,
+  region,
+}) => {
+  const { toast } = useToast();
+
+  const [sharePermissions, setSharePermissions] = useState<"view" | "edit">(
+    "view"
+  );
+  const [shareExpiry, setShareExpiry] = useState<string>("7days");
+  const [sharePasswordEnabled, setSharePasswordEnabled] = useState(false);
+  const [sharePassword, setSharePassword] = useState("");
+  const [shareLink, setShareLink] = useState("");
+
+  const userId = useSelector((state: RootState) => state.auth.user?.id);
+  const [shareFiles, { isLoading }] = useShareFilesMutation();
+
+  useEffect(() => {
+    if (!open) {
+      setShareLink("");
+      setSharePermissions("view");
+      setShareExpiry("7days");
+      setSharePassword("");
+      setSharePasswordEnabled(false);
+    }
+  }, [open]);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareLink);
+    toast({
+      title: "Link Copied",
+      description: "The share link has been copied to your clipboard.",
+    });
+  };
+
+  const handleShare = async () => {
+    if (!userId) return;
+
+    try {
+      const result = await shareFiles({
+        region,
+        userId,
+        items: files.map((file) => file.fileName),
+        ...(selectedFolder && { folder: selectedFolder.fileName }),
+        permissions: sharePermissions,
+        expiry: shareExpiry,
+        ...(sharePasswordEnabled && { password: sharePassword }),
+      }).unwrap();
+
+      setShareLink(result.shareLink);
+
+      toast({
+        title: `Items Shared`,
+        description: `Your selected items have been shared successfully`,
+      });
+    } catch (error) {
+      Logger.error("Share error:", error);
+      toast({
+        title: "Share Failed",
+        description: "Could not share. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        data-testid="dashboard-sense-cloud-bulk-share-dialog"
+        className="sm:max-w-[500px]"
+      >
+        <DialogHeader>
+          <DialogTitle>Share Selected</DialogTitle>
+          <DialogDescription>
+            Create a link to share these items with others
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-4">
+          {shareLink && (
+            <div className="flex items-center gap-2">
+              <Input value={shareLink} readOnly className="flex-1" />
+              <Button variant="outline" onClick={handleCopyLink}>
+                <Copy className="h-4 w-4 mr-2" />
+                Copy
+              </Button>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label>Link expires</Label>
+            <Select value={shareExpiry} onValueChange={setShareExpiry}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select expiry" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1min">1 minute (test)</SelectItem>
+                <SelectItem value="1day">1 day</SelectItem>
+                <SelectItem value="7days">7 days</SelectItem>
+                <SelectItem value="30days">30 days</SelectItem>
+                <SelectItem value="never">Never</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button disabled={isLoading} onClick={handleShare}>
+            {isLoading ? "Sharing..." : "Share"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default BulkShareDialog;

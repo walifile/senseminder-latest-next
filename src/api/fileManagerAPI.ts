@@ -1,35 +1,96 @@
+import type {
+  DuplicateScanResponse,
+  DuplicateMergeResponse,
+} from "@/app/dashboard/sense-cloud/types";
+
+import appConfig from "@/config/app-config";
+
+import { fetchAuthSession } from "aws-amplify/auth";
+
 import { createApi } from "@reduxjs/toolkit/query/react";
+
 import { baseQueryWithReauth } from "./apiUtils";
+
+const {
+  ESTIMATION_URL,
+  FETCH_PC_URL,
+  VM_MANAGEMENT_URL,
+  VM_SESSION_URL,
+  VM_VALIDATE_SESSION_URL,
+  VM_STOP_SESSION_URL,
+  VM_EXTEND_SESSION_URL,
+  VM_SCHEDULES_URL,
+  } = appConfig;
 
 export const fileManagerAPI = createApi({
   reducerPath: "fileManagerAPI",
   baseQuery: baseQueryWithReauth(false),
-  tagTypes: ["Files", "VM"],
+  tagTypes: ["Files", "VM", "Hierarchy", "Regions", "UserRegion"],
   endpoints: (builder) => ({
-    getEstimate: builder.mutation({
-      query: ({ operatingSystem, machineType, storageSize }) => {
-        const ssdSizeWithGb = storageSize.endsWith("gb")
-          ? storageSize
-          : `${storageSize}gb`;
-
-        return {
-          url: "https://zxxx3xjbb0.execute-api.us-east-1.amazonaws.com/calculate-cost",
-          method: "POST",
-          body: {
-            operatingSystem,
-            instanceSize: machineType,
-            region: "n.virginia-usa",
-            ssdSize: ssdSizeWithGb,
-          },
-          headers: {
-            "Content-Type": "application/json",
-          },
-        };
+    getRegions: builder.query<
+      {
+        regions: {
+          region?: string;
+          value?: string;
+          label?: string;
+          shortLabel?: string;
+          order?: number;
+        }[];
       },
+      { includeDisabled?: boolean } | void
+    >({
+      query: (params) => ({
+        url: "regions",
+        method: "GET",
+        params: params?.includeDisabled ? { includeDisabled: "true" } : undefined,
+      }),
+      providesTags: ["Regions"],
     }),
+    getUserRegion: builder.query<
+      {
+        userId: string;
+        region?: string | null;
+        storedRegion?: string | null;
+        activeRegion?: string | null;
+        hasFiles?: boolean;
+        locked?: boolean;
+      },
+      { userId: string }
+    >({
+      query: ({ userId }) => ({
+        url: "user-region",
+        method: "GET",
+        params: { userId },
+      }),
+      providesTags: ["UserRegion"],
+    }),
+    getShareInfo: builder.query<
+      { shareId: string; type: string; status: string; expiresAt?: number; name?: string },
+      { shareId: string }
+    >({
+      query: ({ shareId }) => ({
+        url: `shares/${shareId}`,
+        method: "GET",
+      }),
+    }),
+    getEstimate: builder.mutation({
+      query: ({ configId, storageSize, region }) => ({
+        url: ESTIMATION_URL,
+        method: "POST",
+        body: {
+          configId,
+          storageSize: parseInt(storageSize),
+          region,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    }),
+
     listRemoteDesktop: builder.query({
       query: ({ userId }) => ({
-        url: "https://vj9idlbwf7.execute-api.us-east-1.amazonaws.com/prod/FetchPCdata",
+        url: FETCH_PC_URL,
         method: "GET",
         params: {
           userId,
@@ -37,42 +98,236 @@ export const fileManagerAPI = createApi({
       }),
       providesTags: ["VM"],
     }),
+    // stopVM: builder.mutation({
+    //   query: (instanceId) => ({
+    //     url: "https://lul5oxdwic.execute-api.us-east-1.amazonaws.com/dev/instance",
+    //     method: "POST",
+    //     body: {
+    //       action: "stop",
+    //       instanceId: instanceId,
+    //       region: "us-east-1",
+    //     },
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //   }),
+    //   invalidatesTags: ["VM"],
+    // }),
     stopVM: builder.mutation({
-      query: (instanceId) => ({
-        url: "https://lul5oxdwic.execute-api.us-east-1.amazonaws.com/dev/instance",
-        method: "POST",
-        body: {
-          action: "stop",
-          instanceId: instanceId,
-          region: "us-east-1",
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
+      async queryFn(instanceId: string) {
+        try {
+          const session = await fetchAuthSession();
+          const token = session.tokens?.idToken?.toString();
+          if (!token) throw new Error("No ID token found");
+
+          const response = await fetch(VM_MANAGEMENT_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+            body: JSON.stringify({
+              action: "stop",
+              instanceId,
+              region: "us-east-1",
+            }),
+          });
+
+          const text = await response.text();
+          let data;
+
+          try {
+            data = JSON.parse(text);
+          } catch {
+            data = { message: text };
+          }
+
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data:
+                  data?.message ||
+                  "Something went wrong while stopping the PC.",
+              },
+            };
+          }
+
+          return { data };
+        } catch (error) {
+          return {
+            error: {
+              status: 500,
+              data: error instanceof Error ? error.message : "Unknown error",
+            },
+          };
+        }
+      },
       invalidatesTags: ["VM"],
     }),
 
+    // startVM: builder.mutation({
+    //   query: (instanceId) => ({
+    //     url: "https://lul5oxdwic.execute-api.us-east-1.amazonaws.com/dev/instance",
+    //     method: "POST",
+    //     body: {
+    //       action: "start",
+    //       instanceId: instanceId,
+    //       region: "us-east-1",
+    //     },
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //   }),
+    //   invalidatesTags: ["VM"],
+    // }),
+    // startVM: builder.mutation({
+    //   async queryFn(instanceId: string) {
+    //     try {
+    //       const session = await fetchAuthSession();
+    //       const token = session.tokens?.idToken?.toString();
+    //       if (!token) throw new Error("No ID token found");
+
+    //       const response = await fetch("https://lul5oxdwic.execute-api.us-east-1.amazonaws.com/dev/instance", {
+    //         method: "POST",
+    //         headers: {
+    //           "Content-Type": "application/json",
+    //           Authorization: token,
+    //         },
+    //         body: JSON.stringify({
+    //           action: "start",
+    //           instanceId,
+    //           region: "us-east-1",
+    //         }),
+    //       });
+
+    //       const data = await response.json();
+
+    //       if (!response.ok) {
+    //         return { error: { status: response.status, data } };
+    //       }
+
+    //       return { data };
+    //     } catch (error) {
+    //       return {
+    //         error: {
+    //           status: 500,
+    //           data: error instanceof Error ? error.message : "Unknown error",
+    //         },
+    //       };
+    //     }
+    //   },
+    //   invalidatesTags: ["VM"],
+    // }),
     startVM: builder.mutation({
-      query: (instanceId) => ({
-        url: "https://lul5oxdwic.execute-api.us-east-1.amazonaws.com/dev/instance",
-        method: "POST",
-        body: {
-          action: "start",
-          instanceId: instanceId,
-          region: "us-east-1",
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
+      async queryFn(instanceId: string) {
+        try {
+          const session = await fetchAuthSession();
+          const token = session.tokens?.idToken?.toString();
+          if (!token) throw new Error("No ID token found");
+
+          const response = await fetch(VM_MANAGEMENT_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+            body: JSON.stringify({
+              action: "start",
+              instanceId,
+              region: "us-east-1",
+            }),
+          });
+
+          const text = await response.text();
+          let data;
+
+          try {
+            data = JSON.parse(text);
+          } catch {
+            data = { message: text };
+          }
+
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data:
+                  data?.message ||
+                  "Something went wrong while starting the PC.",
+              },
+            };
+          }
+
+          return { data };
+        } catch (error) {
+          return {
+            error: {
+              status: 500,
+              data: error instanceof Error ? error.message : "Unknown error",
+            },
+          };
+        }
+      },
+      invalidatesTags: ["VM"],
+    }),
+
+    restartVM: builder.mutation({
+      async queryFn(instanceId: string) {
+        try {
+          const session = await fetchAuthSession();
+          const token = session.tokens?.idToken?.toString();
+          if (!token) throw new Error("No ID token found");
+
+          const response = await fetch(VM_MANAGEMENT_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+            body: JSON.stringify({
+              action: "restart",
+              instanceId,
+              region: "us-east-1",
+            }),
+          });
+
+          const text = await response.text();
+          let data;
+
+          try {
+            data = JSON.parse(text);
+          } catch {
+            data = { message: text };
+          }
+
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data:
+                  data?.message ||
+                  "Something went wrong while restarting the PC.",
+              },
+            };
+          }
+
+          return { data };
+        } catch (error) {
+          return {
+            error: {
+              status: 500,
+              data: error instanceof Error ? error.message : "Unknown error",
+            },
+          };
+        }
+      },
       invalidatesTags: ["VM"],
     }),
 
     launchVM: builder.mutation({
       query: ({ instanceId, userId }) => ({
-        url: "https://hxmwrrakc6.execute-api.us-east-1.amazonaws.com/dev/start-session",
-        // url: "https://o1jxe42die.execute-api.us-east-1.amazonaws.com/prod/dcv-integration",
+        url: VM_SESSION_URL,
         method: "POST",
         body: {
           action: "start-session",
@@ -88,7 +343,7 @@ export const fileManagerAPI = createApi({
 
     validateSession: builder.mutation({
       query: ({ instanceId, userId, sessionToken }) => ({
-        url: "https://hxmwrrakc6.execute-api.us-east-1.amazonaws.com/dev/validate-session",
+        url: VM_VALIDATE_SESSION_URL,
         method: "POST",
         body: {
           action: "validate-session",
@@ -105,7 +360,7 @@ export const fileManagerAPI = createApi({
 
     stopSession: builder.mutation({
       query: ({ instanceId, userId }) => ({
-        url: "https://hxmwrrakc6.execute-api.us-east-1.amazonaws.com/dev/stop-session",
+        url: VM_STOP_SESSION_URL,
         method: "POST",
         body: {
           action: "stop-session",
@@ -121,7 +376,7 @@ export const fileManagerAPI = createApi({
 
     extendSession: builder.mutation({
       query: ({ instanceId, userId, sessionToken }) => ({
-        url: "https://hxmwrrakc6.execute-api.us-east-1.amazonaws.com/dev/extend-session",
+        url: VM_EXTEND_SESSION_URL,
         method: "POST",
         body: {
           action: "extend-session",
@@ -138,7 +393,7 @@ export const fileManagerAPI = createApi({
 
     scheduleVM: builder.mutation({
       query: (scheduleData) => ({
-        url: `https://cufbznlyqa.execute-api.us-east-1.amazonaws.com/dev/schedules`,
+        url: VM_SCHEDULES_URL,
         method: "POST",
         body: scheduleData,
         headers: {
@@ -148,11 +403,20 @@ export const fileManagerAPI = createApi({
       invalidatesTags: ["VM"],
     }),
 
+    listHierarchy: builder.query({
+      query: ({ userId, region }) => ({
+        url: "list-hierarchy",
+        method: "GET",
+        params: {
+          userId,
+          region,
+        },
+      }),
+      providesTags: ["Hierarchy"],
+    }),
+
     // storage part
-    starFile: builder.mutation<
-      void,
-      { region: string; userId: string; fileName: string }
-    >({
+    starFile: builder.mutation({
       query: (payload) => ({
         url: "star",
         method: "POST",
@@ -160,10 +424,7 @@ export const fileManagerAPI = createApi({
       }),
       invalidatesTags: ["Files"],
     }),
-    unstarFile: builder.mutation<
-      void,
-      { region: string; userId: string; fileName: string }
-    >({
+    unstarFile: builder.mutation({
       query: (payload) => ({
         url: "unstar",
         method: "POST",
@@ -172,6 +433,39 @@ export const fileManagerAPI = createApi({
       invalidatesTags: ["Files"],
     }),
 
+    shareFiles: builder.mutation({
+      query: (body) => ({
+        url: "share-multiple",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Files"],
+    }),
+    getSharesForObject: builder.query<{ items: { shareId: string }[] }, { key: string }>({
+      query: ({ key }) => ({
+        url: "shares",
+        method: "GET",
+        params: { key },
+      }),
+    }),
+    cancelShare: builder.mutation<{ message: string }, { shareId: string }>({
+      query: ({ shareId }) => ({
+        url: `shares/${shareId}/cancel`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Files"],
+    }),
+    publicSharedList: builder.query({
+      query: ({ region, key, shareId }) => ({
+        url: "public-shared-list",
+        method: "GET",
+        params: {
+          ...(shareId ? { shareId } : {}),
+          ...(key ? { key } : {}),
+          ...(region ? { region } : {}),
+        },
+      }),
+    }),
     shareFile: builder.mutation({
       query: (body) => ({
         url: "share",
@@ -181,10 +475,10 @@ export const fileManagerAPI = createApi({
       invalidatesTags: ["Files"],
     }),
     copyFiles: builder.mutation({
-      query: (payload) => ({
+      query: (body) => ({
         url: "copy",
         method: "POST",
-        body: payload,
+        body,
       }),
       invalidatesTags: ["Files"],
     }),
@@ -195,7 +489,22 @@ export const fileManagerAPI = createApi({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Files"],
+      invalidatesTags: ["Files", "Hierarchy"],
+    }),
+    renameItem: builder.mutation({
+      query: ({ region, userId, key, fileName, folder, newName }) => ({
+        url: "rename",
+        method: "POST",
+        body: {
+          region,
+          userId,
+          key,
+          fileName,
+          folder,
+          newName,
+        },
+      }),
+      invalidatesTags: ["Files", "Hierarchy"],
     }),
     listFiles: builder.query({
       query: ({
@@ -208,6 +517,9 @@ export const fileManagerAPI = createApi({
         modified,
         folder,
         sortBy,
+        sortOrder,
+        limit,
+        page,
       }) => ({
         // search = "", token = null,
         url: "list",
@@ -222,6 +534,10 @@ export const fileManagerAPI = createApi({
           ...(modified && { modified }),
           ...(folder && { folder }),
           ...(sortBy && { sortBy }),
+          ...(sortOrder && { sortOrder }),
+          limit,
+          page,
+          // recursive,
         },
       }),
       providesTags: ["Files"],
@@ -243,6 +559,7 @@ export const fileManagerAPI = createApi({
         size,
         status,
         starred,
+        folder,
       }) => ({
         url: "upload",
         method: "POST",
@@ -254,9 +571,78 @@ export const fileManagerAPI = createApi({
           size,
           status,
           starred,
+          folder,
         },
       }),
       invalidatesTags: ["Files"],
+    }),
+    uploadComplete: builder.mutation({
+      query: ({
+        fileName,
+        fileType,
+        userId,
+        region,
+        size,
+        status,
+        starred,
+        folder,
+        key,
+      }) => ({
+        url: "upload-complete",
+        method: "POST",
+        body: {
+          fileName,
+          fileType,
+          userId,
+          region,
+          size,
+          status,
+          starred,
+          folder,
+          key,
+        },
+      }),
+      invalidatesTags: ["Files", "UserRegion"],
+    }),
+    downloadFolder: builder.query<
+      { downloadUrl: string },
+      {
+        region?: string;
+        key?: string; // for public/shared
+        shareId?: string; // for public/shared
+        userId?: string; // for private
+        folder?: string; // for private
+      }
+    >({
+      query: ({ region, key, shareId, userId, folder }) => {
+        const params: Record<string, string> = {};
+
+        if (shareId && shareId.trim() !== "") {
+          params.shareId = shareId;
+        }
+
+        if (key && key.trim() !== "") {
+          params.key = key;
+        }
+
+        if (region && region.trim() !== "") {
+          params.region = region;
+        }
+
+        if (userId && userId.trim() !== "") {
+          params.userId = userId;
+        }
+
+        if (folder && folder.trim() !== "") {
+          params.folder = folder;
+        }
+
+        return {
+          url: "download-folder",
+          method: "GET",
+          params,
+        };
+      },
     }),
     createFolder: builder.mutation({
       query: ({ region, userId, folderName }) => ({
@@ -268,7 +654,7 @@ export const fileManagerAPI = createApi({
           folderName,
         },
       }),
-      invalidatesTags: ["Files"],
+      invalidatesTags: ["Files", "Hierarchy", "UserRegion"],
     }),
     uploadToPresignedUrl: builder.mutation({
       query: ({ uploadUrl, file }) => ({
@@ -283,29 +669,58 @@ export const fileManagerAPI = createApi({
     }),
     downloadFile: builder.query<
       { downloadUrl: string },
-      { fileName: string; userId: string; region: string }
+      {
+        fileName: string;
+        userId: string;
+        region: string;
+        folder?: string;
+        key?: string;
+      }
     >({
-      query: ({ fileName, userId, region }) => ({
+      query: ({ fileName, userId, region, folder, key }) => ({
         url: "/download",
-        params: { fileName, userId, region },
+        method: "GET",
+        params: {
+          fileName,
+          userId,
+          region,
+          ...(folder && { folder }),
+          ...(key && { key }),
+        },
       }),
     }),
 
     deleteFile: builder.mutation<
       { message: string },
-      { fileName: string; userId: string; region: string }
+      {
+        fileName: string;
+        userId: string;
+        region: string;
+        folder?: string;
+        key?: string;
+      }
     >({
-      query: ({ fileName, userId, region }) => ({
+      query: ({ fileName, userId, region, folder, key }) => ({
         url: `/delete`,
         method: "DELETE",
-        params: { fileName, userId, region },
+        params: {
+          fileName,
+          userId,
+          region,
+          ...(folder && { folder }),
+          ...(key && { key }),
+        },
       }),
-      invalidatesTags: ["Files"],
+      invalidatesTags: ["Files", "Hierarchy", "UserRegion"],
     }),
 
     deleteFiles: builder.mutation<
       { message: string },
-      { region: string; userId: string; fileNames: string[] }
+      {
+        region: string;
+        userId: string;
+        fileNames: (string | { folder: string; fileName: string })[];
+      }
     >({
       query: ({ region, userId, fileNames }) => ({
         url: "/delete-multiple",
@@ -316,20 +731,72 @@ export const fileManagerAPI = createApi({
           fileNames,
         },
       }),
-      invalidatesTags: ["Files"],
+      invalidatesTags: ["Files", "Hierarchy", "UserRegion"],
+    }),
+
+    // Deduplication
+    dedupScan: builder.mutation<
+      DuplicateScanResponse,
+      { userId: string; region: string }
+    >({
+      query: ({ userId, region }) => ({
+        url: "dedup/scan",
+        method: "POST",
+        body: {
+          action: "scan",
+          userId,
+          region,
+          scope: "user",
+          minSizeBytes: 0,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    }),
+    dedupMerge: builder.mutation<
+      DuplicateMergeResponse,
+      {
+        userId: string;
+        region: string;
+        groups: {
+          primaryId: string | undefined;
+          duplicates: (string | undefined)[];
+        }[];
+        deleteFromS3?: boolean;
+      }
+    >({
+      query: ({ userId, region, groups, deleteFromS3 = true }) => ({
+        url: "dedup/merge",
+        method: "POST",
+        body: {
+          action: "merge",
+          userId,
+          region,
+          deleteFromS3,
+          groups,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
     }),
   }),
 });
 
 export const {
+  useGetRegionsQuery,
+  useGetUserRegionQuery,
   useScheduleVMMutation,
   useStopVMMutation,
   // useDeleteVMMutation,
   useStartVMMutation,
+  useRestartVMMutation, // 🔹 add this
   useLaunchVMMutation,
   useListFilesQuery,
   useListRemoteDesktopQuery,
   useUploadFileMutation,
+  useUploadCompleteMutation,
   useUploadToPresignedUrlMutation,
   useLazyDownloadFileQuery,
   useDeleteFileMutation,
@@ -339,7 +806,19 @@ export const {
   useStarFileMutation,
   useUnstarFileMutation,
   useShareFileMutation,
+  useShareFilesMutation,
+  useGetShareInfoQuery,
+  useLazyGetShareInfoQuery,
+  useLazyGetSharesForObjectQuery,
+  useGetSharesForObjectQuery,
+  useCancelShareMutation,
   useCopyFilesMutation,
   useMoveFilesMutation,
+  useRenameItemMutation,
   useGetUsageQuery,
+  useListHierarchyQuery,
+  useLazyDownloadFolderQuery,
+  usePublicSharedListQuery,
+  useDedupScanMutation,
+  useDedupMergeMutation,
 } = fileManagerAPI;

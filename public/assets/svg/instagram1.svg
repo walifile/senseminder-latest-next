@@ -1,0 +1,15 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ig_gradient" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8086F3"/>
+      <stop offset="0.5" stop-color="#4C55F8"/>
+      <stop offset="1" stop-color="#D971FF"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square -->
+  <rect x="5" y="5" width="14" height="14" rx="4" stroke="url(#ig_gradient)" stroke-width="1.6" fill="none"/>
+  <!-- Circle in center -->
+  <circle cx="12" cy="12" r="3.2" stroke="url(#ig_gradient)" stroke-width="1.6" fill="none"/>
+  <!-- Small top right dot -->
+  <circle cx="16" cy="8" r="1" fill="url(#ig_gradient)"/>
+</svg>

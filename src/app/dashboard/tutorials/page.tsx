@@ -1,90 +1,65 @@
 "use client";
 
 import React, { useState } from "react";
-import { Play, Youtube, Search } from "lucide-react";
-import { motion } from "framer-motion";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import {
   Select,
-  SelectContent,
   SelectItem,
-  SelectTrigger,
   SelectValue,
+  SelectContent,
+  SelectTrigger,
 } from "@/components/ui/select";
 
+import { motion } from "framer-motion";
+
+import GradientSearchInput from "@/components/shared/inputs/gradient-search-input";
+
+import { type Tutorial, TutorialDialog } from "./_components/tutorial-dialog";
+
 // Tutorial data
-const tutorials = [
+const tutorials: Tutorial[] = [
   {
     id: 1,
-    title: "Getting Started with SmartPC",
-    duration: "5:30",
-    description:
-      "Learn the basics of setting up and using your SmartPC cloud computer.",
-    videoUrl: "/videos/getting-started.mp4",
-    youtubeUrl: "https://youtube.com/watch?v=getting-started",
-    category: "Basics",
+    title: "Introduce Sense PC ",
+    duration: "0:56",
+    description: "Build a powerful cloud PC in minutes and access it from any browser, on any device, from anywhere—no hardware needed.",
+    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%201.mp4",
+    youtubeUrl: "https://youtube.com",
+    thumbnail: "/assets/images/gettingStartedWithSensePc.png",
+    category: "Basic",
     difficulty: "Beginner",
-    uploadDate: "2024-02-15",
-    lastUpdated: "2024-03-10",
+    uploadDate: "2025-12-25",
+    lastUpdated: "2025-12-25",
+    showCategory: true
   },
   {
     id: 2,
-    title: "Advanced Performance Optimization",
-    duration: "8:45",
-    description:
-      "Discover techniques to optimize your SmartPC for maximum performance.",
-    videoUrl: "/videos/performance.mp4",
+    title: "How Sense PC Works",
+    duration: "1:30",
+    description: "See how SensePC delivers fast performance with built-in security—plus user management, billing, support ticketing, and in-app tutorials after login.",
+    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%203.mp4",
     youtubeUrl: "https://youtube.com/watch?v=performance",
-    category: "Performance",
-    difficulty: "Advanced",
-    uploadDate: "2024-02-01",
-    lastUpdated: "2024-03-05",
+    thumbnail: "/assets/images/optimizing.jpg",
+    category: "Sense PC Overview",
+    difficulty: "Beginner",
+    uploadDate: "2025-12-25",
+    lastUpdated: "2025-12-25",
+    showCategory: true
   },
   {
     id: 3,
-    title: "Storage Management Guide",
-    duration: "6:15",
-    description: "Master the art of managing your smart storage efficiently.",
-    videoUrl: "/videos/storage.mp4",
+    title: "Introduce Sense Cloud",
+    duration: "0:50",
+    description: "Securely store, organize, preview, and share files with smart cloud storage that stays synced across all your devices.",
+    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%202.mp4",
     youtubeUrl: "https://youtube.com/watch?v=storage",
+    thumbnail: "/assets/images/storageManagement.png",
     category: "Storage",
-    difficulty: "Intermediate",
-    uploadDate: "2024-01-20",
-    lastUpdated: "2024-02-28",
-  },
-  {
-    id: 4,
-    title: "Security Best Practices",
-    duration: "7:20",
-    description: "Learn essential security measures to protect your SmartPC.",
-    videoUrl: "/videos/security.mp4",
-    youtubeUrl: "https://youtube.com/watch?v=security",
-    category: "Security",
-    difficulty: "Intermediate",
-    uploadDate: "2024-01-15",
-    lastUpdated: "2024-03-01",
-  },
-  {
-    id: 5,
-    title: "Customization and Personalization",
-    duration: "4:55",
-    description: "Customize your SmartPC environment to suit your needs.",
-    videoUrl: "/videos/customization.mp4",
-    youtubeUrl: "https://youtube.com/watch?v=customization",
-    category: "Customization",
     difficulty: "Beginner",
-    uploadDate: "2024-02-10",
-    lastUpdated: "2024-02-25",
-  },
+    uploadDate: "2025-12-25",
+    lastUpdated: "2025-12-25",
+    showCategory: true
+  }
 ];
 
 const TutorialsPage = () => {
@@ -116,54 +91,58 @@ const TutorialsPage = () => {
   ];
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex flex-col gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Video Tutorials</h1>
+    <div
+      data-testid="dashboard-tutorials-page"
+      className="rounded-3xl border border-[#8086F3] bg-white dark:bg-[rgba(255,255,255,0.03)] backdrop-blur-[32px] font-['Space_Grotesk']"
+    >
+      {/* Filters */}
+      <div className="px-7 py-8">
+        <div className="pb-5">
+          <h1 className="text-2xl font-bold leading-8">Video Tutorials</h1>
           <p className="text-muted-foreground">
-            Learn how to make the most of your SmartPC
+            Learn how to make the most of your Sense PC
           </p>
         </div>
 
-        {/* Filters */}
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search tutorials..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8"
-              />
-            </div>
+            <GradientSearchInput
+              placeholder="Search tutorials..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              name="tutorial-search"
+              id="tutorial-search"
+            />
           </div>
+
           <div className="flex gap-4">
-            <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-            >
-              <SelectTrigger className="w-[180px]">
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-[180px] font-['Space_Grotesk']" variant="pill">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="font-['Space_Grotesk']">
                 {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
+                  <SelectItem key={category} value={category} className="font-['Space_Grotesk']">
                     {category.charAt(0).toUpperCase() + category.slice(1)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+
             <Select
               value={selectedDifficulty}
               onValueChange={setSelectedDifficulty}
             >
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px] font-['Space_Grotesk']" variant="pill">
                 <SelectValue placeholder="Difficulty" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="font-['Space_Grotesk']">
                 {difficulties.map((difficulty) => (
-                  <SelectItem key={difficulty} value={difficulty}>
+                  <SelectItem
+                    key={difficulty}
+                    value={difficulty}
+                    className="font-['Space_Grotesk']"
+                  >
                     {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
                   </SelectItem>
                 ))}
@@ -171,81 +150,45 @@ const TutorialsPage = () => {
             </Select>
           </div>
         </div>
+      </div>
 
-        {/* Tutorials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="w-full h-px bg-[rgba(0,0,0,0.15)] dark:bg-[rgba(255,255,255,0.10)] rounded-full" />
+
+      {/* Tutorials Grid */}
+      <div className="px-7 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredTutorials.map((tutorial) => (
             <motion.div
               key={tutorial.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="bg-card rounded-lg overflow-hidden border hover:border-primary/50 transition-colors"
+              className="relative bg-[rgba(255,255,255,0.03)] rounded-3xl overflow-hidden border border-[#8086F3] hover:border-[#8086F3] transition-colors h-full font-['Space_Grotesk'] pb-[53px]"
             >
-              <Dialog>
-                <DialogTrigger asChild>
-                  <div className="relative cursor-pointer group">
-                    {/* Placeholder for video thumbnail */}
-                    <div className="aspect-[16/9] bg-muted flex items-center justify-center">
-                      <Play className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                    <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm px-1.5 py-0.5 rounded text-xs font-medium">
-                      {tutorial.duration}
-                    </div>
-                  </div>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl">
-                  <DialogHeader>
-                    <DialogTitle>{tutorial.title}</DialogTitle>
-                    <DialogDescription>
-                      {tutorial.description}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                    <video
-                      src={tutorial.videoUrl}
-                      controls
-                      className="w-full h-full"
-                    />
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <TutorialDialog tutorial={tutorial} />
 
-              <div className="p-3">
-                <h3 className="font-medium text-sm truncate">
+              <div className="px-4 py-5">
+                <h3 className="font-semibold text-sm md:text-lg truncate text-[#020816] dark:text-white">
                   {tutorial.title}
                 </h3>
-                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                <p className="text-base text-[#454545] dark:text-[#B9C2D5] mt-1 line-clamp-2">
                   {tutorial.description}
                 </p>
-                <div className="flex flex-col gap-2 mt-3">
-                  <div className="flex gap-1.5">
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                      {tutorial.category}
+              </div>
+
+              <div className="absolute bottom-0 left-0 right-0">
+                <div className="h-px w-full bg-[rgba(37,48,240,0.30)] dark:bg-[rgba(255,255,255,0.10)]" />
+
+                <div className="px-4 py-4">
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-[14px] text-[#454545] dark:text-[#B9C2D5]">
+                      Uploaded:{" "}
+                      {new Date(tutorial.uploadDate).toLocaleDateString()}
                     </span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary/10 text-secondary">
-                      {tutorial.difficulty}
+                    <span className="text-[14px] text-[#454545] dark:text-[#B9C2D5]">
+                      Updated:{" "}
+                      {new Date(tutorial.lastUpdated).toLocaleDateString()}
                     </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] text-muted-foreground">
-                        Uploaded:{" "}
-                        {new Date(tutorial.uploadDate).toLocaleDateString()}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">
-                        Updated:{" "}
-                        {new Date(tutorial.lastUpdated).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => window.open(tutorial.youtubeUrl, "_blank")}
-                    >
-                      <Youtube className="h-3 w-3" />
-                    </Button>
                   </div>
                 </div>
               </div>

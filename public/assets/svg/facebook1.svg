@@ -1,0 +1,14 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fb_gradient" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8086F3"/>
+      <stop offset="0.5" stop-color="#4C55F8"/>
+      <stop offset="1" stop-color="#D971FF"/>
+    </linearGradient>
+  </defs>
+  <!-- Circle background -->
+  <circle cx="12" cy="12" r="9" stroke="url(#fb_gradient)" stroke-width="1.6" fill="none"/>
+  <!-- Stylized 'f' -->
+  <path d="M12.7 8H11.2C10.3 8 9.7 8.7 9.7 9.6V11H8.7V12.8H9.7V16H11.6V12.8H13L13.3 11H11.6V9.8C11.6 9.5 11.8 9.3 12.1 9.3H13.3V8.1C13.1 8 12.9 8 12.7 8Z"
+        fill="url(#fb_gradient)"/>
+</svg>

@@ -1,0 +1,106 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { routes } from "@/constants/routes";
+
+import { Logger } from "@/lib/utils/logger";
+import { Button } from "@/components/ui/button";
+import { checkOnboarded } from "@/lib/utils/checkOnboarded";
+
+import { ArrowUpRight } from "lucide-react";
+
+import { useGetStartedNav } from "@/hooks/use-get-started";
+
+import FAQ from "./faq";
+import Hero from "./hero";
+import { MainLayout } from "./layout";
+import SensePCCost from "./sensepc-cost";
+import RentSmarter from "./rent-smarter";
+import WayWeCompute from "./way-we-compute";
+import GetStartedCTA from "./get-started-cta";
+import TutorialSection from "./tutorial-section";
+import ProductHighlights from "./product-highlights";
+import FutureOfComputing from "./future-of-computing";
+import RentSmarterProcess from "./rent-smarter-process";
+
+export default function HomePage() {
+  const onGetStarted = useGetStartedNav();
+
+  const router = useRouter();
+
+  useEffect(() => {
+    async function handleRedirect() {
+      try {
+        const onboarded = await checkOnboarded();
+        if (onboarded === false) {
+          router.replace(routes.welcome);
+        }
+      } catch (err) {
+        Logger.error("Onboarding check failed:", err);
+      }
+    }
+
+    handleRedirect();
+  }, [router]);
+  return (
+    <MainLayout>
+      <Hero
+        imageSrc="/assets/svg/hero-img-dark.svg"
+        imageWidth={600}
+        imageHeight={400}
+        imageAlt="Cloud infrastructure illustration"
+      >
+        <h1 className="font-space-grotesk font-bold text-2xl md:text-[65px] leading-[1.10] w-full md:w-[85%]">
+          <span className="text-transparent bg-clip-text bg-[linear-gradient(270deg,_#BA25F0_4.8%,_#2530F0_46.15%,_#8086F3_100%)]">
+            Your Computer,
+          </span>
+          <br />
+          <span className="text-transparent bg-clip-text bg-[linear-gradient(270deg,_#BA25F0_4.8%,_#2530F0_46.15%,_#8086F3_100%)]">
+            Now in the Cloud
+          </span>
+        </h1>
+        <p className="text-paragraph text-base md:text-2xl w-full md:w-[85%]">
+          Build a high-performing cloud computer in minutes with Sense PC. No
+          hardware. No security threat. No overpaying.
+        </p>
+      </Hero>
+      <FutureOfComputing />
+      <WayWeCompute />
+      <ProductHighlights />
+      <TutorialSection />
+      <RentSmarter />
+      {/* <TutorialSection /> */}
+      {/* <WhySettle /> */}
+      {/* <ProblemSolution />
+      <HowItWorks />
+      <FutureVision /> */}
+      {/*<ProblemSolution />*/}
+      {/*<HowItWorks />*/}
+      {/*<FutureVision />*/}
+      {/* <WhyChooseUs /> */}
+      {/* <Testimonials /> */}
+      {/* <Pricing /> */}
+      {/* <CostCalculator /> */}
+      <GetStartedCTA>
+        <h2 className="font-space-grotesk font-semibold text-2xl md:text-5xl">
+          Join The New Cloud Computing Movement
+          <br />
+        </h2>
+
+        <Button
+          data-testid="home-get-started-button"
+          size="lg"
+          className="w-full md:w-fit"
+          onClick={onGetStarted}
+        >
+          Switch to Sense PC
+          <ArrowUpRight />
+        </Button>
+      </GetStartedCTA>
+      <RentSmarterProcess />
+      <SensePCCost />
+      <FAQ />
+    </MainLayout>
+  );
+}

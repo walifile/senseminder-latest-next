@@ -1,12 +1,15 @@
-import {
-  fetchBaseQuery,
+import type { RootState } from "@/redux/store";
+import type {
   FetchArgs,
-  FetchBaseQueryError,
   BaseQueryFn,
+  FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 
-import { BASE_URL } from "./apiConfig";
-import { RootState } from "@/redux/store";
+import appConfig from "@/config/app-config";
+
+import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+
+const { BASE_URL } = appConfig;
 
 // setCredentials, logOut
 const baseQuery = fetchBaseQuery({

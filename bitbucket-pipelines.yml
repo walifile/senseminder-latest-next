@@ -1,0 +1,142 @@
+image: mcr.microsoft.com/playwright:v1.49.0-noble
+
+pipelines:
+  pull-requests:
+    '**':
+      - step:
+          name: Smoke Tests - PR to Develop
+          caches:
+            - node
+          script:
+            # Enable real-time output and verbose logging
+            - set -x
+            - export PYTHONUNBUFFERED=1
+            - export NODE_NO_WARNINGS=1
+            # Set environment variables
+            - export HTTP_USERNAME=${HTTP_USERNAME}
+            - export HTTP_PASSWORD=${HTTP_PASSWORD}
+            - export VALID_USERNAME=${VALID_USERNAME}
+            - export VALID_PASSWORD=${VALID_PASSWORD}
+            - export SHARED_USER_EMAIL=${SHARED_USER_EMAIL}
+            - export SHARED_USERNAME=${SHARED_USERNAME}
+            - export MAILISK_API_KEY=${MAILISK_API_KEY}
+            - export MAILISK_NAMESPACE=${MAILISK_NAMESPACE}
+            - export NODE_ENV=development
+#            - export BASE_URL=http://localhost:3000
+            - export BASE_URL=https://smartpc.cloud/
+
+            # Application environment variables
+            - export NEXT_PUBLIC_USER_POOL_ID=${NEXT_PUBLIC_USER_POOL_ID}
+            - export NEXT_PUBLIC_USER_POOL_CLIENT_ID=${NEXT_PUBLIC_USER_POOL_CLIENT_ID}
+            - export NEXT_PUBLIC_GOOGLE_CLIENT_ID=${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
+            - export GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+            - export APPLE_CLIENT_ID=${APPLE_CLIENT_ID}
+            - export APPLE_PRIVATE_KEY=${APPLE_PRIVATE_KEY}
+            - export NEXT_PUBLIC_AUTH_REDIRECT_URL=${NEXT_PUBLIC_AUTH_REDIRECT_URL}
+            - export NEXT_PUBLIC_OAUTH_DOMAIN=${NEXT_PUBLIC_OAUTH_DOMAIN}
+            - export NEXT_PUBLIC_STRIPE_PK=${NEXT_PUBLIC_STRIPE_PK}
+            - export NEXT_PUBLIC_IPINFO_URL=${NEXT_PUBLIC_IPINFO_URL}
+            - export NEXT_PUBLIC_IPINFO_TOKEN=${NEXT_PUBLIC_IPINFO_TOKEN}
+            - export NEXT_PUBLIC_PING_API_KEY=${NEXT_PUBLIC_PING_API_KEY}
+            - export NEXT_PUBLIC_FIRST_TIME_TOKEN_URL=${NEXT_PUBLIC_FIRST_TIME_TOKEN_URL}
+            - export NEXT_PUBLIC_PING_API_URL=${NEXT_PUBLIC_PING_API_URL}
+            - export NEXT_PUBLIC_RESIZE_API_URL=${NEXT_PUBLIC_RESIZE_API_URL}
+            - export NEXT_PUBLIC_INSTANCE_DETAILS_URL=${NEXT_PUBLIC_INSTANCE_DETAILS_URL}
+            - export NEXT_PUBLIC_WEBSOCKET_URL=${NEXT_PUBLIC_WEBSOCKET_URL}
+            - export NEXT_PUBLIC_VM_MANAGEMENT_URL=${NEXT_PUBLIC_VM_MANAGEMENT_URL}
+            - export NEXT_PUBLIC_USER_MANAGEMENT_API=${NEXT_PUBLIC_USER_MANAGEMENT_API}
+            - export NEXT_PUBLIC_SECURITY_QUESTION_API=${NEXT_PUBLIC_SECURITY_QUESTION_API}
+            - export NEXT_PUBLIC_IDLE_API_URL=${NEXT_PUBLIC_IDLE_API_URL}
+            - export NEXT_PUBLIC_IPIFY_URL=${NEXT_PUBLIC_IPIFY_URL}
+            - export NEXT_PUBLIC_CLIENT_SESSION_API=${NEXT_PUBLIC_CLIENT_SESSION_API}
+            - export NEXT_PUBLIC_PROFILE_API_URL=${NEXT_PUBLIC_PROFILE_API_URL}
+            - export NEXT_PUBLIC_SAVE_VM_SCHEDULE_URL=${NEXT_PUBLIC_SAVE_VM_SCHEDULE_URL}
+            - export NEXT_PUBLIC_NOTIFICATION_API=${NEXT_PUBLIC_NOTIFICATION_API}
+            - export NEXT_PUBLIC_NEWSLETTER_API_URL=${NEXT_PUBLIC_NEWSLETTER_API_URL}
+            - export NEXT_PUBLIC_MFA_API_URL=${NEXT_PUBLIC_MFA_API_URL}
+            - export NEXT_PUBLIC_LEGAL_DOCUMENTS_URL=${NEXT_PUBLIC_LEGAL_DOCUMENTS_URL}
+            - export NEXT_PUBLIC_BASE_API_URL=${NEXT_PUBLIC_BASE_API_URL}
+            - export NEXT_PUBLIC_ASSIGN_API_URL=${NEXT_PUBLIC_ASSIGN_API_URL}
+            - export NEXT_PUBLIC_BILLING_API_URL=${NEXT_PUBLIC_BILLING_API_URL}
+            - export NEXT_PUBLIC_CONTACT_URL=${NEXT_PUBLIC_CONTACT_URL}
+            - export NEXT_PUBLIC_ESTIMATION_URL=${NEXT_PUBLIC_ESTIMATION_URL}
+            - export NEXT_PUBLIC_FETCH_PC_URL=${NEXT_PUBLIC_FETCH_PC_URL}
+            - export NEXT_PUBLIC_VM_VALIDATE_SESSION_URL=${NEXT_PUBLIC_VM_VALIDATE_SESSION_URL}
+            - export NEXT_PUBLIC_VM_SESSION_URL=${NEXT_PUBLIC_VM_SESSION_URL}
+            - export NEXT_PUBLIC_VM_STOP_SESSION_URL=${NEXT_PUBLIC_VM_STOP_SESSION_URL}
+            - export NEXT_PUBLIC_VM_EXTEND_SESSION_URL=${NEXT_PUBLIC_VM_EXTEND_SESSION_URL}
+            - export NEXT_PUBLIC_VM_SCHEDULES_URL=${NEXT_PUBLIC_VM_SCHEDULES_URL}
+            - export NEXT_PUBLIC_SUPPORT_API_BASE=${NEXT_PUBLIC_SUPPORT_API_BASE}
+            - export NEXT_PUBLIC_FEEDBACK_API_URL=${NEXT_PUBLIC_FEEDBACK_API_URL}
+            - export NEXT_PUBLIC_PROMO_API_URL=${NEXT_PUBLIC_PROMO_API_URL}
+            - export NEXT_PUBLIC_CURRENT_ENVIRONMENT=${NEXT_PUBLIC_CURRENT_ENVIRONMENT}
+
+            # Install dependencies
+            - cd automated_tests
+            - npm ci
+            # Verify Playwright browsers are available (Docker image should have them pre-installed)
+            # Only install if missing, skip system deps to avoid apt repository issues
+            - npx playwright install chromium || echo "⚠️ Browser installation skipped (may already be installed in Docker image)"
+            
+            # Start the Next.js application in background
+            - cd ..
+#            - npm install
+#            - npm run dev &
+#            - sleep 30  # Wait for the server to start
+            
+            # Run smoke tests using TDD approach (Playwright native tests)
+            # Run specific smoke tests: "Create a new PC, Connect to the PC and Disconnect" and "I want to be able to sign up to the application"
+            # Use 'list' reporter for real-time output, plus file reporters for artifacts
+            - cd automated_tests
+            - export CI=true
+            - export FORCE_COLOR=1
+            - npx playwright test --grep "@smoke" --reporter=list,html,json,junit --project=chromium
+          artifacts:
+            - automated_tests/reports/playwright-report/**
+            - automated_tests/reports/results.json
+            - automated_tests/reports/results.xml
+            - automated_tests/test-results/**
+    
+    'develop':
+      - step:
+          name: Regression Tests - Dev to Master
+          caches:
+            - node
+          script:
+            # Enable real-time output and verbose logging
+            - set -x
+            - export PYTHONUNBUFFERED=1
+            - export NODE_NO_WARNINGS=1
+            # Set environment variables
+            - export HTTP_USERNAME=${HTTP_USERNAME}
+            - export HTTP_PASSWORD=${HTTP_PASSWORD}
+            - export VALID_USERNAME=${VALID_USERNAME}
+            - export VALID_PASSWORD=${VALID_PASSWORD}
+            - export SHARED_USER_EMAIL=${SHARED_USER_EMAIL}
+            - export SHARED_USERNAME=${SHARED_USERNAME}
+            - export MAILISK_API_KEY=${MAILISK_API_KEY}
+            - export MAILISK_NAMESPACE=${MAILISK_NAMESPACE}
+            - export NODE_ENV=development
+            - export BASE_URL=https://smartpc.cloud/
+            
+            # Install dependencies and run tests using TDD approach (Playwright native tests)
+            # Run all regression tests from automated_tests/src/tests
+            # Use 'list' reporter for real-time output, plus file reporters for artifacts
+            - cd automated_tests
+            - npm ci
+            # Verify Playwright browsers are available (Docker image should have them pre-installed)
+            # Only install if missing, skip system deps to avoid apt repository issues
+            - npx playwright install chromium || echo "⚠️ Browser installation skipped (may already be installed in Docker image)"
+            - export CI=true
+            - export FORCE_COLOR=1
+            # List tests first to verify test discovery
+            - echo "🔍 Discovering tests..."
+            - npx playwright test --list --project=chromium || echo "Test discovery completed"
+            # Run all tests
+            - echo "🚀 Running all tests..."
+            - npx playwright test --grep "@smoke" --reporter=list,html,json,junit --project=chromium
+          artifacts:
+            - automated_tests/reports/playwright-report/**
+            - automated_tests/reports/results.json
+            - automated_tests/reports/results.xml
+            - automated_tests/test-results/**

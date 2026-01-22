@@ -1,20 +1,23 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
+
+import { createSlice } from "@reduxjs/toolkit";
 
 interface LaunchVMResponse {
   sessionId: string;
   sessionToken: string;
   dnsName: string;
   authToken?: string;
+  pcName?: string;
 }
 
 interface DcvState {
-  launchVMResponse: LaunchVMResponse | null; // Now it uses the 'LaunchVMResponse' type
+  instances: Record<string, LaunchVMResponse>;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: DcvState = {
-  launchVMResponse: null,
+  instances: {},
   loading: false,
   error: null,
 };
@@ -25,9 +28,22 @@ const dcvSlice = createSlice({
   reducers: {
     setLaunchVMResponse: (
       state,
-      action: PayloadAction<LaunchVMResponse | null>
+      action: PayloadAction<{
+        sessionKey: string;
+        response: LaunchVMResponse;
+        pcName?: string;
+      }>
     ) => {
-      state.launchVMResponse = action.payload;
+      const { sessionKey, response, pcName } = action.payload;
+
+      state.instances[sessionKey] = {
+        ...state.instances[sessionKey],
+        ...response,
+        ...(pcName ? { pcName } : {}),
+      };
+    },
+    removeLaunchVMResponse: (state, action: PayloadAction<string>) => {
+      delete state.instances[action.payload];
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
@@ -38,11 +54,24 @@ const dcvSlice = createSlice({
   },
 });
 
-export const { setLaunchVMResponse, setLoading, setError } = dcvSlice.actions;
+export const {
+  setLaunchVMResponse,
+  removeLaunchVMResponse,
+  setLoading,
+  setError,
+} = dcvSlice.actions;
 
-export const selectLaunchVMResponse = (state: { dcv: DcvState }) =>
-  state.dcv.launchVMResponse;
+// Selectors
+export const selectLaunchVMResponse = (
+  state: { dcv: DcvState },
+  sessionKey: string
+) => state.dcv.instances[sessionKey];
+
+export const selectAllLaunchVMResponses = (state: { dcv: DcvState }) =>
+  state.dcv.instances;
+
 export const selectLoading = (state: { dcv: DcvState }) => state.dcv.loading;
+
 export const selectError = (state: { dcv: DcvState }) => state.dcv.error;
 
 export default dcvSlice.reducer;

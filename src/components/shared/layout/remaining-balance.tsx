@@ -1,17 +1,19 @@
 import React from "react";
 import Link from "next/link";
-import { Wallet } from "lucide-react";
+
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
+  AlertDialogTitle,
   AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialogContent,
+  AlertDialogDescription,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+
+import { Wallet } from "lucide-react";
 
 interface RemainingBalanceProps {
   balance: number;
@@ -61,7 +63,7 @@ const RemainingBalance = ({ balance }: RemainingBalanceProps) => {
             <AlertDialogDescription>
               Your balance is running low (${balance.toFixed(2)}). To ensure
               uninterrupted service, please recharge your account soon. Your
-              SmartPCs may be suspended if the balance reaches $0.
+              Sense PCs may be suspended if the balance reaches $0.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

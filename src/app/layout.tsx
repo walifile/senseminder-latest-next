@@ -1,32 +1,37 @@
-import Navbar from "@/components/shared/layout/navbar";
 import "../styles/globals.css";
-import { metadata } from "./metadata";
-import { ThemeWrapper } from "@/components/shared/layout/theme-wrapper";
-import Footer from "@/components/shared/layout/footer";
-import { ReduxProvider } from "@/redux/provider";
-import { AmplifyProvider } from "@/providers/AmplifyProvider";
 
-export { metadata };
+import type { ReactNode } from "react";
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+import { appMetadata } from "@/app/seo/metadata";
+import AppShell from "@/app/_components/app-shell";
+import { Inter, Poppins, Space_Grotesk } from "next/font/google";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
+});
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  variable: "--font-poppins",
+  weight: ["400", "500", "600", "700"],
+});
+
+export const metadata = appMetadata;
+
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body>
-        <ReduxProvider>
-          <AmplifyProvider>
-            <ThemeWrapper>
-              <div className="flex min-h-screen flex-col">
-                <Navbar />
-                {children}
-                <Footer />
-              </div>
-            </ThemeWrapper>
-          </AmplifyProvider>
-        </ReduxProvider>
+    <html
+      lang="en"
+      className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable}  overflow-x-hidden md:overflow-x-visible`}
+    >
+      <body suppressHydrationWarning className="font-inter">
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

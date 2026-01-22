@@ -1,0 +1,101 @@
+{
+  "application": {
+    "baseURL": "https://smartpc.cloud/",
+    "timeout": 120000
+  },
+  "browser": {
+    "headless": true,
+    "slowMo": 1000
+  },
+  "reporting": {
+    "path": "./reports",
+    "screenshotOnFailure": true,
+    "videoOnFailure": true
+  },
+  "testScenarios": {
+    "login": {
+      "invalidUsername": "invalid_username@gmail.com",
+      "invalidPassword": "invalid@password1234"
+    },
+    "payment": {
+      "cardHolderName": "Test User",
+      "cardNumber": "4242424242424242",
+      "cvv": "123",
+      "expiry": "12/28",
+      "zipCode": "44114",
+      "cardEnding": "4242",
+      "cardType": "VISA"
+    },
+    "sensestorage": {
+      "maxFileSize": 10485760,
+      "allowedFormats": [".pdf", ".doc", ".docx", ".txt", ".jpg", ".jpeg", ".png", ".gif"],
+      "testFiles": {
+        "singleFile": "test-document.pdf",
+        "multipleFiles": ["document1.pdf", "document2.docx", "image1.jpg", "image2.png"],
+        "bulkFiles": ["file1.pdf", "file2.docx", "file3.jpg"],
+        "sharedFile": "shared-document.pdf",
+        "confidentialFile": "confidential-document.pdf"
+      },
+      "regions": ["North Virginia", "Europe", "Asia Pacific"],
+      "defaultRegion": "North Virginia",
+      "sharePermissions": ["Read Only", "Read and Download", "Full Access"],
+      "shareExpiration": {
+        "1day": 1,
+        "7days": 7,
+        "30days": 30
+      },
+      "testEmails": {
+        "validEmail": "testuser@example.com",
+        "colleagueEmail": "colleague@example.com"
+      }
+    }
+  },
+  "api": {
+    "baseURL": "https://lul5oxdwic.execute-api.us-east-1.amazonaws.com/dev",
+    "billingBaseURL": "https://558xjerom8.execute-api.us-east-1.amazonaws.com/prod",
+    "timeout": 30000,
+    "authToken": "eyJraWQiOiJub2xBNHIxV0N0Nm9OUloxZlBpNUNDaDNoaFpqb2RwRjlvRVwveVAyaVUwcz0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJjNDM4NDRhOC0wMDkxLTcwYjMtM2MwMS02NTIyNzIzM2VmMmYiLCJjb2duaXRvOmdyb3VwcyI6WyJvd25lciJdLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLnVzLWVhc3QtMS5hbWF6b25hd3MuY29tXC91cy1lYXN0LTFfdmdCQ0ttTDBjIiwiY29nbml0bzp1c2VybmFtZSI6ImM0Mzg0NGE4LTAwOTEtNzBiMy0zYzAxLTY1MjI3MjMzZWYyZiIsIm9yaWdpbl9qdGkiOiJhYzZlMmZjNC1hNjE4LTQ4OTQtYjQ1NC04MWI4M2YyMzFkODIiLCJhdWQiOiIybGtuajkwcmtqbXRrY25waDA2cTZyOTN1ZyIsImV2ZW50X2lkIjoiMGIzYjdjZWMtYzUzZC00OTJhLTlkZjMtMTg5ZDBmNmNlNjYyIiwiY3VzdG9tOmZpcnN0TmFtZSI6ImtleXVyIiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE3NTY4MjA1NjYsImN1c3RvbTphY2NlcHRlZExlZ2FsIjoidHJ1ZSIsImV4cCI6MTc1NzI0NDUxNiwiY3VzdG9tOnJvbGUiOiJvd25lciIsImlhdCI6MTc1NzI0MDkxNiwianRpIjoiZmU4YzA0YTQtMzdjNi00OWVmLThjYzItODhmNWVkMWNkMzdjIiwiZW1haWwiOiJrZXl1cnRlc3RAeW9wbWFpbC5jb20ifQ.kZgZbtnbbaI_lASq-6CH5L2ESpJ-U3wYoExKGp0n8h814KKXDe0YUR2E-pjxHhDo8EH6LnVwCVL_z9eimpAXI2hYJqdxp_OxW5gEKHVpwNruOu5tx3Jl8TcME_X9LlVd_UtDmsAdSca7Utn0NRFG4PzGPX0rkqihgVgnQW-jpmGFIa7NQkldOsZTr5XtviIeyDz4Exwhy_8RjGBNE523SAjszu1qE8HGOv6jLZS8tuM9k24Ez0rAAvvMgQOJmtTeH5w8uLY1sa8zTTAfDC-r1MnDXbdWpzroC_CWqo9K1Y8LSyZn-bmQwRhC3tbTbJonbhxaC1_ZsWViZhp8i5rVCA",
+    "endpoints": {
+      "createPC": "/instance",
+      "billing": {
+        "paymentMethods": "/billing/payment-methods",
+        "setDefaultCard": "/billing/set-default-card",
+        "recharge": "/billing/recharge",
+        "refundRequests": "/billing/refund-requests",
+        "processRefunds": "/billing/process-refunds"
+      },
+      "storage": {
+        "upload": "/storage/upload",
+        "listFiles": "/storage/files",
+        "deleteFile": "/storage/files",
+        "getFileInfo": "/storage/files"
+      }
+    },
+    "configurations": {
+      "basic": {
+        "configId": "Basic_win11_2core_4gbRam",
+        "region": "us-east-1",
+        "storageSize": 120,
+        "billingPlan": "hourly"
+      },
+      "custom": {
+        "configId": "Basic_win11_2core_4gbRam",
+        "region": "us-east-1",
+        "storageSize": 240,
+        "billingPlan": "hourly"
+      }
+    },
+    "billing": {
+      "testUserId": "c43844a8-0091-70b3-3c01-65227233ef2f",
+      "testPaymentMethodId": "pm_1RY9EHD32zdn0OdIm6Ze1Trj",
+      "testPaymentIntentId": "pi_3RYSP5D32zdn0OdI1WbRll9t",
+      "testAmounts": {
+        "recharge": "200.50",
+        "refund": "100.50"
+      },
+      "testReasons": {
+        "refund": "Paid by mistake"
+      }
+    }
+  }
+}

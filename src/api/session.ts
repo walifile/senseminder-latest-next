@@ -1,0 +1,189 @@
+import appConfig from "@/config/app-config";
+
+import { Logger } from "@/lib/utils/logger";
+
+import { fetchAuthSession } from "aws-amplify/auth";
+
+import { UAParser } from "ua-parser-js";
+
+export interface SmartPCSession {
+  sessionId: string;
+  deviceName?: string;
+  ip?: string;
+  lastSeen: string;
+  occupied?: boolean;
+  location?: {
+    city?: string;
+    region?: string;
+    country?: string;
+  };
+  isCurrentSession?: boolean;
+  locationDisplay?: string;
+}
+
+const { IPIFY_URL, CLIENT_SESSION_API } = appConfig;
+
+export const updateSessionHeartbeat = async () => {
+  try {
+    const sessionId = localStorage.getItem("smartpc-session-id");
+    if (!sessionId) {
+      Logger.warn("No sessionId in localStorage. Skipping heartbeat.");
+      return;
+    }
+
+    const { idToken } = (await fetchAuthSession()).tokens ?? {};
+    if (!idToken) {
+      Logger.warn("No ID token found.");
+      return;
+    }
+
+    const ip = await fetch(IPIFY_URL)
+      .then((res) => res.json())
+      .then((data) => data.ip)
+      .catch(() => "unknown");
+
+    const parser = new UAParser();
+    const result = parser.getResult();
+    const deviceName = `${result.browser.name} on ${result.os.name}`;
+
+    const res = await fetch(CLIENT_SESSION_API, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${idToken.toString()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        mode: "heartbeat",
+        sessionId,
+        ip,
+        deviceName,
+      }),
+    });
+
+    const rawText = await res.text();
+    let parsed: { message?: string; code?: string } | null = null;
+
+    try {
+      parsed = rawText ? JSON.parse(rawText) : null;
+    } catch {
+      // ignore JSON parse error, rawText will still be logged
+    }
+
+    // Hard HTTP error (500/401/etc.)
+    if (!res.ok) {
+      Logger.warn("Failed to update heartbeat:", parsed ?? rawText ?? res.status);
+      return;
+    }
+
+    // Expected business-state: session not active / not claimed yet
+    if (parsed?.code === "SESSION_NOT_ACTIVE") {
+      Logger.log(
+        "Heartbeat skipped: session is not active or not claimed yet.",
+        parsed
+      );
+      return;
+    }
+
+    // Normal success
+    Logger.log("Heartbeat updated for session:", sessionId);
+  } catch (err) {
+    Logger.error("Heartbeat error:", err);
+  }
+};
+
+export const claimSessionIfAvailable = async () => {
+  try {
+    const { idToken } = (await fetchAuthSession()).tokens ?? {};
+    if (!idToken) {
+      Logger.warn("No ID token available. User might be logged out.");
+      return;
+    }
+
+    const prevSessionId = localStorage.getItem("smartpc-session-id");
+
+    const ip = await fetch(IPIFY_URL)
+      .then((res) => res.json())
+      .then((data) => data.ip)
+      .catch(() => "unknown");
+
+    const parser = new UAParser();
+    const result = parser.getResult();
+    const deviceName = `${result.browser.name} on ${result.os.name}`;
+
+    const response = await fetch(CLIENT_SESSION_API, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${idToken.toString()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        mode: "claim",
+        ip,
+        deviceName,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.sessionId) {
+      const newSessionId = data.sessionId;
+
+      if (prevSessionId && prevSessionId !== newSessionId) {
+        Logger.log("⚠️ Replacing old session ID:", prevSessionId);
+        // Optionally invalidate old session by calling another API
+        // await invalidateOldSession(prevSessionId, idToken);
+      }
+
+      localStorage.setItem("smartpc-session-id", newSessionId);
+      Logger.log("Session claimed:", newSessionId);
+    } else {
+      Logger.warn("No unclaimed session available:", data.message || data);
+    }
+  } catch (err) {
+    Logger.error("Failed to claim session:", err);
+  }
+};
+
+export const fetchActiveSessions = async (): Promise<SmartPCSession[]> => {
+  try {
+    const { idToken } = (await fetchAuthSession()).tokens ?? {};
+    if (!idToken) throw new Error("No ID token found");
+
+    const res = await fetch(CLIENT_SESSION_API, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${idToken.toString()}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) throw new Error(await res.text());
+    const raw = await res.json();
+
+    const currentId = localStorage.getItem("smartpc-session-id");
+
+    return (raw as SmartPCSession[]).map((s) => {
+      const location = s.location || {};
+      const locationDisplay =
+        location.city || location.region || location.country
+          ? `${location.city || "?"}, ${
+              location.country || location.region || "?"
+            }`
+          : "Unknown";
+
+      return {
+        sessionId: s.sessionId,
+        deviceName: s.deviceName || "Unknown Device",
+        ip: s.ip || "N/A",
+        lastSeen: new Date(s.lastSeen).toLocaleString(),
+        location,
+        locationDisplay,
+        occupied: s.occupied,
+        isCurrentSession: s.sessionId === currentId,
+      };
+    });
+  } catch (err) {
+    Logger.error("Failed to fetch sessions:", err);
+    return [];
+  }
+};

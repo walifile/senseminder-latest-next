@@ -1,6 +1,8 @@
+import type { ToastProps, ToastActionElement } from "@/components/ui/toast";
+
 import * as React from "react";
 
-import type { ToastActionElement, ToastProps } from "@/components/ui/toast";
+import { Logger } from "@/lib/utils/logger";
 
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
@@ -12,14 +14,6 @@ type ToasterToast = ToastProps & {
   action?: ToastActionElement;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const actionTypes = {
-  ADD_TOAST: "ADD_TOAST",
-  UPDATE_TOAST: "UPDATE_TOAST",
-  DISMISS_TOAST: "DISMISS_TOAST",
-  REMOVE_TOAST: "REMOVE_TOAST",
-} as const;
-
 let count = 0;
 
 function genId() {
@@ -28,7 +22,12 @@ function genId() {
   return `${timestamp}-${count}`;
 }
 
-type ActionType = typeof actionTypes;
+type ActionType = {
+  ADD_TOAST: "ADD_TOAST";
+  UPDATE_TOAST: "UPDATE_TOAST";
+  DISMISS_TOAST: "DISMISS_TOAST";
+  REMOVE_TOAST: "REMOVE_TOAST";
+};
 
 type Action =
   | {
@@ -64,7 +63,7 @@ const addToRemoveQueue = (toastId: string) => {
     toastTimeouts.delete(toastId);
     dispatch({
       type: "REMOVE_TOAST",
-      toastId: toastId,
+      toastId,
     });
   }, TOAST_REMOVE_DELAY);
 
@@ -126,6 +125,8 @@ export const reducer = (state: State, action: Action): State => {
         ...state,
         toasts: state.toasts.filter((t) => t.id !== action.toastId),
       };
+    default:
+      return state;
   }
 };
 
@@ -139,7 +140,7 @@ function dispatch(action: Action) {
     try {
       listener(memoryState);
     } catch (error) {
-      console.error("Error in toast listener:", error);
+      Logger.error("Error in toast listener:", error);
     }
   });
 }
@@ -169,7 +170,7 @@ function toast({ ...props }: Toast) {
   });
 
   return {
-    id: id,
+    id,
     dismiss,
     update,
   };
@@ -196,4 +197,4 @@ function useToast() {
   };
 }
 
-export { useToast, toast };
+export { toast, useToast };

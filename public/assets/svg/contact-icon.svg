@@ -1,0 +1,16 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="contact_gradient" x1="3" y1="4" x2="21" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8086F3"/>
+      <stop offset="0.5" stop-color="#4C55F8"/>
+      <stop offset="1" stop-color="#D971FF"/>
+    </linearGradient>
+  </defs>
+  <!-- Chat bubble -->
+  <path d="M5 6.5C5 5.12 6.12 4 7.5 4H16.5C17.88 4 19 5.12 19 6.5V11.5C19 12.88 17.88 14 16.5 14H10.5L7 17V11.5V6.5Z" 
+        stroke="url(#contact_gradient)" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+  <!-- Dots -->
+  <circle cx="9" cy="9.2" r="0.8" fill="#8086F3"/>
+  <circle cx="12" cy="9.2" r="0.8" fill="#9C05BF"/>
+  <circle cx="15" cy="9.2" r="0.8" fill="#4C55F8"/>
+</svg>

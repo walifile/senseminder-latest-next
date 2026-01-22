@@ -1,0 +1,16 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="in_gradient" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8086F3"/>
+      <stop offset="0.5" stop-color="#4C55F8"/>
+      <stop offset="1" stop-color="#D971FF"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square -->
+  <rect x="4.5" y="4.5" width="15" height="15" rx="2.5" stroke="url(#in_gradient)" stroke-width="1.6" fill="none"/>
+  <!-- 'in' letters -->
+  <rect x="7.2" y="10.2" width="1.8" height="6" fill="url(#in_gradient)" rx="0.4"/>
+  <circle cx="8.1" cy="8.1" r="1.1" fill="url(#in_gradient)"/>
+  <path d="M12.2 10.2C11.1 10.2 10.3 11 10.3 12.3V16.2H12.1V12.7C12.1 12.1 12.5 11.7 13.1 11.7C13.7 11.7 14.1 12.1 14.1 12.7V16.2H15.9V12.1C15.9 10.8 15.1 10.2 14 10.2C13.3 10.2 12.7 10.5 12.3 11"
+        fill="url(#in_gradient)"/>
+</svg>

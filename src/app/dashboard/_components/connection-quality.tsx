@@ -1,6 +1,8 @@
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+
 import { Progress } from "@/components/ui/progress";
+import { Card, CardContent } from "@/components/ui/card";
+
 import { Wifi, WifiOff } from "lucide-react";
 
 type ConnectionQualityProps = {
@@ -66,7 +68,10 @@ const ConnectionQuality: React.FC<ConnectionQualityProps> = ({
   };
 
   return (
-    <Card className="bg-card border-border">
+    <Card
+      data-testid="dashboard-connection-quality"
+      className="bg-card border-border"
+    >
       <CardContent className="pt-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">

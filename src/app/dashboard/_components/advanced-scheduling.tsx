@@ -1,17 +1,21 @@
 import React, { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
+
+import { Logger } from "@/lib/utils/logger";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Clock, Plus, Trash2, AlarmClock, Power, PowerOff } from "lucide-react";
+import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Card,
+  CardTitle,
+  CardHeader,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
+
+import { Plus, Clock, Power, Trash2, PowerOff, AlarmClock } from "lucide-react";
+
 import { useToast } from "@/hooks/use-toast";
 
 type ScheduleItem = {
@@ -161,7 +165,7 @@ const AdvancedScheduling = () => {
   };
 
   return (
-    <Card>
+    <Card data-testid="dashboard-advanced-scheduling">
       <CardHeader>
         <CardTitle className="text-lg">Advanced Scheduling</CardTitle>
         <CardDescription>
@@ -213,7 +217,7 @@ const AdvancedScheduling = () => {
                         <span>
                           {Object.entries(schedule.days)
                             .filter(([key, value]) => {
-                              console.log(key);
+                              Logger.log(key);
                               return value;
                             })
                             .map(([day]) => day.substring(0, 3))

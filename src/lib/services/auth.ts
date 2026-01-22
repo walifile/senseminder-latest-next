@@ -1,30 +1,51 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { store } from "@/redux/store";
+import {
+  setUser,
+  clearAuth,
+  setLoading,
+  setTempUser,
+} from "@/redux/slices/auth/auth-slice";
+
+import { Logger } from "@/lib/utils/logger";
+
 import {
   signUp,
-  confirmSignUp,
   signIn,
   signOut,
+  confirmSignUp,
+  resetPassword,
+  getCurrentUser,
   fetchAuthSession,
   resendSignUpCode,
+  signInWithRedirect,
   fetchUserAttributes,
   confirmResetPassword,
-  resetPassword,
-  signInWithRedirect,
-  getCurrentUser,
 } from "aws-amplify/auth";
-import { store } from "@/redux/store";
-import { setUser, clearAuth, setLoading } from "@/redux/slices/auth-slice";
-import { deleteCookie } from "cookies-next";
+
+import { getErrorMessage } from "../utils";
 
 interface SignUpFormData {
   email: string;
   password: string;
   firstName?: string;
+  acceptedLegal?: boolean;
   // lastName: string;
   // country: string;
   // cellphone?: string;
   // organization?: string;
 }
+
+// const shouldPreferPrivateSession = () => {
+//   if (typeof navigator === "undefined") {
+//     return false;
+//   }
+
+//   const ua = navigator.userAgent || "";
+//   const isIOSDevice = /iPad|iPhone|iPod/.test(ua);
+//   const isIPadOS = ua.includes("Mac") && navigator.maxTouchPoints > 1;
+
+//   return isIOSDevice || isIPadOS;
+// };
 
 export const handleSignUp = async (formData: SignUpFormData) => {
   try {
@@ -42,16 +63,17 @@ export const handleSignUp = async (formData: SignUpFormData) => {
           // phone_number: formData.cellphone,
           // 'custom:organization': formData.organization || 'N/A',
           "custom:role": "user",
+          "custom:acceptedLegal": formData.acceptedLegal ? "true" : "false",
         },
       },
     });
 
     store.dispatch(setLoading(false));
     return { success: true, data: response };
-  } catch (error: any) {
+  } catch (error) {
     store.dispatch(setLoading(false));
-    console.log(error);
-    return { success: false, error: error.message };
+    Logger.log(error);
+    return { success: false, error: getErrorMessage(error) };
   }
 };
 
@@ -66,9 +88,9 @@ export const handleConfirmSignUp = async (email: string, otp: string) => {
 
     store.dispatch(setLoading(false));
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     store.dispatch(setLoading(false));
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 };
 
@@ -78,9 +100,9 @@ export const handleResendOtp = async (email: string) => {
     await resendSignUpCode({ username: email });
     store.dispatch(setLoading(false));
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     store.dispatch(setLoading(false));
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 };
 
@@ -97,6 +119,7 @@ export const getUserAttributes = async () => {
       // organization: attributes['custom:organization'] || '',
       role: attributes["custom:role"] || "user",
       id: attributes["sub"] || "",
+      ownerid: attributes["custom:ownerid"] || attributes["ownerid"] || "",
       // cellPhone: attributes.phone_number || '',
       // country: attributes['custom:country'] || ''
     };
@@ -106,7 +129,7 @@ export const getUserAttributes = async () => {
       token: jwt,
     };
   } catch (error) {
-    console.error("Error getting user attributes:", error);
+    Logger.error("Error getting user attributes:", error);
     return null;
   }
 };
@@ -114,7 +137,7 @@ export const getUserAttributes = async () => {
 // Update handlePostAuthentication function
 const handlePostAuthentication = async () => {
   const userInfo = await getUserAttributes();
-  console.log("userInfo", userInfo);
+  Logger.log("userInfo", userInfo);
   if (userInfo) {
     store.dispatch(
       setUser({
@@ -137,10 +160,14 @@ export const handleSignIn = async (email: string, password: string) => {
     // Sign in
     const signInResponse = await signIn({
       username: email,
-      password: password,
+      password,
     });
+    Logger.log(
+      "signInResponse from Cognito:",
+      JSON.stringify(signInResponse, null, 2)
+    );
 
-    // console.log("sign in response", signInResponse);
+    // Logger.log("sign in response", signInResponse);
 
     // Check if user needs to confirm signup
     if (signInResponse.nextStep?.signInStep === "CONFIRM_SIGN_UP") {
@@ -156,12 +183,89 @@ export const handleSignIn = async (email: string, password: string) => {
         requiresOTP: true,
       };
     }
+    // ADD THIS:
+    // if (signInResponse.nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED") {
+    //   // Save the user for later password completion
+    //   store.dispatch(setTempUser(signInResponse));
+    //   store.dispatch(setLoading(false));
+    //   return { success: false, requiresNewPassword: true };
+    // }
+    if (
+      signInResponse.nextStep?.signInStep ===
+      "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED"
+    ) {
+      store.dispatch(setTempUser(signInResponse)); // save temporary user to Redux
+      store.dispatch(setLoading(false));
+      return { success: false, requiresNewPassword: true };
+    }
+
+    if (
+      signInResponse.nextStep?.signInStep ===
+      "CONTINUE_SIGN_IN_WITH_MFA_SELECTION"
+    ) {
+      const step = signInResponse.nextStep as {
+        preferredMfaSetting?: string | undefined;
+        allowedMFATypes?: string[] | undefined;
+      };
+
+      // Determine preferred MFA method
+      const preferredMfa = step.preferredMfaSetting;
+      const availableMfas = step.allowedMFATypes || [];
+
+      store.dispatch(setTempUser(signInResponse));
+      sessionStorage.setItem("tempUserMFA", JSON.stringify(signInResponse));
+      sessionStorage.setItem("mfaOptions", JSON.stringify(availableMfas));
+      sessionStorage.setItem("mfaEmail", email);
+
+      if (preferredMfa && availableMfas.includes(preferredMfa)) {
+        if (preferredMfa === "TOTP") {
+          return { success: false, mfaTotp: true };
+        } else if (preferredMfa === "EMAIL") {
+          return { success: false, mfaRequired: true };
+        }
+      }
+
+      return {
+        success: false,
+        chooseMFA: true,
+        mfaOptions: availableMfas,
+        signInResult: signInResponse,
+      };
+    }
+
+    // Case: MFA via Email Code
+    if (
+      signInResponse.nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_EMAIL_CODE"
+    ) {
+      sessionStorage.setItem("tempUserMFA", JSON.stringify(signInResponse));
+      store.dispatch(setLoading(false));
+      return {
+        success: false,
+        mfaRequired: true,
+        delivery: signInResponse.nextStep.codeDeliveryDetails,
+      };
+    }
+
+    // Case: MFA via TOTP App
+    if (
+      signInResponse.nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_TOTP_CODE"
+    ) {
+      store.dispatch(setTempUser(signInResponse)); // Save session
+      sessionStorage.setItem("tempUserMFA", JSON.stringify(signInResponse));
+      sessionStorage.setItem("mfaEmail", email);
+
+      store.dispatch(setLoading(false));
+      return {
+        success: false,
+        mfaTotp: true,
+      };
+    }
 
     return await handlePostAuthentication();
-  } catch (error: any) {
-    console.log("sign in error", error.message);
+  } catch (error) {
+    Logger.log("sign in error", getErrorMessage(error));
     store.dispatch(setLoading(false));
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 };
 
@@ -205,9 +309,9 @@ export const handleAuthRedirect = async () => {
     }
 
     return { success: false, error: "Failed to get user information" };
-  } catch (error: any) {
-    console.log("Auth redirect error:", error);
-    return { success: false, error: error.message };
+  } catch (error) {
+    Logger.log("Auth redirect error:", error);
+    return { success: false, error: getErrorMessage(error) };
   } finally {
     store.dispatch(setLoading(false));
   }
@@ -218,12 +322,18 @@ export const handleGoogleSignUp = async () => {
     store.dispatch(setLoading(true));
 
     // Sign up with Google
-    await signInWithRedirect({ provider: "Google" });
+    // const redirectOptions = shouldPreferPrivateSession()
+    //   ? { preferPrivateSession: true }
+    //   : undefined;
+    await signInWithRedirect({
+      provider: "Google",
+      // options: { preferPrivateSession: true },
+    });
 
     return { success: true };
-  } catch (error: any) {
-    console.log("Google sign up error:", error);
-    return { success: false, error: error.message };
+  } catch (error) {
+    Logger.log("Google sign up error:", error);
+    return { success: false, error: getErrorMessage(error) };
   } finally {
     store.dispatch(setLoading(false));
   }
@@ -243,9 +353,9 @@ export const handleAppleSignUp = async () => {
     }
 
     return { success: false, error: "Failed to get user information" };
-  } catch (error: any) {
-    console.log("Apple sign up error:", error);
-    return { success: false, error: error.message };
+  } catch (error) {
+    Logger.log("Apple sign up error:", error);
+    return { success: false, error: getErrorMessage(error) };
   } finally {
     store.dispatch(setLoading(false));
   }
@@ -255,27 +365,68 @@ export const handleSignOut = async () => {
   try {
     store.dispatch(setLoading(true));
     await signOut();
-    deleteCookie("auth.state");
     store.dispatch(clearAuth());
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     store.dispatch(setLoading(false));
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 };
+
+// export const handleResetPassword = async (email: string) => {
+//   try {
+//     store.dispatch(setLoading(true));
+//     await resetPassword({
+//       username: email,
+//     });
+//     store.dispatch(setLoading(false));
+//     return { success: true };
+//   } catch (error: any) {
+//     store.dispatch(setLoading(false));
+//     Logger.log(error);
+//     return { success: false, error: error.message };
+//   }
+// };
 
 export const handleResetPassword = async (email: string) => {
   try {
     store.dispatch(setLoading(true));
-    await resetPassword({
-      username: email,
-    });
+    await resetPassword({ username: email });
     store.dispatch(setLoading(false));
     return { success: true };
-  } catch (error: any) {
+  } catch (err) {
     store.dispatch(setLoading(false));
-    console.log(error);
-    return { success: false, error: error.message };
+    const error = err as Error;
+
+    Logger.error("Cognito resetPassword error:", error);
+
+    // Special case: MFA (TOTP) is enabled and user has no verified email/phone
+    if (
+      error.name === "InvalidParameterException" &&
+      error.message.includes("no registered/verified")
+    ) {
+      return {
+        success: false,
+        error:
+          "Password reset is blocked because your account has MFA enabled and no verified email. Please contact support.",
+        code: "MFA_BLOCKED_RESET",
+      };
+    }
+
+    // Other known cases
+    if (error.name === "UserNotFoundException") {
+      return {
+        success: false,
+        error: "No user found with this email.",
+        code: "USER_NOT_FOUND",
+      };
+    }
+
+    // default fallback
+    return {
+      success: false,
+      error: error.message || "Unknown error occurred during password reset.",
+    };
   }
 };
 
@@ -289,14 +440,14 @@ export const handleConfirmResetPassword = async (
     await confirmResetPassword({
       username: email,
       confirmationCode: code,
-      newPassword: newPassword,
+      newPassword,
     });
     store.dispatch(setLoading(false));
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     store.dispatch(setLoading(false));
-    console.log(error);
-    return { success: false, error: error.message };
+    Logger.log(error);
+    return { success: false, error: getErrorMessage(error) };
   }
 };
 
@@ -306,7 +457,9 @@ export const getCurrentSession = async () => {
     const session = await fetchAuthSession();
     return session.tokens?.idToken?.toString();
   } catch (error) {
-    console.log(error);
+    Logger.log(error);
     return null;
   }
 };
+
+export { handlePostAuthentication };

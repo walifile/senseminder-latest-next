@@ -1,30 +1,34 @@
+
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
+import {
+  InputOTP,
+  InputOTPSlot,
+  InputOTPGroup,
+} from "@/components/ui/input-otp";
+import {
+  Form,
+  FormItem,
+  FormField,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  FormDescription,
+} from "@/components/ui/form";
+
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
 import { Loader2 } from "lucide-react";
 
-import { handleConfirmSignUp, handleResendOtp } from "@/lib/services/auth";
 import { useToast } from "@/hooks/use-toast";
+
+import { handleResendOtp, handleConfirmSignUp } from "@/lib/services/auth";
 
 const formSchema = z.object({
   pin: z
@@ -68,8 +72,11 @@ export default function VerifyOtp() {
       if (response.success) {
         toast({
           title: "Success",
-          description:
-            "Your email has been verified successfully. You can now sign in.",
+          description: (
+            <span data-testid="signup-verify-otp-success-message">
+              Your email has been verified successfully. You can now sign in.
+            </span>
+          ),
         });
         sessionStorage.removeItem("verificationEmail");
         router.push("/auth");
@@ -138,90 +145,102 @@ export default function VerifyOtp() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">
-          Verify Your Email
-        </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          We've sent a 6-digit code to your email. Enter it below.
-        </p>
+    <div className="relative min-h-screen w-full">
+      {/* Dark overlay over the auth background */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] z-0" />
+
+      {/* Centered dialog */}
+      <div className="relative z-10 flex min-h-screen items-center justify-center px-4">
+        <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
+          {/* Header */}
+          <div className="mb-6 text-center">
+            <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-slate-900">
+              Verify Your Email
+            </h1>
+            <p className="mt-2 text-sm text-slate-500">
+              We&apos;ve sent a 6-digit code to your email. Enter it below.
+            </p>
+          </div>
+
+          {/* Form */}
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-6"
+            >
+              <FormField
+                control={form.control}
+                name="pin"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="block text-center text-sm font-medium text-slate-700">
+                      One-Time Password
+                    </FormLabel>
+                    <FormControl>
+                      <div className="flex justify-center mt-2">
+                        <InputOTP maxLength={6} {...field}>
+                          <InputOTPGroup>
+                            {[...Array(6)].map((_, i) => (
+                              <InputOTPSlot key={i} index={i} />
+                            ))}
+                          </InputOTPGroup>
+                        </InputOTP>
+                      </div>
+                    </FormControl>
+                    <FormDescription className="text-center text-xs text-slate-500">
+                      Please enter the 6-digit code we sent to your email.
+                    </FormDescription>
+                    <FormMessage className="text-center" />
+                  </FormItem>
+                )}
+              />
+
+              {/* Main action button – using existing Button component */}
+              <Button
+                type="submit"
+                disabled={isVerifying || isResending}
+                size="lg"
+                className="w-full rounded-full text-sm font-medium"
+              >
+                {isVerifying ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  "Verify OTP"
+                )}
+              </Button>
+            </form>
+          </Form>
+
+          {/* Resend + Back links */}
+          <div className="mt-4 space-y-3 text-center">
+            <button
+              onClick={handleResend}
+              disabled={isResending}
+              className="text-xs text-[#5f4bf6] hover:underline disabled:opacity-60"
+            >
+              {isResending ? (
+                <>
+                  <Loader2 className="inline h-4 w-4 mr-1 animate-spin" />
+                  Resending...
+                </>
+              ) : (
+                "Didn't receive the code? Click to resend"
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => router.push("/auth")}
+              className="block w-full text-xs text-slate-500 hover:underline"
+            >
+              Back to Sign in
+            </button>
+          </div>
+        </div>
       </div>
-
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6 max-w-sm mx-auto"
-        >
-          <FormField
-            control={form.control}
-            name="pin"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-center block">
-                  One-Time Password
-                </FormLabel>
-                <FormControl>
-                  <div className="flex justify-center">
-                    <InputOTP maxLength={6} {...field}>
-                      <InputOTPGroup>
-                        {[...Array(6)].map((_, i) => (
-                          <InputOTPSlot key={i} index={i} />
-                        ))}
-                      </InputOTPGroup>
-                    </InputOTP>
-                  </div>
-                </FormControl>
-                <FormDescription className="text-center">
-                  Please enter the 6-digit code we sent to your email.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <Button
-            type="submit"
-            disabled={isVerifying || isResending}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white dark:from-[#0EA5E9] dark:to-[#6366F1] dark:hover:from-[#0284C7] dark:hover:to-[#4F46E5]"
-          >
-            {isVerifying ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Verifying...
-              </>
-            ) : (
-              "Verify OTP"
-            )}
-          </Button>
-        </form>
-      </Form>
-
-      <div className="text-center">
-        <button
-          onClick={handleResend}
-          disabled={isResending}
-          className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-        >
-          {isResending ? (
-            <>
-              <Loader2 className="inline h-4 w-4 mr-1 animate-spin" />
-              Resending...
-            </>
-          ) : (
-            "Didn't receive the code? Click to resend"
-          )}
-        </button>
-      </div>
-
-      <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-        <a
-          href="/auth"
-          className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-        >
-          Back to Sign in
-        </a>
-      </p>
     </div>
   );
 }

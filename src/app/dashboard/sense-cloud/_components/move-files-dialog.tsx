@@ -1,0 +1,276 @@
+"use client";
+
+import type { RootState } from "@/redux/store";
+import type { StorageRegion } from "@/constants/storage-regions";
+
+import React, { useMemo, useState } from "react";
+import {
+  useMoveFilesMutation,
+  useListHierarchyQuery,
+} from "@/api/fileManagerAPI";
+
+import { Logger } from "@/lib/utils/logger";
+import { getErrorMessage } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogTitle,
+  DialogFooter,
+  DialogHeader,
+  DialogContent,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
+import { useSelector } from "react-redux";
+
+import { useToast } from "@/hooks/use-toast";
+
+import { getRelativePath } from "../utils";
+import FolderListView from "./folder-list-view";
+
+import type { FileItem } from "../types";
+
+type HierarchyFolder = {
+  name: string;
+  path: string;
+  children: HierarchyFolder[];
+};
+
+type MoveFilesDialogProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  selectedFiles: string[];
+  setSelectedFiles: (ids: string[]) => void;
+  selectedFolder: FileItem | null;
+  region: StorageRegion;
+};
+
+const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
+  open,
+  onOpenChange,
+  selectedFiles,
+  setSelectedFiles,
+  selectedFolder,
+  region,
+}) => {
+  const { toast } = useToast();
+  const userId = useSelector((state: RootState) => state.auth.user?.id);
+  const [moveFiles, { isLoading }] = useMoveFilesMutation();
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [path, setPath] = useState<FileItem[]>([]);
+
+  //   const { data, isLoading: isFilesLoading } = useListFilesQuery({
+  //   userId,
+  //   region: "virginia",
+  //   folder: folderPath,
+  // });
+  const { data, isLoading: isFilesLoading } = useListHierarchyQuery({
+    region,
+    userId,
+  });
+
+  const getCurrentLevelFolders = (
+    hierarchyData: { folders: HierarchyFolder[] },
+    currentPath: FileItem[]
+  ): FileItem[] => {
+    if (!hierarchyData?.folders) return [];
+
+    let currentLevel = hierarchyData.folders;
+
+    for (const pathItem of currentPath) {
+      const foundFolder = currentLevel.find(
+        (folder) => folder.name === pathItem.fileName
+      );
+      if (foundFolder && foundFolder.children) {
+        currentLevel = foundFolder.children;
+      } else {
+        return [];
+      }
+    }
+
+    return currentLevel.map((folder) => ({
+      id: folder.path,
+      fileName: folder.name,
+      fileType: "folder" as const,
+      createdAt: new Date().toISOString(),
+      size: "0",
+      lastModified: new Date().toISOString(),
+    }));
+  };
+
+  const folders = useMemo(() => {
+    if (!data) return [];
+    return getCurrentLevelFolders(data, path);
+  }, [data, path]);
+
+  const rootId = userId ? `${userId}/uploads/` : null;
+
+  const handleMove = async () => {
+    if (!selectedFolderId) {
+      Logger.error(" No destination folder selected");
+      toast({
+        title: "Move Failed",
+        description: "Please select a destination folder",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!userId) {
+      Logger.error("No userId available");
+      toast({
+        title: "Move Failed",
+        description: "User authentication required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (selectedFiles.length === 0) {
+      Logger.error(" No files selected");
+      toast({
+        title: "Move Failed",
+        description: "No files selected to move",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Debug the path transformations
+      const sourceFileNames = selectedFiles.map((id) => {
+        const relativePath = getRelativePath(id);
+        return relativePath;
+      });
+
+      const destinationFolder = getRelativePath(selectedFolderId);
+      const isRootDestination = selectedFolderId === rootId;
+
+      // Check if getRelativePath is working correctly
+      if (sourceFileNames.some((name) => !name || name.trim() === "")) {
+        throw new Error("Invalid source file paths");
+      }
+
+      if (
+        !isRootDestination &&
+        (!destinationFolder || destinationFolder.trim() === "")
+      ) {
+        Logger.error(" Destination folder is empty after getRelativePath");
+        throw new Error("Invalid destination folder path");
+      }
+
+      const movePayload = {
+        region,
+        userId,
+        sourceFileNames,
+        destinationFolder: isRootDestination ? "" : destinationFolder,
+      };
+      await moveFiles(movePayload).unwrap();
+      toast({
+        title: "Move Complete",
+        description: `${sourceFileNames.length} item(s) moved to "${
+          isRootDestination ? "Root" : destinationFolder
+        }"`,
+      });
+      setSelectedFiles([]);
+      closeDialog();
+    } catch (error) {
+      const err = error as Error & {
+        data?: { message: string };
+        status?: number;
+        originalError?: unknown;
+      };
+      Logger.error(" Move operation failed:", err);
+      Logger.error(" Error details:", {
+        status: err?.status,
+        data: err?.data,
+        message: err?.message,
+        originalError: err?.originalError,
+      });
+
+      toast({
+        title: "Move Failed",
+        description: getErrorMessage(
+          error,
+          "Could not move selected items. Please try again."
+        ),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const closeDialog = () => {
+    setPath([]);
+    setSelectedFolderId(null);
+    onOpenChange(false);
+  };
+
+  // Enhanced validation logic with logging
+  const selectedFolderExists = selectedFiles?.some((id) => {
+    const exists = id === selectedFolderId;
+
+    return exists;
+  });
+
+  const isSameAsCurrentFolder = selectedFolder?.id === selectedFolderId;
+  if (isSameAsCurrentFolder) {
+    Logger.log("⚠️ ~ Trying to move to the same folder:", selectedFolder?.id);
+  }
+
+  const canMove =
+    selectedFolderId &&
+    !selectedFolderExists &&
+    !isSameAsCurrentFolder &&
+    selectedFiles.length > 0 &&
+    userId &&
+    !isLoading;
+
+  Logger.log(" Move button enabled:", canMove, {
+    selectedFolderId: !!selectedFolderId,
+    selectedFolderExists,
+    isSameAsCurrentFolder,
+    hasSelectedFiles: selectedFiles.length > 0,
+    hasUserId: !!userId,
+    isNotLoading: !isLoading,
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={closeDialog}>
+      <DialogContent
+        data-testid="dashboard-sense-cloud-move-files-dialog"
+        className="sm:max-w-[425px]"
+      >
+        <DialogHeader>
+          <DialogTitle>Move {selectedFiles.length} file(s)</DialogTitle>
+          <DialogDescription>
+            Select a destination folder to move the selected files
+          </DialogDescription>
+        </DialogHeader>
+
+        <FolderListView
+          folders={folders}
+          isLoading={isFilesLoading}
+          selectedFolderId={selectedFolderId}
+          setSelectedFolderId={setSelectedFolderId}
+          path={path}
+          setPath={setPath}
+          selectedFolder={selectedFolder}
+          selectedFiles={selectedFiles}
+          rootId={rootId}
+          rootLabel="All Files"
+        />
+
+        <DialogFooter>
+          <Button variant="outline" onClick={closeDialog}>
+            Cancel
+          </Button>
+          <Button onClick={handleMove} disabled={!canMove}>
+            {isLoading ? "Moving..." : "Move Files"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default MoveFilesDialog;

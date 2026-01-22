@@ -78,7 +78,7 @@ export const configFormSchema = z.object({
 });
 
 export const idleTimeoutSettingsFormSchema = z.object({
-  smartPC: z.string().min(1, "SmartPC selection is required"),
+  smartPC: z.string().min(1, "Sense PC selection is required"),
   timeoutDuration: z.string().min(1, "Timeout duration is required"),
   enableAutoStop: z.boolean(),
   enableNotifications: z.boolean(),
@@ -108,7 +108,7 @@ export const settingsFormSchema = z.object({
 
 export const SchedulingformSchema = z.object({
   // smartPC: z.string({
-  //   required_error: "Please select a SmartPC",
+  //   required_error: "Please select a Sense PC",
   // }),
   timeZone: z.string({
     required_error: "Please select a timezone",
