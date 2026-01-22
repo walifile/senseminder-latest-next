@@ -155,8 +155,6 @@ def _get_active_file_region(user_id: str):
         for item in resp.get('Items', []) or []:
             if item.get('isDeleted'):
                 continue
-            if item.get('fileType') == 'folder':
-                continue
             region = _normalize_stored_region(item.get('region')) or item.get('region')
             return True, region
         last_key = resp.get('LastEvaluatedKey')

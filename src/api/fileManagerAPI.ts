@@ -654,7 +654,7 @@ export const fileManagerAPI = createApi({
           folderName,
         },
       }),
-      invalidatesTags: ["Files", "Hierarchy"],
+      invalidatesTags: ["Files", "Hierarchy", "UserRegion"],
     }),
     uploadToPresignedUrl: builder.mutation({
       query: ({ uploadUrl, file }) => ({
