@@ -134,12 +134,9 @@ const StaticStoragePage = () => {
   const shareId = (searchParams.get("shareId") || "").trim();
   const keyParam = searchParams.get("key") || "";
   const key = safeDecode(keyParam);
-  const regionParam = searchParams.get("region") || "";
-  const region = (safeDecode(regionParam) || "us-east-1").trim().toLowerCase();
   const { data, isLoading, isError, error } = usePublicSharedListQuery(
-    shareId
-      ? { shareId, ...(key ? { key } : {}) }
-      : { key, region }
+    { shareId, ...(key ? { key } : {}) },
+    { skip: !shareId }
   );
   const [triggerDownloadFolder, { isFetching }] = useLazyDownloadFolderQuery();
 
@@ -187,11 +184,7 @@ const StaticStoragePage = () => {
     if (fileKey) {
       const params = new URLSearchParams();
       params.set("key", fileKey);
-      if (shareId) {
-        params.set("shareId", shareId);
-      } else if (region) {
-        params.set("region", region);
-      }
+      if (shareId) params.set("shareId", shareId);
       router.push(`/shared-folder-viewer?${params.toString()}`);
       return;
     }
@@ -239,11 +232,7 @@ const StaticStoragePage = () => {
 
     const params = new URLSearchParams();
     params.set("key", newPath);
-    if (shareId) {
-      params.set("shareId", shareId);
-    } else if (region) {
-      params.set("region", region);
-    }
+    if (shareId) params.set("shareId", shareId);
     router.push(`/shared-folder-viewer?${params.toString()}`);
   };
 
@@ -263,11 +252,7 @@ const StaticStoragePage = () => {
 
     const params = new URLSearchParams();
     if (folderPath) params.set("key", folderPath);
-    if (shareId) {
-      params.set("shareId", shareId);
-    } else if (region) {
-      params.set("region", region);
-    }
+    if (shareId) params.set("shareId", shareId);
     const qs = params.toString();
     router.push(`/shared-folder-viewer${qs ? `?${qs}` : ""}`);
   };
@@ -306,11 +291,10 @@ const StaticStoragePage = () => {
     }
 
     try {
-      const res = await triggerDownloadFolder(
-        shareId
-          ? { shareId, ...(key ? { key } : {}) }
-          : { region, key }
-      ).unwrap();
+      const res = await triggerDownloadFolder({
+        shareId,
+        ...(key ? { key } : {}),
+      }).unwrap();
 
       if (res?.downloadUrl) {
         window.location.href = res.downloadUrl;
@@ -324,6 +308,19 @@ const StaticStoragePage = () => {
   };
 
   const files: FileItem[] = (data?.files as FileItem[]) || [];
+
+  if (!shareId) {
+    return (
+      <Card className="relative my-20 p-3 m-20">
+        <CardHeader className="pb-2">
+          <CardTitle>Link unavailable</CardTitle>
+          <CardDescription className="mt-2">
+            This shared link is missing required information.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   return (
     <Card className="relative my-20 p-3 m-20">
