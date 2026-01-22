@@ -452,6 +452,22 @@ def _exists_in_s3(bucket_name: str, key: str, s3_client=None) -> bool:
     except Exception:
         return False
 
+def _delete_s3_prefix(bucket_name: str, prefix: str, s3_client=None):
+    if not bucket_name or not prefix:
+        return
+    client = s3_client or s3
+    paginator = client.get_paginator('list_objects_v2')
+    for page in paginator.paginate(Bucket=bucket_name, Prefix=prefix):
+        objects = [{'Key': obj['Key']} for obj in page.get('Contents', []) if obj.get('Key')]
+        if not objects:
+            continue
+        for i in range(0, len(objects), 1000):
+            chunk = objects[i:i + 1000]
+            try:
+                client.delete_objects(Bucket=bucket_name, Delete={'Objects': chunk, 'Quiet': True})
+            except Exception as e:
+                print(f"Failed to delete S3 prefix batch for {prefix}: {e}")
+
 def _key_conflicts(bucket_name: str, key: str, s3_client=None) -> bool:
     # Treat as conflict if present in metadata (any state) OR present in S3
     return _exists_in_metadata(key) or _exists_in_s3(bucket_name, key, s3_client=s3_client)
@@ -1275,11 +1291,8 @@ def handle_delete(event):
         if total_decrement:
             _update_usage_bytes(user_id, -total_decrement)
 
-        # Best-effort: remove folder marker
-        try:
-            s3_client.delete_object(Bucket=bucket_name, Key=folder_key)
-        except Exception as e:
-            print(f"Failed to delete S3 folder marker {folder_key}: {e}")
+        # Best-effort: remove all objects under the folder prefix
+        _delete_s3_prefix(bucket_name, folder_key, s3_client=s3_client)
 
         return response(200, {'message': 'Folder soft-deleted successfully'})
 
@@ -1534,11 +1547,8 @@ def handle_delete_multiple(event):
                         except Exception as e:
                             print(f"[delete-multiple] Failed to delete sub-folder marker {ch['id']}: {e}")
 
-            # Best-effort: remove the S3 folder marker for the root folder
-            try:
-                s3_client.delete_object(Bucket=bucket_name, Key=folder_key)
-            except Exception as e:
-                print(f"[delete-multiple] Failed to delete folder marker {folder_key}: {e}")
+            # Best-effort: remove all objects under the folder prefix
+            _delete_s3_prefix(bucket_name, folder_key, s3_client=s3_client)
 
         # File branch
         else:
