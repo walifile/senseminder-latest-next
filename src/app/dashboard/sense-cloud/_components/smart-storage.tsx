@@ -3,8 +3,12 @@
 import type { RootState } from "@/redux/store";
 
 import Link from "next/link";
-import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import {
+  type StorageRegion,
+  getStorageRegionLabel,
+} from "@/constants/storage-regions";
 import {
   useListFilesQuery,
   useStarFileMutation,
@@ -80,6 +84,7 @@ import {
   Grid,
   List,
   Copy,
+  Lock,
   Globe,
   Upload,
   Trash2,
@@ -104,6 +109,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useStorageRegion } from "@/hooks/useStorageRegion";
 import { usePaginationItems } from "@/hooks/usePaginationItems";
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
@@ -148,7 +154,13 @@ const CloudStorage = () => {
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [sortBy, setSortBy] = useState<"name" | "date" | "size">("date");
-  const [selectedRegion, setSelectedRegion] = useState("us-east-1");
+  const {
+    regions,
+    selectedRegion,
+    setSelectedRegion,
+    isLocked: isRegionLocked,
+    isReady: isRegionReady,
+  } = useStorageRegion(userId);
   const [showStoragePlans, setShowStoragePlans] = useState(false);
   const [showBulkShareDialog, setShowBulkShareDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -200,6 +212,7 @@ const CloudStorage = () => {
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [fileToRename, setFileToRename] = useState<FileItem | null>(null);
   const { copyToClipboard } = useCopyToClipboard();
+  const selectedRegionLabel = getStorageRegionLabel(selectedRegion, regions);
 
   const debouncedQuery = useDebounce(searchQuery, 500);
 
@@ -250,7 +263,7 @@ const CloudStorage = () => {
   const { data, error, isFetching, refetch } = useListFilesQuery(
     {
       userId,
-      region: "virginia",
+      region: selectedRegion,
       type: selectedType,
       search: debouncedQuery,
       starred: filters.starred,
@@ -264,7 +277,7 @@ const CloudStorage = () => {
     },
     {
       // 🔹 Don't call list files API when viewing Duplicates
-      skip: selectedCategory === "Duplicates",
+      skip: selectedCategory === "Duplicates" || !isRegionReady,
     },
   );
 
@@ -297,7 +310,7 @@ const CloudStorage = () => {
       setDownloadingFile(file.fileName);
       const { downloadUrl } = await triggerFolderDownload({
         userId,
-        region: "virginia",
+        region: selectedRegion,
         folder: folderPath,
       }).unwrap();
 
@@ -379,7 +392,7 @@ const CloudStorage = () => {
       const { data } = await triggerDownloadFile({
         fileName: file.fileName,
         userId,
-        region: "virginia",
+        region: selectedRegion,
         folder: selectedFolder?.fileName || "",
         key: file.id,
       });
@@ -467,7 +480,7 @@ const CloudStorage = () => {
         selectedFiles.includes(file.id),
       );
 
-      const { userId, region } = filesToDelete[0];
+      const { userId } = filesToDelete[0];
 
       const fileNames = filesToDelete.map((file: FileItem) => {
         const isFolder = file.fileType === "folder";
@@ -481,7 +494,7 @@ const CloudStorage = () => {
       });
 
       await deleteFiles({
-        region,
+        region: selectedRegion,
         userId,
         fileNames,
       }).unwrap();
@@ -536,8 +549,32 @@ const CloudStorage = () => {
     }
   };
 
-  const handleRegionChange = (value: string) => {
-    setSelectedRegion(value);
+  const handleRegionChange = async (value: StorageRegion) => {
+    if (isRegionLocked) {
+      toast({
+        title: "Region locked",
+        description: "Your storage region is already set for this account.",
+      });
+      return;
+    }
+
+    try {
+      await setSelectedRegion(value);
+      toast({
+        title: "Region updated",
+        description: `${getStorageRegionLabel(
+          value,
+          regions,
+        )} selected for your storage.`,
+      });
+    } catch (error) {
+      Logger.error("Failed to update region", error);
+      toast({
+        title: "Region update failed",
+        description: "Unable to update storage region. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSort = (value: string) => {
@@ -658,7 +695,7 @@ const CloudStorage = () => {
         const destinationFolder = getRelativePath(folderId);
 
         const filesData = {
-          region: "virginia",
+          region: selectedRegion,
           userId,
           sourceFileNames,
           destinationFolder,
@@ -728,7 +765,7 @@ const CloudStorage = () => {
         const { data: downloadData } = await triggerDownloadFile({
           fileName: file.fileName,
           userId,
-          region: "virginia",
+          region: selectedRegion,
           key: file.id,
         });
 
@@ -1030,20 +1067,29 @@ const CloudStorage = () => {
                           size="sm"
                           variant="ghost"
                           className="text-base [&_svg]:size-5 text-[#454545] dark:text-[#B9C2D5] gap-2"
+                          disabled={isRegionLocked}
                         >
                           <Globe className="h-5 w-5" />
-                          Region
+                          {selectedRegionLabel}
+                          {isRegionLocked && <Lock className="h-4 w-4" />}
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Select Location</DropdownMenuLabel>
                         <DropdownMenuRadioGroup
                           value={selectedRegion}
-                          onValueChange={handleRegionChange}
+                          onValueChange={(value) =>
+                            handleRegionChange(value as StorageRegion)
+                          }
                         >
-                          <DropdownMenuRadioItem value="us-east-1">
-                            New York
-                          </DropdownMenuRadioItem>
+                          {regions.map((region) => (
+                            <DropdownMenuRadioItem
+                              key={region.value}
+                              value={region.value}
+                            >
+                              {region.label}
+                            </DropdownMenuRadioItem>
+                          ))}
                         </DropdownMenuRadioGroup>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -1291,7 +1337,7 @@ const CloudStorage = () => {
                         </p>
                       </div>
                     ) : (
-                      <Duplicates userId={userId} region="virginia" />
+                      <Duplicates userId={userId} region={selectedRegion} />
                     )
                   ) : (
                     <>
@@ -1880,6 +1926,7 @@ const CloudStorage = () => {
           if (!open) setFileToRename(null);
         }}
         file={fileToRename}
+        region={selectedRegion}
         onRenamed={({ oldKey, newKey, newName }) => {
           const oldRoot = oldKey.endsWith("/") ? oldKey : `${oldKey}/`;
           const newRoot = newKey.endsWith("/") ? newKey : `${newKey}/`;
@@ -1952,6 +1999,7 @@ const CloudStorage = () => {
           ) || null
         }
         selectedFolder={selectedFolder}
+        region={selectedRegion}
         onDeleteComplete={() => {
           setSelectedFiles((prev) =>
             prev.filter((id) => id !== selectedFilesToDelete[0]),
@@ -1964,6 +2012,10 @@ const CloudStorage = () => {
       <StoragePlansDialog
         open={showStoragePlans}
         onOpenChange={setShowStoragePlans}
+        selectedRegion={selectedRegion}
+        regions={regions}
+        isRegionLocked={isRegionLocked}
+        onRegionChange={handleRegionChange}
       />
 
       {/* Bulk Share Dialog */}
@@ -1973,6 +2025,7 @@ const CloudStorage = () => {
         files={files}
         selectedFiles={selectedFiles}
         selectedFolder={selectedFolder}
+        region={selectedRegion}
       />
 
       {/* Share Dialog */}
@@ -1981,6 +2034,7 @@ const CloudStorage = () => {
         onOpenChange={setShowShareDialog}
         file={selectedFileForShare}
         selectedFolder={selectedFolder}
+        region={selectedRegion}
       />
 
       {/* Move Files Dialog */}
@@ -1990,6 +2044,7 @@ const CloudStorage = () => {
         selectedFiles={selectedFiles}
         setSelectedFiles={setSelectedFiles}
         selectedFolder={selectedFolder}
+        region={selectedRegion}
       />
       {/* Copy Files Dialog */}
       <CopyFilesDialog
@@ -1998,6 +2053,7 @@ const CloudStorage = () => {
         selectedFiles={selectedFiles}
         setSelectedFiles={setSelectedFiles}
         selectedFolder={selectedFolder}
+        region={selectedRegion}
       />
 
       {/* Storage Sync Dialog */}
@@ -2007,6 +2063,10 @@ const CloudStorage = () => {
         folderPath={folderPath}
         prefillFiles={droppedFiles}
         prefillToken={dropSession}
+        region={selectedRegion}
+        regions={regions}
+        isRegionLocked={isRegionLocked}
+        onRegionChange={handleRegionChange}
         // handleFileUpload={handleFileUpload}
         // uploadProgress={uploadProgress}
       />
@@ -2027,6 +2087,7 @@ const CloudStorage = () => {
         open={showNewFolderDialog}
         onOpenChange={setShowNewFolderDialog}
         folderPath={folderPath}
+        region={selectedRegion}
         // onCreate={handleCreateFolder}
       />
     </>

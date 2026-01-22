@@ -135,7 +135,7 @@ const StaticStoragePage = () => {
   const key = safeDecode(keyParam);
   const { data, isLoading, isError, error } = usePublicSharedListQuery({
     key,
-    region: "virginia",
+    region: "us-east-1",
   });
   const [triggerDownloadFolder, { isFetching }] = useLazyDownloadFolderQuery();
 
@@ -285,7 +285,7 @@ const StaticStoragePage = () => {
 
     try {
       const res = await triggerDownloadFolder({
-        region: "virginia",
+        region: "us-east-1",
         key,
       }).unwrap();
 

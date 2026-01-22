@@ -1,48 +1,59 @@
-export type StorageRegion = "virginia" | "oregon";
+export type StorageRegion = string;
 
 export type StorageRegionOption = {
   value: StorageRegion;
   label: string;
   shortLabel: string;
+  order?: number;
 };
 
 export const STORAGE_REGIONS: StorageRegionOption[] = [
   {
-    value: "virginia",
+    value: "us-east-1",
     label: "US East (N. Virginia)",
-    shortLabel: "US East",
+    shortLabel: "N. Virginia",
   },
   {
-    value: "oregon",
+    value: "us-west-2",
     label: "US West (Oregon)",
-    shortLabel: "US West",
+    shortLabel: "Oregon",
   },
 ];
 
 export const DEFAULT_STORAGE_REGION: StorageRegion = STORAGE_REGIONS[0].value;
 
 export function isStorageRegion(
-  value: string | null | undefined
+  value: string | null | undefined,
+  options: StorageRegionOption[] = STORAGE_REGIONS
 ): value is StorageRegion {
-  return STORAGE_REGIONS.some((region) => region.value === value);
+  return options.some((region) => region.value === value);
 }
 
 export function resolveStorageRegion(
-  value?: string | null
+  value?: string | null,
+  options: StorageRegionOption[] = STORAGE_REGIONS
 ): StorageRegion | null {
   if (!value) return null;
-  const normalized = value.toLowerCase();
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return null;
 
-  if (normalized.includes("virginia") || normalized.includes("us-east")) {
-    return "virginia";
-  }
-  if (normalized.includes("oregon") || normalized.includes("us-west")) {
-    return "oregon";
-  }
+  if (isStorageRegion(normalized, options)) return normalized;
 
-  return isStorageRegion(normalized) ? normalized : null;
+  const matched = options.find(
+    (region) =>
+      region.value.toLowerCase() === normalized ||
+      region.label.toLowerCase() === normalized ||
+      region.shortLabel.toLowerCase() === normalized
+  );
+
+  if (matched) return matched.value;
+
+  return normalized;
 }
 
-export function getStorageRegionLabel(value: StorageRegion): string {
-  return STORAGE_REGIONS.find((region) => region.value === value)?.label ?? value;
+export function getStorageRegionLabel(
+  value: StorageRegion,
+  options: StorageRegionOption[] = STORAGE_REGIONS
+): string {
+  return options.find((region) => region.value === value)?.label ?? value;
 }

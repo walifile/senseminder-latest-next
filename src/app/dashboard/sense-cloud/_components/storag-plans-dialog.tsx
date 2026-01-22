@@ -2,7 +2,11 @@
 
 import { useGetStoragePricingTierQuery } from "@/api/billing";
 import React, { useMemo, useState, useEffect, useCallback } from "react";
-import { STORAGE_REGIONS, type StorageRegion } from "@/constants/storage-regions";
+import {
+  STORAGE_REGIONS,
+  type StorageRegion,
+  type StorageRegionOption,
+} from "@/constants/storage-regions";
 
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -34,6 +38,7 @@ type StoragePlansDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   selectedRegion: StorageRegion;
+  regions?: StorageRegionOption[];
   isRegionLocked?: boolean;
   onRegionChange?: (region: StorageRegion) => void;
 };
@@ -42,6 +47,7 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
   open,
   onOpenChange,
   selectedRegion,
+  regions,
   isRegionLocked = false,
   onRegionChange,
 }) => {
@@ -49,14 +55,14 @@ const StoragePlansDialog: React.FC<StoragePlansDialogProps> = ({
   const [latencyMap, setLatencyMap] = useState<Record<string, number>>({});
   const [latencyLoading, setLatencyLoading] = useState(true);
 
-  const serverLocations = STORAGE_REGIONS;
+  const serverLocations = regions?.length ? regions : STORAGE_REGIONS;
 
   const PING_TARGETS = useMemo<Record<string, string>>(
     () =>
       Object.fromEntries(
-        STORAGE_REGIONS.map((region) => [region.value, "storage"])
+        serverLocations.map((region) => [region.value, "storage"])
       ),
-    []
+    [serverLocations]
   );
 
   const PRICE_TIER_1 = 0.25;

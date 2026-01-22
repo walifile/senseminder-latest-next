@@ -25,8 +25,45 @@ const {
 export const fileManagerAPI = createApi({
   reducerPath: "fileManagerAPI",
   baseQuery: baseQueryWithReauth(false),
-  tagTypes: ["Files", "VM", "Hierarchy"],
+  tagTypes: ["Files", "VM", "Hierarchy", "Regions", "UserRegion"],
   endpoints: (builder) => ({
+    getRegions: builder.query<
+      {
+        regions: {
+          region?: string;
+          value?: string;
+          label?: string;
+          shortLabel?: string;
+          order?: number;
+        }[];
+      },
+      { includeDisabled?: boolean } | void
+    >({
+      query: (params) => ({
+        url: "regions",
+        method: "GET",
+        params: params?.includeDisabled ? { includeDisabled: "true" } : undefined,
+      }),
+      providesTags: ["Regions"],
+    }),
+    getUserRegion: builder.query<
+      {
+        userId: string;
+        region?: string | null;
+        storedRegion?: string | null;
+        activeRegion?: string | null;
+        hasFiles?: boolean;
+        locked?: boolean;
+      },
+      { userId: string }
+    >({
+      query: ({ userId }) => ({
+        url: "user-region",
+        method: "GET",
+        params: { userId },
+      }),
+      providesTags: ["UserRegion"],
+    }),
     getShareInfo: builder.query<
       { shareId: string; type: string; status: string; expiresAt?: number; name?: string },
       { shareId: string }
@@ -564,7 +601,7 @@ export const fileManagerAPI = createApi({
           key,
         },
       }),
-      invalidatesTags: ["Files"],
+      invalidatesTags: ["Files", "UserRegion"],
     }),
     downloadFolder: builder.query<
       { downloadUrl: string },
@@ -666,7 +703,7 @@ export const fileManagerAPI = createApi({
           ...(key && { key }),
         },
       }),
-      invalidatesTags: ["Files", "Hierarchy"],
+      invalidatesTags: ["Files", "Hierarchy", "UserRegion"],
     }),
 
     deleteFiles: builder.mutation<
@@ -686,7 +723,7 @@ export const fileManagerAPI = createApi({
           fileNames,
         },
       }),
-      invalidatesTags: ["Files", "Hierarchy"],
+      invalidatesTags: ["Files", "Hierarchy", "UserRegion"],
     }),
 
     // Deduplication
@@ -740,6 +777,8 @@ export const fileManagerAPI = createApi({
 });
 
 export const {
+  useGetRegionsQuery,
+  useGetUserRegionQuery,
   useScheduleVMMutation,
   useStopVMMutation,
   // useDeleteVMMutation,

@@ -10,6 +10,7 @@ import { FEEDBACK_TRIGGERS } from "@/constants/app-constants";
 import {
   STORAGE_REGIONS,
   type StorageRegion,
+  type StorageRegionOption,
   getStorageRegionLabel,
 } from "@/constants/storage-regions";
 // import { Progress } from "@/components/ui/progress";
@@ -49,6 +50,7 @@ interface UploadDialogProps {
   prefillFiles?: File[];
   prefillToken?: number;
   region: StorageRegion;
+  regions?: StorageRegionOption[];
   isRegionLocked?: boolean;
   onRegionChange?: (region: StorageRegion) => void;
 }
@@ -60,6 +62,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   prefillFiles,
   prefillToken,
   region,
+  regions,
   isRegionLocked = false,
   onRegionChange,
 }) => {
@@ -78,7 +81,8 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   const { triggerFeedback } = useFeedback();
 
   const isUploading = Object.values(uploadStatus).includes("loading");
-  const regionLabel = getStorageRegionLabel(region);
+  const regionOptions = regions?.length ? regions : STORAGE_REGIONS;
+  const regionLabel = getStorageRegionLabel(region, regionOptions);
 
   const appendFiles = (incoming: File[] | FileList | null) => {
     if (!incoming) return;
@@ -246,7 +250,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
                 <SelectValue placeholder={regionLabel} />
               </SelectTrigger>
               <SelectContent>
-                {STORAGE_REGIONS.map((regionOption) => (
+                {regionOptions.map((regionOption) => (
                   <SelectItem
                     key={regionOption.value}
                     value={regionOption.value}
