@@ -4,11 +4,8 @@ import type { RootState } from "@/redux/store";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useState, useEffect } from "react";
-import {
-  type StorageRegion,
-  getStorageRegionLabel,
-} from "@/constants/storage-regions";
+import React, { useState } from "react";
+import { type StorageRegion } from "@/constants/storage-regions";
 import {
   useListFilesQuery,
   useStarFileMutation,
@@ -84,8 +81,6 @@ import {
   Grid,
   List,
   Copy,
-  Lock,
-  Globe,
   Upload,
   Trash2,
   Share2,
@@ -212,7 +207,6 @@ const CloudStorage = () => {
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [fileToRename, setFileToRename] = useState<FileItem | null>(null);
   const { copyToClipboard } = useCopyToClipboard();
-  const selectedRegionLabel = getStorageRegionLabel(selectedRegion, regions);
 
   const debouncedQuery = useDebounce(searchQuery, 500);
 
@@ -1057,40 +1051,6 @@ const CloudStorage = () => {
                         >
                           Uploaded this month
                         </DropdownMenuCheckboxItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    {/* Region */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-base [&_svg]:size-5 text-[#454545] dark:text-[#B9C2D5] gap-2"
-                          disabled={isRegionLocked}
-                        >
-                          <Globe className="h-5 w-5" />
-                          {selectedRegionLabel}
-                          {isRegionLocked && <Lock className="h-4 w-4" />}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Select Location</DropdownMenuLabel>
-                        <DropdownMenuRadioGroup
-                          value={selectedRegion}
-                          onValueChange={(value) =>
-                            handleRegionChange(value as StorageRegion)
-                          }
-                        >
-                          {regions.map((region) => (
-                            <DropdownMenuRadioItem
-                              key={region.value}
-                              value={region.value}
-                            >
-                              {region.label}
-                            </DropdownMenuRadioItem>
-                          ))}
-                        </DropdownMenuRadioGroup>
                       </DropdownMenuContent>
                     </DropdownMenu>
 
