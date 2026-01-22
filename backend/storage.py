@@ -1720,7 +1720,7 @@ def handle_share(event):
             'ttl': ttl_epoch,
         })
         # Keep existing viewer path but return shareId for cancel support
-        share_url = f"/shared-folder-viewer?key={key}"
+        share_url = f"/shared-folder-viewer?key={key}&region={region}"
     else:
         # Create a cancellable share record and return API-gated link
         now_epoch = int(datetime.now(timezone.utc).timestamp())

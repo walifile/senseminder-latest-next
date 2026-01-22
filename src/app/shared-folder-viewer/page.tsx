@@ -133,9 +133,11 @@ const StaticStoragePage = () => {
 
   const keyParam = searchParams.get("key") || "";
   const key = safeDecode(keyParam);
+  const regionParam = searchParams.get("region") || "";
+  const region = (safeDecode(regionParam) || "us-east-1").trim().toLowerCase();
   const { data, isLoading, isError, error } = usePublicSharedListQuery({
     key,
-    region: "us-east-1",
+    region,
   });
   const [triggerDownloadFolder, { isFetching }] = useLazyDownloadFolderQuery();
 
@@ -181,7 +183,10 @@ const StaticStoragePage = () => {
         : `${file.id}/`
       : "";
     if (fileKey) {
-      router.push(`/shared-folder-viewer?key=${encodeURIComponent(fileKey)}`);
+      const params = new URLSearchParams();
+      params.set("key", fileKey);
+      if (region) params.set("region", region);
+      router.push(`/shared-folder-viewer?${params.toString()}`);
       return;
     }
 
@@ -226,7 +231,10 @@ const StaticStoragePage = () => {
       newPath = key ? `${key}${file.fileName}/` : `${file.fileName}/`;
     }
 
-    router.push(`/shared-folder-viewer?key=${encodeURIComponent(newPath)}`);
+    const params = new URLSearchParams();
+    params.set("key", newPath);
+    if (region) params.set("region", region);
+    router.push(`/shared-folder-viewer?${params.toString()}`);
   };
 
   // Enhanced breadcrumb navigation with duplicate prevention
@@ -243,11 +251,11 @@ const StaticStoragePage = () => {
       return;
     }
 
-    router.push(
-      folderPath
-        ? `/shared-folder-viewer?key=${encodeURIComponent(folderPath)}`
-        : `/shared-folder-viewer`
-    );
+    const params = new URLSearchParams();
+    if (folderPath) params.set("key", folderPath);
+    if (region) params.set("region", region);
+    const qs = params.toString();
+    router.push(`/shared-folder-viewer${qs ? `?${qs}` : ""}`);
   };
 
   // Alternative: Explicit sibling navigation (uncomment if needed)
@@ -285,7 +293,7 @@ const StaticStoragePage = () => {
 
     try {
       const res = await triggerDownloadFolder({
-        region: "us-east-1",
+        region,
         key,
       }).unwrap();
 
@@ -333,36 +341,47 @@ const StaticStoragePage = () => {
             >
               <ScrollArea className="flex-1 h-full">
                 {isLoading ? (
-                  <div className="flex justify-center items-center h-full">Loading...</div>
+                  <div className="flex justify-center items-center h-full">
+                    Loading...
+                  </div>
                 ) : isError ? (
                   (() => {
-                    const extractStatus = (err: unknown): number | undefined => {
-                      if (err && typeof err === 'object') {
+                    const extractStatus = (
+                      err: unknown,
+                    ): number | undefined => {
+                      if (err && typeof err === "object") {
                         const eo = err as Record<string, unknown>;
-                        const s = eo['status'];
-                        if (typeof s === 'number') return s;
-                        if (typeof s === 'string') {
+                        const s = eo["status"];
+                        if (typeof s === "number") return s;
+                        if (typeof s === "string") {
                           const n = Number(s);
                           return Number.isFinite(n) ? n : undefined;
                         }
-                        const os = eo['originalStatus'];
-                        if (typeof os === 'number') return os;
+                        const os = eo["originalStatus"];
+                        if (typeof os === "number") return os;
                       }
                       return undefined;
                     };
                     const status = extractStatus(error);
-                    const title = status === 410 ? "Link unavailable" : status === 404 ? "Nothing here" : "Unable to load";
+                    const title =
+                      status === 410
+                        ? "Link unavailable"
+                        : status === 404
+                          ? "Nothing here"
+                          : "Unable to load";
                     const desc =
                       status === 410
                         ? "This shared link is expired or revoked."
                         : status === 404
-                        ? "No files found in this shared folder."
-                        : "This link may be invalid, or the folder is not publicly shared.";
+                          ? "No files found in this shared folder."
+                          : "This link may be invalid, or the folder is not publicly shared.";
                     return (
                       <div className="flex items-center justify-center h-full p-10 text-center">
                         <div>
                           <div className="text-xl font-semibold">{title}</div>
-                          <div className="text-muted-foreground mt-2">{desc}</div>
+                          <div className="text-muted-foreground mt-2">
+                            {desc}
+                          </div>
                         </div>
                       </div>
                     );
