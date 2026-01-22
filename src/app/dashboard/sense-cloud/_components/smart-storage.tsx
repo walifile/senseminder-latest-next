@@ -3,15 +3,8 @@
 import type { RootState } from "@/redux/store";
 
 import Link from "next/link";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import React, { useState, useEffect } from "react";
-import { useGetStoragePricingTierQuery } from "@/api/billing";
-import {
-  STORAGE_REGIONS,
-  type StorageRegion,
-  resolveStorageRegion,
-  getStorageRegionLabel,
-} from "@/constants/storage-regions";
 import {
   useListFilesQuery,
   useStarFileMutation,
@@ -87,7 +80,6 @@ import {
   Grid,
   List,
   Copy,
-  Lock,
   Globe,
   Upload,
   Trash2,
@@ -112,7 +104,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDebounce } from "@/hooks/useDebounce";
-import { useStorageRegion } from "@/hooks/useStorageRegion";
 import { usePaginationItems } from "@/hooks/usePaginationItems";
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
@@ -157,12 +148,7 @@ const CloudStorage = () => {
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [sortBy, setSortBy] = useState<"name" | "date" | "size">("date");
-  const {
-    selectedRegion,
-    lockRegion,
-    isLocked: isRegionLocked,
-    isReady: isRegionReady,
-  } = useStorageRegion();
+  const [selectedRegion, setSelectedRegion] = useState("us-east-1");
   const [showStoragePlans, setShowStoragePlans] = useState(false);
   const [showBulkShareDialog, setShowBulkShareDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -183,7 +169,7 @@ const CloudStorage = () => {
   const [draggedFiles, setDraggedFiles] = useState<string[]>([]);
   const [copyDialogOpen, setCopyDialogOpen] = useState(false);
   const [dragOperation, setDragOperation] = useState<"copy" | "move" | null>(
-    null
+    null,
   );
   const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null);
   const [syncDialogOpen, setSyncDialogOpen] = useState(false);
@@ -197,7 +183,7 @@ const CloudStorage = () => {
   const [bulkDeleteLoading, setBulkDeleteLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedFilesToDelete, setSelectedFilesToDelete] = useState<string[]>(
-    []
+    [],
   );
   const [cancelShare] = useCancelShareMutation();
   const [triggerGetShares] = useLazyGetSharesForObjectQuery();
@@ -214,23 +200,10 @@ const CloudStorage = () => {
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [fileToRename, setFileToRename] = useState<FileItem | null>(null);
   const { copyToClipboard } = useCopyToClipboard();
-  const { data: storagePricingTierResponse } =
-    useGetStoragePricingTierQuery();
-
-  const selectedRegionLabel = getStorageRegionLabel(selectedRegion);
-  const lastFileRegion = storagePricingTierResponse?.lastFileRegion;
 
   const debouncedQuery = useDebounce(searchQuery, 500);
 
   Logger.log(lastSynced);
-
-  useEffect(() => {
-    const backendRegion = resolveStorageRegion(lastFileRegion);
-    if (!backendRegion) return;
-    if (backendRegion !== selectedRegion || !isRegionLocked) {
-      lockRegion(backendRegion);
-    }
-  }, [lastFileRegion, selectedRegion, isRegionLocked, lockRegion]);
 
   // Cancel share (files or folders) using API hooks
   const cancelShareForObject = async (objectKey: string) => {
@@ -277,7 +250,7 @@ const CloudStorage = () => {
   const { data, error, isFetching, refetch } = useListFilesQuery(
     {
       userId,
-      region: selectedRegion,
+      region: "virginia",
       type: selectedType,
       search: debouncedQuery,
       starred: filters.starred,
@@ -291,8 +264,8 @@ const CloudStorage = () => {
     },
     {
       // 🔹 Don't call list files API when viewing Duplicates
-      skip: selectedCategory === "Duplicates" || !isRegionReady,
-    }
+      skip: selectedCategory === "Duplicates",
+    },
   );
 
   const files = data?.files || [];
@@ -324,7 +297,7 @@ const CloudStorage = () => {
       setDownloadingFile(file.fileName);
       const { downloadUrl } = await triggerFolderDownload({
         userId,
-        region: selectedRegion,
+        region: "virginia",
         folder: folderPath,
       }).unwrap();
 
@@ -406,7 +379,7 @@ const CloudStorage = () => {
       const { data } = await triggerDownloadFile({
         fileName: file.fileName,
         userId,
-        region: selectedRegion,
+        region: "virginia",
         folder: selectedFolder?.fileName || "",
         key: file.id,
       });
@@ -491,10 +464,10 @@ const CloudStorage = () => {
     try {
       setBulkDeleteLoading(true);
       const filesToDelete = data.files.filter((file: FileItem) =>
-        selectedFiles.includes(file.id)
+        selectedFiles.includes(file.id),
       );
 
-      const { userId } = filesToDelete[0];
+      const { userId, region } = filesToDelete[0];
 
       const fileNames = filesToDelete.map((file: FileItem) => {
         const isFolder = file.fileType === "folder";
@@ -508,14 +481,15 @@ const CloudStorage = () => {
       });
 
       await deleteFiles({
-        region: selectedRegion,
+        region,
         userId,
         fileNames,
       }).unwrap();
 
       toast({
-        title: `${fileNames.length} ${fileNames.length === 1 ? "item" : "items"
-          } deleted`,
+        title: `${fileNames.length} ${
+          fileNames.length === 1 ? "item" : "items"
+        } deleted`,
         description: "The selected files and folders have been moved to trash.",
         variant: "destructive",
       });
@@ -548,8 +522,9 @@ const CloudStorage = () => {
 
       toast({
         title: file.starred ? "Unstarred" : "Starred",
-        description: `"${file.fileName}" was ${file.starred ? "removed from" : "added to"
-          } your starred items`,
+        description: `"${file.fileName}" was ${
+          file.starred ? "removed from" : "added to"
+        } your starred items`,
       });
     } catch (err) {
       Logger.error("Star/unstar error:", err);
@@ -561,22 +536,8 @@ const CloudStorage = () => {
     }
   };
 
-  const handleRegionChange = (value: StorageRegion) => {
-    if (isRegionLocked) {
-      toast({
-        title: "Region locked",
-        description: "Your storage region is already set for this account.",
-      });
-      return;
-    }
-
-    lockRegion(value);
-    toast({
-      title: "Region locked",
-      description: `${getStorageRegionLabel(
-        value
-      )} selected. This cannot be changed later.`,
-    });
+  const handleRegionChange = (value: string) => {
+    setSelectedRegion(value);
   };
 
   const handleSort = (value: string) => {
@@ -641,7 +602,7 @@ const CloudStorage = () => {
       JSON.stringify({
         fileIds: selectedFiles.includes(fileId) ? selectedFiles : [fileId],
         operation: e.ctrlKey ? "copy" : "move",
-      })
+      }),
     );
 
     e.dataTransfer.effectAllowed = e.ctrlKey ? "copy" : "move";
@@ -691,13 +652,13 @@ const CloudStorage = () => {
 
       if (fileIds.length > 0) {
         const sourceFileNames = fileIds.map((id: string) =>
-          getRelativePath(id)
+          getRelativePath(id),
         );
 
         const destinationFolder = getRelativePath(folderId);
 
         const filesData = {
-          region: selectedRegion,
+          region: "virginia",
           userId,
           sourceFileNames,
           destinationFolder,
@@ -711,8 +672,9 @@ const CloudStorage = () => {
 
         toast({
           title: `Files ${operation === "copy" ? "Copied" : "Moved"}`,
-          description: `${fileIds.length} file(s) ${operation === "copy" ? "copied" : "moved"
-            } successfully`,
+          description: `${fileIds.length} file(s) ${
+            operation === "copy" ? "copied" : "moved"
+          } successfully`,
         });
 
         setSelectedFiles([]);
@@ -750,7 +712,7 @@ const CloudStorage = () => {
 
     const filesToDownload = files.filter(
       (file: FileItem) =>
-        selectedFiles.includes(file.id) && file.fileType !== "folder"
+        selectedFiles.includes(file.id) && file.fileType !== "folder",
     );
 
     if (selectedFiles.length !== filesToDownload.length) {
@@ -766,7 +728,7 @@ const CloudStorage = () => {
         const { data: downloadData } = await triggerDownloadFile({
           fileName: file.fileName,
           userId,
-          region: selectedRegion,
+          region: "virginia",
           key: file.id,
         });
 
@@ -856,8 +818,9 @@ const CloudStorage = () => {
         <CardContent className="p-0">
           <div
             data-testid="dashboard-sense-cloud-content"
-            className={`flex flex-col lg:flex-row min-h-[600px] relative ${isDragging ? "bg-muted/50" : ""
-              }`}
+            className={`flex flex-col lg:flex-row min-h-[600px] relative ${
+              isDragging ? "bg-muted/50" : ""
+            }`}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -1067,29 +1030,20 @@ const CloudStorage = () => {
                           size="sm"
                           variant="ghost"
                           className="text-base [&_svg]:size-5 text-[#454545] dark:text-[#B9C2D5] gap-2"
-                          disabled={isRegionLocked}
                         >
                           <Globe className="h-5 w-5" />
-                          {selectedRegionLabel}
-                          {isRegionLocked && <Lock className="h-4 w-4" />}
+                          Region
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Select Location</DropdownMenuLabel>
                         <DropdownMenuRadioGroup
                           value={selectedRegion}
-                          onValueChange={(value) =>
-                            handleRegionChange(value as StorageRegion)
-                          }
+                          onValueChange={handleRegionChange}
                         >
-                          {STORAGE_REGIONS.map((region) => (
-                            <DropdownMenuRadioItem
-                              key={region.value}
-                              value={region.value}
-                            >
-                              {region.label}
-                            </DropdownMenuRadioItem>
-                          ))}
+                          <DropdownMenuRadioItem value="us-east-1">
+                            New York
+                          </DropdownMenuRadioItem>
                         </DropdownMenuRadioGroup>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -1264,7 +1218,7 @@ const CloudStorage = () => {
                                       : "w-full gap-2"
                                   }
                                   data-testid="storage-share-button"
-                                // className={"w-full"}
+                                  // className={"w-full"}
                                 >
                                   <Share2 className="h-4 w-4" />
                                   Share
@@ -1337,7 +1291,7 @@ const CloudStorage = () => {
                         </p>
                       </div>
                     ) : (
-                      <Duplicates userId={userId} region={selectedRegion} />
+                      <Duplicates userId={userId} region="virginia" />
                     )
                   ) : (
                     <>
@@ -1398,8 +1352,8 @@ const CloudStorage = () => {
                                                 visibleFiles.length > 0 &&
                                                 visibleFiles.every((file) =>
                                                   selectedFiles.includes(
-                                                    file.id
-                                                  )
+                                                    file.id,
+                                                  ),
                                                 )
                                               }
                                               onCheckedChange={(checked) =>
@@ -1423,10 +1377,11 @@ const CloudStorage = () => {
                                           (file, index) => (
                                             <TableRow
                                               key={file.id}
-                                              className={`hover:bg-muted/50 ${dragOverFolderId === file.id
-                                                ? "bg-muted ring-2 ring-primary"
-                                                : ""
-                                                }`}
+                                              className={`hover:bg-muted/50 ${
+                                                dragOverFolderId === file.id
+                                                  ? "bg-muted ring-2 ring-primary"
+                                                  : ""
+                                              }`}
                                               onDoubleClick={() => {
                                                 if (
                                                   file.fileType !== "folder"
@@ -1442,9 +1397,9 @@ const CloudStorage = () => {
                                               onDragOver={(e) =>
                                                 file.fileType === "folder"
                                                   ? handleFolderDragOver(
-                                                    e,
-                                                    file.id
-                                                  )
+                                                      e,
+                                                      file.id,
+                                                    )
                                                   : undefined
                                               }
                                               onDragLeave={(e) =>
@@ -1463,7 +1418,7 @@ const CloudStorage = () => {
                                                   <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
                                                   <Checkbox
                                                     checked={selectedFiles.includes(
-                                                      file.id
+                                                      file.id,
                                                     )}
                                                     onCheckedChange={() =>
                                                       handleFileSelect(file.id)
@@ -1478,16 +1433,17 @@ const CloudStorage = () => {
                                                     title:
                                                       "Click to open folder",
                                                   })}
-                                                  className={`flex items-center gap-2 ${file.fileType ===
-                                                    "folder" &&
+                                                  className={`flex items-center gap-2 ${
+                                                    file.fileType ===
+                                                      "folder" &&
                                                     "cursor-pointer"
-                                                    }`}
+                                                  }`}
                                                   onClick={() => {
                                                     if (
                                                       file.fileType === "folder"
                                                     ) {
                                                       handleFolderSelection(
-                                                        file
+                                                        file,
                                                       );
                                                     }
                                                   }}
@@ -1512,7 +1468,7 @@ const CloudStorage = () => {
                                                         onClick={(event) => {
                                                           event.stopPropagation();
                                                           handleCopyFileName(
-                                                            file.fileName
+                                                            file.fileName,
                                                           );
                                                         }}
                                                       >
@@ -1570,17 +1526,17 @@ const CloudStorage = () => {
                                                       <>
                                                         {file.fileType !==
                                                           "folder" && (
-                                                            <DropdownMenuItem
-                                                              onClick={() =>
-                                                                setFilePreview(
-                                                                  file
-                                                                )
-                                                              }
-                                                            >
-                                                              <Eye className="h-4 w-4 mr-2" />
-                                                              View
-                                                            </DropdownMenuItem>
-                                                          )}
+                                                          <DropdownMenuItem
+                                                            onClick={() =>
+                                                              setFilePreview(
+                                                                file,
+                                                              )
+                                                            }
+                                                          >
+                                                            <Eye className="h-4 w-4 mr-2" />
+                                                            View
+                                                          </DropdownMenuItem>
+                                                        )}
 
                                                         <DropdownMenuItem
                                                           disabled={
@@ -1593,17 +1549,17 @@ const CloudStorage = () => {
                                                               "folder"
                                                             ) {
                                                               handleFolderDownload(
-                                                                file
+                                                                file,
                                                               );
                                                             } else {
                                                               handleDownload(
-                                                                file
+                                                                file,
                                                               );
                                                             }
                                                           }}
                                                         >
                                                           {downloadingFile ===
-                                                            file.fileName ? (
+                                                          file.fileName ? (
                                                             <>
                                                               <Loader2 className="h-4 w-4 mr-2 animate-spin text-primary" />
                                                               Downloading...
@@ -1624,7 +1580,7 @@ const CloudStorage = () => {
                                                             <DropdownMenuItem
                                                               onClick={() =>
                                                                 handleShare(
-                                                                  file
+                                                                  file,
                                                                 )
                                                               }
                                                               data-testid="storage-share-button"
@@ -1637,11 +1593,11 @@ const CloudStorage = () => {
 
                                                         {selectedFiles.length !==
                                                           1 && (
-                                                            <TooltipContent side="left">
-                                                              You can only share
-                                                              one file at a time
-                                                            </TooltipContent>
-                                                          )}
+                                                          <TooltipContent side="left">
+                                                            You can only share
+                                                            one file at a time
+                                                          </TooltipContent>
+                                                        )}
                                                       </Tooltip>
                                                     </TooltipProvider>
 
@@ -1649,7 +1605,7 @@ const CloudStorage = () => {
                                                       <DropdownMenuItem
                                                         onClick={() =>
                                                           cancelShareForObject(
-                                                            file.id
+                                                            file.id,
                                                           )
                                                         }
                                                       >
@@ -1670,7 +1626,7 @@ const CloudStorage = () => {
                                                     <DropdownMenuItem
                                                       onClick={() =>
                                                         handleRenameSelected(
-                                                          file
+                                                          file,
                                                         )
                                                       }
                                                     >
@@ -1680,38 +1636,38 @@ const CloudStorage = () => {
                                                     <DropdownMenuSeparator />
                                                     {file.fileType !==
                                                       "folder" && (
-                                                        <DropdownMenuItem
-                                                          onClick={() =>
-                                                            handleMoveSelected(
-                                                              file
-                                                            )
-                                                          }
-                                                        >
-                                                          <FolderIcon className="h-4 w-4 mr-2" />
-                                                          Move Selected
-                                                        </DropdownMenuItem>
-                                                      )}
+                                                      <DropdownMenuItem
+                                                        onClick={() =>
+                                                          handleMoveSelected(
+                                                            file,
+                                                          )
+                                                        }
+                                                      >
+                                                        <FolderIcon className="h-4 w-4 mr-2" />
+                                                        Move Selected
+                                                      </DropdownMenuItem>
+                                                    )}
                                                     {file.fileType !==
                                                       "folder" && (
-                                                        <DropdownMenuItem
-                                                          onClick={() =>
-                                                            handleCopySelected(
-                                                              file
-                                                            )
-                                                          }
-                                                        >
-                                                          <Copy className="h-4 w-4 mr-2" />
-                                                          Copy Selected
-                                                        </DropdownMenuItem>
-                                                      )}
+                                                      <DropdownMenuItem
+                                                        onClick={() =>
+                                                          handleCopySelected(
+                                                            file,
+                                                          )
+                                                        }
+                                                      >
+                                                        <Copy className="h-4 w-4 mr-2" />
+                                                        Copy Selected
+                                                      </DropdownMenuItem>
+                                                    )}
                                                     <DropdownMenuItem
                                                       className="text-destructive"
                                                       onClick={() => {
                                                         setSelectedFilesToDelete(
-                                                          [file.fileName]
+                                                          [file.fileName],
                                                         );
                                                         setDeleteDialogOpen(
-                                                          true
+                                                          true,
                                                         );
                                                       }}
                                                       data-testid="storage-delete-selected-button"
@@ -1723,7 +1679,7 @@ const CloudStorage = () => {
                                                 </DropdownMenu>
                                               </TableCell>
                                             </TableRow>
-                                          )
+                                          ),
                                         )}
                                       </TableBody>
                                     </Table>
@@ -1768,12 +1724,12 @@ const CloudStorage = () => {
                                     {pagination.total === 0
                                       ? 0
                                       : (pagination.page - 1) *
-                                      pagination.limit +
-                                      1}{" "}
+                                          pagination.limit +
+                                        1}{" "}
                                     to{" "}
                                     {Math.min(
                                       pagination.page * pagination.limit,
-                                      pagination.total
+                                      pagination.total,
                                     )}{" "}
                                     of {pagination.total} files
                                   </div>
@@ -1905,8 +1861,8 @@ const CloudStorage = () => {
               </Tabs>
             </div>
           </div>
-        </CardContent >
-      </Card >
+        </CardContent>
+      </Card>
 
       <FilePreviewDialog
         file={filePreview}
@@ -1924,7 +1880,6 @@ const CloudStorage = () => {
           if (!open) setFileToRename(null);
         }}
         file={fileToRename}
-        region={selectedRegion}
         onRenamed={({ oldKey, newKey, newName }) => {
           const oldRoot = oldKey.endsWith("/") ? oldKey : `${oldKey}/`;
           const newRoot = newKey.endsWith("/") ? newKey : `${newKey}/`;
@@ -1941,7 +1896,7 @@ const CloudStorage = () => {
                 return { ...entry, id: updatedId, fileName: updatedName };
               }
               return entry;
-            })
+            }),
           );
 
           setSelectedFolder((prev) => {
@@ -1993,14 +1948,13 @@ const CloudStorage = () => {
         }}
         file={
           files.find(
-            (f: FileItem) => f.fileName === selectedFilesToDelete[0]
+            (f: FileItem) => f.fileName === selectedFilesToDelete[0],
           ) || null
         }
         selectedFolder={selectedFolder}
-        region={selectedRegion}
         onDeleteComplete={() => {
           setSelectedFiles((prev) =>
-            prev.filter((id) => id !== selectedFilesToDelete[0])
+            prev.filter((id) => id !== selectedFilesToDelete[0]),
           );
           setSelectedFilesToDelete([]);
         }}
@@ -2010,9 +1964,6 @@ const CloudStorage = () => {
       <StoragePlansDialog
         open={showStoragePlans}
         onOpenChange={setShowStoragePlans}
-        selectedRegion={selectedRegion}
-        isRegionLocked={isRegionLocked}
-        onRegionChange={handleRegionChange}
       />
 
       {/* Bulk Share Dialog */}
@@ -2022,7 +1973,6 @@ const CloudStorage = () => {
         files={files}
         selectedFiles={selectedFiles}
         selectedFolder={selectedFolder}
-        region={selectedRegion}
       />
 
       {/* Share Dialog */}
@@ -2031,7 +1981,6 @@ const CloudStorage = () => {
         onOpenChange={setShowShareDialog}
         file={selectedFileForShare}
         selectedFolder={selectedFolder}
-        region={selectedRegion}
       />
 
       {/* Move Files Dialog */}
@@ -2041,7 +1990,6 @@ const CloudStorage = () => {
         selectedFiles={selectedFiles}
         setSelectedFiles={setSelectedFiles}
         selectedFolder={selectedFolder}
-        region={selectedRegion}
       />
       {/* Copy Files Dialog */}
       <CopyFilesDialog
@@ -2050,7 +1998,6 @@ const CloudStorage = () => {
         selectedFiles={selectedFiles}
         setSelectedFiles={setSelectedFiles}
         selectedFolder={selectedFolder}
-        region={selectedRegion}
       />
 
       {/* Storage Sync Dialog */}
@@ -2060,11 +2007,8 @@ const CloudStorage = () => {
         folderPath={folderPath}
         prefillFiles={droppedFiles}
         prefillToken={dropSession}
-        region={selectedRegion}
-        isRegionLocked={isRegionLocked}
-        onRegionChange={handleRegionChange}
-      // handleFileUpload={handleFileUpload}
-      // uploadProgress={uploadProgress}
+        // handleFileUpload={handleFileUpload}
+        // uploadProgress={uploadProgress}
       />
 
       {/* Storage Sync Dialog */}
@@ -2083,8 +2027,7 @@ const CloudStorage = () => {
         open={showNewFolderDialog}
         onOpenChange={setShowNewFolderDialog}
         folderPath={folderPath}
-        region={selectedRegion}
-      // onCreate={handleCreateFolder}
+        // onCreate={handleCreateFolder}
       />
     </>
   );
