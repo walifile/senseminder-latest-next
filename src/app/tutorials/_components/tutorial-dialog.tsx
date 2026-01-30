@@ -1,5 +1,7 @@
 "use client";
 
+import type { Tutorial } from "@/types/tutorial";
+
 import Image from "next/image";
 
 import {
@@ -12,21 +14,6 @@ import {
 } from "@/components/ui/dialog";
 
 import GradientPillBadge from "@/components/shared/gradient-pill-badge";
-
-export type Tutorial = {
-  id: number;
-  title: string;
-  duration: string;
-  description: string;
-  videoUrl: string;
-  youtubeUrl: string;
-  category: string;
-  difficulty: string;
-  uploadDate: string;
-  lastUpdated: string;
-  thumbnail: string;
-  showCategory?: boolean;
-};
 
 type TutorialDialogProps = {
   tutorial: Tutorial;

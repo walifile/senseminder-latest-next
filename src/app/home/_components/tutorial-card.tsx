@@ -1,3 +1,5 @@
+import type { Tutorial } from "@/types/tutorial";
+
 import Image from "next/image";
 
 import { cn } from "@/lib/utils";
@@ -5,15 +7,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
 interface TutorialCardProps {
-  tutorial: {
-    id: number;
-    title: string;
-    duration: string;
-    description: string;
-    image: string;
-    videoUrl: string;
-    youtubeUrl: string;
-  };
+  tutorial: Tutorial;
   index: number;
   type: "desktop" | "mobile";
   onClick: () => void;
@@ -40,7 +34,7 @@ export const TutorialCard = ({
     )}
   >
     <Image
-      src={tutorial.image}
+      src={tutorial.thumbnail}
       alt={tutorial.title}
       fill
       className="object-cover transition-transform duration-500 group-hover:scale-105"

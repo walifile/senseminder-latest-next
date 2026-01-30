@@ -16,8 +16,6 @@ const {
   FETCH_PC_URL,
   VM_MANAGEMENT_URL,
   VM_SESSION_URL,
-  VM_VALIDATE_SESSION_URL,
-  VM_STOP_SESSION_URL,
   VM_EXTEND_SESSION_URL,
   VM_SCHEDULES_URL,
   } = appConfig;
@@ -343,7 +341,7 @@ export const fileManagerAPI = createApi({
 
     validateSession: builder.mutation({
       query: ({ instanceId, userId, sessionToken }) => ({
-        url: VM_VALIDATE_SESSION_URL,
+        url: VM_SESSION_URL,
         method: "POST",
         body: {
           action: "validate-session",
@@ -360,7 +358,7 @@ export const fileManagerAPI = createApi({
 
     stopSession: builder.mutation({
       query: ({ instanceId, userId }) => ({
-        url: VM_STOP_SESSION_URL,
+        url: VM_SESSION_URL,
         method: "POST",
         body: {
           action: "stop-session",
@@ -793,6 +791,8 @@ export const {
   useStartVMMutation,
   useRestartVMMutation, // 🔹 add this
   useLaunchVMMutation,
+  useValidateSessionMutation,
+  useStopSessionMutation,
   useListFilesQuery,
   useListRemoteDesktopQuery,
   useUploadFileMutation,
