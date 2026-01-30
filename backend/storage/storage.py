@@ -1034,6 +1034,10 @@ def handle_list(event):
         except Exception as e:
             print(f"derive shared failed: {e}")
 
+        # If searching, default to recursive to include nested folders.
+        if search_term and not recursive:
+            recursive = True
+
         # Apply folder scoping when a folder is selected, even with filters.
         if folder:
             folder = folder.strip('/') + '/'
@@ -1050,11 +1054,18 @@ def handle_list(event):
                 ]
         elif not filter_type:
             base_prefix = f"{user_id}/uploads/"
-            files = [
-                f for f in files
-                if f['id'].startswith(base_prefix)
-                and '/' not in f['id'][len(base_prefix):].strip('/')
-            ]
+            if recursive:
+                files = [
+                    f for f in files
+                    if f['id'].startswith(base_prefix)
+                    and f['id'] != base_prefix
+                ]
+            else:
+                files = [
+                    f for f in files
+                    if f['id'].startswith(base_prefix)
+                    and '/' not in f['id'][len(base_prefix):].strip('/')
+                ]
 
         if filter_type and not folder:
             ft = filter_type.lower()
@@ -2276,11 +2287,20 @@ def handle_public_shared_list(event):
         return response(500, {'message': 'Internal Server Error', 'error': str(e)})
 
 def handle_move_or_copy(event, operation):
-    body = json.loads(event['body'])
+    body = json.loads(event['body']) if 'body' in event else event
     region = body.get('region')
     user_id = body.get('userId')
     source_file_names = body.get('sourceFileNames', [])
-    destination_folder = body.get('destinationFolder', '').strip('/')
+    destination_folder = (body.get('destinationFolder') or '').strip('/')
+
+    if not isinstance(source_file_names, list):
+        return response(400, {'message': 'sourceFileNames must be a list.'})
+
+    # Normalize/clean inputs to avoid None/empty values.
+    source_file_names = [
+        name.strip().strip('/') for name in source_file_names
+        if isinstance(name, str) and name.strip()
+    ]
 
     if not user_id or not source_file_names or destination_folder is None:
         return response(400, {'message': 'region, userId, sourceFileNames, and destinationFolder are required.'})
@@ -2313,6 +2333,11 @@ def handle_move_or_copy(event, operation):
             continue
 
         is_folder = (src_meta.get('fileType') == 'folder')
+
+        if is_folder and destination_folder:
+            src_rel = source_name.strip('/')
+            if destination_folder == src_rel or destination_folder.startswith(f"{src_rel}/"):
+                return response(400, {'message': 'Cannot copy a folder into itself or its subfolder.'})
 
         # ---------------------
         # FOLDER BRANCH
