@@ -187,6 +187,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
           successCount === 1 ? "" : "s"
         } uploaded successfully.`,
       });
+      closeDialog();
     } else if (successCount > 0 && errorCount > 0) {
       toast({
         title: "Upload completed with errors",
