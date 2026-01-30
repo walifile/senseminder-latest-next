@@ -7,6 +7,14 @@ import SharedFileViewer from "@/app/dashboard/sense-cloud/_components/shared-fil
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import {
+  DOWNLOAD_LINK_MISSING_MESSAGE,
+  DOWNLOAD_UNAVAILABLE_TITLE,
+  INVALID_LINK_MESSAGE,
+  TEMP_UNAVAILABLE_MESSAGE,
+} from "@/app/dashboard/sense-cloud/constants/share-messages";
+import { getShareStatusMessage } from "@/app/dashboard/sense-cloud/utils";
 import {
   Card,
   CardTitle,
@@ -17,9 +25,37 @@ import {
 
 import { Loader2, Download as DownloadIcon } from "lucide-react";
 
+const fetchDownloadUrl = async (
+  shareId: string
+): Promise<{ downloadUrl?: string; message?: string }> => {
+  const res = await fetch(
+    `/api/share/${shareId}?disposition=attachment&mode=json`,
+    {
+      headers: { Accept: "application/json" },
+    }
+  );
+
+  const payload = (await res.json().catch(() => ({}))) as {
+    downloadUrl?: string;
+    message?: string;
+  };
+
+  if (!res.ok) {
+    return { message: payload.message || INVALID_LINK_MESSAGE };
+  }
+
+  if (!payload.downloadUrl) {
+    return { message: DOWNLOAD_LINK_MISSING_MESSAGE };
+  }
+
+  return { downloadUrl: payload.downloadUrl };
+};
+
 export default function Client({ shareId }: { shareId: string }) {
   const { data, isLoading, isError } = useGetShareInfoQuery({ shareId });
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   if (isLoading) {
     return (
@@ -48,12 +84,13 @@ export default function Client({ shareId }: { shareId: string }) {
   }
 
   if (data.status !== "active") {
+    const statusMessage = getShareStatusMessage(data.status);
     return (
       <div className="container mx-auto max-w-3xl pt-32 pb-24">
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle>Link unavailable</CardTitle>
-            <CardDescription>This link is {data.status}.</CardDescription>
+            <CardDescription>{statusMessage}</CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -66,10 +103,26 @@ export default function Client({ shareId }: { shareId: string }) {
     data.expiresAt
   );
 
-  const handleDownload = () => {
+  const reportDownloadError = (message: string) => {
+    setDownloadError(message);
+    toast({ title: DOWNLOAD_UNAVAILABLE_TITLE, description: message });
+  };
+
+  const handleDownload = async () => {
     setIsDownloading(true);
-    window.location.href = downloadUrl;
-    window.setTimeout(() => setIsDownloading(false), 3000);
+    setDownloadError(null);
+    try {
+      const { downloadUrl: url, message } = await fetchDownloadUrl(shareId);
+      if (!url) {
+        reportDownloadError(message || INVALID_LINK_MESSAGE);
+        return;
+      }
+      window.location.href = url;
+    } catch {
+      reportDownloadError(TEMP_UNAVAILABLE_MESSAGE);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   return (
@@ -110,6 +163,11 @@ export default function Client({ shareId }: { shareId: string }) {
             )}
           </Button>
         </CardHeader>
+        {downloadError && (
+          <div className="px-6 pb-2 text-sm text-destructive">
+            {downloadError}
+          </div>
+        )}
         <CardContent>
           <div className="rounded-lg border bg-muted/10 p-2 sm:p-3">
             <SharedFileViewer name={fileName} previewUrl={previewUrl} />

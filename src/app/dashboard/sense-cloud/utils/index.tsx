@@ -122,6 +122,16 @@ export function formatBytes(bytes: number): string {
   return `${tb.toFixed(0)} TB`;
 }
 
+export const getShareStatusMessage = (status?: string) => {
+  if (status === "revoked") {
+    return "This shared link was revoked by the owner.";
+  }
+  if (status === "expired") {
+    return "This shared link has expired.";
+  }
+  return "This shared link is no longer available.";
+};
+
 export function getRelativePath(fullPath: string): string {
   return fullPath.split("/").slice(2).join("/");
 }
