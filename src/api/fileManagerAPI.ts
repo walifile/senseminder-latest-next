@@ -15,7 +15,6 @@ const {
   VM_MANAGEMENT_URL,
   VM_SESSION_URL,
   VM_EXTEND_SESSION_URL,
-  VM_SCHEDULES_URL,
 } = appConfig;
 
 export const fileManagerAPI = createApi({
@@ -277,18 +276,6 @@ export const fileManagerAPI = createApi({
           instanceId,
           sessionToken,
         },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
-      invalidatesTags: ["VM"],
-    }),
-
-    scheduleVM: builder.mutation({
-      query: (scheduleData) => ({
-        url: VM_SCHEDULES_URL,
-        method: "POST",
-        body: scheduleData,
         headers: {
           "Content-Type": "application/json",
         },
@@ -683,7 +670,6 @@ export const fileManagerAPI = createApi({
 export const {
   useGetRegionsQuery,
   useGetUserRegionQuery,
-  useScheduleVMMutation,
   useStopVMMutation,
   // useDeleteVMMutation,
   useStartVMMutation,
