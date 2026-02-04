@@ -7,8 +7,6 @@ import appConfig from "@/config/app-config";
 
 import { createApi } from "@reduxjs/toolkit/query/react";
 
-import { getIdToken } from "@/lib/auth/token";
-
 import { baseQueryWithReauth } from "./apiUtils";
 
 const {
@@ -22,7 +20,7 @@ const {
 
 export const fileManagerAPI = createApi({
   reducerPath: "fileManagerAPI",
-  baseQuery: baseQueryWithReauth(false),
+  baseQuery: baseQueryWithReauth(),
   tagTypes: ["Files", "VM", "Hierarchy", "Regions", "UserRegion"],
   endpoints: (builder) => ({
     getRegions: builder.query<
@@ -120,53 +118,18 @@ export const fileManagerAPI = createApi({
     //   invalidatesTags: ["VM"],
     // }),
     stopVM: builder.mutation({
-      async queryFn(instanceId: string) {
-        try {
-          const token = await getIdToken();
-
-          const response = await fetch(VM_MANAGEMENT_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              action: "stop",
-              instanceId,
-              region: "us-east-1",
-            }),
-          });
-
-          const text = await response.text();
-          let data;
-
-          try {
-            data = JSON.parse(text);
-          } catch {
-            data = { message: text };
-          }
-
-          if (!response.ok) {
-            return {
-              error: {
-                status: response.status,
-                data:
-                  data?.message ||
-                  "Something went wrong while stopping the PC.",
-              },
-            };
-          }
-
-          return { data };
-        } catch (error) {
-          return {
-            error: {
-              status: 500,
-              data: error instanceof Error ? error.message : "Unknown error",
-            },
-          };
-        }
-      },
+      query: (instanceId) => ({
+        url: VM_MANAGEMENT_URL,
+        method: "POST",
+        body: {
+          action: "stop",
+          instanceId,
+          region: "us-east-1",
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
       invalidatesTags: ["VM"],
     }),
 
@@ -224,310 +187,100 @@ export const fileManagerAPI = createApi({
     //   invalidatesTags: ["VM"],
     // }),
     startVM: builder.mutation({
-      async queryFn(instanceId: string) {
-        try {
-          const token = await getIdToken();
-
-          const response = await fetch(VM_MANAGEMENT_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              action: "start",
-              instanceId,
-              region: "us-east-1",
-            }),
-          });
-
-          const text = await response.text();
-          let data;
-
-          try {
-            data = JSON.parse(text);
-          } catch {
-            data = { message: text };
-          }
-
-          if (!response.ok) {
-            return {
-              error: {
-                status: response.status,
-                data:
-                  data?.message ||
-                  "Something went wrong while starting the PC.",
-              },
-            };
-          }
-
-          return { data };
-        } catch (error) {
-          return {
-            error: {
-              status: 500,
-              data: error instanceof Error ? error.message : "Unknown error",
-            },
-          };
-        }
-      },
+      query: (instanceId) => ({
+        url: VM_MANAGEMENT_URL,
+        method: "POST",
+        body: {
+          action: "start",
+          instanceId,
+          region: "us-east-1",
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
       invalidatesTags: ["VM"],
     }),
 
     restartVM: builder.mutation({
-      async queryFn(instanceId: string) {
-        try {
-          const token = await getIdToken();
-
-          const response = await fetch(VM_MANAGEMENT_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              action: "restart",
-              instanceId,
-              region: "us-east-1",
-            }),
-          });
-
-          const text = await response.text();
-          let data;
-
-          try {
-            data = JSON.parse(text);
-          } catch {
-            data = { message: text };
-          }
-
-          if (!response.ok) {
-            return {
-              error: {
-                status: response.status,
-                data:
-                  data?.message ||
-                  "Something went wrong while restarting the PC.",
-              },
-            };
-          }
-
-          return { data };
-        } catch (error) {
-          return {
-            error: {
-              status: 500,
-              data: error instanceof Error ? error.message : "Unknown error",
-            },
-          };
-        }
-      },
+      query: (instanceId) => ({
+        url: VM_MANAGEMENT_URL,
+        method: "POST",
+        body: {
+          action: "restart",
+          instanceId,
+          region: "us-east-1",
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
       invalidatesTags: ["VM"],
     }),
 
     launchVM: builder.mutation({
-      async queryFn({ instanceId, userId }) {
-        try {
-          const token = await getIdToken();
-
-          const response = await fetch(VM_SESSION_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              action: "start-session",
-              userId,
-              instanceId,
-            }),
-          });
-
-          const text = await response.text();
-          let data;
-
-          try {
-            data = text ? JSON.parse(text) : {};
-          } catch {
-            data = { message: text };
-          }
-
-          if (!response.ok) {
-            return {
-              error: {
-                status: response.status,
-                data:
-                  data?.message ||
-                  "Something went wrong while starting the session.",
-              },
-            };
-          }
-
-          return { data };
-        } catch (error) {
-          return {
-            error: {
-              status: 500,
-              data: error instanceof Error ? error.message : "Unknown error",
-            },
-          };
-        }
-      },
+      query: ({ instanceId, userId }) => ({
+        url: VM_SESSION_URL,
+        method: "POST",
+        body: {
+          action: "start-session",
+          userId,
+          instanceId,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
       invalidatesTags: ["VM"],
     }),
 
     validateSession: builder.mutation({
-      async queryFn({ instanceId, userId, sessionToken }) {
-        try {
-          const token = await getIdToken();
-
-          const response = await fetch(VM_SESSION_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              action: "validate-session",
-              userId,
-              instanceId,
-              sessionToken,
-            }),
-          });
-
-          const text = await response.text();
-          let data;
-
-          try {
-            data = text ? JSON.parse(text) : {};
-          } catch {
-            data = { message: text };
-          }
-
-          if (!response.ok) {
-            return {
-              error: {
-                status: response.status,
-                data:
-                  data?.message ||
-                  "Something went wrong while validating the session.",
-              },
-            };
-          }
-
-          return { data };
-        } catch (error) {
-          return {
-            error: {
-              status: 500,
-              data: error instanceof Error ? error.message : "Unknown error",
-            },
-          };
-        }
-      },
+      query: ({ instanceId, userId, sessionToken }) => ({
+        url: VM_SESSION_URL,
+        method: "POST",
+        body: {
+          action: "validate-session",
+          userId,
+          instanceId,
+          sessionToken,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
       invalidatesTags: ["VM"],
     }),
 
     stopSession: builder.mutation({
-      async queryFn({ instanceId, userId }) {
-        try {
-          const token = await getIdToken();
-
-          const response = await fetch(VM_SESSION_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              action: "stop-session",
-              userId,
-              instanceId,
-            }),
-          });
-
-          const text = await response.text();
-          let data;
-
-          try {
-            data = text ? JSON.parse(text) : {};
-          } catch {
-            data = { message: text };
-          }
-
-          if (!response.ok) {
-            return {
-              error: {
-                status: response.status,
-                data:
-                  data?.message ||
-                  "Something went wrong while stopping the session.",
-              },
-            };
-          }
-
-          return { data };
-        } catch (error) {
-          return {
-            error: {
-              status: 500,
-              data: error instanceof Error ? error.message : "Unknown error",
-            },
-          };
-        }
-      },
+      query: ({ instanceId, userId }) => ({
+        url: VM_SESSION_URL,
+        method: "POST",
+        body: {
+          action: "stop-session",
+          userId,
+          instanceId,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
       invalidatesTags: ["VM"],
     }),
 
     extendSession: builder.mutation({
-      async queryFn({ instanceId, userId, sessionToken }) {
-        try {
-          const token = await getIdToken();
-
-          const response = await fetch(VM_EXTEND_SESSION_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              action: "extend-session",
-              userId,
-              instanceId,
-              sessionToken,
-            }),
-          });
-
-          const text = await response.text();
-          let data;
-
-          try {
-            data = text ? JSON.parse(text) : {};
-          } catch {
-            data = { message: text };
-          }
-
-          if (!response.ok) {
-            return {
-              error: {
-                status: response.status,
-                data:
-                  data?.message ||
-                  "Something went wrong while extending the session.",
-              },
-            };
-          }
-
-          return { data };
-        } catch (error) {
-          return {
-            error: {
-              status: 500,
-              data: error instanceof Error ? error.message : "Unknown error",
-            },
-          };
-        }
-      },
+      query: ({ instanceId, userId, sessionToken }) => ({
+        url: VM_EXTEND_SESSION_URL,
+        method: "POST",
+        body: {
+          action: "extend-session",
+          userId,
+          instanceId,
+          sessionToken,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
       invalidatesTags: ["VM"],
     }),
 

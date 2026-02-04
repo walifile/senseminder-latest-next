@@ -11,6 +11,8 @@ import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const { BASE_URL } = appConfig;
 
+type AuthFetchArgs = FetchArgs & { skipAuth?: boolean };
+
 // Function to create a base query with optional authentication (default: true)
 const createBaseQuery = (useAuth: boolean = true) =>
   fetchBaseQuery({
@@ -37,10 +39,15 @@ const createBaseQuery = (useAuth: boolean = true) =>
 export const baseQueryWithReauth =
   (
     useAuth: boolean = true
-  ): BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> =>
+  ): BaseQueryFn<string | AuthFetchArgs, unknown, FetchBaseQueryError> =>
   async (args, api, extraOptions) => {
-    const baseQuery = createBaseQuery(useAuth);
-    let result = await baseQuery(args, api, extraOptions);
+    const shouldUseAuth =
+      typeof args === "object" && "skipAuth" in args
+        ? !args.skipAuth
+        : useAuth;
+
+    const baseQuery = createBaseQuery(shouldUseAuth);
+    let result = await baseQuery(args as FetchArgs, api, extraOptions);
 
     const customError = result.error as FetchBaseQueryError & {
       originalStatus?: number;
