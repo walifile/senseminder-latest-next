@@ -5,9 +5,9 @@ import type {
 
 import appConfig from "@/config/app-config";
 
-import { fetchAuthSession } from "aws-amplify/auth";
-
 import { createApi } from "@reduxjs/toolkit/query/react";
+
+import { getIdToken } from "@/lib/auth/token";
 
 import { baseQueryWithReauth } from "./apiUtils";
 
@@ -18,7 +18,7 @@ const {
   VM_SESSION_URL,
   VM_EXTEND_SESSION_URL,
   VM_SCHEDULES_URL,
-  } = appConfig;
+} = appConfig;
 
 export const fileManagerAPI = createApi({
   reducerPath: "fileManagerAPI",
@@ -40,7 +40,9 @@ export const fileManagerAPI = createApi({
       query: (params) => ({
         url: "regions",
         method: "GET",
-        params: params?.includeDisabled ? { includeDisabled: "true" } : undefined,
+        params: params?.includeDisabled
+          ? { includeDisabled: "true" }
+          : undefined,
       }),
       providesTags: ["Regions"],
     }),
@@ -63,7 +65,13 @@ export const fileManagerAPI = createApi({
       providesTags: ["UserRegion"],
     }),
     getShareInfo: builder.query<
-      { shareId: string; type: string; status: string; expiresAt?: number; name?: string },
+      {
+        shareId: string;
+        type: string;
+        status: string;
+        expiresAt?: number;
+        name?: string;
+      },
       { shareId: string }
     >({
       query: ({ shareId }) => ({
@@ -114,15 +122,13 @@ export const fileManagerAPI = createApi({
     stopVM: builder.mutation({
       async queryFn(instanceId: string) {
         try {
-          const session = await fetchAuthSession();
-          const token = session.tokens?.idToken?.toString();
-          if (!token) throw new Error("No ID token found");
+          const token = await getIdToken();
 
           const response = await fetch(VM_MANAGEMENT_URL, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: token,
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
               action: "stop",
@@ -190,7 +196,7 @@ export const fileManagerAPI = createApi({
     //         method: "POST",
     //         headers: {
     //           "Content-Type": "application/json",
-    //           Authorization: token,
+    //           Authorization: `Bearer ${token}`,
     //         },
     //         body: JSON.stringify({
     //           action: "start",
@@ -220,15 +226,13 @@ export const fileManagerAPI = createApi({
     startVM: builder.mutation({
       async queryFn(instanceId: string) {
         try {
-          const session = await fetchAuthSession();
-          const token = session.tokens?.idToken?.toString();
-          if (!token) throw new Error("No ID token found");
+          const token = await getIdToken();
 
           const response = await fetch(VM_MANAGEMENT_URL, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: token,
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
               action: "start",
@@ -273,15 +277,13 @@ export const fileManagerAPI = createApi({
     restartVM: builder.mutation({
       async queryFn(instanceId: string) {
         try {
-          const session = await fetchAuthSession();
-          const token = session.tokens?.idToken?.toString();
-          if (!token) throw new Error("No ID token found");
+          const token = await getIdToken();
 
           const response = await fetch(VM_MANAGEMENT_URL, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: token,
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
               action: "restart",
@@ -324,68 +326,208 @@ export const fileManagerAPI = createApi({
     }),
 
     launchVM: builder.mutation({
-      query: ({ instanceId, userId }) => ({
-        url: VM_SESSION_URL,
-        method: "POST",
-        body: {
-          action: "start-session",
-          userId,
-          instanceId,
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
+      async queryFn({ instanceId, userId }) {
+        try {
+          const token = await getIdToken();
+
+          const response = await fetch(VM_SESSION_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              action: "start-session",
+              userId,
+              instanceId,
+            }),
+          });
+
+          const text = await response.text();
+          let data;
+
+          try {
+            data = text ? JSON.parse(text) : {};
+          } catch {
+            data = { message: text };
+          }
+
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data:
+                  data?.message ||
+                  "Something went wrong while starting the session.",
+              },
+            };
+          }
+
+          return { data };
+        } catch (error) {
+          return {
+            error: {
+              status: 500,
+              data: error instanceof Error ? error.message : "Unknown error",
+            },
+          };
+        }
+      },
       invalidatesTags: ["VM"],
     }),
 
     validateSession: builder.mutation({
-      query: ({ instanceId, userId, sessionToken }) => ({
-        url: VM_SESSION_URL,
-        method: "POST",
-        body: {
-          action: "validate-session",
-          userId,
-          instanceId,
-          sessionToken,
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
+      async queryFn({ instanceId, userId, sessionToken }) {
+        try {
+          const token = await getIdToken();
+
+          const response = await fetch(VM_SESSION_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              action: "validate-session",
+              userId,
+              instanceId,
+              sessionToken,
+            }),
+          });
+
+          const text = await response.text();
+          let data;
+
+          try {
+            data = text ? JSON.parse(text) : {};
+          } catch {
+            data = { message: text };
+          }
+
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data:
+                  data?.message ||
+                  "Something went wrong while validating the session.",
+              },
+            };
+          }
+
+          return { data };
+        } catch (error) {
+          return {
+            error: {
+              status: 500,
+              data: error instanceof Error ? error.message : "Unknown error",
+            },
+          };
+        }
+      },
       invalidatesTags: ["VM"],
     }),
 
     stopSession: builder.mutation({
-      query: ({ instanceId, userId }) => ({
-        url: VM_SESSION_URL,
-        method: "POST",
-        body: {
-          action: "stop-session",
-          userId,
-          instanceId,
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
+      async queryFn({ instanceId, userId }) {
+        try {
+          const token = await getIdToken();
+
+          const response = await fetch(VM_SESSION_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              action: "stop-session",
+              userId,
+              instanceId,
+            }),
+          });
+
+          const text = await response.text();
+          let data;
+
+          try {
+            data = text ? JSON.parse(text) : {};
+          } catch {
+            data = { message: text };
+          }
+
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data:
+                  data?.message ||
+                  "Something went wrong while stopping the session.",
+              },
+            };
+          }
+
+          return { data };
+        } catch (error) {
+          return {
+            error: {
+              status: 500,
+              data: error instanceof Error ? error.message : "Unknown error",
+            },
+          };
+        }
+      },
       invalidatesTags: ["VM"],
     }),
 
     extendSession: builder.mutation({
-      query: ({ instanceId, userId, sessionToken }) => ({
-        url: VM_EXTEND_SESSION_URL,
-        method: "POST",
-        body: {
-          action: "extend-session",
-          userId,
-          instanceId,
-          sessionToken,
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
+      async queryFn({ instanceId, userId, sessionToken }) {
+        try {
+          const token = await getIdToken();
+
+          const response = await fetch(VM_EXTEND_SESSION_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              action: "extend-session",
+              userId,
+              instanceId,
+              sessionToken,
+            }),
+          });
+
+          const text = await response.text();
+          let data;
+
+          try {
+            data = text ? JSON.parse(text) : {};
+          } catch {
+            data = { message: text };
+          }
+
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data:
+                  data?.message ||
+                  "Something went wrong while extending the session.",
+              },
+            };
+          }
+
+          return { data };
+        } catch (error) {
+          return {
+            error: {
+              status: 500,
+              data: error instanceof Error ? error.message : "Unknown error",
+            },
+          };
+        }
+      },
       invalidatesTags: ["VM"],
     }),
 
@@ -439,7 +581,10 @@ export const fileManagerAPI = createApi({
       }),
       invalidatesTags: ["Files"],
     }),
-    getSharesForObject: builder.query<{ items: { shareId: string }[] }, { key: string }>({
+    getSharesForObject: builder.query<
+      { items: { shareId: string }[] },
+      { key: string }
+    >({
       query: ({ key }) => ({
         url: "shares",
         method: "GET",
