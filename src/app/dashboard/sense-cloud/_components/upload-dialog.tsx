@@ -41,8 +41,8 @@ import { useSelector } from "react-redux";
 
 import { X, Check, Upload, Trash2, Loader2 } from "lucide-react";
 
-import { useFeedback } from "@/hooks/use-feedback";
 import { useToast } from "@/hooks/use-toast";
+import { useFeedback } from "@/hooks/use-feedback";
 
 interface UploadDialogProps {
   open: boolean;

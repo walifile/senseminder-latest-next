@@ -2,19 +2,17 @@
 
 import { useState } from "react";
 import { useGetShareInfoQuery } from "@/api/fileManagerAPI";
-import { buildSharedFileView } from "@/app/dashboard/sense-cloud/utils";
 import SharedFileViewer from "@/app/dashboard/sense-cloud/_components/shared-file-viewer";
+import { buildSharedFileView , getShareStatusMessage } from "@/app/dashboard/sense-cloud/utils";
+import {
+  INVALID_LINK_MESSAGE,
+  TEMP_UNAVAILABLE_MESSAGE,
+  DOWNLOAD_UNAVAILABLE_TITLE,
+  DOWNLOAD_LINK_MISSING_MESSAGE,
+} from "@/app/dashboard/sense-cloud/constants/share-messages";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import {
-  DOWNLOAD_LINK_MISSING_MESSAGE,
-  DOWNLOAD_UNAVAILABLE_TITLE,
-  INVALID_LINK_MESSAGE,
-  TEMP_UNAVAILABLE_MESSAGE,
-} from "@/app/dashboard/sense-cloud/constants/share-messages";
-import { getShareStatusMessage } from "@/app/dashboard/sense-cloud/utils";
 import {
   Card,
   CardTitle,
@@ -24,6 +22,8 @@ import {
 } from "@/components/ui/card";
 
 import { Loader2, Download as DownloadIcon } from "lucide-react";
+
+import { useToast } from "@/hooks/use-toast";
 
 const fetchDownloadUrl = async (
   shareId: string
@@ -97,7 +97,7 @@ export default function Client({ shareId }: { shareId: string }) {
     );
   }
 
-  const { fileName, ext, expires, downloadUrl, previewUrl } = buildSharedFileView(
+  const { fileName, ext, expires, previewUrl } = buildSharedFileView(
     shareId,
     data.name,
     data.expiresAt
