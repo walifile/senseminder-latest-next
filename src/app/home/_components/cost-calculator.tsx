@@ -17,7 +17,7 @@ import {
   storageOptions,
   locationOptions,
 } from "@/app/build-sensepc/data";
-import { useGetSmartPcConfigQuery } from "@/api/smartPCConfigAPI";
+import { useGetSmartPcConfigQuery } from "@/api/pc-config-api";
 
 import { Button } from "@/components/ui/button";
 
@@ -46,7 +46,7 @@ const CostCalculator = () => {
       operatingSystem: "",
       cpu: "",
       storage: "",
-      region: "",
+      region: locationOptions[0]?.value || "",
       linuxCategory: "Ubuntu_24.04_LTS_X64",
     },
   });
@@ -100,7 +100,10 @@ const CostCalculator = () => {
   const isLinuxOS = selectedOS === "Linux";
 
   // Fetch API cpuOptions via RTK Query
-  const { data: apiConfig } = useGetSmartPcConfigQuery();
+  const { data: apiConfig } = useGetSmartPcConfigQuery(
+    { region: values.region },
+    { skip: !values.region },
+  );
   const apiCpuOptions = apiConfig?.cpuOptions || {};
   const apiCpuCategories = apiConfig?.cpuCategories || {};
 

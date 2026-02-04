@@ -13,7 +13,7 @@ import { fileManagerAPI } from "@/api/fileManagerAPI";
 import { firstTimeSetupAPI } from "@/api/first-time-setup";
 import { smartPCIdleSettingsAPI } from "@/api/smartPC-Idle-settings";
 import { legalDocumentsAPI } from "@/api/legalDocumentsAPI";
-import { smartPCConfigAPI } from "@/api/smartPCConfigAPI";
+import { smartPCConfigAPI } from "@/api/pc-config-api";
 
 import storage from "redux-persist/lib/storage";
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
