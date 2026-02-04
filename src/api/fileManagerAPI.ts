@@ -22,60 +22,6 @@ export const fileManagerAPI = createApi({
   baseQuery: baseQueryWithReauth(),
   tagTypes: ["Files", "VM", "Hierarchy", "Regions", "UserRegion"],
   endpoints: (builder) => ({
-    getRegions: builder.query<
-      {
-        regions: {
-          region?: string;
-          value?: string;
-          label?: string;
-          shortLabel?: string;
-          order?: number;
-        }[];
-      },
-      { includeDisabled?: boolean } | void
-    >({
-      query: (params) => ({
-        url: "regions",
-        method: "GET",
-        params: params?.includeDisabled
-          ? { includeDisabled: "true" }
-          : undefined,
-      }),
-      providesTags: ["Regions"],
-    }),
-    getUserRegion: builder.query<
-      {
-        userId: string;
-        region?: string | null;
-        storedRegion?: string | null;
-        activeRegion?: string | null;
-        hasFiles?: boolean;
-        locked?: boolean;
-      },
-      { userId: string }
-    >({
-      query: ({ userId }) => ({
-        url: "user-region",
-        method: "GET",
-        params: { userId },
-      }),
-      providesTags: ["UserRegion"],
-    }),
-    getShareInfo: builder.query<
-      {
-        shareId: string;
-        type: string;
-        status: string;
-        expiresAt?: number;
-        name?: string;
-      },
-      { shareId: string }
-    >({
-      query: ({ shareId }) => ({
-        url: `shares/${shareId}`,
-        method: "GET",
-      }),
-    }),
     getEstimate: builder.mutation({
       query: ({ configId, storageSize, region }) => ({
         url: ESTIMATION_URL,
@@ -88,6 +34,7 @@ export const fileManagerAPI = createApi({
         headers: {
           "Content-Type": "application/json",
         },
+        skipAuth: true,
       }),
     }),
 
@@ -98,6 +45,7 @@ export const fileManagerAPI = createApi({
         params: {
           userId,
         },
+        skipAuth: true,
       }),
       providesTags: ["VM"],
     }),
@@ -293,6 +241,61 @@ export const fileManagerAPI = createApi({
         },
       }),
       providesTags: ["Hierarchy"],
+    }),
+
+    getRegions: builder.query<
+      {
+        regions: {
+          region?: string;
+          value?: string;
+          label?: string;
+          shortLabel?: string;
+          order?: number;
+        }[];
+      },
+      { includeDisabled?: boolean } | void
+    >({
+      query: (params) => ({
+        url: "regions",
+        method: "GET",
+        params: params?.includeDisabled
+          ? { includeDisabled: "true" }
+          : undefined,
+      }),
+      providesTags: ["Regions"],
+    }),
+    getUserRegion: builder.query<
+      {
+        userId: string;
+        region?: string | null;
+        storedRegion?: string | null;
+        activeRegion?: string | null;
+        hasFiles?: boolean;
+        locked?: boolean;
+      },
+      { userId: string }
+    >({
+      query: ({ userId }) => ({
+        url: "user-region",
+        method: "GET",
+        params: { userId },
+      }),
+      providesTags: ["UserRegion"],
+    }),
+    getShareInfo: builder.query<
+      {
+        shareId: string;
+        type: string;
+        status: string;
+        expiresAt?: number;
+        name?: string;
+      },
+      { shareId: string }
+    >({
+      query: ({ shareId }) => ({
+        url: `shares/${shareId}`,
+        method: "GET",
+      }),
     }),
 
     // storage part

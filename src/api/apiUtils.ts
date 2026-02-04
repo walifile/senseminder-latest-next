@@ -38,13 +38,11 @@ const createBaseQuery = (useAuth: boolean = true) =>
 // Main query function with re-authentication support
 export const baseQueryWithReauth =
   (
-    useAuth: boolean = true
+    useAuth: boolean = true,
   ): BaseQueryFn<string | AuthFetchArgs, unknown, FetchBaseQueryError> =>
   async (args, api, extraOptions) => {
     const shouldUseAuth =
-      typeof args === "object" && "skipAuth" in args
-        ? !args.skipAuth
-        : useAuth;
+      typeof args === "object" && "skipAuth" in args ? !args.skipAuth : useAuth;
 
     const baseQuery = createBaseQuery(shouldUseAuth);
     let result = await baseQuery(args as FetchArgs, api, extraOptions);
@@ -62,7 +60,7 @@ export const baseQueryWithReauth =
           result = await baseQuery(args, api, extraOptions);
         } else {
           // api.dispatch(logOut());
-          window.location.href = "/";
+          // window.location.href = "/";
         }
       } else {
         // api.dispatch(logOut());
@@ -73,7 +71,7 @@ export const baseQueryWithReauth =
       customError?.originalStatus === 401
     ) {
       // api.dispatch(logOut());
-      window.location.href = "/";
+      // window.location.href = "/";
     }
 
     return result;
