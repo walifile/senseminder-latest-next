@@ -26,7 +26,7 @@ const baseQuery = fetchBaseQuery({
   prepareHeaders: async (headers) => {
     try {
       const idToken = await getIdToken();
-      headers.set("Authorization", idToken);
+      headers.set("Authorization", `Bearer ${idToken}`);
       headers.set("Content-Type", "application/json");
     } catch (err) {
       Logger.error("Failed to attach auth headers:", err);
