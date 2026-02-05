@@ -7,6 +7,7 @@ import { billingAPI } from "@/api/billing";
 import appConfig from "@/config/app-config";
 import { feedbackAPI } from "@/api/feedback";
 import { ticketsAPI } from "@/api/supportAPI";
+import { realtimeAPI } from "@/api/realtime";
 import { newsletterAPI } from "@/api/newsletterAPI";
 import { vmManagementAPI } from "@/api/vmManagement";
 import { fileManagerAPI } from "@/api/fileManagerAPI";
@@ -51,6 +52,7 @@ interface RootStateType {
   [userAPI.reducerPath]: ReturnType<typeof userAPI.reducer>;
   [feedbackAPI.reducerPath]: ReturnType<typeof feedbackAPI.reducer>;
   [firstTimeSetupAPI.reducerPath]: ReturnType<typeof firstTimeSetupAPI.reducer>;
+  [realtimeAPI.reducerPath]: ReturnType<typeof realtimeAPI.reducer>;
   [smartPCIdleSettingsAPI.reducerPath]: ReturnType<typeof smartPCIdleSettingsAPI.reducer>;
   [smartPCConfigAPI.reducerPath]: ReturnType<typeof smartPCConfigAPI.reducer>;
 }
@@ -76,6 +78,7 @@ const rootReducer = combineReducers({
   [userAPI.reducerPath]: userAPI.reducer,
   [feedbackAPI.reducerPath]: feedbackAPI.reducer,
   [firstTimeSetupAPI.reducerPath]: firstTimeSetupAPI.reducer,
+  [realtimeAPI.reducerPath]: realtimeAPI.reducer,
   [smartPCIdleSettingsAPI.reducerPath]: smartPCIdleSettingsAPI.reducer,
   [smartPCConfigAPI.reducerPath]: smartPCConfigAPI.reducer,
 });
@@ -100,6 +103,7 @@ export const store = configureStore({
       userAPI.middleware,
       feedbackAPI.middleware,
       firstTimeSetupAPI.middleware,
+      realtimeAPI.middleware,
       smartPCIdleSettingsAPI.middleware,
       smartPCConfigAPI.middleware
     ),

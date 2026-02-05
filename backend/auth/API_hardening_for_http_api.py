@@ -16,7 +16,7 @@ API_IDS_FOR_AUTHORIZATION_CREATION = [
     # "bijv5mqt5l"
     # "lul5oxdwic"
     # "vj9idlbwf7"
-   
+   "4oacxj1xyk"
 ]
 API_IDS_FOR_AUTHORIZATION_ATTACHMENT = [
     # "3vtjt7ugh2",
@@ -31,6 +31,7 @@ API_IDS_FOR_AUTHORIZATION_ATTACHMENT = [
     # "lul5oxdwic"
     # "vj9idlbwf7"
     # "ydgjuusszh"
+    "4oacxj1xyk"
 ]
 
 

@@ -5,7 +5,7 @@ import type { InstanceDetail } from "@/api/realtime";
 import type { PC, DesktopInstance } from "@/app/build-sensepc/types";
 
 import { getAssignments } from "@/api/assignpc";
-import { fetchInstanceDetails } from "@/api/realtime";
+import { useFetchInstanceDetailsMutation } from "@/api/realtime";
 import { stableStates } from "@/app/build-sensepc/data";
 import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
 import SelectedPc from "@/app/build-sensepc/_components/selected-pc";
@@ -148,6 +148,7 @@ const CloudPCPage = () => {
   const [cloudPCs, setCloudPCs] = useState<PC[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [fetchInstanceDetails] = useFetchInstanceDetailsMutation();
 
   const [realtimePcInfo, setRealtimePcInfo] = useState<
     Record<string, InstanceDetail>
@@ -277,7 +278,8 @@ const CloudPCPage = () => {
   useEffect(() => {
     if (isError || !data || !apiUserId) return;
     const instanceNames = data.map((pc: PC) => pc.systemName);
-    fetchInstanceDetails(apiUserId, instanceNames)
+    fetchInstanceDetails({ userId: apiUserId, instanceNames })
+      .unwrap()
       .then((details) => {
         const map: Record<string, InstanceDetail> = {};
         details.forEach((d) => {
@@ -289,7 +291,7 @@ const CloudPCPage = () => {
         setRealtimePcInfo({});
         Logger.error("Failed to fetch real-time PC info", err);
       });
-  }, [apiUserId, data, isError]);
+  }, [apiUserId, data, isError, fetchInstanceDetails]);
 
   useEffect(() => {
     if (config.show) newPCDialog.onTrue();
