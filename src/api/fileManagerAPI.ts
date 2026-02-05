@@ -295,6 +295,7 @@ export const fileManagerAPI = createApi({
       query: ({ shareId }) => ({
         url: `shares/${shareId}`,
         method: "GET",
+        skipAuth: true,
       }),
     }),
 
@@ -350,6 +351,7 @@ export const fileManagerAPI = createApi({
           ...(key ? { key } : {}),
           ...(region ? { region } : {}),
         },
+        skipAuth: true,
       }),
     }),
     shareFile: builder.mutation({
@@ -527,6 +529,7 @@ export const fileManagerAPI = createApi({
           url: "download-folder",
           method: "GET",
           params,
+          skipAuth: true,
         };
       },
     }),
@@ -550,6 +553,7 @@ export const fileManagerAPI = createApi({
         headers: {
           "Content-Type": file.type || "application/octet-stream",
         },
+        skipAuth: true,
       }),
       invalidatesTags: ["Files"],
     }),
@@ -573,6 +577,7 @@ export const fileManagerAPI = createApi({
           ...(folder && { folder }),
           ...(key && { key }),
         },
+        skipAuth: true,
       }),
     }),
 
