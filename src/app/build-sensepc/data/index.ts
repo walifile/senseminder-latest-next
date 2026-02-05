@@ -205,7 +205,7 @@ export const storageOptions: Option[] = [
 
 export const locationOptions: Option[] = [
   { value: "us-east-1", label: "New York" },
-  // { value: "us-west-2", label: "California" },
+  { value: "us-west-2", label: "California" },
   // { value: "us-west", label: "US West (San Francisco)" },
   // { value: "eu-central", label: "EU Central (Frankfurt)" },
   // { value: "ap-southeast", label: "Asia Pacific (Singapore)" },
