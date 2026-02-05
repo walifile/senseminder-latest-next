@@ -22,7 +22,6 @@ API_IDS_FOR_AUTHORIZATION_ATTACHMENT = [
     # "3vtjt7ugh2",
     # "30zi3v2wnf",
     # "sx6x319uq1",
-    # "ydgjuusszh",
     # "ib7da6yyvf",
     # "e33pomxauh",
     # "hxmwrrakc6",
@@ -31,6 +30,7 @@ API_IDS_FOR_AUTHORIZATION_ATTACHMENT = [
     # "hxmwrrakc6",
     # "lul5oxdwic"
     # "vj9idlbwf7"
+    # "ydgjuusszh"
 ]
 
 
@@ -39,6 +39,7 @@ API_IDS_FOR_AUTHORIZATION_DETACHMENT = [
     # "hxmwrrakc6",
     # "lul5oxdwic"
     # "vj9idlbwf7"
+    # "ydgjuusszh"
 ]
 
 
