@@ -9,7 +9,7 @@ apigw = boto3.client("apigateway", region_name=REGION)
 
 API_IDS_FOR_AUTHORIZER_CREATION = [
     # "ib7da6yyvf"
-    "558xjerom8"
+    # "558xjerom8"
 
 ]
 
@@ -22,6 +22,7 @@ API_IDS_FOR_AUTHORIZER_ATTACHMENT = [
 
 API_IDS_FOR_AUTHORIZER_DETACHMENT = [
     # "ib7da6yyvf"
+    # "558xjerom8"
 ]
 
 def create_authorizer(api_id):
@@ -92,14 +93,34 @@ def detach_authorizer_from_all_methods(api_id):
 
             print(f"[{api_id}] Removing auth {method} {res['path']}")
 
+            current = apigw.get_method(
+                restApiId=api_id,
+                resourceId=res["id"],
+                httpMethod=method,
+            )
+
+            patch_ops = [
+                {"op": "replace", "path": "/authorizationType", "value": "NONE"},
+            ]
+
+            if current.get("authorizerId"):
+                patch_ops.append({"op": "replace", "path": "/authorizerId", "value": ""})
+
+            request_params = current.get("requestParameters") or {}
+            if "method.request.header.Authorization" in request_params:
+                patch_ops.append(
+                    {
+                        "op": "replace",
+                        "path": "/requestParameters/method.request.header.Authorization",
+                        "value": "false",
+                    }
+                )
+
             apigw.update_method(
                 restApiId=api_id,
                 resourceId=res["id"],
                 httpMethod=method,
-                patchOperations=[
-                    {"op": "replace", "path": "/authorizationType", "value": "NONE"},
-                    {"op": "remove", "path": "/authorizerId"},
-                ],
+                patchOperations=patch_ops,
             )
 
 def deploy_api(api_id):

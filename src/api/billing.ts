@@ -30,7 +30,7 @@ export const billingAPI = createApi({
     "UsageHistory",
     "AutoRecharge",
     "Storage",
-    "AutoRenew"
+    "AutoRenew",
   ],
   endpoints: (builder) => ({
     // payment methods
@@ -159,7 +159,8 @@ export const billingAPI = createApi({
         if (from) queryParams.append("startDate", formatAsYYYYMMDD(from));
         if (to) queryParams.append("endDate", formatAsYYYYMMDD(to));
         if (limit) queryParams.append("pageSize", limit.toString());
-        if (startingAfter) queryParams.append("lastEvaluatedKey", startingAfter);
+        if (startingAfter)
+          queryParams.append("lastEvaluatedKey", startingAfter);
 
         return `recharge?${queryParams.toString()}`;
       },
