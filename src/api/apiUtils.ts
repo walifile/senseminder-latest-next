@@ -14,9 +14,9 @@ const { BASE_URL } = appConfig;
 type AuthFetchArgs = FetchArgs & { skipAuth?: boolean };
 
 // Function to create a base query with optional authentication (default: true)
-const createBaseQuery = (useAuth: boolean = true) =>
+const createBaseQuery = (useAuth: boolean = true, baseUrl: string = BASE_URL) =>
   fetchBaseQuery({
-    baseUrl: BASE_URL,
+    baseUrl,
     credentials: "same-origin",
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).auth.token;
@@ -39,12 +39,13 @@ const createBaseQuery = (useAuth: boolean = true) =>
 export const baseQueryWithReauth =
   (
     useAuth: boolean = true,
+    baseUrl: string = BASE_URL,
   ): BaseQueryFn<string | AuthFetchArgs, unknown, FetchBaseQueryError> =>
   async (args, api, extraOptions) => {
     const shouldUseAuth =
       typeof args === "object" && "skipAuth" in args ? !args.skipAuth : useAuth;
 
-    const baseQuery = createBaseQuery(shouldUseAuth);
+    const baseQuery = createBaseQuery(shouldUseAuth, baseUrl);
     let result = await baseQuery(args as FetchArgs, api, extraOptions);
 
     const customError = result.error as FetchBaseQueryError & {

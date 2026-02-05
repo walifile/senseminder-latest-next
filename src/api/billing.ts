@@ -12,32 +12,17 @@ import type {
 
 import appConfig from "@/config/app-config";
 
-import { Logger } from "@/lib/utils/logger";
 import { formatAsYYYYMMDD } from "@/lib/utils/format-time";
 
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
 
-import { getIdToken } from "../lib/utils";
+import { baseQueryWithReauth } from "./apiUtils";
 
 const { BILLING_API_URL } = appConfig;
 
-const baseQuery = fetchBaseQuery({
-  baseUrl: BILLING_API_URL,
-  prepareHeaders: async (headers) => {
-    try {
-      const idToken = await getIdToken();
-      headers.set("Authorization", `Bearer ${idToken}`);
-      headers.set("Content-Type", "application/json");
-    } catch (err) {
-      Logger.error("Failed to attach auth headers:", err);
-    }
-    return headers;
-  },
-});
-
 export const billingAPI = createApi({
   reducerPath: "billingAPI",
-  baseQuery,
+  baseQuery: baseQueryWithReauth(true, BILLING_API_URL),
   tagTypes: [
     "PaymentMethods",
     "Balance",
