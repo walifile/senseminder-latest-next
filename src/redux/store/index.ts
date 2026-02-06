@@ -13,6 +13,7 @@ import { profileManagementAPI } from "@/api/profileManagement";
 import { promoCashbackAPI } from "@/api/promocashback";
 import { scheduleAPI } from "@/api/schedule";
 import { securityQuestionAPI } from "@/api/security-question";
+import { sessionAPI } from "@/api/session";
 import { newsletterAPI } from "@/api/newsletterAPI";
 import { vmManagementAPI } from "@/api/vmManagement";
 import { fileManagerAPI } from "@/api/fileManagerAPI";
@@ -63,6 +64,7 @@ interface RootStateType {
   [promoCashbackAPI.reducerPath]: ReturnType<typeof promoCashbackAPI.reducer>;
   [scheduleAPI.reducerPath]: ReturnType<typeof scheduleAPI.reducer>;
   [securityQuestionAPI.reducerPath]: ReturnType<typeof securityQuestionAPI.reducer>;
+  [sessionAPI.reducerPath]: ReturnType<typeof sessionAPI.reducer>;
   [smartPCIdleSettingsAPI.reducerPath]: ReturnType<typeof smartPCIdleSettingsAPI.reducer>;
   [smartPCConfigAPI.reducerPath]: ReturnType<typeof smartPCConfigAPI.reducer>;
 }
@@ -94,6 +96,7 @@ const rootReducer = combineReducers({
   [promoCashbackAPI.reducerPath]: promoCashbackAPI.reducer,
   [scheduleAPI.reducerPath]: scheduleAPI.reducer,
   [securityQuestionAPI.reducerPath]: securityQuestionAPI.reducer,
+  [sessionAPI.reducerPath]: sessionAPI.reducer,
   [smartPCIdleSettingsAPI.reducerPath]: smartPCIdleSettingsAPI.reducer,
   [smartPCConfigAPI.reducerPath]: smartPCConfigAPI.reducer,
 });
@@ -124,6 +127,7 @@ export const store = configureStore({
       promoCashbackAPI.middleware,
       scheduleAPI.middleware,
       securityQuestionAPI.middleware,
+      sessionAPI.middleware,
       smartPCIdleSettingsAPI.middleware,
       smartPCConfigAPI.middleware
     ),

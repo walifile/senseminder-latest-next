@@ -12,7 +12,10 @@ import SelectedPc from "@/app/build-sensepc/_components/selected-pc";
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import ScheduleDialog from "@/app/build-sensepc/_components/schedule-dialog";
 import SmartPcToolbar from "@/app/build-sensepc/_components/smart-pc-toolbar";
-import { updateSessionHeartbeat, claimSessionIfAvailable } from "@/api/session";
+import {
+  useUpdateSessionHeartbeatMutation,
+  useClaimSessionIfAvailableMutation,
+} from "@/api/session";
 import SmartPCEmptyState from "@/app/build-sensepc/_components/smart-pc-empty-state";
 import SmartPcStopButton from "@/app/build-sensepc/_components/smart-pc-stop-button";
 import IdleSettingsDialog from "@/app/build-sensepc/_components/idle-settings-dialog";
@@ -149,6 +152,8 @@ const CloudPCPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [fetchInstanceDetails] = useFetchInstanceDetailsMutation();
+  const [updateSessionHeartbeat] = useUpdateSessionHeartbeatMutation();
+  const [claimSessionIfAvailable] = useClaimSessionIfAvailableMutation();
 
   const [realtimePcInfo, setRealtimePcInfo] = useState<
     Record<string, InstanceDetail>
@@ -238,8 +243,8 @@ const CloudPCPage = () => {
   useEffect(() => {
     const initClientSession = async () => {
       try {
-        await claimSessionIfAvailable();
-        await updateSessionHeartbeat();
+        await claimSessionIfAvailable().unwrap();
+        await updateSessionHeartbeat().unwrap();
       } catch (err) {
         Logger.error("Failed to initialize client session / heartbeat:", err);
       }
