@@ -1,10 +1,9 @@
 /* eslint perfectionist/sort-imports: "off" */
 
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
 import appConfig from "@/config/app-config";
 
-// Reuse existing baseQuery with optional auth disabled for this public endpoint
-import { getIdTokenSafe } from "@/lib/auth/token";
+import { baseQueryWithReauth } from "./apiUtils";
 
 type CpuOption = { value: string; label: string };
 
@@ -26,19 +25,11 @@ export type GetSmartPcConfigArgs = {
 
 export const smartPCConfigAPI = createApi({
   reducerPath: "smartPCConfigAPI",
-  baseQuery: fetchBaseQuery({
-    baseUrl: "",
-    prepareHeaders: async (headers) => {
-      const idToken = await getIdTokenSafe();
-      if (idToken) headers.set("Authorization", `Bearer ${idToken}`);
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithReauth(false, appConfig.SMART_PC_CONFIG_URL),
   endpoints: (builder) => ({
     getSmartPcConfig: builder.query<SmartPcConfigResponse, GetSmartPcConfigArgs>({
       query: (args) => ({
-        // Use base env and append path
-        url: `${appConfig.SMART_PC_CONFIG_URL}/config`,
+        url: "config",
         method: "GET",
         params: args?.region ? { region: args.region } : undefined,
       }),
