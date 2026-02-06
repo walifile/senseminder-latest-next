@@ -1,4 +1,3 @@
-import type { RootState } from "@/redux/store";
 import type {
   FetchArgs,
   BaseQueryFn,
@@ -6,6 +5,8 @@ import type {
 } from "@reduxjs/toolkit/query/react";
 
 import appConfig from "@/config/app-config";
+
+import { clearAuth } from "@/redux/slices/auth/auth-slice";
 
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
@@ -19,7 +20,8 @@ const createBaseQuery = (useAuth: boolean = true, baseUrl: string = BASE_URL) =>
     baseUrl,
     credentials: "same-origin",
     prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as RootState).auth.token;
+      const state = getState() as { auth?: { token?: string | null } } | undefined;
+      const token = state?.auth?.token ?? null;
 
       // If authentication is disabled, return headers without modifying
       if (!useAuth) {
@@ -55,7 +57,7 @@ export const baseQueryWithReauth =
     if (result?.error?.status === 403) {
       const refreshResult = await baseQuery("/refresh", api, extraOptions);
       if (refreshResult?.data) {
-        const user = (api.getState() as RootState).auth.user;
+        const user = (api.getState() as { auth?: { user?: unknown } } | undefined)?.auth?.user;
         if (user) {
           // api.dispatch(setCredentials({ ...refreshResult.data, user }));
           result = await baseQuery(args, api, extraOptions);
@@ -71,8 +73,7 @@ export const baseQueryWithReauth =
       result?.meta?.response?.status === 401 ||
       customError?.originalStatus === 401
     ) {
-      // api.dispatch(logOut());
-      // window.location.href = "/";
+      api.dispatch(clearAuth());
     }
 
     return result;

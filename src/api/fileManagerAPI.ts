@@ -45,7 +45,6 @@ export const fileManagerAPI = createApi({
         params: {
           userId,
         },
-        skipAuth: true,
       }),
       providesTags: ["VM"],
     }),
