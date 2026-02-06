@@ -5,7 +5,7 @@ import appConfig from "@/config/app-config";
 import { Logger } from "@/lib/utils/logger";
 
 import { UAParser } from "ua-parser-js";
-import { createApi } from "@reduxjs/toolkit/query/react";
+import { createApi, type FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
 
 import { baseQueryWithReauth } from "./apiUtils";
 
@@ -69,14 +69,12 @@ export const sessionAPI = createApi({
               headers: {
                 "Content-Type": "application/json",
               },
-            },
-            api,
-            _extraOptions
+            }
           );
 
           if (response.error) {
             Logger.warn("Failed to update heartbeat:", response.error);
-            return { error: response.error };
+            return { error: response.error as FetchBaseQueryError };
           }
 
           const parsed = response.data as { message?: string; code?: string } | null;
@@ -97,7 +95,7 @@ export const sessionAPI = createApi({
             error: {
               status: "CUSTOM_ERROR",
               data: err instanceof Error ? err.message : "Unknown error",
-            },
+            } as FetchBaseQueryError,
           };
         }
       },
@@ -124,14 +122,12 @@ export const sessionAPI = createApi({
               headers: {
                 "Content-Type": "application/json",
               },
-            },
-            api,
-            _extraOptions
+            }
           );
 
           if (response.error) {
             Logger.warn("No unclaimed session available:", response.error);
-            return { data: undefined };
+            return { error: response.error as FetchBaseQueryError };
           }
 
           const data = response.data as { sessionId?: string; message?: string };
@@ -156,7 +152,7 @@ export const sessionAPI = createApi({
             error: {
               status: "CUSTOM_ERROR",
               data: err instanceof Error ? err.message : "Unknown error",
-            },
+            } as FetchBaseQueryError,
           };
         }
       },
@@ -171,14 +167,12 @@ export const sessionAPI = createApi({
               headers: {
                 "Content-Type": "application/json",
               },
-            },
-            api,
-            _extraOptions
+            }
           );
 
           if (response.error) {
             Logger.error("Failed to fetch sessions:", response.error);
-            return { data: [] };
+            return { error: response.error as FetchBaseQueryError };
           }
 
           const raw = (response.data as SmartPCSession[]) ?? [];
@@ -206,7 +200,12 @@ export const sessionAPI = createApi({
           return { data: normalized };
         } catch (err) {
           Logger.error("Failed to fetch sessions:", err);
-          return { data: [] };
+          return {
+            error: {
+              status: "CUSTOM_ERROR",
+              data: err instanceof Error ? err.message : "Unknown error",
+            } as FetchBaseQueryError,
+          };
         }
       },
     }),
