@@ -3,10 +3,10 @@
 
 import React from "react";
 import {
-  deleteAvatar,
-  getUserProfile,
   uploadAvatarToS3,
-  createAvatarUploadUrl,
+  useCreateAvatarUploadUrlMutation,
+  useDeleteAvatarMutation,
+  useLazyGetUserProfileQuery,
 } from "@/api/profileManagement";
 
 import { Input } from "@/components/ui/input";
@@ -55,6 +55,9 @@ export const ProfileAccountTab = ({
   setProfile,
 }: Props) => {
   const { toast } = useToast();
+  const [triggerGetUserProfile] = useLazyGetUserProfileQuery();
+  const [createAvatarUploadUrl] = useCreateAvatarUploadUrlMutation();
+  const [deleteAvatar] = useDeleteAvatarMutation();
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -89,7 +92,7 @@ export const ProfileAccountTab = ({
   }
 
   async function refreshProfile() {
-    const data = await getUserProfile();
+    const data = await triggerGetUserProfile().unwrap();
     setProfile(data);
   }
 
@@ -128,7 +131,7 @@ export const ProfileAccountTab = ({
       const { uploadUrl } = await createAvatarUploadUrl({
         contentType: file.type || "image/*",
         fileExt: ext,
-      });
+      }).unwrap();
 
       await uploadAvatarToS3({ uploadUrl, file });
       await refreshProfile();
@@ -154,7 +157,7 @@ export const ProfileAccountTab = ({
   const handleRemove = async () => {
     setAvatarRemoving(true);
     try {
-      await deleteAvatar();
+      await deleteAvatar().unwrap();
       await refreshProfile();
 
       toast({
