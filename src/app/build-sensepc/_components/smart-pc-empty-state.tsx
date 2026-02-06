@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { routes } from "@/constants/routes";
 import React, { useState, useEffect } from "react";
-import { getPromoInfo } from "@/api/promocashback";
+import { useLazyGetPromoInfoQuery } from "@/api/promocashback";
 
 import { Button } from "@/components/ui/button";
 
@@ -21,13 +21,14 @@ const SmartPCEmptyState: React.FC<SmartPCEmptyStateProps> = ({
   handleShowNewPCDialog,
 }) => {
   const [promoEligible, setPromoEligible] = useState(false);
+  const [triggerGetPromoInfo] = useLazyGetPromoInfoQuery();
 
   useEffect(() => {
     let active = true;
 
     (async () => {
       try {
-        const info = await getPromoInfo();
+        const info = await triggerGetPromoInfo().unwrap();
         if (active) setPromoEligible(Boolean(info?.eligible));
       } catch {
         if (active) setPromoEligible(false);
