@@ -1,5 +1,4 @@
 import type { RootState } from "@/redux/store";
-import { getIdTokenSafe } from "@/lib/auth/token";
 
 import {
   Circle,
@@ -9,6 +8,8 @@ import {
   PlayCircle,
   PauseCircle,
 } from "lucide-react";
+
+import { getIdTokenSafe } from "@/lib/auth/token";
 
 import type { PC } from "../types";
 

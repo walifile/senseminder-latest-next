@@ -4,18 +4,14 @@ import type { RootState } from "@/redux/store";
 import type { InstanceDetail } from "@/api/realtime";
 import type { PC, DesktopInstance } from "@/app/build-sensepc/types";
 
+import { stableStates } from "@/app/build-sensepc/data";
 import { useLazyGetAssignmentsQuery } from "@/api/assignpc";
 import { useFetchInstanceDetailsMutation } from "@/api/realtime";
-import { stableStates } from "@/app/build-sensepc/data";
 import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
 import SelectedPc from "@/app/build-sensepc/_components/selected-pc";
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import ScheduleDialog from "@/app/build-sensepc/_components/schedule-dialog";
 import SmartPcToolbar from "@/app/build-sensepc/_components/smart-pc-toolbar";
-import {
-  useUpdateSessionHeartbeatMutation,
-  useClaimSessionIfAvailableMutation,
-} from "@/api/session";
 import SmartPCEmptyState from "@/app/build-sensepc/_components/smart-pc-empty-state";
 import SmartPcStopButton from "@/app/build-sensepc/_components/smart-pc-stop-button";
 import IdleSettingsDialog from "@/app/build-sensepc/_components/idle-settings-dialog";
@@ -25,6 +21,10 @@ import SmartPcRebootButton from "@/app/build-sensepc/_components/smart-pc-reboot
 import SmartPcDropdownMenu from "@/app/build-sensepc/_components/smart-pc-dropdown-menu";
 import SmartPcConnectButton from "@/app/build-sensepc/_components/smart-pc-connect-button";
 import { ConfirmDeleteModal } from "@/app/build-sensepc/_components/confirm-delete-pc-diolog";
+import {
+  useUpdateSessionHeartbeatMutation,
+  useClaimSessionIfAvailableMutation,
+} from "@/api/session";
 import {
   getApiUserId,
   getStatusIcon,

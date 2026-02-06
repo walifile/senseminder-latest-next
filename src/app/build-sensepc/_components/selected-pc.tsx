@@ -11,7 +11,6 @@ import {
 
 import { Logger } from "@/lib/utils/logger";
 import { getErrorMessage } from "@/lib/utils";
-import { getIdTokenSafe } from "@/lib/auth/token";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { getFriendlyOSName } from "@/lib/utils/format-string";
@@ -42,6 +41,8 @@ import {
   AlertCircle,
   ChevronDown,
 } from "lucide-react";
+
+import { getIdTokenSafe } from "@/lib/auth/token";
 
 import { clampPercent } from "../utils";
 import { BillingPlanDialog } from "./billing-dialog";

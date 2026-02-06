@@ -3,13 +3,13 @@
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import {
-  useLazyGetPromoInfoQuery,
-  useRedeemPromoMutation,
-} from "@/api/promocashback";
-import {
   useGetCurrentBalanceQuery,
   useGetMonthlySpendingQuery,
 } from "@/api/billing";
+import {
+  useRedeemPromoMutation,
+  useLazyGetPromoInfoQuery,
+} from "@/api/promocashback";
 
 import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";

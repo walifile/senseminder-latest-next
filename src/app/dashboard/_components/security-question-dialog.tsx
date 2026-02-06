@@ -3,8 +3,8 @@
 
 import React, { useRef, useState, useEffect } from "react";
 import {
-  useLazyGetSecurityQuestionQuery,
   useSetSecurityQuestionMutation,
+  useLazyGetSecurityQuestionQuery,
 } from "@/api/security-question";
 
 import { Label } from "@/components/ui/label";

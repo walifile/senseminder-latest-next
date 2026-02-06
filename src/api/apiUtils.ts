@@ -5,7 +5,6 @@ import type {
 } from "@reduxjs/toolkit/query/react";
 
 import appConfig from "@/config/app-config";
-
 import { clearAuth } from "@/redux/slices/auth/auth-slice";
 
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";

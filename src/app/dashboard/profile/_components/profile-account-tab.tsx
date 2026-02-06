@@ -4,9 +4,9 @@
 import React from "react";
 import {
   uploadAvatarToS3,
-  useCreateAvatarUploadUrlMutation,
   useDeleteAvatarMutation,
   useLazyGetUserProfileQuery,
+  useCreateAvatarUploadUrlMutation,
 } from "@/api/profileManagement";
 
 import { Input } from "@/components/ui/input";

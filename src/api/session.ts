@@ -4,8 +4,9 @@ import appConfig from "@/config/app-config";
 
 import { Logger } from "@/lib/utils/logger";
 
-import { UAParser } from "ua-parser-js";
 import { createApi, type FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+
+import { UAParser } from "ua-parser-js";
 
 import { baseQueryWithReauth } from "./apiUtils";
 

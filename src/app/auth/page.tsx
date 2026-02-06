@@ -5,8 +5,8 @@
 import Image from "next/image";
 import React, { useState } from "react";
 import { routes } from "@/constants/routes";
-import { useClaimSessionIfAvailableMutation } from "@/api/session";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useClaimSessionIfAvailableMutation } from "@/api/session";
 
 import { cn } from "@/lib/utils";
 import { Logger } from "@/lib/utils/logger";
