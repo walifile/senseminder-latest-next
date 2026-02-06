@@ -9,23 +9,27 @@ const { NEWSLETTER_API_URL } = appConfig;
 
 export const newsletterAPI = createApi({
   reducerPath: "newsletterAPI",
-  baseQuery: baseQueryWithReauth(false),
+  baseQuery: baseQueryWithReauth(false, NEWSLETTER_API_URL),
   tagTypes: ["Newsletter"],
   endpoints: (builder) => ({
     unsubscribeFromNewsletter: builder.mutation({
       query: ({ email, token }) => ({
-        url: `${NEWSLETTER_API_URL}/unsubscribe?email=${email}&token=${token}`,
+        url: "unsubscribe",
         method: "GET",
+        params: { email, token },
       }),
     }),
     subscribeToNewsletter: builder.mutation({
       query: ({ email, location, signup }) => ({
-        url: `${NEWSLETTER_API_URL}/subscribe`,
+        url: "subscribe",
         method: "POST",
         body: {
           email,
           location,
           signup,
+        },
+        headers: {
+          "Content-Type": "application/json",
         },
       }),
     }),
