@@ -11,6 +11,7 @@ import { realtimeAPI } from "@/api/realtime";
 import { mfaRecoveryAPI } from "@/api/mfa-recovery";
 import { profileManagementAPI } from "@/api/profileManagement";
 import { promoCashbackAPI } from "@/api/promocashback";
+import { scheduleAPI } from "@/api/schedule";
 import { newsletterAPI } from "@/api/newsletterAPI";
 import { vmManagementAPI } from "@/api/vmManagement";
 import { fileManagerAPI } from "@/api/fileManagerAPI";
@@ -59,6 +60,7 @@ interface RootStateType {
   [mfaRecoveryAPI.reducerPath]: ReturnType<typeof mfaRecoveryAPI.reducer>;
   [profileManagementAPI.reducerPath]: ReturnType<typeof profileManagementAPI.reducer>;
   [promoCashbackAPI.reducerPath]: ReturnType<typeof promoCashbackAPI.reducer>;
+  [scheduleAPI.reducerPath]: ReturnType<typeof scheduleAPI.reducer>;
   [smartPCIdleSettingsAPI.reducerPath]: ReturnType<typeof smartPCIdleSettingsAPI.reducer>;
   [smartPCConfigAPI.reducerPath]: ReturnType<typeof smartPCConfigAPI.reducer>;
 }
@@ -88,6 +90,7 @@ const rootReducer = combineReducers({
   [mfaRecoveryAPI.reducerPath]: mfaRecoveryAPI.reducer,
   [profileManagementAPI.reducerPath]: profileManagementAPI.reducer,
   [promoCashbackAPI.reducerPath]: promoCashbackAPI.reducer,
+  [scheduleAPI.reducerPath]: scheduleAPI.reducer,
   [smartPCIdleSettingsAPI.reducerPath]: smartPCIdleSettingsAPI.reducer,
   [smartPCConfigAPI.reducerPath]: smartPCConfigAPI.reducer,
 });
@@ -116,6 +119,7 @@ export const store = configureStore({
       mfaRecoveryAPI.middleware,
       profileManagementAPI.middleware,
       promoCashbackAPI.middleware,
+      scheduleAPI.middleware,
       smartPCIdleSettingsAPI.middleware,
       smartPCConfigAPI.middleware
     ),
