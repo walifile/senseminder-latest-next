@@ -1,7 +1,10 @@
 import type { PC } from "@/app/build-sensepc/types";
 
 import React, { useState, useCallback } from "react";
-import { assignPC, unassignPC } from "@/api/assignpc";
+import {
+  useAssignPCMutation,
+  useUnassignPCMutation,
+} from "@/api/assignpc";
 import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
 
 import { getErrorMessage } from "@/lib/utils";
@@ -41,6 +44,8 @@ const ManagePcDialog = ({
   assignments,
 }: Props) => {
   const [pcAssigningId, setPCAssigningId] = useState<string | null>(null);
+  const [assignPC] = useAssignPCMutation();
+  const [unassignPC] = useUnassignPCMutation();
 
   const { data: smartPCs = [], isLoading: isSmartPCLoading } =
     useListRemoteDesktopQuery(
@@ -60,7 +65,7 @@ const ManagePcDialog = ({
         memberId: selectedUser.id,
         instanceId: instance.instanceId,
         systemName: instance.systemName,
-      });
+      }).unwrap();
       toast({
         title: "PC Assigned",
         description: `${instance.systemName} assigned to ${
@@ -86,7 +91,7 @@ const ManagePcDialog = ({
       await unassignPC({
         memberId: selectedUser.id,
         instanceId: instance.instanceId,
-      });
+      }).unwrap();
       toast({
         title: "PC Unassigned",
         description: `${instance.systemName} unassigned from ${

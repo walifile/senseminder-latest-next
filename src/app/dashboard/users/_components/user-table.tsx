@@ -2,7 +2,7 @@
 
 import type { PC } from "@/app/build-sensepc/types";
 
-import { getAssignments } from "@/api/assignpc";
+import { useLazyGetAssignmentsQuery } from "@/api/assignpc";
 import React, { useState, useEffect, useCallback } from "react";
 
 import { cn } from "@/lib/utils";
@@ -44,11 +44,12 @@ const UserTable = ({ loading, filteredUsers }: Props) => {
 
   const [fetchAssignmentsLoading, setFetchAssignmentsLoading] = useState(false);
   const [assignments, setAssignments] = useState<Record<string, PC[]>>({});
+  const [triggerGetAssignments] = useLazyGetAssignmentsQuery();
 
   const fetchAssignments = useCallback(async () => {
     setFetchAssignmentsLoading(true);
     try {
-      const res = await getAssignments();
+      const res = await triggerGetAssignments().unwrap();
       setAssignments(res || {});
     } catch (e: unknown) {
       toast({
@@ -62,7 +63,7 @@ const UserTable = ({ loading, filteredUsers }: Props) => {
     } finally {
       setFetchAssignmentsLoading(false);
     }
-  }, []);
+  }, [triggerGetAssignments]);
 
   useEffect(() => {
     fetchAssignments();

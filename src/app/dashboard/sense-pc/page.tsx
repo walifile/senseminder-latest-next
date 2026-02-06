@@ -4,7 +4,7 @@ import type { RootState } from "@/redux/store";
 import type { InstanceDetail } from "@/api/realtime";
 import type { PC, DesktopInstance } from "@/app/build-sensepc/types";
 
-import { getAssignments } from "@/api/assignpc";
+import { useLazyGetAssignmentsQuery } from "@/api/assignpc";
 import { useFetchInstanceDetailsMutation } from "@/api/realtime";
 import { stableStates } from "@/app/build-sensepc/data";
 import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
@@ -94,6 +94,7 @@ const CloudPCPage = () => {
   const config = useSelector((state: RootState) => state.smartPcConfig);
   const { user } = useSelector((state: RootState) => state.auth);
   const isMember = user?.role === "member";
+  const [triggerGetAssignments] = useLazyGetAssignmentsQuery();
 
   const apiUserId = getApiUserId(user);
 
@@ -101,13 +102,14 @@ const CloudPCPage = () => {
     Record<string, { instanceId: string }[]>
   >({});
   useEffect(() => {
-    getAssignments()
+    triggerGetAssignments()
+      .unwrap()
       .then((res) => setAssignments(res))
       .catch((err) => {
         Logger.error("Failed to load assignments", err);
         setAssignments({});
       });
-  }, []);
+  }, [triggerGetAssignments]);
 
   const isPCAssigned = (instanceId: string): boolean =>
     Object.values(assignments).some((pcs) =>

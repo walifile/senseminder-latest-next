@@ -3,7 +3,11 @@
 import type { DesktopInstance } from "@/app/build-sensepc/types";
 
 import { useGetUsersQuery } from "@/api/user";
-import { assignPC, unassignPC, getAssignments } from "@/api/assignpc";
+import {
+  useAssignPCMutation,
+  useUnassignPCMutation,
+  useLazyGetAssignmentsQuery,
+} from "@/api/assignpc";
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 
 import { cn } from "@/lib/utils/index";
@@ -55,6 +59,9 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
   const [query, setQuery] = useState("");
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
   const [loadingUnassign, setLoadingUnassign] = useState(false);
+  const [assignPC] = useAssignPCMutation();
+  const [unassignPC] = useUnassignPCMutation();
+  const [triggerGetAssignments] = useLazyGetAssignmentsQuery();
 
   Logger.debug("AssignUserDialog render:", { setLoadingAssign });
 
@@ -68,12 +75,12 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
   // Fetch all assignments
   const fetchAssignments = useCallback(async () => {
     try {
-      const a = await getAssignments();
+      const a = await triggerGetAssignments().unwrap();
       setAssignments(a || {});
     } catch {
       // Intentionally ignored
     }
-  }, []);
+  }, [triggerGetAssignments]);
 
   // Find out if this PC is assigned, and to whom
   const assignedUser: ApiUser | null = useMemo(() => {
@@ -143,7 +150,7 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
         await unassignPC({
           instanceId: pc.instanceId,
           memberId: assignedUser.id,
-        });
+        }).unwrap();
       } catch (e) {
         Logger.error("Failed to unassign before assigning:", e);
         toast({
@@ -160,7 +167,7 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
         instanceId: pc.instanceId,
         memberId: user.id,
         systemName: pc.systemName || "",
-      });
+      }).unwrap();
       toast({
         title: "Assigned!",
         description: `${pc.systemName} now assigned to ${
@@ -188,7 +195,7 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
       await unassignPC({
         instanceId: pc.instanceId,
         memberId: assignedUser.id,
-      });
+      }).unwrap();
       toast({
         title: "Unassigned!",
         description: `${pc.systemName} is now unassigned`,
