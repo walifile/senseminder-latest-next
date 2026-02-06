@@ -8,6 +8,7 @@ import appConfig from "@/config/app-config";
 import { feedbackAPI } from "@/api/feedback";
 import { ticketsAPI } from "@/api/supportAPI";
 import { realtimeAPI } from "@/api/realtime";
+import { mfaRecoveryAPI } from "@/api/mfa-recovery";
 import { newsletterAPI } from "@/api/newsletterAPI";
 import { vmManagementAPI } from "@/api/vmManagement";
 import { fileManagerAPI } from "@/api/fileManagerAPI";
@@ -53,6 +54,7 @@ interface RootStateType {
   [feedbackAPI.reducerPath]: ReturnType<typeof feedbackAPI.reducer>;
   [firstTimeSetupAPI.reducerPath]: ReturnType<typeof firstTimeSetupAPI.reducer>;
   [realtimeAPI.reducerPath]: ReturnType<typeof realtimeAPI.reducer>;
+  [mfaRecoveryAPI.reducerPath]: ReturnType<typeof mfaRecoveryAPI.reducer>;
   [smartPCIdleSettingsAPI.reducerPath]: ReturnType<typeof smartPCIdleSettingsAPI.reducer>;
   [smartPCConfigAPI.reducerPath]: ReturnType<typeof smartPCConfigAPI.reducer>;
 }
@@ -79,6 +81,7 @@ const rootReducer = combineReducers({
   [feedbackAPI.reducerPath]: feedbackAPI.reducer,
   [firstTimeSetupAPI.reducerPath]: firstTimeSetupAPI.reducer,
   [realtimeAPI.reducerPath]: realtimeAPI.reducer,
+  [mfaRecoveryAPI.reducerPath]: mfaRecoveryAPI.reducer,
   [smartPCIdleSettingsAPI.reducerPath]: smartPCIdleSettingsAPI.reducer,
   [smartPCConfigAPI.reducerPath]: smartPCConfigAPI.reducer,
 });
@@ -104,6 +107,7 @@ export const store = configureStore({
       feedbackAPI.middleware,
       firstTimeSetupAPI.middleware,
       realtimeAPI.middleware,
+      mfaRecoveryAPI.middleware,
       smartPCIdleSettingsAPI.middleware,
       smartPCConfigAPI.middleware
     ),
