@@ -11,6 +11,7 @@ import {
 
 import { Logger } from "@/lib/utils/logger";
 import { getErrorMessage } from "@/lib/utils";
+import { getIdTokenSafe } from "@/lib/auth/token";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { getFriendlyOSName } from "@/lib/utils/format-string";
@@ -156,9 +157,15 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
       if (!currentUserId || !currentSystemName) return;
 
       try {
+        const idToken = await getIdTokenSafe();
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        if (idToken) headers.Authorization = `Bearer ${idToken}`;
+
         const res = await fetch(INSTANCE_DETAILS_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({
             userId: currentUserId,
             instanceNames: [currentSystemName],
