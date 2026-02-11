@@ -123,9 +123,16 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   };
 
   const handleFileRemove = (index: number) => {
-    const updated = [...selectedFiles];
-    updated.splice(index, 1);
-    setSelectedFiles(updated);
+    const fileToRemove = selectedFiles[index];
+    if (!fileToRemove) return;
+
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    setUploadStatus((prev) => {
+      if (!(fileToRemove.name in prev)) return prev;
+      const next = { ...prev };
+      delete next[fileToRemove.name];
+      return next;
+    });
   };
 
   const handleUpload = async () => {
@@ -359,7 +366,14 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
                       <Check className="w-4 h-4 text-green-500" />
                     )}
                     {uploadStatus[file.name] === "error" && (
-                      <X className="w-4 h-4 text-red-500" />
+                      <button
+                        type="button"
+                        onClick={() => handleFileRemove(index)}
+                        disabled={isUploading}
+                        aria-label={`Remove failed file ${file.name}`}
+                      >
+                        <X className="w-4 h-4 text-red-500" />
+                      </button>
                     )}
 
                     {!uploadStatus[file.name] && (
