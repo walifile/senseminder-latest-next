@@ -46,18 +46,20 @@ import type { DesktopInstance } from "../types";
 type Props = {
   pc: DesktopInstance;
   isMember: boolean;
+  isPCAssigned: (id: string) => boolean;
   setSelectedInstance: (instance: DesktopInstance | null) => void;
   openPCResizeDialog: (pc: DesktopInstance) => void;
   openStorageDialog: (pc: DesktopInstance) => void;
   handleSchedule: () => void;
   handleIdle: () => void;
   handleAssignUser: () => void;
-  handleDelete: () => void;
+  handleDelete: (pc: DesktopInstance) => void;
 };
 
 const SmartPcDropdownMenu = ({
   pc,
   isMember,
+  isPCAssigned,
   setSelectedInstance,
   openPCResizeDialog,
   openStorageDialog,
@@ -72,6 +74,7 @@ const SmartPcDropdownMenu = ({
   const state = pc.state?.toLowerCase() || "";
   const isRunning = state === "running";
   const isStopped = state === "stopped";
+  const isAssigned = !!pc.instanceId && isPCAssigned(pc.instanceId);
 
   const { toast } = useToast();
   const [restartVM, { isLoading: isRebooting }] = useRestartVMMutation();
@@ -115,13 +118,10 @@ const SmartPcDropdownMenu = ({
     }
   };
 
-  // ✅ Rules:
-  // - PC Resize: only when STOPPED + Hourly plan
-  // - Add Volume: only when RUNNING + Hourly plan (so starting/stopping/etc are disabled)
-  // - Assign User: only when STOPPED
+ 
   const resizeDisabled = planRestricted || !isStopped;
   const addVolumeDisabled = planRestricted || !isRunning;
-  const assignUserDisabled = !isStopped;
+  const assignUserDisabled = !isStopped && !isAssigned;
   const idleSettingsDisabled = !isRunning;
 
 
@@ -255,7 +255,7 @@ const SmartPcDropdownMenu = ({
                     data-testid="sensepc-assign-user-button"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Assign User
+                    {isAssigned ? "Unassign User" : "Assign User"}
                   </DropdownMenuItem>
                 </TooltipTrigger>
                 {assignUserDisabled && (
@@ -275,8 +275,7 @@ const SmartPcDropdownMenu = ({
               className="text-destructive"
               onClick={(e) => {
                 e.stopPropagation();
-                setSelectedInstance(pc);
-                handleDelete();
+                handleDelete(pc);
               }}
               data-testid="sensepc-delete-button"
             >

@@ -1,11 +1,8 @@
 import type { PC } from "@/app/build-sensepc/types";
 
 import React, { useState, useCallback } from "react";
+import { assignPC, unassignPC } from "@/api/assignpc";
 import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
-import {
-  useAssignPCMutation,
-  useUnassignPCMutation,
-} from "@/api/assignpc";
 
 import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -44,8 +41,13 @@ const ManagePcDialog = ({
   assignments,
 }: Props) => {
   const [pcAssigningId, setPCAssigningId] = useState<string | null>(null);
-  const [assignPC] = useAssignPCMutation();
-  const [unassignPC] = useUnassignPCMutation();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<
+    | { type: "assign"; pc: PC }
+    | { type: "unassign"; pc: PC }
+    | { type: "blocked"; message: string }
+    | null
+  >(null);
 
   const { data: smartPCs = [], isLoading: isSmartPCLoading } =
     useListRemoteDesktopQuery(
@@ -56,8 +58,40 @@ const ManagePcDialog = ({
     );
 
   const isLoading = fetchAssignmentsLoading || isSmartPCLoading;
+  const isAssignedToAny = (instanceId: string) =>
+    Object.values(assignments).some((list) =>
+      list.some((assignment) => assignment.instanceId === instanceId)
+    );
 
   const assignSmartPC = async (instance: PC) => {
+    if (!selectedUser) return;
+    const state = instance.state?.toLowerCase();
+    if (state && state !== "stopped" && state !== "running") {
+      setConfirmAction({
+        type: "blocked",
+        message:
+          "This PC is currently changing state. Please wait until it finishes before continuing.",
+      });
+      setConfirmOpen(true);
+      return;
+    }
+    if (state === "running" && !isAssignedToAny(instance.instanceId)) {
+      setConfirmAction({
+        type: "blocked",
+        message: "This PC is running. Please stop it before assigning access.",
+      });
+      setConfirmOpen(true);
+      return;
+    }
+    if (state !== "stopped") {
+      setConfirmAction({ type: "assign", pc: instance });
+      setConfirmOpen(true);
+      return;
+    }
+    await assignSmartPCDirect(instance);
+  };
+
+  const assignSmartPCDirect = async (instance: PC) => {
     if (!selectedUser) return;
     setPCAssigningId(instance.instanceId);
     try {
@@ -65,7 +99,7 @@ const ManagePcDialog = ({
         memberId: selectedUser.id,
         instanceId: instance.instanceId,
         systemName: instance.systemName,
-      }).unwrap();
+      });
       toast({
         title: "PC Assigned",
         description: `${instance.systemName} assigned to ${
@@ -86,12 +120,32 @@ const ManagePcDialog = ({
 
   const unassignSmartPC = async (instance: PC) => {
     if (!selectedUser) return;
+    const state = instance.state?.toLowerCase();
+    if (state && state !== "stopped" && state !== "running") {
+      setConfirmAction({
+        type: "blocked",
+        message:
+          "This PC is currently changing state. Please wait until it finishes before continuing.",
+      });
+      setConfirmOpen(true);
+      return;
+    }
+    if (state !== "stopped") {
+      setConfirmAction({ type: "unassign", pc: instance });
+      setConfirmOpen(true);
+      return;
+    }
+    await unassignSmartPCDirect(instance);
+  };
+
+  const unassignSmartPCDirect = async (instance: PC) => {
+    if (!selectedUser) return;
     setPCAssigningId(instance.instanceId);
     try {
       await unassignPC({
         memberId: selectedUser.id,
         instanceId: instance.instanceId,
-      }).unwrap();
+      });
       toast({
         title: "PC Unassigned",
         description: `${instance.systemName} unassigned from ${
@@ -113,10 +167,35 @@ const ManagePcDialog = ({
   const closeDialog = useCallback(() => {
     setSelectedUser(null);
     onClose();
+    setConfirmOpen(false);
+    setConfirmAction(null);
   }, [onClose, setSelectedUser]);
 
+  const confirmDescription =
+    confirmAction?.type === "blocked"
+      ? confirmAction.message
+      : confirmAction?.type === "assign"
+      ? "This PC is running. Assigning access will stop the PC. Continue?"
+      : "This PC is running. Unassigning will stop the PC. Continue?";
+
+  const handleConfirm = async () => {
+    if (!confirmAction) return;
+    setConfirmOpen(false);
+    const action = confirmAction;
+    setConfirmAction(null);
+    if (action.type === "blocked") {
+      return;
+    }
+    if (action.type === "assign") {
+      await assignSmartPCDirect(action.pc);
+    } else {
+      await unassignSmartPCDirect(action.pc);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={closeDialog}>
+    <>
+      <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent
         data-testid="dashboard-users-manage-pc-dialog"
         className="sm:max-w-[540px]"
@@ -196,6 +275,37 @@ const ManagePcDialog = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+      <Dialog
+        open={confirmOpen}
+        onOpenChange={(next) => {
+          if (!next) {
+            setConfirmOpen(false);
+            setConfirmAction(null);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle>Confirm Action</DialogTitle>
+            <DialogDescription>{confirmDescription}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setConfirmOpen(false);
+                setConfirmAction(null);
+              }}
+            >
+              {confirmAction?.type === "blocked" ? "Close" : "Cancel"}
+            </Button>
+            {confirmAction?.type !== "blocked" && (
+              <Button onClick={handleConfirm}>Continue</Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

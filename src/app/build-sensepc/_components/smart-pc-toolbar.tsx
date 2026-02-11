@@ -61,68 +61,35 @@ const SmartPcToolbar = ({
         placeholder="Search PCs by name, description, or region..."
       />
 
-      {/* GRID / LIST glass chips */}
+      {/* Single view toggle chip */}
       <div className="flex items-center gap-4">
-        {/* GRID */}
         <Button
           type="button"
           variant="ghost"
-          onClick={() => setViewMode("grid")}
+          onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
           className="p-0 bg-transparent shadow-none border-none hover:bg-transparent"
+          aria-label={
+            viewMode === "grid"
+              ? "Switch to list view"
+              : "Switch to grid view"
+          }
         >
           <div className="flex h-14 w-14 items-center justify-center">
             <div
               className={cn(
                 "relative flex h-12 w-12 items-center justify-center rounded-full backdrop-blur-[18px]",
-                "bg-white/10 dark:bg-white/10",
+                "bg-white/20 dark:bg-white/20",
                 "before:content-[''] before:absolute before:inset-0 before:p-px before:rounded-full",
                 "before:[background:linear-gradient(270deg,rgba(168,1,186,0.85)_0%,rgba(37,48,240,0.85)_100%)]",
                 "before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)]",
-                "before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:pointer-events-none",
-                "transition-colors",
-                viewMode === "grid" && "bg-white/20 dark:bg-white/20"
+                "before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:pointer-events-none"
               )}
             >
-              <LayoutGrid
-                className={cn(
-                  "relative z-[1] h-5 w-5 opacity-80 transition-opacity",
-                  "text-slate-700 dark:text-[#e0e3ff]",
-                  viewMode === "grid" &&
-                    "opacity-100 text-slate-900 dark:text-white"
-                )}
-              />
-            </div>
-          </div>
-        </Button>
-
-        {/* LIST */}
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={() => setViewMode("list")}
-          className="p-0 bg-transparent shadow-none border-none hover:bg-transparent"
-        >
-          <div className="flex h-14 w-14 items-center justify-center">
-            <div
-              className={cn(
-                "relative flex h-12 w-12 items-center justify-center rounded-full backdrop-blur-[18px]",
-                "bg-white/10 dark:bg-white/10",
-                "before:content-[''] before:absolute before:inset-0 before:p-px before:rounded-full",
-                "before:[background:linear-gradient(270deg,rgba(168,1,186,0.85)_0%,rgba(37,48,240,0.85)_100%)]",
-                "before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)]",
-                "before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:pointer-events-none",
-                "transition-colors",
-                viewMode === "list" && "bg-white/20 dark:bg-white/20"
+              {viewMode === "grid" ? (
+                <LayoutGrid className="relative z-[1] h-5 w-5 text-slate-900 dark:text-white" />
+              ) : (
+                <List className="relative z-[1] h-5 w-5 text-slate-900 dark:text-white" />
               )}
-            >
-              <List
-                className={cn(
-                  "relative z-[1] h-5 w-5 opacity-80 transition-opacity",
-                  "text-slate-700 dark:text-[#e0e3ff]",
-                  viewMode === "list" &&
-                    "opacity-100 text-slate-900 dark:text-white"
-                )}
-              />
             </div>
           </div>
         </Button>

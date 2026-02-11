@@ -16,8 +16,20 @@ const TAB_ICON = {
   "storage-usage": "/assets/dashboard/cloud-bill.svg",
 } as const;
 
-const BillingHistory = () => {
+type BillingHistoryProps = {
+  restricted?: boolean;
+  restrictedMessage?: string;
+};
+
+const BillingHistory = ({
+  restricted = false,
+  restrictedMessage = "Not permitted for your role.",
+}: BillingHistoryProps) => {
   const [activeTab, setActiveTab] = useState("recharge");
+  const handleTabChange = (value: string) => {
+    if (restricted) return;
+    setActiveTab(value);
+  };
 
   return (
     <DashboardCard
@@ -28,12 +40,7 @@ const BillingHistory = () => {
         "font-['Space_Grotesk']" // ✅ apply font to entire card
       )}
     >
-      <Tabs
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="w-full"
-        variant="glowing"
-      >
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full" variant="glowing">
         {/* Header */}
         <div className="px-6 pt-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -48,7 +55,12 @@ const BillingHistory = () => {
 
             {/* Tabs pill (scrollable on small screens) */}
             <div className="overflow-x-auto px-1 py-1">
-              <TabsList className="font-['Space_Grotesk']">
+              <TabsList
+                className={cn(
+                  "font-['Space_Grotesk']",
+                  restricted && "pointer-events-none opacity-60"
+                )}
+              >
                 <TabsTrigger value="recharge">
                   <img
                     src={TAB_ICON.recharge}
@@ -93,10 +105,23 @@ const BillingHistory = () => {
         </div>
 
         {/* Content area (unchanged) */}
-        <div className="px-6 pb-6 pt-5">
-          <RechargeHistoryTab />
-          <SmartPCUsageHistoryTab />
-          <SmartStorageUsageHistoryTab />
+        <div className="relative px-6 pb-6 pt-5">
+          <div
+            className={cn(
+              restricted && "pointer-events-none select-none blur-[2px]"
+            )}
+          >
+            <RechargeHistoryTab />
+            <SmartPCUsageHistoryTab />
+            <SmartStorageUsageHistoryTab />
+          </div>
+          {restricted && (
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <span className="rounded-md border border-border bg-background/80 px-3 py-1 text-sm text-muted-foreground backdrop-blur-sm">
+                {restrictedMessage}
+              </span>
+            </div>
+          )}
         </div>
       </Tabs>
     </DashboardCard>

@@ -1,14 +1,10 @@
-"use client";
-
 import appConfig from "@/config/app-config";
 
 import { Logger } from "@/lib/utils/logger";
 
-import { createApi, type FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+import { fetchAuthSession } from "aws-amplify/auth";
 
 import { UAParser } from "ua-parser-js";
-
-import { baseQueryWithReauth } from "./apiUtils";
 
 export interface SmartPCSession {
   sessionId: string;
@@ -27,194 +23,167 @@ export interface SmartPCSession {
 
 const { IPIFY_URL, CLIENT_SESSION_API } = appConfig;
 
-const ipifyBaseQuery = baseQueryWithReauth(false, IPIFY_URL);
-
-const getIpAddress = async (api: Parameters<typeof ipifyBaseQuery>[1]) => {
+export const updateSessionHeartbeat = async () => {
   try {
-    const result = await ipifyBaseQuery({ url: "", method: "GET" }, api, {});
-    const data = result.data as { ip?: string } | undefined;
-    return data?.ip || "unknown";
-  } catch {
-    return "unknown";
+    const sessionId = localStorage.getItem("smartpc-session-id");
+    if (!sessionId) {
+      Logger.warn("No sessionId in localStorage. Skipping heartbeat.");
+      return;
+    }
+
+    const { idToken } = (await fetchAuthSession()).tokens ?? {};
+    if (!idToken) {
+      Logger.warn("No ID token found.");
+      return;
+    }
+
+    const ip = await fetch(IPIFY_URL)
+      .then((res) => res.json())
+      .then((data) => data.ip)
+      .catch(() => "unknown");
+
+    const parser = new UAParser();
+    const result = parser.getResult();
+    const deviceName = `${result.browser.name} on ${result.os.name}`;
+
+    const res = await fetch(CLIENT_SESSION_API, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${idToken.toString()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        mode: "heartbeat",
+        sessionId,
+        ip,
+        deviceName,
+      }),
+    });
+
+    const rawText = await res.text();
+    let parsed: { message?: string; code?: string } | null = null;
+
+    try {
+      parsed = rawText ? JSON.parse(rawText) : null;
+    } catch {
+      // ignore JSON parse error, rawText will still be logged
+    }
+
+    // Hard HTTP error (500/401/etc.)
+    if (!res.ok) {
+      Logger.warn("Failed to update heartbeat:", parsed ?? rawText ?? res.status);
+      return;
+    }
+
+    // Expected business-state: session not active / not claimed yet
+    if (parsed?.code === "SESSION_NOT_ACTIVE") {
+      Logger.log(
+        "Heartbeat skipped: session is not active or not claimed yet.",
+        parsed
+      );
+      return;
+    }
+
+    // Normal success
+    Logger.log("Heartbeat updated for session:", sessionId);
+  } catch (err) {
+    Logger.error("Heartbeat error:", err);
   }
 };
 
-export const sessionAPI = createApi({
-  reducerPath: "sessionAPI",
-  baseQuery: baseQueryWithReauth(true, CLIENT_SESSION_API),
-  endpoints: (builder) => ({
-    updateSessionHeartbeat: builder.mutation<void, void>({
-      async queryFn(_arg, api, _extraOptions, baseQuery) {
-        try {
-          const sessionId = localStorage.getItem("smartpc-session-id");
-          if (!sessionId) {
-            Logger.warn("No sessionId in localStorage. Skipping heartbeat.");
-            return { data: undefined };
-          }
+export const claimSessionIfAvailable = async () => {
+  try {
+    const { idToken } = (await fetchAuthSession()).tokens ?? {};
+    if (!idToken) {
+      Logger.warn("No ID token available. User might be logged out.");
+      return;
+    }
 
-          const ip = await getIpAddress(api);
-          const parser = new UAParser();
-          const result = parser.getResult();
-          const deviceName = `${result.browser.name} on ${result.os.name}`;
+    const prevSessionId = localStorage.getItem("smartpc-session-id");
 
-          const response = await baseQuery(
-            {
-              url: "",
-              method: "POST",
-              body: {
-                mode: "heartbeat",
-                sessionId,
-                ip,
-                deviceName,
-              },
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
+    const ip = await fetch(IPIFY_URL)
+      .then((res) => res.json())
+      .then((data) => data.ip)
+      .catch(() => "unknown");
 
-          if (response.error) {
-            Logger.warn("Failed to update heartbeat:", response.error);
-            return { error: response.error as FetchBaseQueryError };
-          }
+    const parser = new UAParser();
+    const result = parser.getResult();
+    const deviceName = `${result.browser.name} on ${result.os.name}`;
 
-          const parsed = response.data as { message?: string; code?: string } | null;
-
-          if (parsed?.code === "SESSION_NOT_ACTIVE") {
-            Logger.log(
-              "Heartbeat skipped: session is not active or not claimed yet.",
-              parsed
-            );
-            return { data: undefined };
-          }
-
-          Logger.log("Heartbeat updated for session:", sessionId);
-          return { data: undefined };
-        } catch (err) {
-          Logger.error("Heartbeat error:", err);
-          return {
-            error: {
-              status: "CUSTOM_ERROR",
-              data: err instanceof Error ? err.message : "Unknown error",
-            } as FetchBaseQueryError,
-          };
-        }
+    const response = await fetch(CLIENT_SESSION_API, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${idToken.toString()}`,
+        "Content-Type": "application/json",
       },
-    }),
-    claimSessionIfAvailable: builder.mutation<void, void>({
-      async queryFn(_arg, api, _extraOptions, baseQuery) {
-        try {
-          const prevSessionId = localStorage.getItem("smartpc-session-id");
+      body: JSON.stringify({
+        mode: "claim",
+        ip,
+        deviceName,
+      }),
+    });
 
-          const ip = await getIpAddress(api);
-          const parser = new UAParser();
-          const result = parser.getResult();
-          const deviceName = `${result.browser.name} on ${result.os.name}`;
+    const data = await response.json();
 
-          const response = await baseQuery(
-            {
-              url: "",
-              method: "POST",
-              body: {
-                mode: "claim",
-                ip,
-                deviceName,
-              },
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
+    if (response.ok && data.sessionId) {
+      const newSessionId = data.sessionId;
 
-          if (response.error) {
-            Logger.warn("No unclaimed session available:", response.error);
-            return { error: response.error as FetchBaseQueryError };
-          }
+      if (prevSessionId && prevSessionId !== newSessionId) {
+        Logger.log("⚠️ Replacing old session ID:", prevSessionId);
+        // Optionally invalidate old session by calling another API
+        // await invalidateOldSession(prevSessionId, idToken);
+      }
 
-          const data = response.data as { sessionId?: string; message?: string };
+      localStorage.setItem("smartpc-session-id", newSessionId);
+      Logger.log("Session claimed:", newSessionId);
+    } else {
+      Logger.warn("No unclaimed session available:", data.message || data);
+    }
+  } catch (err) {
+    Logger.error("Failed to claim session:", err);
+  }
+};
 
-          if (data?.sessionId) {
-            const newSessionId = data.sessionId;
+export const fetchActiveSessions = async (): Promise<SmartPCSession[]> => {
+  try {
+    const { idToken } = (await fetchAuthSession()).tokens ?? {};
+    if (!idToken) throw new Error("No ID token found");
 
-            if (prevSessionId && prevSessionId !== newSessionId) {
-              Logger.log("⚠️ Replacing old session ID:", prevSessionId);
-            }
-
-            localStorage.setItem("smartpc-session-id", newSessionId);
-            Logger.log("Session claimed:", newSessionId);
-          } else {
-            Logger.warn("No unclaimed session available:", data?.message || data);
-          }
-
-          return { data: undefined };
-        } catch (err) {
-          Logger.error("Failed to claim session:", err);
-          return {
-            error: {
-              status: "CUSTOM_ERROR",
-              data: err instanceof Error ? err.message : "Unknown error",
-            } as FetchBaseQueryError,
-          };
-        }
+    const res = await fetch(CLIENT_SESSION_API, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${idToken.toString()}`,
+        "Content-Type": "application/json",
       },
-    }),
-    fetchActiveSessions: builder.query<SmartPCSession[], void>({
-      async queryFn(_arg, api, _extraOptions, baseQuery) {
-        try {
-          const response = await baseQuery(
-            {
-              url: "",
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
+    });
 
-          if (response.error) {
-            Logger.error("Failed to fetch sessions:", response.error);
-            return { error: response.error as FetchBaseQueryError };
-          }
+    if (!res.ok) throw new Error(await res.text());
+    const raw = await res.json();
 
-          const raw = (response.data as SmartPCSession[]) ?? [];
-          const currentId = localStorage.getItem("smartpc-session-id");
+    const currentId = localStorage.getItem("smartpc-session-id");
 
-          const normalized = raw.map((s) => {
-            const location = s.location || {};
-            const locationDisplay =
-              location.city || location.region || location.country
-                ? `${location.city || "?"}, ${location.country || location.region || "?"}`
-                : "Unknown";
+    return (raw as SmartPCSession[]).map((s) => {
+      const location = s.location || {};
+      const locationDisplay =
+        location.city || location.region || location.country
+          ? `${location.city || "?"}, ${
+              location.country || location.region || "?"
+            }`
+          : "Unknown";
 
-            return {
-              sessionId: s.sessionId,
-              deviceName: s.deviceName || "Unknown Device",
-              ip: s.ip || "N/A",
-              lastSeen: new Date(s.lastSeen).toLocaleString(),
-              location,
-              locationDisplay,
-              occupied: s.occupied,
-              isCurrentSession: s.sessionId === currentId,
-            };
-          });
-
-          return { data: normalized };
-        } catch (err) {
-          Logger.error("Failed to fetch sessions:", err);
-          return {
-            error: {
-              status: "CUSTOM_ERROR",
-              data: err instanceof Error ? err.message : "Unknown error",
-            } as FetchBaseQueryError,
-          };
-        }
-      },
-    }),
-  }),
-});
-
-export const {
-  useUpdateSessionHeartbeatMutation,
-  useClaimSessionIfAvailableMutation,
-  useLazyFetchActiveSessionsQuery,
-} = sessionAPI;
+      return {
+        sessionId: s.sessionId,
+        deviceName: s.deviceName || "Unknown Device",
+        ip: s.ip || "N/A",
+        lastSeen: new Date(s.lastSeen).toLocaleString(),
+        location,
+        locationDisplay,
+        occupied: s.occupied,
+        isCurrentSession: s.sessionId === currentId,
+      };
+    });
+  } catch (err) {
+    Logger.error("Failed to fetch sessions:", err);
+    return [];
+  }
+};

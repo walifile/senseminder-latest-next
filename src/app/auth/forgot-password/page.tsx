@@ -6,10 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
-import {
-  useLazyCheckMfaStatusQuery,
-  useSendRecoveryEmailMutation,
-} from "@/api/mfa-recovery";
+import { checkMfaStatus, sendRecoveryEmail } from "@/api/mfa-recovery";
 
 import { cn } from "@/lib/utils";
 import { Logger } from "@/lib/utils/logger";
@@ -37,8 +34,6 @@ export default function ForgotPassword() {
   const { toast } = useToast();
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
-  const [triggerCheckMfaStatus] = useLazyCheckMfaStatusQuery();
-  const [sendRecoveryEmail] = useSendRecoveryEmailMutation();
 
   const {
     register,
@@ -54,14 +49,14 @@ export default function ForgotPassword() {
 
     try {
       Logger.log("Calling checkMfaStatus...");
-      const mfaResult = await triggerCheckMfaStatus({ email }).unwrap();
+      const mfaResult = await checkMfaStatus(email);
       Logger.log("MFA Status Response:", mfaResult);
 
       const action = mfaResult?.action;
 
       if (action === "custom_recovery") {
         Logger.log("Email MFA enabled. Triggering secure recovery email...");
-        await sendRecoveryEmail({ email }).unwrap();
+        await sendRecoveryEmail(email);
         toast({
           title: "Recovery Email Sent",
           description:

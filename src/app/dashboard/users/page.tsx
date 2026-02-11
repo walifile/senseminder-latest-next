@@ -1,5 +1,7 @@
 "use client";
 
+import type { RootState } from "@/redux/store";
+
 import React, { useState } from "react";
 import { useGetUsersQuery } from "@/api/user";
 
@@ -19,6 +21,8 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 
+import { useSelector } from "react-redux";
+
 import { Search, UserPlus } from "lucide-react";
 
 import { useBoolean } from "@/hooks/use-boolean";
@@ -31,7 +35,11 @@ import type { ApiUser } from "./types";
 const UsersManagementPage = () => {
   const inviteDialog = useBoolean();
   const [searchQuery, setSearchQuery] = useState("");
-  const { data, isLoading } = useGetUsersQuery();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const isMember = user?.role === "member";
+  const { data, isLoading } = useGetUsersQuery(undefined, {
+    skip: isMember,
+  });
   const users: ApiUser[] = data?.users || [];
 
   // Filter users (remove group search)
@@ -74,6 +82,7 @@ const UsersManagementPage = () => {
                 onClick={inviteDialog.onTrue}
                 className="gap-2 w-full md:w-auto"
                 data-testid="user-management-invite-button"
+                disabled={isMember}
               >
                 <UserPlus className="h-4 w-4" />
                 Invite User
@@ -114,7 +123,11 @@ const UsersManagementPage = () => {
               </CardHeader>
 
               <CardContent>
-                <UserTable loading={isLoading} filteredUsers={filteredUsers} />
+                <UserTable
+                  loading={isLoading}
+                  filteredUsers={filteredUsers}
+                  isMember={isMember}
+                />
               </CardContent>
 
               <CardFooter className="border-t border-black/10 dark:border-border pt-6 flex justify-between text-muted-foreground text-sm">

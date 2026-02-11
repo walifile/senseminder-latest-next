@@ -2,10 +2,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import {
-  useSetSecurityQuestionMutation,
-  useLazyGetSecurityQuestionQuery,
-} from "@/api/security-question";
+import { getSecurityQuestion, setSecurityQuestion } from "@/api/security-question";
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -68,8 +65,6 @@ export default function SecurityQuestionDialog({
   const [submitting, setSubmitting] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
   const ignoreNextParentCloseRef = useRef(false);
-  const [triggerGetSecurityQuestion] = useLazyGetSecurityQuestionQuery();
-  const [setSecurityQuestion] = useSetSecurityQuestionMutation();
 
   const closeForgotSafely = () => {
     ignoreNextParentCloseRef.current = true;
@@ -111,8 +106,7 @@ export default function SecurityQuestionDialog({
       setShowForgot(false);
       setLoading(true);
 
-      triggerGetSecurityQuestion()
-        .unwrap()
+      getSecurityQuestion()
         .then((res) => {
           if (res?.question) {
             setHasExistingQuestion(true);
@@ -146,7 +140,7 @@ export default function SecurityQuestionDialog({
         question: newQuestion,
         answer: newAnswer,
         ...(hasExistingQuestion ? { oldAnswer } : {}),
-      }).unwrap();
+      });
 
       toast({
         title: "Success",

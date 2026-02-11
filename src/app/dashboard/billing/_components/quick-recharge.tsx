@@ -31,7 +31,15 @@ import { useFeedback } from "@/hooks/use-feedback";
 
 import { quickRechargeAmounts } from "../data";
 
-const QuickRecharge = () => {
+type QuickRechargeProps = {
+  disableAutoRecharge?: boolean;
+  disableRecharge?: boolean;
+};
+
+const QuickRecharge = ({
+  disableAutoRecharge = false,
+  disableRecharge = false,
+}: QuickRechargeProps) => {
   const showConfirm = useBoolean();
   const showAutoRechargeConfig = useBoolean();
   const { triggerFeedback } = useFeedback();
@@ -162,6 +170,7 @@ const QuickRecharge = () => {
   };
 
   const handleAutoRechargeToggle = () => {
+    if (disableAutoRecharge) return;
     if (!autoRechargeEnabled) {
       // Enabling → open config dialog
       setTempAutoRechargeAmount(autoRechargeAmount);
@@ -222,7 +231,9 @@ const QuickRecharge = () => {
                   key={amount}
                   className="relative"
                   variant="tinted"
+                  disabled={disableRecharge}
                   onClick={() => {
+                    if (disableRecharge) return;
                     setSelectedAmount(amount);
                     showConfirm.onTrue();
                   }}
@@ -268,6 +279,7 @@ const QuickRecharge = () => {
                   type="number"
                   variant="auth"
                   placeholder="Enter amount"
+                  disabled={disableRecharge}
                   value={customAmount ?? ""}
                   onChange={(e) => {
                     const v = e.target.value;
@@ -283,8 +295,9 @@ const QuickRecharge = () => {
               </div>
 
               <Button
-                disabled={isRecharging}
+                disabled={isRecharging || disableRecharge}
                 onClick={() => {
+                  if (disableRecharge) return;
                   if (customAmount && customAmount >= 20) {
                     setSelectedAmount(customAmount);
                     showConfirm.onTrue();
@@ -309,6 +322,7 @@ const QuickRecharge = () => {
                   id="auto-recharge-enabled"
                   checked={autoRechargeEnabled}
                   onCheckedChange={() => handleAutoRechargeToggle()}
+                  disabled={disableAutoRecharge}
                   size="md"
                   variant="default"
                   className="rounded-[4px]"
@@ -316,7 +330,10 @@ const QuickRecharge = () => {
 
                 <label
                   htmlFor="auto-recharge-enabled"
-                  className="text-[16px] tracking-[-0.3px] text-muted-foreground dark:text-[#B9C2D5] cursor-pointer select-none"
+                  className={cn(
+                    "text-[16px] tracking-[-0.3px] text-muted-foreground dark:text-[#B9C2D5] cursor-pointer select-none",
+                    disableAutoRecharge && "cursor-not-allowed opacity-60"
+                  )}
                 >
                   Enable auto-recharge when balance drops below $10
                 </label>
@@ -337,6 +354,7 @@ const QuickRecharge = () => {
                     size="icon"
                     className="h-7 w-7"
                     title="Edit auto-recharge amount"
+                    disabled={disableAutoRecharge}
                     onClick={() => {
                       setTempAutoRechargeAmount(autoRechargeAmount);
                       showAutoRechargeConfig.onTrue();
@@ -395,7 +413,7 @@ const QuickRecharge = () => {
             <Button variant="outline" onClick={showAutoRechargeConfig.onFalse}>
               Cancel
             </Button>
-            <Button onClick={confirmAutoRechargeConfig}>
+            <Button onClick={confirmAutoRechargeConfig} disabled={disableAutoRecharge}>
               Save &amp; Enable
             </Button>
           </div>
@@ -466,11 +484,15 @@ const QuickRecharge = () => {
               }
               variant="default"
               size="sm"
+              disabled={disableAutoRecharge}
               data-testid="billing-auto-recharge-checkbox"
             />
             <label
               htmlFor="autoRecharge"
-              className="cursor-pointer text-xs text-muted-foreground"
+              className={cn(
+                "cursor-pointer text-xs text-muted-foreground",
+                disableAutoRecharge && "cursor-not-allowed opacity-60"
+              )}
             >
               Enable recurring auto-recharge for this amount
             </label>
@@ -482,7 +504,7 @@ const QuickRecharge = () => {
             </Button>
             <Button
               onClick={() => doRecharge(selectedAmount)}
-              disabled={isRecharging}
+              disabled={isRecharging || disableRecharge}
               data-testid="billing-yes-recharge-button"
             >
               {isRecharging ? "Recharging..." : "Yes, Recharge"}

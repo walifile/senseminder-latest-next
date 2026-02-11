@@ -81,6 +81,7 @@ import { useSelector } from "react-redux";
 import {
   Eye,
   Star,
+  Info,
   Grid,
   List,
   Copy,
@@ -159,6 +160,9 @@ const CloudStorage = () => {
     isLocked: isRegionLocked,
     isReady: isRegionReady,
   } = useStorageRegion(userId);
+  const selectedRegionLabel = getStorageRegionLabel(selectedRegion, regions);
+  const regionChangeTooltip =
+    "You can change the storage region only before uploading files. Keep your cloud empty (0 files) to switch regions.";
   const [showStoragePlans, setShowStoragePlans] = useState(false);
   const [showBulkShareDialog, setShowBulkShareDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -888,6 +892,37 @@ const CloudStorage = () => {
                   <p className="font-['Space_Grotesk'] text-base text-[#454545] dark:text-[#b8c2d5]">
                     Manage your files and folders
                   </p>
+                  <div className="mt-2">
+                    <div className="inline-flex items-center gap-2">
+                      <Badge
+                        variant="secondary"
+                        className="text-xs font-medium px-2 py-0.5"
+                      >
+                        Region: {selectedRegionLabel}
+                      </Badge>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              className="inline-flex h-5 w-5 items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                              aria-label="Region change info"
+                            >
+                              <Info className="h-4 w-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="bottom"
+                            align="start"
+                            sideOffset={6}
+                            className="max-w-[240px] whitespace-normal break-words leading-snug"
+                          >
+                            {regionChangeTooltip}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </div>
                 </div>
               )}
               <div className="border-b border-border p-6 flex flex-col md:flex-row flex-wrap gap-4 items-center justify-between">
@@ -950,6 +985,35 @@ const CloudStorage = () => {
                     Sync Storage
                   </Button> */}
                 <div className="hidden md:flex md:ml-auto self-end mt-4 md:mt-0">
+                  <div className="mr-3 inline-flex items-center gap-2 self-center">
+                    <Badge
+                      variant="secondary"
+                      className="text-xs font-medium px-2 py-0.5"
+                    >
+                      Region: {selectedRegionLabel}
+                    </Badge>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            className="inline-flex h-5 w-5 items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                            aria-label="Region change info"
+                          >
+                            <Info className="h-4 w-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side="bottom"
+                          align="start"
+                          sideOffset={6}
+                          className="max-w-[240px] whitespace-normal break-words leading-snug"
+                        >
+                          {regionChangeTooltip}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <Button
                     variant="outline"
                     size="default"

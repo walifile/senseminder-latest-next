@@ -5,6 +5,8 @@ import type {
 
 import appConfig from "@/config/app-config";
 
+import { fetchAuthSession } from "aws-amplify/auth";
+
 import { createApi } from "@reduxjs/toolkit/query/react";
 
 import { baseQueryWithReauth } from "./apiUtils";
@@ -15,13 +17,60 @@ const {
   VM_MANAGEMENT_URL,
   VM_SESSION_URL,
   VM_EXTEND_SESSION_URL,
-} = appConfig;
+  VM_SCHEDULES_URL,
+  } = appConfig;
 
 export const fileManagerAPI = createApi({
   reducerPath: "fileManagerAPI",
-  baseQuery: baseQueryWithReauth(),
+  baseQuery: baseQueryWithReauth(false),
   tagTypes: ["Files", "VM", "Hierarchy", "Regions", "UserRegion"],
   endpoints: (builder) => ({
+    getRegions: builder.query<
+      {
+        regions: {
+          region?: string;
+          value?: string;
+          label?: string;
+          shortLabel?: string;
+          order?: number;
+        }[];
+      },
+      { includeDisabled?: boolean } | void
+    >({
+      query: (params) => ({
+        url: "regions",
+        method: "GET",
+        params: params?.includeDisabled ? { includeDisabled: "true" } : undefined,
+      }),
+      providesTags: ["Regions"],
+    }),
+    getUserRegion: builder.query<
+      {
+        userId: string;
+        region?: string | null;
+        storedRegion?: string | null;
+        activeRegion?: string | null;
+        hasFiles?: boolean;
+        locked?: boolean;
+      },
+      { userId: string }
+    >({
+      query: ({ userId }) => ({
+        url: "user-region",
+        method: "GET",
+        params: { userId },
+      }),
+      providesTags: ["UserRegion"],
+    }),
+    getShareInfo: builder.query<
+      { shareId: string; type: string; status: string; expiresAt?: number; name?: string },
+      { shareId: string }
+    >({
+      query: ({ shareId }) => ({
+        url: `shares/${shareId}`,
+        method: "GET",
+      }),
+    }),
     getEstimate: builder.mutation({
       query: ({ configId, storageSize, region }) => ({
         url: ESTIMATION_URL,
@@ -34,7 +83,6 @@ export const fileManagerAPI = createApi({
         headers: {
           "Content-Type": "application/json",
         },
-        skipAuth: true,
       }),
     }),
 
@@ -64,18 +112,55 @@ export const fileManagerAPI = createApi({
     //   invalidatesTags: ["VM"],
     // }),
     stopVM: builder.mutation({
-      query: (instanceId) => ({
-        url: VM_MANAGEMENT_URL,
-        method: "POST",
-        body: {
-          action: "stop",
-          instanceId,
-          region: "us-east-1",
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
+      async queryFn(instanceId: string) {
+        try {
+          const session = await fetchAuthSession();
+          const token = session.tokens?.idToken?.toString();
+          if (!token) throw new Error("No ID token found");
+
+          const response = await fetch(VM_MANAGEMENT_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+            body: JSON.stringify({
+              action: "stop",
+              instanceId,
+              region: "us-east-1",
+            }),
+          });
+
+          const text = await response.text();
+          let data;
+
+          try {
+            data = JSON.parse(text);
+          } catch {
+            data = { message: text };
+          }
+
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data:
+                  data?.message ||
+                  "Something went wrong while stopping the PC.",
+              },
+            };
+          }
+
+          return { data };
+        } catch (error) {
+          return {
+            error: {
+              status: 500,
+              data: error instanceof Error ? error.message : "Unknown error",
+            },
+          };
+        }
+      },
       invalidatesTags: ["VM"],
     }),
 
@@ -105,7 +190,7 @@ export const fileManagerAPI = createApi({
     //         method: "POST",
     //         headers: {
     //           "Content-Type": "application/json",
-    //           Authorization: `Bearer ${token}`,
+    //           Authorization: token,
     //         },
     //         body: JSON.stringify({
     //           action: "start",
@@ -133,34 +218,108 @@ export const fileManagerAPI = createApi({
     //   invalidatesTags: ["VM"],
     // }),
     startVM: builder.mutation({
-      query: (instanceId) => ({
-        url: VM_MANAGEMENT_URL,
-        method: "POST",
-        body: {
-          action: "start",
-          instanceId,
-          region: "us-east-1",
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
+      async queryFn(instanceId: string) {
+        try {
+          const session = await fetchAuthSession();
+          const token = session.tokens?.idToken?.toString();
+          if (!token) throw new Error("No ID token found");
+
+          const response = await fetch(VM_MANAGEMENT_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+            body: JSON.stringify({
+              action: "start",
+              instanceId,
+              region: "us-east-1",
+            }),
+          });
+
+          const text = await response.text();
+          let data;
+
+          try {
+            data = JSON.parse(text);
+          } catch {
+            data = { message: text };
+          }
+
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data:
+                  data?.message ||
+                  "Something went wrong while starting the PC.",
+              },
+            };
+          }
+
+          return { data };
+        } catch (error) {
+          return {
+            error: {
+              status: 500,
+              data: error instanceof Error ? error.message : "Unknown error",
+            },
+          };
+        }
+      },
       invalidatesTags: ["VM"],
     }),
 
     restartVM: builder.mutation({
-      query: (instanceId) => ({
-        url: VM_MANAGEMENT_URL,
-        method: "POST",
-        body: {
-          action: "restart",
-          instanceId,
-          region: "us-east-1",
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
+      async queryFn(instanceId: string) {
+        try {
+          const session = await fetchAuthSession();
+          const token = session.tokens?.idToken?.toString();
+          if (!token) throw new Error("No ID token found");
+
+          const response = await fetch(VM_MANAGEMENT_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+            body: JSON.stringify({
+              action: "restart",
+              instanceId,
+              region: "us-east-1",
+            }),
+          });
+
+          const text = await response.text();
+          let data;
+
+          try {
+            data = JSON.parse(text);
+          } catch {
+            data = { message: text };
+          }
+
+          if (!response.ok) {
+            return {
+              error: {
+                status: response.status,
+                data:
+                  data?.message ||
+                  "Something went wrong while restarting the PC.",
+              },
+            };
+          }
+
+          return { data };
+        } catch (error) {
+          return {
+            error: {
+              status: 500,
+              data: error instanceof Error ? error.message : "Unknown error",
+            },
+          };
+        }
+      },
       invalidatesTags: ["VM"],
     }),
 
@@ -230,6 +389,18 @@ export const fileManagerAPI = createApi({
       invalidatesTags: ["VM"],
     }),
 
+    scheduleVM: builder.mutation({
+      query: (scheduleData) => ({
+        url: VM_SCHEDULES_URL,
+        method: "POST",
+        body: scheduleData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      invalidatesTags: ["VM"],
+    }),
+
     listHierarchy: builder.query({
       query: ({ userId, region }) => ({
         url: "list-hierarchy",
@@ -240,62 +411,6 @@ export const fileManagerAPI = createApi({
         },
       }),
       providesTags: ["Hierarchy"],
-    }),
-
-    getRegions: builder.query<
-      {
-        regions: {
-          region?: string;
-          value?: string;
-          label?: string;
-          shortLabel?: string;
-          order?: number;
-        }[];
-      },
-      { includeDisabled?: boolean } | void
-    >({
-      query: (params) => ({
-        url: "regions",
-        method: "GET",
-        params: params?.includeDisabled
-          ? { includeDisabled: "true" }
-          : undefined,
-      }),
-      providesTags: ["Regions"],
-    }),
-    getUserRegion: builder.query<
-      {
-        userId: string;
-        region?: string | null;
-        storedRegion?: string | null;
-        activeRegion?: string | null;
-        hasFiles?: boolean;
-        locked?: boolean;
-      },
-      { userId: string }
-    >({
-      query: ({ userId }) => ({
-        url: "user-region",
-        method: "GET",
-        params: { userId },
-      }),
-      providesTags: ["UserRegion"],
-    }),
-    getShareInfo: builder.query<
-      {
-        shareId: string;
-        type: string;
-        status: string;
-        expiresAt?: number;
-        name?: string;
-      },
-      { shareId: string }
-    >({
-      query: ({ shareId }) => ({
-        url: `shares/${shareId}`,
-        method: "GET",
-        skipAuth: true,
-      }),
     }),
 
     // storage part
@@ -324,10 +439,7 @@ export const fileManagerAPI = createApi({
       }),
       invalidatesTags: ["Files"],
     }),
-    getSharesForObject: builder.query<
-      { items: { shareId: string }[] },
-      { key: string }
-    >({
+    getSharesForObject: builder.query<{ items: { shareId: string }[] }, { key: string }>({
       query: ({ key }) => ({
         url: "shares",
         method: "GET",
@@ -350,7 +462,6 @@ export const fileManagerAPI = createApi({
           ...(key ? { key } : {}),
           ...(region ? { region } : {}),
         },
-        skipAuth: true,
       }),
     }),
     shareFile: builder.mutation({
@@ -528,7 +639,6 @@ export const fileManagerAPI = createApi({
           url: "download-folder",
           method: "GET",
           params,
-          skipAuth: true,
         };
       },
     }),
@@ -552,7 +662,6 @@ export const fileManagerAPI = createApi({
         headers: {
           "Content-Type": file.type || "application/octet-stream",
         },
-        skipAuth: true,
       }),
       invalidatesTags: ["Files"],
     }),
@@ -576,7 +685,6 @@ export const fileManagerAPI = createApi({
           ...(folder && { folder }),
           ...(key && { key }),
         },
-        skipAuth: true,
       }),
     }),
 
@@ -677,6 +785,7 @@ export const fileManagerAPI = createApi({
 export const {
   useGetRegionsQuery,
   useGetUserRegionQuery,
+  useScheduleVMMutation,
   useStopVMMutation,
   // useDeleteVMMutation,
   useStartVMMutation,

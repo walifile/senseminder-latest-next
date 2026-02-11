@@ -8,12 +8,12 @@ const { CONTACT_URL } = appConfig;
 
 export const contactAPI = createApi({
   reducerPath: "contactAPI",
-  baseQuery: baseQueryWithReauth(false, CONTACT_URL),
+  baseQuery: baseQueryWithReauth(false),
   tagTypes: ["Contact"],
   endpoints: (builder) => ({
     sendContactMessage: builder.mutation({
       query: ({ name, email, subject, message }) => ({
-        url: "contact",
+        url: `${CONTACT_URL}/contact`,
         method: "POST",
         body: {
           name,

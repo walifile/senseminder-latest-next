@@ -4,7 +4,7 @@ import type { SmartPCSession } from "@/api/session";
 
 import { routes } from "@/constants/routes";
 import React, { useState, useEffect } from "react";
-import { useLazyFetchActiveSessionsQuery } from "@/api/session";
+import { fetchActiveSessions } from "@/api/session";
 import MfaTotpDialog from "@/app/dashboard/_components/MfaTotpDialog";
 import MfaMethodDialog from "@/app/dashboard/_components/MfaMethodDialog";
 import SecurityQuestionDialog from "@/app/dashboard/_components/security-question-dialog";
@@ -46,7 +46,6 @@ export const ProfileSecurityTab = () => {
 
   // Security & 2FA/session states
   const [sessions, setSessions] = useState<SmartPCSession[]>([]);
-  const [triggerFetchActiveSessions] = useLazyFetchActiveSessionsQuery();
   const [isFederatedUser, setIsFederatedUser] = useState(false);
   const isMfaSupported = !isFederatedUser;
 
@@ -79,7 +78,7 @@ export const ProfileSecurityTab = () => {
 
   useEffect(() => {
     const fetchSessions = async () => {
-      const data = await triggerFetchActiveSessions().unwrap();
+      const data = await fetchActiveSessions();
       setSessions(data);
     };
 

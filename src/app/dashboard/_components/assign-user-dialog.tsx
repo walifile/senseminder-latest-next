@@ -3,12 +3,8 @@
 import type { DesktopInstance } from "@/app/build-sensepc/types";
 
 import { useGetUsersQuery } from "@/api/user";
+import { assignPC, unassignPC, getAssignments } from "@/api/assignpc";
 import React, { useMemo, useState, useEffect, useCallback } from "react";
-import {
-  useAssignPCMutation,
-  useUnassignPCMutation,
-  useLazyGetAssignmentsQuery,
-} from "@/api/assignpc";
 
 import { cn } from "@/lib/utils/index";
 import { Logger } from "@/lib/utils/logger";
@@ -23,6 +19,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogContent,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 import { toast } from "@/hooks/use-toast";
@@ -59,9 +56,13 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
   const [query, setQuery] = useState("");
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
   const [loadingUnassign, setLoadingUnassign] = useState(false);
-  const [assignPC] = useAssignPCMutation();
-  const [unassignPC] = useUnassignPCMutation();
-  const [triggerGetAssignments] = useLazyGetAssignmentsQuery();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<
+    | { type: "assign"; user: ApiUser }
+    | { type: "unassign" }
+    | { type: "blocked"; message: string }
+    | null
+  >(null);
 
   Logger.debug("AssignUserDialog render:", { setLoadingAssign });
 
@@ -75,12 +76,12 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
   // Fetch all assignments
   const fetchAssignments = useCallback(async () => {
     try {
-      const a = await triggerGetAssignments().unwrap();
+      const a = await getAssignments();
       setAssignments(a || {});
     } catch {
       // Intentionally ignored
     }
-  }, [triggerGetAssignments]);
+  }, []);
 
   // Find out if this PC is assigned, and to whom
   const assignedUser: ApiUser | null = useMemo(() => {
@@ -126,6 +127,12 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
   }, [open, fetchAssignments]);
 
   const titleName = pc?.systemName?.trim() || pc?.instanceId || "Sense PC";
+  const pcState = pc?.state?.toLowerCase();
+  const isStopped = pcState === "stopped";
+  const isRunning = pcState === "running";
+  const isTransitioning = !!pcState && !isStopped && !isRunning;
+  const canAssign = isStopped;
+  const isUnassigned = !assignedUser;
 
   const memberLabel = (u: ApiUser) => {
     const full = `${u.firstName || ""} ${u.lastName || ""}`.trim();
@@ -142,6 +149,33 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
   // Assign to a member
   const assignToMember = async (user: ApiUser) => {
     if (!pc) return;
+    if (isTransitioning) {
+      setConfirmAction({
+        type: "blocked",
+        message:
+          "This PC is currently changing state. Please wait until it finishes before continuing.",
+      });
+      setConfirmOpen(true);
+      return;
+    }
+    if (isRunning && isUnassigned) {
+      setConfirmAction({
+        type: "blocked",
+        message: "This PC is running. Please stop it before assigning access.",
+      });
+      setConfirmOpen(true);
+      return;
+    }
+    if (!canAssign) {
+      setConfirmAction({ type: "assign", user });
+      setConfirmOpen(true);
+      return;
+    }
+    await assignToMemberDirect(user);
+  };
+
+  const assignToMemberDirect = async (user: ApiUser) => {
+    if (!pc) return;
     setLoadingUserId(user.id);
 
     // If assigned to another, unassign first
@@ -150,7 +184,7 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
         await unassignPC({
           instanceId: pc.instanceId,
           memberId: assignedUser.id,
-        }).unwrap();
+        });
       } catch (e) {
         Logger.error("Failed to unassign before assigning:", e);
         toast({
@@ -167,7 +201,7 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
         instanceId: pc.instanceId,
         memberId: user.id,
         systemName: pc.systemName || "",
-      }).unwrap();
+      });
       toast({
         title: "Assigned!",
         description: `${pc.systemName} now assigned to ${
@@ -190,12 +224,31 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
   // Unassign from current user
   const unassign = async () => {
     if (!pc || !assignedUser) return;
+    if (isTransitioning) {
+      setConfirmAction({
+        type: "blocked",
+        message:
+          "This PC is currently changing state. Please wait until it finishes before continuing.",
+      });
+      setConfirmOpen(true);
+      return;
+    }
+    if (!canAssign) {
+      setConfirmAction({ type: "unassign" });
+      setConfirmOpen(true);
+      return;
+    }
+    await unassignDirect();
+  };
+
+  const unassignDirect = async () => {
+    if (!pc || !assignedUser) return;
     setLoadingUnassign(true);
     try {
       await unassignPC({
         instanceId: pc.instanceId,
         memberId: assignedUser.id,
-      }).unwrap();
+      });
       toast({
         title: "Unassigned!",
         description: `${pc.systemName} is now unassigned`,
@@ -215,10 +268,35 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
 
   const closeDialog = useCallback(() => {
     onClose();
+    setConfirmOpen(false);
+    setConfirmAction(null);
   }, [onClose]);
 
+  const confirmDescription =
+    confirmAction?.type === "blocked"
+      ? confirmAction.message
+      : confirmAction?.type === "assign"
+      ? "This PC is running. Assigning access will stop the PC. Continue?"
+      : "This PC is running. Unassigning will stop the PC. Continue?";
+
+  const handleConfirm = async () => {
+    if (!confirmAction) return;
+    setConfirmOpen(false);
+    const action = confirmAction;
+    setConfirmAction(null);
+    if (action.type === "blocked") {
+      return;
+    }
+    if (action.type === "assign") {
+      await assignToMemberDirect(action.user);
+    } else {
+      await unassignDirect();
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={closeDialog}>
+    <>
+      <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent
         data-testid="sensepc-assign-modal"
         className="p-0 gap-0 overflow-hidden sm:max-w-[620px]"
@@ -287,20 +365,26 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
                     <p className="text-sm font-medium text-foreground">
                       Current access
                     </p>
-                    {assignedUser ? (
-                      <p className="text-sm text-muted-foreground">
-                        This PC is currently assigned to{" "}
-                        <span className="font-medium text-foreground">
-                          {memberLabel(assignedUser)}
-                        </span>
-                        .
-                      </p>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">
-                        No member currently has access to this PC.
+                  {assignedUser ? (
+                    <p className="text-sm text-muted-foreground">
+                      This PC is currently assigned to{" "}
+                      <span className="font-medium text-foreground">
+                        {memberLabel(assignedUser)}
+                      </span>
+                      .
+                    </p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      No member currently has access to this PC.
+                    </p>
+                  )}
+                  {assignedUser &&
+                    pc?.state?.toLowerCase() === "running" && (
+                      <p className="text-xs text-muted-foreground">
+                        Note: Unassigning a running PC will stop it.
                       </p>
                     )}
-                  </div>
+                </div>
 
                   {assignedUser ? (
                     <Button
@@ -334,16 +418,37 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
               {/* Search + member list */}
               <div className="space-y-3">
                 <div className="flex items-end justify-between gap-3">
-                  <div className="space-y-1">
-                    <p
-                      className="text-sm font-semibold text-foreground"
-                      data-testid="sensepc-assign-to-member-label"
-                    >
-                      Assign to member
+                <div className="space-y-1">
+                  <p
+                    className="text-sm font-semibold text-foreground"
+                    data-testid="sensepc-assign-to-member-label"
+                  >
+                    Assign to member
+                  </p>
+                  {assignedUser ? (
+                    <p className="text-xs text-amber-700 dark:text-amber-300">
+                      Assigning to a different member will stop the PC if it is
+                      running.
                     </p>
+                  ) : isTransitioning ? (
+                    <p className="text-xs text-amber-700 dark:text-amber-300">
+                      This PC is currently changing state. Please wait until it
+                      finishes before continuing.
+                    </p>
+                  ) : isRunning ? (
+                    <p className="text-xs text-amber-700 dark:text-amber-300">
+                      This PC is running. Please stop it before assigning
+                      access.
+                    </p>
+                  ) : !canAssign ? (
+                    <p className="text-xs text-amber-700 dark:text-amber-300">
+                      This PC is not stopped. Assigning will stop it.
+                    </p>
+                  ) : (
                     <p className="text-xs text-muted-foreground">
                       Search by name or email, then click Assign.
                     </p>
+                  )}
                   </div>
 
                   <div className="w-full max-w-[320px]">
@@ -418,7 +523,9 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
 
                             <Button
                               disabled={
-                                already || isRowLoading || loadingUnassign
+                                already ||
+                                isRowLoading ||
+                                loadingUnassign
                               }
                               variant={already ? "secondary" : "default"}
                               size="sm"
@@ -457,6 +564,37 @@ const AssignUserDialog: React.FC<AssignUserDialogProps> = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+      <Dialog
+      open={confirmOpen}
+      onOpenChange={(next) => {
+        if (!next) {
+          setConfirmOpen(false);
+          setConfirmAction(null);
+        }
+      }}
+    >
+      <DialogContent className="sm:max-w-[420px]">
+        <DialogHeader>
+          <DialogTitle>Confirm Action</DialogTitle>
+          <DialogDescription>{confirmDescription}</DialogDescription>
+        </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setConfirmOpen(false);
+                setConfirmAction(null);
+              }}
+            >
+              {confirmAction?.type === "blocked" ? "Close" : "Cancel"}
+            </Button>
+            {confirmAction?.type !== "blocked" && (
+              <Button onClick={handleConfirm}>Continue</Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

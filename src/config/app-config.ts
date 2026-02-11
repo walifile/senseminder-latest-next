@@ -72,7 +72,7 @@ const requiredAppConfig = Object.fromEntries(
   Object.entries(ENV_VARS).map(([key, value]) => [
     key,
     requireEnvVar(value, key),
-  ]),
+  ])
 ) as {
   [K in keyof typeof ENV_VARS]: string;
 };

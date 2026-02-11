@@ -17,13 +17,13 @@ export type Ticket = {
 
 export const ticketsAPI = createApi({
   reducerPath: "ticketsAPI",
-  baseQuery: baseQueryWithReauth(true, BASE_URL),
+  baseQuery: baseQueryWithReauth(false),
   refetchOnMountOrArgChange: true,
   tagTypes: ["Tickets", "Ticket", "Messages"],
   endpoints: (builder) => ({
     getTickets: builder.query({
       query: ({ userId }) => ({
-        url: "tickets",
+        url: `${BASE_URL}/tickets`,
         method: "GET",
         headers: { "x-user-id": userId },
       }),
@@ -32,7 +32,7 @@ export const ticketsAPI = createApi({
 
     getTicketMessages: builder.query({
       query: ({ userId, id }) => ({
-        url: `ticket/${id}/messages`,
+        url: `${BASE_URL}/ticket/${id}/messages`,
         method: "GET",
         headers: { "x-user-id": userId },
       }),
@@ -41,7 +41,7 @@ export const ticketsAPI = createApi({
 
     sendTicketMessage: builder.mutation({
       query: ({ userId, id, body }) => ({
-        url: `ticket/${id}/message`,
+        url: `${BASE_URL}/ticket/${id}/message`,
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -54,7 +54,7 @@ export const ticketsAPI = createApi({
 
     getTicketById: builder.query({
       query: ({ userId, id }) => ({
-        url: `ticket/${id}`,
+        url: `${BASE_URL}/ticket/${id}`,
         method: "GET",
         headers: { "x-user-id": userId },
       }),
@@ -63,7 +63,7 @@ export const ticketsAPI = createApi({
 
     createTicket: builder.mutation({
       query: ({ userId, body }) => ({
-        url: "ticket",
+        url: `${BASE_URL}/ticket`,
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -76,7 +76,7 @@ export const ticketsAPI = createApi({
 
     updateTicketStatus: builder.mutation({
       query: ({ userId, id, status }) => ({
-        url: `ticket/${id}/status`,
+        url: `${BASE_URL}/ticket/${id}/status`,
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -89,7 +89,7 @@ export const ticketsAPI = createApi({
 
     updateTicketPriority: builder.mutation({
       query: ({ userId, id, priority }) => ({
-        url: `ticket/${id}/priority`,
+        url: `${BASE_URL}/ticket/${id}/priority`,
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -101,7 +101,7 @@ export const ticketsAPI = createApi({
 
     assignTicket: builder.mutation({
       query: ({ userId, id, assignedTo }) => ({
-        url: `ticket/${id}/assign`,
+        url: `${BASE_URL}/ticket/${id}/assign`,
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -113,7 +113,7 @@ export const ticketsAPI = createApi({
 
     presignTicketUpload: builder.mutation({
       query: ({ userId, ticketId, body }) => ({
-        url: `ticket/${ticketId}/presign-upload`,
+        url: `${BASE_URL}/ticket/${ticketId}/presign-upload`,
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -125,7 +125,7 @@ export const ticketsAPI = createApi({
 
     presignTicketUpload2: builder.mutation({
       query: ({ userId, body }) => ({
-        url: "presign-upload-2",
+        url: `${BASE_URL}/presign-upload-2`,
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -137,7 +137,7 @@ export const ticketsAPI = createApi({
 
     presignTicketDownload: builder.mutation({
       query: ({ userId, ticketId, fileKey }) => ({
-        url: `ticket/${ticketId}/presign-download`,
+        url: `${BASE_URL}/ticket/${ticketId}/presign-download`,
         method: "POST",
         headers: {
           "Content-Type": "application/json",

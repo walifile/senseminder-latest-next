@@ -1,13 +1,15 @@
 "use client";
 
+import type { RootState } from "@/redux/store";
 import type { PC } from "@/app/build-sensepc/types";
 
-import { useLazyGetAssignmentsQuery } from "@/api/assignpc";
+import { getAssignments } from "@/api/assignpc";
+import { useResendInviteMutation } from "@/api/user";
 import React, { useState, useEffect, useCallback } from "react";
 
-import { cn } from "@/lib/utils";
 import { Logger } from "@/lib/utils/logger";
 import { Badge } from "@/components/ui/badge";
+import { cn, getErrorMessage } from "@/lib/utils";
 import {
   Table,
   TableRow,
@@ -17,7 +19,9 @@ import {
   TableHeader,
 } from "@/components/ui/table";
 
-import { Mail, UserX, Monitor, UserCheck } from "lucide-react";
+import { useSelector } from "react-redux";
+
+import { Info, Mail, UserX, Monitor } from "lucide-react";
 
 import { toast } from "@/hooks/use-toast";
 import { useBoolean } from "@/hooks/use-boolean";
@@ -35,21 +39,27 @@ const headers = ["Name", "Email", "Role", "Status", "Assigned PCs", "Actions"];
 type Props = {
   loading: boolean;
   filteredUsers: ApiUser[];
+  isMember: boolean;
 };
 
-const UserTable = ({ loading, filteredUsers }: Props) => {
+const UserTable = ({ loading, filteredUsers, isMember }: Props) => {
   const showDeleteDialog = useBoolean();
   const managePCDialog = useBoolean();
   const [selectedUser, setSelectedUser] = useState<ApiUser | null>(null);
+  const { user: currentUser } = useSelector((state: RootState) => state.auth);
+  const currentRole = currentUser?.role;
 
   const [fetchAssignmentsLoading, setFetchAssignmentsLoading] = useState(false);
   const [assignments, setAssignments] = useState<Record<string, PC[]>>({});
-  const [triggerGetAssignments] = useLazyGetAssignmentsQuery();
+  const [resendTargetEmail, setResendTargetEmail] = useState<string | null>(
+    null
+  );
+  const [resendInvite] = useResendInviteMutation();
 
   const fetchAssignments = useCallback(async () => {
     setFetchAssignmentsLoading(true);
     try {
-      const res = await triggerGetAssignments().unwrap();
+      const res = await getAssignments();
       setAssignments(res || {});
     } catch (e: unknown) {
       toast({
@@ -63,11 +73,12 @@ const UserTable = ({ loading, filteredUsers }: Props) => {
     } finally {
       setFetchAssignmentsLoading(false);
     }
-  }, [triggerGetAssignments]);
+  }, []);
 
   useEffect(() => {
+    if (isMember) return;
     fetchAssignments();
-  }, [fetchAssignments]);
+  }, [fetchAssignments, isMember]);
 
   const globalReload = () => {
     fetchAssignments();
@@ -81,6 +92,27 @@ const UserTable = ({ loading, filteredUsers }: Props) => {
   const handleAssignPC = (user: ApiUser) => {
     setSelectedUser(user);
     managePCDialog.onTrue();
+  };
+
+  const handleResendInvite = async (user: ApiUser) => {
+    if (resendTargetEmail) return;
+    setResendTargetEmail(user.email);
+    try {
+      await resendInvite({ action: "resend", email: user.email }).unwrap();
+      toast({
+        title: "Invitation resent",
+        description: `An invitation has been resent to ${user.email}`,
+      });
+    } catch (e) {
+      toast({
+        title: "Failed to resend invite",
+        variant: "destructive",
+        description: getErrorMessage(e, "Failed to resend invite"),
+      });
+      Logger.error("Failed to resend invite:", e);
+    } finally {
+      setResendTargetEmail(null);
+    }
   };
 
   return (
@@ -112,7 +144,19 @@ const UserTable = ({ loading, filteredUsers }: Props) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {loading ? (
+          {isMember ? (
+            <TableRow>
+              <TableCell
+                colSpan={6}
+                className="text-center py-6 text-muted-foreground"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <Info className="h-4 w-4 text-red-500" />
+                  You are not allowed to see the user list.
+                </span>
+              </TableCell>
+            </TableRow>
+          ) : loading ? (
             <TableRow className="hover:bg-muted/50">
               <TableCell
                 colSpan={6}
@@ -165,8 +209,12 @@ const UserTable = ({ loading, filteredUsers }: Props) => {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <ActionsMenu
-                    actions={[
+                  {(() => {
+                    const canDelete =
+                      currentRole === "owner" ||
+                      (currentRole === "admin" && user.role === "member");
+
+                    const actions = [
                       ...(user.role === "member"
                         ? [
                             {
@@ -176,29 +224,38 @@ const UserTable = ({ loading, filteredUsers }: Props) => {
                             },
                           ]
                         : []),
-                      {
-                        label: "Change Role",
-                        icon: UserCheck,
-                        onClick: () => Logger.log("Change Role clicked"),
-                      },
                       ...(user.status?.toLowerCase() === "pending"
                         ? [
                             {
-                              label: "Resend Invite",
+                              label:
+                                resendTargetEmail === user.email
+                                  ? "Resending..."
+                                  : "Resend Invite",
                               icon: Mail,
-                              onClick: () =>
-                                Logger.log("Resend Invite clicked"),
+                              onClick: () => handleResendInvite(user),
                             },
                           ]
                         : []),
-                      {
-                        label: "Delete",
-                        icon: UserX,
-                        isDestructive: true,
-                        onClick: () => promptDeleteUser(user),
-                      },
-                    ]}
-                  />
+                      ...(canDelete
+                        ? [
+                            {
+                              label: "Delete",
+                              icon: UserX,
+                              isDestructive: true,
+                              onClick: () => promptDeleteUser(user),
+                            },
+                          ]
+                        : []),
+                    ];
+
+                    if (actions.length === 0) {
+                      return (
+                        <span className="text-muted-foreground">&mdash;</span>
+                      );
+                    }
+
+                    return <ActionsMenu actions={actions} />;
+                  })()}
                 </TableCell>
               </TableRow>
             ))

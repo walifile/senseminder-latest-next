@@ -27,7 +27,7 @@ import {
 
 import { checkOnboarded } from "@/lib/utils/checkOnboarded";
 import { handleSignOut } from "@/lib/services/auth";
-import { useLazyGetUserProfileQuery } from "@/api/profileManagement";
+import { getUserProfile } from "@/api/profileManagement";
 
 import {
   User,
@@ -52,7 +52,6 @@ const ProfileDropdown = () => {
 
   const [isOnboarded, setIsOnboarded] = useState<boolean | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [triggerGetUserProfile] = useLazyGetUserProfileQuery();
 
   // Avatar URL is NOT in redux user (based on your code), so fetch from profile API.
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -68,7 +67,7 @@ const ProfileDropdown = () => {
 
   const loadAvatar = async () => {
     try {
-      const profile = (await triggerGetUserProfile().unwrap()) as UserProfile | null;
+      const profile = (await getUserProfile()) as UserProfile | null;
       setAvatarUrl(profile?.avatarUrl ? String(profile.avatarUrl) : null);
     } catch {
       // Silent fail — fallback initials will show.

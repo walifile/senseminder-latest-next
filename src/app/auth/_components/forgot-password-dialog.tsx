@@ -1,3 +1,4 @@
+
 // src/app/auth/_components/forgot-password-dialog.tsx
 
 "use client";
@@ -6,10 +7,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
-import {
-  useLazyCheckMfaStatusQuery,
-  useSendRecoveryEmailMutation,
-} from "@/api/mfa-recovery";
+import { checkMfaStatus, sendRecoveryEmail } from "@/api/mfa-recovery";
 
 import { cn } from "@/lib/utils";
 import { Logger } from "@/lib/utils/logger";
@@ -47,8 +45,6 @@ export function ForgotPasswordDialog({
   const { toast } = useToast();
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
-  const [triggerCheckMfaStatus] = useLazyCheckMfaStatusQuery();
-  const [sendRecoveryEmail] = useSendRecoveryEmailMutation();
   const [step, setStep] = useState<"email" | "reset">("email");
   const [resetEmail, setResetEmail] = useState<string | null>(null);
 
@@ -83,14 +79,14 @@ export function ForgotPasswordDialog({
 
     try {
       Logger.log("Calling checkMfaStatus...");
-      const mfaResult = await triggerCheckMfaStatus({ email }).unwrap();
+      const mfaResult = await checkMfaStatus(email);
       Logger.log("MFA Status Response:", mfaResult);
 
       const action = mfaResult?.action;
 
       if (action === "custom_recovery") {
         Logger.log("Email MFA enabled. Triggering secure recovery email...");
-        await sendRecoveryEmail({ email }).unwrap();
+        await sendRecoveryEmail(email);
         toast({
           title: "Recovery Email Sent",
           description:
@@ -118,7 +114,7 @@ export function ForgotPasswordDialog({
         }
       } else {
         Logger.warn(
-          "Unexpected response from MFA API. Fallback to Cognito reset...",
+          "Unexpected response from MFA API. Fallback to Cognito reset..."
         );
         const response = await handleResetPassword(email);
         if (response.success) {
@@ -152,13 +148,13 @@ export function ForgotPasswordDialog({
           isOpen
           email={resetEmail}
           onClose={handleCloseAll}
-          variant="card"
+          variant="card" 
         />
       ) : (
         <div
           className={cn(
             "w-full max-w-[480px] rounded-[16px] p-8 shadow-xl flex flex-col items-center",
-            isDark ? "bg-[#140947]" : "bg-white",
+            isDark ? "bg-[#140947]" : "bg-white"
           )}
         >
           <div className="w-full flex flex-col items-center gap-5">
@@ -179,7 +175,7 @@ export function ForgotPasswordDialog({
               <h1
                 className={cn(
                   "text-2xl font-semibold tracking-[-0.04em]",
-                  isDark ? "text-white" : "text-[#020816]",
+                  isDark ? "text-white" : "text-[#020816]"
                 )}
               >
                 Forgot Password
@@ -187,7 +183,7 @@ export function ForgotPasswordDialog({
               <p
                 className={cn(
                   "text-sm max-w-sm",
-                  isDark ? "text-[#B9C2D5]" : "text-[#454545]",
+                  isDark ? "text-[#B9C2D5]" : "text-[#454545]"
                 )}
               >
                 Enter your email address and we&apos;ll send you instructions to
@@ -202,19 +198,20 @@ export function ForgotPasswordDialog({
             >
               <div className="space-y-2">
                 <label
-                  htmlFor="email"
-                  className="text-sm font-medium text-slate-700 dark:text-[#E5E7EB]"
-                >
-                  Email
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  variant="auth"
-                  intent={errors.email ? "error" : "default"}
-                  {...register("email")}
-                />
+                htmlFor="email"
+                className="text-sm font-medium text-slate-700 dark:text-[#E5E7EB]"
+              >
+                Email
+              </label>
+               <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                variant="auth"
+                intent={errors.email ? "error" : "default"}
+                {...register("email")}
+              />
+
 
                 {errors.email && (
                   <p className="text-sm text-red-600 dark:text-red-500">
@@ -246,13 +243,11 @@ export function ForgotPasswordDialog({
               }}
               className={cn(
                 "mt-1 text-sm hover:underline",
-                isDark ? "text-[#B9C2D5]" : "text-[#454545]",
+                isDark ? "text-[#B9C2D5]" : "text-[#454545]"
               )}
             >
               Remember your password?{" "}
-              <span className="font-medium text-link-primary">
-                Back to Sign in
-              </span>
+              <span className="font-medium text-link-primary">Back to Sign in</span>
             </button>
           </div>
         </div>

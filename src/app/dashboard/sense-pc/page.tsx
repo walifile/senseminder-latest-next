@@ -4,14 +4,17 @@ import type { RootState } from "@/redux/store";
 import type { InstanceDetail } from "@/api/realtime";
 import type { PC, DesktopInstance } from "@/app/build-sensepc/types";
 
+import { useRouter } from "next/navigation";
+import { routes } from "@/constants/routes";
+import { getAssignments } from "@/api/assignpc";
+import { fetchInstanceDetails } from "@/api/realtime";
 import { stableStates } from "@/app/build-sensepc/data";
-import { useLazyGetAssignmentsQuery } from "@/api/assignpc";
-import { useFetchInstanceDetailsMutation } from "@/api/realtime";
 import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
 import SelectedPc from "@/app/build-sensepc/_components/selected-pc";
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import ScheduleDialog from "@/app/build-sensepc/_components/schedule-dialog";
 import SmartPcToolbar from "@/app/build-sensepc/_components/smart-pc-toolbar";
+import { updateSessionHeartbeat, claimSessionIfAvailable } from "@/api/session";
 import SmartPCEmptyState from "@/app/build-sensepc/_components/smart-pc-empty-state";
 import SmartPcStopButton from "@/app/build-sensepc/_components/smart-pc-stop-button";
 import IdleSettingsDialog from "@/app/build-sensepc/_components/idle-settings-dialog";
@@ -21,10 +24,6 @@ import SmartPcRebootButton from "@/app/build-sensepc/_components/smart-pc-reboot
 import SmartPcDropdownMenu from "@/app/build-sensepc/_components/smart-pc-dropdown-menu";
 import SmartPcConnectButton from "@/app/build-sensepc/_components/smart-pc-connect-button";
 import { ConfirmDeleteModal } from "@/app/build-sensepc/_components/confirm-delete-pc-diolog";
-import {
-  useUpdateSessionHeartbeatMutation,
-  useClaimSessionIfAvailableMutation,
-} from "@/api/session";
 import {
   getApiUserId,
   getStatusIcon,
@@ -41,6 +40,7 @@ import { cn } from "@/lib/utils/index";
 import { Logger } from "@/lib/utils/logger";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PcCard } from "@/components/ui/dashboard/pc-card";
+import { checkOnboarded } from "@/lib/utils/checkOnboarded";
 import { DashboardCard } from "@/components/ui/dashboard/dashboard-card";
 import {
   Tooltip,
@@ -90,26 +90,42 @@ const shouldShowStoppedUptimeMessage = (pc: PC) =>
 
 const CloudPCPage = () => {
   const { toast } = useToast();
+  const router = useRouter();
 
   const config = useSelector((state: RootState) => state.smartPcConfig);
   const { user } = useSelector((state: RootState) => state.auth);
   const isMember = user?.role === "member";
-  const [triggerGetAssignments] = useLazyGetAssignmentsQuery();
 
   const apiUserId = getApiUserId(user);
+
+  useEffect(() => {
+    const check = async () => {
+      const onboarded = await checkOnboarded();
+      if (onboarded === false) {
+        router.replace(routes.welcome);
+      }
+    };
+    void check();
+  }, [router]);
 
   const [assignments, setAssignments] = useState<
     Record<string, { instanceId: string }[]>
   >({});
+  const fetchAssignments = useCallback(async () => {
+    try {
+      const res = await getAssignments();
+      setAssignments(res);
+      return res;
+    } catch (err) {
+      Logger.error("Failed to load assignments", err);
+      setAssignments({});
+      return null;
+    }
+  }, []);
+
   useEffect(() => {
-    triggerGetAssignments()
-      .unwrap()
-      .then((res) => setAssignments(res))
-      .catch((err) => {
-        Logger.error("Failed to load assignments", err);
-        setAssignments({});
-      });
-  }, [triggerGetAssignments]);
+    void fetchAssignments();
+  }, [fetchAssignments]);
 
   const isPCAssigned = (instanceId: string): boolean =>
     Object.values(assignments).some((pcs) =>
@@ -153,9 +169,6 @@ const CloudPCPage = () => {
   const [cloudPCs, setCloudPCs] = useState<PC[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [fetchInstanceDetails] = useFetchInstanceDetailsMutation();
-  const [updateSessionHeartbeat] = useUpdateSessionHeartbeatMutation();
-  const [claimSessionIfAvailable] = useClaimSessionIfAvailableMutation();
 
   const [realtimePcInfo, setRealtimePcInfo] = useState<
     Record<string, InstanceDetail>
@@ -245,8 +258,8 @@ const CloudPCPage = () => {
   useEffect(() => {
     const initClientSession = async () => {
       try {
-        await claimSessionIfAvailable().unwrap();
-        await updateSessionHeartbeat().unwrap();
+        await claimSessionIfAvailable();
+        await updateSessionHeartbeat();
       } catch (err) {
         Logger.error("Failed to initialize client session / heartbeat:", err);
       }
@@ -285,8 +298,7 @@ const CloudPCPage = () => {
   useEffect(() => {
     if (isError || !data || !apiUserId) return;
     const instanceNames = data.map((pc: PC) => pc.systemName);
-    fetchInstanceDetails({ userId: apiUserId, instanceNames })
-      .unwrap()
+    fetchInstanceDetails(apiUserId, instanceNames)
       .then((details) => {
         const map: Record<string, InstanceDetail> = {};
         details.forEach((d) => {
@@ -298,7 +310,7 @@ const CloudPCPage = () => {
         setRealtimePcInfo({});
         Logger.error("Failed to fetch real-time PC info", err);
       });
-  }, [apiUserId, data, isError, fetchInstanceDetails]);
+  }, [apiUserId, data, isError]);
 
   useEffect(() => {
     if (config.show) newPCDialog.onTrue();
@@ -369,6 +381,30 @@ const CloudPCPage = () => {
     setSelectedInstance(null);
     storageDialog.onFalse();
   }
+
+  const handleAssignUserSuccess = useCallback(() => {
+    refetchRemoteDesktops();
+    void fetchAssignments();
+  }, [fetchAssignments, refetchRemoteDesktops]);
+
+  const handleDeleteClick = (pc: DesktopInstance) => {
+    const state = pc.state?.toLowerCase();
+    const assigned =
+      !!pc.instanceId && isPCAssigned(pc.instanceId);
+
+    if (state === "running" && assigned) {
+      toast({
+        title: "Cannot delete while assigned",
+        description:
+          "This PC is assigned to a member. Unassign it before deleting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedInstance(pc);
+    deleteDialog.onTrue();
+  };
 
   return (
     <div
@@ -596,25 +632,60 @@ const CloudPCPage = () => {
                               "flex-wrap justify-start",
                               "md:w-auto md:flex-nowrap md:justify-end",
                             )}
-                          >
-                            <SmartPcConnectButton
-                              pc={pc}
-                              isMember={isMember}
-                              userId={userId}
-                              isPCAssigned={isPCAssigned}
-                            />
+                            >
+                              <TooltipProvider
+                                delayDuration={0}
+                                skipDelayDuration={0}
+                              >
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span>
+                                      <SmartPcConnectButton
+                                        pc={pc}
+                                        isMember={isMember}
+                                        userId={userId}
+                                        isPCAssigned={isPCAssigned}
+                                      />
+                                    </span>
+                                  </TooltipTrigger>
+                                  {!isMember && isPCAssigned(pc.instanceId) && (
+                                    <TooltipContent>
+                                      This PC is assigned to a member, unassign
+                                      to launch.
+                                    </TooltipContent>
+                                  )}
+                                </Tooltip>
+                              </TooltipProvider>
 
-                            {pc.state === "running" ? (
-                              <>
-                                <SmartPcStopButton
-                                  pc={pc}
-                                  isMember={isMember}
-                                  isPCAssigned={isPCAssigned}
-                                />
-                                <SmartPcRebootButton
-                                  pc={pc}
-                                  isMember={isMember}
-                                  isStarting={isStarting}
+                              {pc.state === "running" ? (
+                                <>
+                                  <TooltipProvider
+                                    delayDuration={0}
+                                    skipDelayDuration={0}
+                                  >
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span>
+                                          <SmartPcStopButton
+                                            pc={pc}
+                                            isMember={isMember}
+                                            isPCAssigned={isPCAssigned}
+                                          />
+                                        </span>
+                                      </TooltipTrigger>
+                                      {!isMember &&
+                                        isPCAssigned(pc.instanceId) && (
+                                          <TooltipContent>
+                                            This PC is assigned to a member.
+                                            Unassign to stop.
+                                          </TooltipContent>
+                                        )}
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                  <SmartPcRebootButton
+                                    pc={pc}
+                                    isMember={isMember}
+                                    isStarting={isStarting}
                                   isPCAssigned={isPCAssigned}
                                 />
                               </>
@@ -630,13 +701,14 @@ const CloudPCPage = () => {
                             <SmartPcDropdownMenu
                               pc={pc}
                               isMember={isMember}
+                              isPCAssigned={isPCAssigned}
                               setSelectedInstance={setSelectedInstance}
                               openPCResizeDialog={openPCResizeDialog}
                               openStorageDialog={openStorageDialog}
                               handleSchedule={scheduleDialog.onTrue}
                               handleIdle={idleDialog.onTrue}
                               handleAssignUser={assignUserDialog.onTrue}
-                              handleDelete={deleteDialog.onTrue}
+                              handleDelete={handleDeleteClick}
                             />
                           </div>
                         </PcCard>
@@ -723,13 +795,14 @@ const CloudPCPage = () => {
                             <SmartPcDropdownMenu
                               pc={pc}
                               isMember={isMember}
+                              isPCAssigned={isPCAssigned}
                               setSelectedInstance={setSelectedInstance}
                               openPCResizeDialog={openPCResizeDialog}
                               openStorageDialog={openStorageDialog}
                               handleSchedule={scheduleDialog.onTrue}
                               handleIdle={idleDialog.onTrue}
                               handleAssignUser={assignUserDialog.onTrue}
-                              handleDelete={deleteDialog.onTrue}
+                              handleDelete={handleDeleteClick}
                             />
                           </div>
 
@@ -865,7 +938,7 @@ const CloudPCPage = () => {
                                       </TooltipTrigger>
                                       {!isMember &&
                                         isPCAssigned(pc.instanceId) && (
-                                          <TooltipContent className="text-white text-sm font-semibold px-4 py-2 rounded shadow-md border">
+                                          <TooltipContent>
                                             This PC is assigned to a member.
                                             Unassign to stop.
                                           </TooltipContent>
@@ -890,7 +963,7 @@ const CloudPCPage = () => {
                                       </TooltipTrigger>
                                       {!isMember &&
                                         isPCAssigned(pc.instanceId) && (
-                                          <TooltipContent className="text-white text-sm font-semibold px-4 py-2 rounded shadow-md border">
+                                          <TooltipContent>
                                             This PC is assigned to a member.
                                             Unassign to reboot.
                                           </TooltipContent>
@@ -915,7 +988,7 @@ const CloudPCPage = () => {
                                       </span>
                                     </TooltipTrigger>
                                     {!isMember && isPCAssigned(pc.instanceId) && (
-                                      <TooltipContent className="text-white text-sm font-semibold px-4 py-2 rounded shadow-md border">
+                                      <TooltipContent>
                                         This PC is assigned to a member. Unassign
                                         to start.
                                       </TooltipContent>
@@ -970,7 +1043,7 @@ const CloudPCPage = () => {
         open={assignUserDialog.value}
         onClose={assignUserDialog.onFalse}
         pc={selectedInstance}
-        onSuccess={refetchRemoteDesktops}
+        onSuccess={handleAssignUserSuccess}
       />
 
       <ConfirmDeleteModal

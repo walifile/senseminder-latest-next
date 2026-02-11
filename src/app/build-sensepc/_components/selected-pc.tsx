@@ -42,8 +42,6 @@ import {
   ChevronDown,
 } from "lucide-react";
 
-import { getIdTokenSafe } from "@/lib/auth/token";
-
 import { clampPercent } from "../utils";
 import { BillingPlanDialog } from "./billing-dialog";
 
@@ -158,15 +156,9 @@ const SelectedPc: React.FC<SelectedPcProps> = ({
       if (!currentUserId || !currentSystemName) return;
 
       try {
-        const idToken = await getIdTokenSafe();
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-        };
-        if (idToken) headers.Authorization = `Bearer ${idToken}`;
-
         const res = await fetch(INSTANCE_DETAILS_URL, {
           method: "POST",
-          headers,
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             userId: currentUserId,
             instanceNames: [currentSystemName],

@@ -2,42 +2,60 @@
 
 import appConfig from "@/config/app-config";
 
-import { createApi } from "@reduxjs/toolkit/query/react";
-
-import { baseQueryWithReauth } from "./apiUtils";
+import { fetchAuthSession } from "aws-amplify/auth";
 
 const { SECURITY_QUESTION_API } = appConfig;
 
-export const securityQuestionAPI = createApi({
-  reducerPath: "securityQuestionAPI",
-  baseQuery: baseQueryWithReauth(true, SECURITY_QUESTION_API),
-  endpoints: (builder) => ({
-    getSecurityQuestion: builder.query<
-      { question: string } | null,
-      void
-    >({
-      query: () => ({
-        url: "",
-        method: "GET",
-      }),
-    }),
-    setSecurityQuestion: builder.mutation<
-      { message: string },
-      { question: string; answer: string; oldAnswer?: string }
-    >({
-      query: (body) => ({
-        url: "",
-        method: "POST",
-        body,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
-    }),
-  }),
-});
+async function getIdToken(): Promise<string> {
+  const session = await fetchAuthSession();
+  const idToken = session.tokens?.idToken?.toString();
+  if (!idToken) throw new Error("User is not authenticated.");
+  return idToken;
+}
 
-export const {
-  useLazyGetSecurityQuestionQuery,
-  useSetSecurityQuestionMutation,
-} = securityQuestionAPI;
+// ===== GET: fetch existing question (if any) =====
+export async function getSecurityQuestion(): Promise<{
+  question: string;
+} | null> {
+  const idToken = await getIdToken();
+
+  const response = await fetch(SECURITY_QUESTION_API, {
+    method: "GET",
+    headers: {
+      Authorization: idToken,
+    },
+  });
+
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to load security question");
+  }
+
+  return response.json();
+}
+
+// ===== POST: set or update question =====
+export async function setSecurityQuestion(data: {
+  question: string;
+  answer: string;
+  oldAnswer?: string;
+}): Promise<{ message: string }> {
+  const idToken = await getIdToken();
+
+  const response = await fetch(SECURITY_QUESTION_API, {
+    method: "POST",
+    headers: {
+      Authorization: idToken,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to save security question");
+  }
+
+  return response.json();
+}

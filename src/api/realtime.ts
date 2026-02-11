@@ -1,8 +1,6 @@
 import appConfig from "@/config/app-config";
 
-import { createApi } from "@reduxjs/toolkit/query/react";
-
-import { baseQueryWithReauth } from "./apiUtils";
+import { Logger } from "@/lib/utils/logger";
 
 export interface ScheduleInfo {
   enabled: boolean;
@@ -44,24 +42,30 @@ export interface InstanceDetail {
 }
 const { INSTANCE_DETAILS_URL } = appConfig;
 
-export const realtimeAPI = createApi({
-  reducerPath: "realtimeAPI",
-  baseQuery: baseQueryWithReauth(true, INSTANCE_DETAILS_URL),
-  endpoints: (builder) => ({
-    fetchInstanceDetails: builder.mutation<
-      InstanceDetail[],
-      { userId: string; instanceNames: string[] }
-    >({
-      query: ({ userId, instanceNames }) => ({
-        url: "",
-        method: "POST",
-        body: { userId, instanceNames },
-        headers: {
-          "Content-Type": "application/json",
-        },
+export async function fetchInstanceDetails(
+  userId: string,
+  instanceNames: string[]
+): Promise<InstanceDetail[]> {
+  try {
+    const res = await fetch(INSTANCE_DETAILS_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId,
+        instanceNames,
       }),
-    }),
-  }),
-});
+    });
 
-export const { useFetchInstanceDetailsMutation } = realtimeAPI;
+    if (!res.ok) {
+      throw new Error(`API returned status ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data as InstanceDetail[];
+  } catch (err) {
+    Logger.error("Failed to load real-time metrics:", err);
+    return [];
+  }
+}

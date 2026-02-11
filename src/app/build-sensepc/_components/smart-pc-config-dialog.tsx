@@ -11,7 +11,6 @@ import { clearSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slic
 
 import { Logger } from "@/lib/utils/logger";
 import { getErrorMessage } from "@/lib/utils";
-import { getIdTokenSafe } from "@/lib/auth/token";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogFooter, DialogContent } from "@/components/ui/dialog";
 
@@ -160,15 +159,9 @@ const SmartPCConfigDialog = ({
 
       setLoadingExisting(true);
       try {
-        const idToken = await getIdTokenSafe();
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-        };
-        if (idToken) headers.Authorization = `Bearer ${idToken}`;
-
         const res = await fetch(`${RESIZE_API_URL}/resize`, {
           method: "POST",
-          headers,
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             userId,
             computerName: selectedInstance?.systemName,

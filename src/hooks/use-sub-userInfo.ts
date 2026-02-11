@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useLazyGetUserProfileQuery } from "@/api/profileManagement";
+import { getUserProfile } from "@/api/profileManagement";
 
 import { getIdToken } from "@/lib/utils";
 import { Logger } from "@/lib/utils/logger";
@@ -12,7 +12,6 @@ export function useSubUserInfo() {
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [triggerGetUserProfile] = useLazyGetUserProfileQuery();
 
   useEffect(() => {
     const detectSubUserAndOrg = async () => {
@@ -26,7 +25,7 @@ export function useSubUserInfo() {
           setIsSubUser(true);
           setRole(payload["custom:role"] || null);
 
-          const profile = await triggerGetUserProfile().unwrap();
+          const profile = await getUserProfile();
           setOrganization(profile.organization || null);
         }
       } catch (err) {

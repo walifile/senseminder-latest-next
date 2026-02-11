@@ -9,7 +9,7 @@ const { LEGAL_DOCUMENTS_URL } = appConfig;
 
 export const legalDocumentsAPI = createApi({
   reducerPath: "legalDocumentsAPI",
-  baseQuery: baseQueryWithReauth(true, LEGAL_DOCUMENTS_URL),
+  baseQuery: baseQueryWithReauth(false),
   endpoints: (builder) => ({
     getLegalDocuments: builder.query<
       {
@@ -19,9 +19,8 @@ export const legalDocumentsAPI = createApi({
       void
     >({
       query: () => ({
-        url: "content",
+        url: `${LEGAL_DOCUMENTS_URL}/content`,
         method: "GET",
-        skipAuth: true,
       }),
     }),
   }),

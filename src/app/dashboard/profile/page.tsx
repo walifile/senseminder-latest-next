@@ -3,10 +3,7 @@
 
 import { useSearchParams } from "next/navigation";
 import React, { useRef, useMemo, useState, useEffect } from "react";
-import {
-  useLazyGetUserProfileQuery,
-  useUpdateUserProfileMutation,
-} from "@/api/profileManagement";
+import { getUserProfile, updateUserProfile } from "@/api/profileManagement";
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -42,8 +39,6 @@ const ProfilePage = () => {
 
   // ===== API-driven Profile State =====
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [triggerGetUserProfile] = useLazyGetUserProfileQuery();
-  const [updateUserProfile] = useUpdateUserProfileMutation();
 
   // ===== Form States =====
   const [orgEditing, setOrgEditing] = useState(false);
@@ -65,7 +60,7 @@ const ProfilePage = () => {
     const fetchProfile = async () => {
       setLoading(true);
       try {
-        const data = await triggerGetUserProfile().unwrap();
+        const data = await getUserProfile();
         setProfile(data);
 
         const first = (data.firstName || "").trim();
@@ -156,14 +151,14 @@ const ProfilePage = () => {
     }
 
     try {
-      await updateUserProfile(payload).unwrap();
+      await updateUserProfile(payload);
 
       toast({
         title: "Profile Updated",
         description: "Your profile changes have been saved.",
       });
 
-      const data = await triggerGetUserProfile().unwrap();
+      const data = await getUserProfile();
       setProfile(data);
 
       const first = (data.firstName || "").trim();
@@ -189,9 +184,9 @@ const ProfilePage = () => {
     if (!canEditOrg) return;
     setSaving(true);
     try {
-      await updateUserProfile({ organization: orgInput }).unwrap();
+      await updateUserProfile({ organization: orgInput });
 
-      const data = await triggerGetUserProfile().unwrap();
+      const data = await getUserProfile();
       setProfile(data);
       setOrgInput(data.organization || "");
       setOrgEditing(false);

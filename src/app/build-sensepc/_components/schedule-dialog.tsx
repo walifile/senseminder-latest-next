@@ -5,11 +5,7 @@
 import type { Schedule } from "@/api/schedule";
 
 import React, { useMemo, useState, useEffect, useCallback } from "react";
-import {
-  useLazyGetScheduleQuery,
-  useSaveScheduleMutation,
-  useDeleteScheduleMutation,
-} from "@/api/schedule";
+import { getSchedule, saveSchedule, deleteSchedule } from "@/api/schedule";
 
 import { Logger } from "@/lib/utils/logger";
 import { Input } from "@/components/ui/input";
@@ -98,9 +94,6 @@ export default function ScheduleDialog({
   const [loadedZones, setLoadedZones] = useState<
     { value: string; label: string }[]
   >([]);
-  const [triggerGetSchedule] = useLazyGetScheduleQuery();
-  const [saveSchedule] = useSaveScheduleMutation();
-  const [deleteSchedule] = useDeleteScheduleMutation();
 
   const closeDialog = useCallback(() => {
     onClose();
@@ -110,10 +103,8 @@ export default function ScheduleDialog({
     if (!open || !instanceId) return;
 
     setFetching(true);
-    triggerGetSchedule({ instanceId })
-      .unwrap()
-      .then((res) => {
-        const schedule = res?.data ?? null;
+    getSchedule(instanceId)
+      .then((schedule) => {
         setExistingSchedule(schedule);
         setSelectedTimeZone(schedule?.timeZone || detectTimeZone());
         setScheduleFrequency(schedule?.frequency || "everyday");
@@ -169,7 +160,7 @@ export default function ScheduleDialog({
         autoStartTime: autoStartTime || undefined,
         autoStopTime: autoStopTime || undefined,
         enabled,
-      }).unwrap();
+      });
 
       onSuccess();
       closeDialog();
@@ -187,7 +178,7 @@ export default function ScheduleDialog({
 
     setLoading(true);
     try {
-      await deleteSchedule({ instanceId }).unwrap();
+      await deleteSchedule(instanceId);
 
       onSuccess();
       closeDialog();

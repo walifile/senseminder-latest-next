@@ -285,6 +285,11 @@ const StaticStoragePage = () => {
   // };
 
   const handleDownloadFolder = async () => {
+    if (!key) {
+      alert("You are at root. Please navigate into a folder to download.");
+      return;
+    }
+
     try {
       const res = await triggerDownloadFolder({
         shareId,
