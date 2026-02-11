@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { routes } from "@/constants/routes";
 import React, { useState, useEffect } from "react";
-import { sendTotpRecovery } from "@/api/mfa-recovery";
+import { useSendTotpRecoveryMutation } from "@/api/mfa-recovery";
 import { setLoading, setTempUser } from "@/redux/slices/auth/auth-slice";
 import { maskEmail } from "@/lib/utils/index";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useToast } from "@/hooks/use-toast";
 import { handleSignOut, handlePostAuthentication } from "@/lib/services/auth";
 
-
 export default function MfaTotpPage() {
   const [code, setCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -45,6 +44,7 @@ export default function MfaTotpPage() {
   const { toast } = useToast();
   const router = useRouter();
   const dispatch = useDispatch();
+  const [sendTotpRecovery] = useSendTotpRecoveryMutation();
 
   const tempUser = useSelector((state: RootState) => state.auth.tempUser);
 
@@ -140,11 +140,11 @@ export default function MfaTotpPage() {
 
     try {
       setRecoverySending(true);
-      await sendTotpRecovery(loginEmail);
+      await sendTotpRecovery({ email: loginEmail }).unwrap();
       toast({
         title: "Recovery email sent",
         description: `Check your inbox for instructions at ${maskEmail(
-          loginEmail
+          loginEmail,
         )}.`,
       });
       setRecoveryDialogOpen(false);
@@ -261,5 +261,4 @@ export default function MfaTotpPage() {
       </div>
     </div>
   );
-
 }

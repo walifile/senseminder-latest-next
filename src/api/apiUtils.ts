@@ -1,4 +1,3 @@
-import type { RootState } from "@/redux/store";
 import type {
   FetchArgs,
   BaseQueryFn,
@@ -6,18 +5,22 @@ import type {
 } from "@reduxjs/toolkit/query/react";
 
 import appConfig from "@/config/app-config";
+import { clearAuth } from "@/redux/slices/auth/auth-slice";
 
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const { BASE_URL } = appConfig;
 
+type AuthFetchArgs = FetchArgs & { skipAuth?: boolean };
+
 // Function to create a base query with optional authentication (default: true)
-const createBaseQuery = (useAuth: boolean = true) =>
+const createBaseQuery = (useAuth: boolean = true, baseUrl: string = BASE_URL) =>
   fetchBaseQuery({
-    baseUrl: BASE_URL,
+    baseUrl,
     credentials: "same-origin",
     prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as RootState).auth.token;
+      const state = getState() as { auth?: { token?: string | null } } | undefined;
+      const token = state?.auth?.token ?? null;
 
       // If authentication is disabled, return headers without modifying
       if (!useAuth) {
@@ -36,11 +39,15 @@ const createBaseQuery = (useAuth: boolean = true) =>
 // Main query function with re-authentication support
 export const baseQueryWithReauth =
   (
-    useAuth: boolean = true
-  ): BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> =>
+    useAuth: boolean = true,
+    baseUrl: string = BASE_URL,
+  ): BaseQueryFn<string | AuthFetchArgs, unknown, FetchBaseQueryError> =>
   async (args, api, extraOptions) => {
-    const baseQuery = createBaseQuery(useAuth);
-    let result = await baseQuery(args, api, extraOptions);
+    const shouldUseAuth =
+      typeof args === "object" && "skipAuth" in args ? !args.skipAuth : useAuth;
+
+    const baseQuery = createBaseQuery(shouldUseAuth, baseUrl);
+    let result = await baseQuery(args as FetchArgs, api, extraOptions);
 
     const customError = result.error as FetchBaseQueryError & {
       originalStatus?: number;
@@ -49,13 +56,13 @@ export const baseQueryWithReauth =
     if (result?.error?.status === 403) {
       const refreshResult = await baseQuery("/refresh", api, extraOptions);
       if (refreshResult?.data) {
-        const user = (api.getState() as RootState).auth.user;
+        const user = (api.getState() as { auth?: { user?: unknown } } | undefined)?.auth?.user;
         if (user) {
           // api.dispatch(setCredentials({ ...refreshResult.data, user }));
           result = await baseQuery(args, api, extraOptions);
         } else {
           // api.dispatch(logOut());
-          window.location.href = "/";
+          // window.location.href = "/";
         }
       } else {
         // api.dispatch(logOut());
@@ -65,8 +72,7 @@ export const baseQueryWithReauth =
       result?.meta?.response?.status === 401 ||
       customError?.originalStatus === 401
     ) {
-      // api.dispatch(logOut());
-      window.location.href = "/";
+      api.dispatch(clearAuth());
     }
 
     return result;

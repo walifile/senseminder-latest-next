@@ -316,6 +316,13 @@ const QuickRecharge = ({
               </Button>
             </div>
 
+            {/* Processing fee notice for non-US cards */}
+            <div className="pl-0">
+              <div className="rounded-md bg-amber-50/70 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 px-4 py-2">
+                <p className="text-[13px] font-medium text-amber-800 dark:text-amber-100">Payments made with cards issued outside the United States may incur an additional 2.5% charge.</p>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Checkbox

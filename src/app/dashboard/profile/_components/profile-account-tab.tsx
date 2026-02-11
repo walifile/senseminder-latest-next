@@ -3,10 +3,11 @@
 
 import React from "react";
 import {
-  deleteAvatar,
-  getUserProfile,
   uploadAvatarToS3,
-  createAvatarUploadUrl,
+  type UserProfile,
+  useDeleteAvatarMutation,
+  useLazyGetUserProfileQuery,
+  useCreateAvatarUploadUrlMutation,
 } from "@/api/profileManagement";
 
 import { Input } from "@/components/ui/input";
@@ -19,18 +20,8 @@ import { Camera } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
 
-type Profile = {
-  email: string;
-  firstName: string;
-  lastName: string;
-  country: string;
-  organization: string;
-  role: string;
-  avatarUrl?: string;
-};
-
 type Props = {
-  profile: Profile | null;
+  profile: UserProfile | null;
   loading: boolean;
   saving: boolean;
   fullName: string;
@@ -39,7 +30,7 @@ type Props = {
   setCountry: React.Dispatch<React.SetStateAction<string>>;
   fallbackInitials: string;
   onSave: () => void;
-  setProfile: React.Dispatch<React.SetStateAction<Profile | null>>;
+  setProfile: React.Dispatch<React.SetStateAction<UserProfile | null>>;
 };
 
 export const ProfileAccountTab = ({
@@ -55,6 +46,9 @@ export const ProfileAccountTab = ({
   setProfile,
 }: Props) => {
   const { toast } = useToast();
+  const [triggerGetUserProfile] = useLazyGetUserProfileQuery();
+  const [createAvatarUploadUrl] = useCreateAvatarUploadUrlMutation();
+  const [deleteAvatar] = useDeleteAvatarMutation();
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -89,7 +83,7 @@ export const ProfileAccountTab = ({
   }
 
   async function refreshProfile() {
-    const data = await getUserProfile();
+    const data = await triggerGetUserProfile().unwrap();
     setProfile(data);
   }
 
@@ -128,7 +122,7 @@ export const ProfileAccountTab = ({
       const { uploadUrl } = await createAvatarUploadUrl({
         contentType: file.type || "image/*",
         fileExt: ext,
-      });
+      }).unwrap();
 
       await uploadAvatarToS3({ uploadUrl, file });
       await refreshProfile();
@@ -154,7 +148,7 @@ export const ProfileAccountTab = ({
   const handleRemove = async () => {
     setAvatarRemoving(true);
     try {
-      await deleteAvatar();
+      await deleteAvatar().unwrap();
       await refreshProfile();
 
       toast({

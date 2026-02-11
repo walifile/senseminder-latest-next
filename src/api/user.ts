@@ -2,11 +2,9 @@ import type { ApiUser } from "@/app/dashboard/users/types";
 
 import appConfig from "@/config/app-config";
 
-import { Logger } from "@/lib/utils/logger";
+import { createApi } from "@reduxjs/toolkit/query/react";
 
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
-import { getIdToken } from "../lib/utils";
+import { baseQueryWithReauth } from "./apiUtils";
 
 const { USER_MANAGEMENT_API } = appConfig;
 
@@ -14,27 +12,16 @@ interface GetUsersResponse {
   users: ApiUser[];
 }
 
-const baseQuery = fetchBaseQuery({
-  baseUrl: USER_MANAGEMENT_API,
-  prepareHeaders: async (headers) => {
-    try {
-      const idToken = await getIdToken();
-      headers.set("Authorization", idToken);
-      headers.set("Content-Type", "application/json");
-    } catch (err) {
-      Logger.error("Failed to attach auth headers:", err);
-    }
-    return headers;
-  },
-});
-
 export const userAPI = createApi({
   reducerPath: "userAPI",
-  baseQuery,
+  baseQuery: baseQueryWithReauth(true, USER_MANAGEMENT_API),
   tagTypes: ["Users"],
   endpoints: (builder) => ({
     getUsers: builder.query<GetUsersResponse, void>({
-      query: () => "",
+      query: () => ({
+        url: "",
+        method: "GET",
+      }),
       providesTags: ["Users"],
     }),
 
@@ -43,6 +30,9 @@ export const userAPI = createApi({
         url: "",
         method: "POST",
         body,
+        headers: {
+          "Content-Type": "application/json",
+        },
       }),
       invalidatesTags: ["Users"],
     }),
@@ -60,6 +50,9 @@ export const userAPI = createApi({
         url: "",
         method: "DELETE",
         body,
+        headers: {
+          "Content-Type": "application/json",
+        },
       }),
       invalidatesTags: ["Users"],
     }),

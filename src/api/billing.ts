@@ -12,32 +12,17 @@ import type {
 
 import appConfig from "@/config/app-config";
 
-import { Logger } from "@/lib/utils/logger";
 import { formatAsYYYYMMDD } from "@/lib/utils/format-time";
 
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
 
-import { getIdToken } from "../lib/utils";
+import { baseQueryWithReauth } from "./apiUtils";
 
 const { BILLING_API_URL } = appConfig;
 
-const baseQuery = fetchBaseQuery({
-  baseUrl: BILLING_API_URL,
-  prepareHeaders: async (headers) => {
-    try {
-      const idToken = await getIdToken();
-      headers.set("Authorization", idToken);
-      headers.set("Content-Type", "application/json");
-    } catch (err) {
-      Logger.error("Failed to attach auth headers:", err);
-    }
-    return headers;
-  },
-});
-
 export const billingAPI = createApi({
   reducerPath: "billingAPI",
-  baseQuery,
+  baseQuery: baseQueryWithReauth(true, BILLING_API_URL),
   tagTypes: [
     "PaymentMethods",
     "Balance",
@@ -45,7 +30,7 @@ export const billingAPI = createApi({
     "UsageHistory",
     "AutoRecharge",
     "Storage",
-    "AutoRenew"
+    "AutoRenew",
   ],
   endpoints: (builder) => ({
     // payment methods
@@ -174,7 +159,8 @@ export const billingAPI = createApi({
         if (from) queryParams.append("startDate", formatAsYYYYMMDD(from));
         if (to) queryParams.append("endDate", formatAsYYYYMMDD(to));
         if (limit) queryParams.append("pageSize", limit.toString());
-        if (startingAfter) queryParams.append("lastEvaluatedKey", startingAfter);
+        if (startingAfter)
+          queryParams.append("lastEvaluatedKey", startingAfter);
 
         return `recharge?${queryParams.toString()}`;
       },

@@ -1,35 +1,23 @@
 import appConfig from "@/config/app-config";
 
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-// import { Logger } from "@/lib/utils/logger";
+import { createApi } from "@reduxjs/toolkit/query/react";
 
-// import { getIdToken } from "../lib/utils";
+import { baseQueryWithReauth } from "./apiUtils";
 
 const { FEEDBACK_API_URL, FEEDBACK_TRIGGER_API_URL } = appConfig;
 
-const baseQuery = fetchBaseQuery({
-  baseUrl: FEEDBACK_API_URL,
-  // prepareHeaders: async (headers) => {
-  //   try {
-  //     const idToken = await getIdToken();
-  //     headers.set("Authorization", idToken);
-  //     headers.set("Content-Type", "application/json");
-  //   } catch (err) {
-  //     Logger.error("Failed to attach auth headers:", err);
-  //   }
-  //   return headers;
-  // },
-});
-
 export const feedbackAPI = createApi({
   reducerPath: "feedbackAPI",
-  baseQuery,
+  baseQuery: baseQueryWithReauth(true, FEEDBACK_API_URL),
   endpoints: (builder) => ({
     submitFeedback: builder.mutation({
       query: (body) => ({
         url: "feedback",
         method: "POST",
         body,
+        headers: {
+          "Content-Type": "application/json",
+        },
       }),
     }),
     createFeedbackTask: builder.mutation<
@@ -40,6 +28,9 @@ export const feedbackAPI = createApi({
         url: `${FEEDBACK_TRIGGER_API_URL}/tasks/create`,
         method: "POST",
         body: { userId, trigger, delayMinutes },
+        headers: {
+          "Content-Type": "application/json",
+        },
       }),
     }),
     getNextFeedbackPrompt: builder.mutation<unknown, { userId: string }>({

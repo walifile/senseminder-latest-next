@@ -32,7 +32,7 @@ import { useDispatch } from "react-redux";
 
 import { useToast } from "@/hooks/use-toast";
 import { routes } from "@/constants/routes";
-import { sendTotpRecovery } from "@/api/mfa-recovery";
+import { useSendTotpRecoveryMutation } from "@/api/mfa-recovery";
 import { setLoading, setTempUser } from "@/redux/slices/auth/auth-slice";
 import { getSessionItemSafe } from "@/lib/utils/browser";
 import { handleSignOut, handlePostAuthentication } from "@/lib/services/auth";
@@ -61,6 +61,7 @@ export function MfaTotpDialog({
   const dispatch = useDispatch();
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const [sendTotpRecovery] = useSendTotpRecoveryMutation();
 
   // Load MFA email & guard against expired session
   useEffect(() => {
@@ -215,7 +216,7 @@ export function MfaTotpDialog({
 
     try {
       setRecoverySending(true);
-      await sendTotpRecovery(loginEmail);
+      await sendTotpRecovery({ email: loginEmail }).unwrap();
       toast({
         title: "Recovery email sent",
         description: `Check your inbox for instructions at ${(

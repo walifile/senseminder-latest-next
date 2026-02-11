@@ -1,8 +1,8 @@
 import type { PC } from "@/app/build-sensepc/types";
 
 import React, { useState, useCallback } from "react";
-import { assignPC, unassignPC } from "@/api/assignpc";
 import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
+import { useAssignPCMutation, useUnassignPCMutation } from "@/api/assignpc";
 
 import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,8 @@ const ManagePcDialog = ({
   assignments,
 }: Props) => {
   const [pcAssigningId, setPCAssigningId] = useState<string | null>(null);
+  const [assignPC] = useAssignPCMutation();
+  const [unassignPC] = useUnassignPCMutation();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<
     | { type: "assign"; pc: PC }
@@ -54,13 +56,13 @@ const ManagePcDialog = ({
       selectedUser
         ? { userId: selectedUser.owner_id || selectedUser.id }
         : { userId: undefined },
-      { skip: !selectedUser }
+      { skip: !selectedUser },
     );
 
   const isLoading = fetchAssignmentsLoading || isSmartPCLoading;
   const isAssignedToAny = (instanceId: string) =>
     Object.values(assignments).some((list) =>
-      list.some((assignment) => assignment.instanceId === instanceId)
+      list.some((assignment) => assignment.instanceId === instanceId),
     );
 
   const assignSmartPC = async (instance: PC) => {
@@ -99,7 +101,7 @@ const ManagePcDialog = ({
         memberId: selectedUser.id,
         instanceId: instance.instanceId,
         systemName: instance.systemName,
-      });
+      }).unwrap();
       toast({
         title: "PC Assigned",
         description: `${instance.systemName} assigned to ${
@@ -145,7 +147,7 @@ const ManagePcDialog = ({
       await unassignPC({
         memberId: selectedUser.id,
         instanceId: instance.instanceId,
-      });
+      }).unwrap();
       toast({
         title: "PC Unassigned",
         description: `${instance.systemName} unassigned from ${
@@ -175,8 +177,8 @@ const ManagePcDialog = ({
     confirmAction?.type === "blocked"
       ? confirmAction.message
       : confirmAction?.type === "assign"
-      ? "This PC is running. Assigning access will stop the PC. Continue?"
-      : "This PC is running. Unassigning will stop the PC. Continue?";
+        ? "This PC is running. Assigning access will stop the PC. Continue?"
+        : "This PC is running. Unassigning will stop the PC. Continue?";
 
   const handleConfirm = async () => {
     if (!confirmAction) return;
@@ -196,85 +198,88 @@ const ManagePcDialog = ({
   return (
     <>
       <Dialog open={open} onOpenChange={closeDialog}>
-      <DialogContent
-        data-testid="dashboard-users-manage-pc-dialog"
-        className="sm:max-w-[540px]"
-      >
-        <DialogHeader>
-          <DialogTitle>
-            Manage PCs for
-            {selectedUser
-              ? ` ${selectedUser.firstName || ""} ${
-                  selectedUser.lastName || ""
-                } (`
-              : ""}
-            {selectedUser ? (
-              <span className="normal-case">{selectedUser.email}</span>
-            ) : null}
-            {selectedUser ? ")" : ""}
-          </DialogTitle>
-          <DialogDescription>
-            Assign or unassign SensePC for this member.
-          </DialogDescription>
-        </DialogHeader>
+        <DialogContent
+          data-testid="dashboard-users-manage-pc-dialog"
+          className="sm:max-w-[540px]"
+        >
+          <DialogHeader>
+            <DialogTitle>
+              Manage PCs for
+              {selectedUser
+                ? ` ${selectedUser.firstName || ""} ${
+                    selectedUser.lastName || ""
+                  } (`
+                : ""}
+              {selectedUser ? (
+                <span className="normal-case">{selectedUser.email}</span>
+              ) : null}
+              {selectedUser ? ")" : ""}
+            </DialogTitle>
+            <DialogDescription>
+              Assign or unassign SensePC for this member.
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="max-h-96 overflow-y-auto mt-4">
-          {isLoading ? (
-            <div className="text-muted-foreground">Loading PCs...</div>
-          ) : !selectedUser ? (
-            <div className="italic text-muted-foreground">
-              No user selected.
-            </div>
-          ) : smartPCs.length === 0 ? (
-            <div className="italic">No PCs available to assign.</div>
-          ) : (
-            <div className="space-y-3">
-              {smartPCs.map((pc: PC) => {
-                const buttonConfig = getPcButtonConfig({
-                  pc,
-                  selectedUserId: selectedUser.id,
-                  assignments,
-                  pcAssigningId,
-                  assignSmartPC,
-                  unassignSmartPC,
-                });
+          <div className="max-h-96 overflow-y-auto mt-4">
+            {isLoading ? (
+              <div className="text-muted-foreground">Loading PCs...</div>
+            ) : !selectedUser ? (
+              <div className="italic text-muted-foreground">
+                No user selected.
+              </div>
+            ) : smartPCs.length === 0 ? (
+              <div className="italic">No PCs available to assign.</div>
+            ) : (
+              <div className="space-y-3">
+                {smartPCs.map((pc: PC) => {
+                  const buttonConfig = getPcButtonConfig({
+                    pc,
+                    selectedUserId: selectedUser.id,
+                    assignments,
+                    pcAssigningId,
+                    assignSmartPC,
+                    unassignSmartPC,
+                  });
 
-                return (
-                  <div
-                    key={pc.instanceId}
-                    className="flex items-center justify-between border-b pb-2"
-                  >
-                    <div>
-                    <div className="font-bold">{pc.systemName || "Unnamed PC"}</div>
-
-                    {pc.state ? (
-                      <div className="text-xs text-muted-foreground">{pc.state}</div>
-                    ) : null}
-                  </div>
-
-
-                    <Button
-                      size="sm"
-                      className={buttonConfig.color}
-                      disabled={buttonConfig.disabled}
-                      onClick={buttonConfig.onClick}
+                  return (
+                    <div
+                      key={pc.instanceId}
+                      className="flex items-center justify-between border-b pb-2"
                     >
-                      {buttonConfig.text}
-                    </Button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                      <div>
+                        <div className="font-bold">
+                          {pc.systemName || "Unnamed PC"}
+                        </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={closeDialog}>
-            Close
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+                        {pc.state ? (
+                          <div className="text-xs text-muted-foreground">
+                            {pc.state}
+                          </div>
+                        ) : null}
+                      </div>
+
+                      <Button
+                        size="sm"
+                        className={buttonConfig.color}
+                        disabled={buttonConfig.disabled}
+                        onClick={buttonConfig.onClick}
+                      >
+                        {buttonConfig.text}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={closeDialog}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog
         open={confirmOpen}
         onOpenChange={(next) => {

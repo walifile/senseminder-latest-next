@@ -1,10 +1,9 @@
 "use client";
 
 import type { RootState } from "@/redux/store";
-import type { PC } from "@/app/build-sensepc/types";
 
-import { getAssignments } from "@/api/assignpc";
 import { useResendInviteMutation } from "@/api/user";
+import { useLazyGetAssignmentsQuery } from "@/api/assignpc";
 import React, { useState, useEffect, useCallback } from "react";
 
 import { Logger } from "@/lib/utils/logger";
@@ -42,6 +41,11 @@ type Props = {
   isMember: boolean;
 };
 
+type AssignmentItem = {
+  instanceId: string;
+  systemName?: string;
+};
+
 const UserTable = ({ loading, filteredUsers, isMember }: Props) => {
   const showDeleteDialog = useBoolean();
   const managePCDialog = useBoolean();
@@ -50,16 +54,20 @@ const UserTable = ({ loading, filteredUsers, isMember }: Props) => {
   const currentRole = currentUser?.role;
 
   const [fetchAssignmentsLoading, setFetchAssignmentsLoading] = useState(false);
-  const [assignments, setAssignments] = useState<Record<string, PC[]>>({});
+  const [assignments, setAssignments] = useState<
+    Record<string, AssignmentItem[]>
+  >({});
+  const [triggerGetAssignments] = useLazyGetAssignmentsQuery();
+
   const [resendTargetEmail, setResendTargetEmail] = useState<string | null>(
-    null
+    null,
   );
   const [resendInvite] = useResendInviteMutation();
 
   const fetchAssignments = useCallback(async () => {
     setFetchAssignmentsLoading(true);
     try {
-      const res = await getAssignments();
+      const res = await triggerGetAssignments().unwrap();
       setAssignments(res || {});
     } catch (e: unknown) {
       toast({
@@ -73,7 +81,7 @@ const UserTable = ({ loading, filteredUsers, isMember }: Props) => {
     } finally {
       setFetchAssignmentsLoading(false);
     }
-  }, []);
+  }, [triggerGetAssignments]);
 
   useEffect(() => {
     if (isMember) return;
@@ -134,7 +142,7 @@ const UserTable = ({ loading, filteredUsers, isMember }: Props) => {
                     // last column
                     isLast && "rounded-tr-xl border-l-0",
                     // middle columns
-                    isSecondLast && "border-r-0"
+                    isSecondLast && "border-r-0",
                   )}
                 >
                   {header}
@@ -194,7 +202,7 @@ const UserTable = ({ loading, filteredUsers, isMember }: Props) => {
                 <TableCell className="border-r-0">
                   <div className="flex flex-wrap gap-1">
                     {(assignments[user.id] ?? []).length > 0 ? (
-                      assignments[user.id].map((pc: PC) => (
+                      assignments[user.id].map((pc) => (
                         <Badge
                           variant="secondary"
                           className="mr-1 mb-1"

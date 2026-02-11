@@ -9,6 +9,8 @@ import {
   PauseCircle,
 } from "lucide-react";
 
+import { getIdTokenSafe } from "@/lib/auth/token";
+
 import type { PC } from "../types";
 
 export const isBuilding = (state: string) =>
@@ -221,9 +223,15 @@ export const formatScheduleTime = (pcInfo?: {
 };
 
 export const makeResizeRequest = async (url: string, payload: object) => {
+  const idToken = await getIdTokenSafe();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (idToken) headers.Authorization = `Bearer ${idToken}`;
+
   const response = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(payload),
   });
 

@@ -5,8 +5,8 @@
 import Image from "next/image";
 import React, { useState } from "react";
 import { routes } from "@/constants/routes";
-import { claimSessionIfAvailable } from "@/api/session";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useClaimSessionIfAvailableMutation } from "@/api/session";
 
 import { cn } from "@/lib/utils";
 import { Logger } from "@/lib/utils/logger";
@@ -45,6 +45,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const [claimSessionIfAvailable] = useClaimSessionIfAvailableMutation();
 
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -93,7 +94,7 @@ export default function LoginPage() {
         });
 
         try {
-          await claimSessionIfAvailable();
+          await claimSessionIfAvailable().unwrap();
         } catch (error) {
           Logger.error("Error claiming session:", error);
         }

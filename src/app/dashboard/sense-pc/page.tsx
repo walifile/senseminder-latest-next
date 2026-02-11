@@ -6,15 +6,14 @@ import type { PC, DesktopInstance } from "@/app/build-sensepc/types";
 
 import { useRouter } from "next/navigation";
 import { routes } from "@/constants/routes";
-import { getAssignments } from "@/api/assignpc";
-import { fetchInstanceDetails } from "@/api/realtime";
 import { stableStates } from "@/app/build-sensepc/data";
+import { useLazyGetAssignmentsQuery } from "@/api/assignpc";
+import { useFetchInstanceDetailsMutation } from "@/api/realtime";
 import { useListRemoteDesktopQuery } from "@/api/fileManagerAPI";
 import SelectedPc from "@/app/build-sensepc/_components/selected-pc";
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import ScheduleDialog from "@/app/build-sensepc/_components/schedule-dialog";
 import SmartPcToolbar from "@/app/build-sensepc/_components/smart-pc-toolbar";
-import { updateSessionHeartbeat, claimSessionIfAvailable } from "@/api/session";
 import SmartPCEmptyState from "@/app/build-sensepc/_components/smart-pc-empty-state";
 import SmartPcStopButton from "@/app/build-sensepc/_components/smart-pc-stop-button";
 import IdleSettingsDialog from "@/app/build-sensepc/_components/idle-settings-dialog";
@@ -24,6 +23,10 @@ import SmartPcRebootButton from "@/app/build-sensepc/_components/smart-pc-reboot
 import SmartPcDropdownMenu from "@/app/build-sensepc/_components/smart-pc-dropdown-menu";
 import SmartPcConnectButton from "@/app/build-sensepc/_components/smart-pc-connect-button";
 import { ConfirmDeleteModal } from "@/app/build-sensepc/_components/confirm-delete-pc-diolog";
+import {
+  useUpdateSessionHeartbeatMutation,
+  useClaimSessionIfAvailableMutation,
+} from "@/api/session";
 import {
   getApiUserId,
   getStatusIcon,
@@ -95,6 +98,7 @@ const CloudPCPage = () => {
   const config = useSelector((state: RootState) => state.smartPcConfig);
   const { user } = useSelector((state: RootState) => state.auth);
   const isMember = user?.role === "member";
+  const [triggerGetAssignments] = useLazyGetAssignmentsQuery();
 
   const apiUserId = getApiUserId(user);
 
@@ -113,7 +117,7 @@ const CloudPCPage = () => {
   >({});
   const fetchAssignments = useCallback(async () => {
     try {
-      const res = await getAssignments();
+      const res = await triggerGetAssignments().unwrap();
       setAssignments(res);
       return res;
     } catch (err) {
@@ -121,7 +125,7 @@ const CloudPCPage = () => {
       setAssignments({});
       return null;
     }
-  }, []);
+  }, [triggerGetAssignments]);
 
   useEffect(() => {
     void fetchAssignments();
@@ -169,6 +173,9 @@ const CloudPCPage = () => {
   const [cloudPCs, setCloudPCs] = useState<PC[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [fetchInstanceDetails] = useFetchInstanceDetailsMutation();
+  const [updateSessionHeartbeat] = useUpdateSessionHeartbeatMutation();
+  const [claimSessionIfAvailable] = useClaimSessionIfAvailableMutation();
 
   const [realtimePcInfo, setRealtimePcInfo] = useState<
     Record<string, InstanceDetail>
@@ -181,13 +188,13 @@ const CloudPCPage = () => {
       pc ? { instanceId: pc.instanceId, systemName: pc.systemName } : null,
     [],
   );
-  
+
   const sameKey = useCallback((a: PcKey | null, b: PcKey | null) => {
     if (!a || !b) return false;
     if (a.instanceId && b.instanceId) return a.instanceId === b.instanceId;
     if (a.systemName && b.systemName) return a.systemName === b.systemName;
     return false;
-  }, []);  
+  }, []);
 
   const keyString = useCallback(
     (pc: Partial<PC> | null | undefined): string => {
@@ -195,7 +202,7 @@ const CloudPCPage = () => {
       return (k?.instanceId || k?.systemName || "").toString();
     },
     [makeKey],
-  );  
+  );
 
   const mergeCloudPcs = useCallback(
     (prev: PC[], incoming: PC[]): PC[] => {
@@ -204,14 +211,14 @@ const CloudPCPage = () => {
         const k = keyString(p);
         if (k) prevMap.set(k, p);
       });
-  
+
       return incoming.map((p) => {
         const k = keyString(p);
         const old = k ? prevMap.get(k) : undefined;
         if (!old) return p;
-  
+
         const merged: PC = { ...old, ...p };
-  
+
         // Preserve enriched fields if the polling payload is null/undefined for them
         const preserveIfNil = <K extends keyof PC>(field: K) => {
           const nextVal = (p as PC)[field] as unknown;
@@ -219,7 +226,7 @@ const CloudPCPage = () => {
             (merged as PC)[field] = (old as PC)[field];
           }
         };
-  
+
         preserveIfNil("cpuUsage");
         preserveIfNil("memoryUsage");
         preserveIfNil("uptime");
@@ -230,12 +237,12 @@ const CloudPCPage = () => {
         preserveIfNil("monthlyBillingTotal");
         preserveIfNil("autoRenew");
         preserveIfNil("region");
-  
+
         return merged;
       });
     },
     [keyString],
-  );  
+  );
 
   const [selectedKey, setSelectedKey] = useState<PcKey | null>(null);
 
@@ -243,10 +250,11 @@ const CloudPCPage = () => {
   const selectedCloudIndex = useMemo(() => {
     if (!selectedKey) return -1;
     return cloudPCs.findIndex((p) => sameKey(selectedKey, makeKey(p)));
-  }, [selectedKey, cloudPCs, makeKey, sameKey]);  
+  }, [selectedKey, cloudPCs, makeKey, sameKey]);
 
   const selectedPCs = selectedCloudIndex >= 0 ? [selectedCloudIndex] : [];
-  const selectedPc = selectedCloudIndex >= 0 ? cloudPCs[selectedCloudIndex] : undefined;
+  const selectedPc =
+    selectedCloudIndex >= 0 ? cloudPCs[selectedCloudIndex] : undefined;
   const selectedPcOs = selectedPc?.specs?.os;
 
   const [showDetails, setShowDetails] = useState(true);
@@ -258,8 +266,8 @@ const CloudPCPage = () => {
   useEffect(() => {
     const initClientSession = async () => {
       try {
-        await claimSessionIfAvailable();
-        await updateSessionHeartbeat();
+        await claimSessionIfAvailable().unwrap();
+        await updateSessionHeartbeat().unwrap();
       } catch (err) {
         Logger.error("Failed to initialize client session / heartbeat:", err);
       }
@@ -293,12 +301,13 @@ const CloudPCPage = () => {
   useEffect(() => {
     if (!Array.isArray(data)) return;
     setCloudPCs((prev) => mergeCloudPcs(prev, data as PC[]));
-  }, [data, mergeCloudPcs]);  
+  }, [data, mergeCloudPcs]);
 
   useEffect(() => {
     if (isError || !data || !apiUserId) return;
     const instanceNames = data.map((pc: PC) => pc.systemName);
-    fetchInstanceDetails(apiUserId, instanceNames)
+    fetchInstanceDetails({ userId: apiUserId, instanceNames })
+      .unwrap()
       .then((details) => {
         const map: Record<string, InstanceDetail> = {};
         details.forEach((d) => {
@@ -310,7 +319,7 @@ const CloudPCPage = () => {
         setRealtimePcInfo({});
         Logger.error("Failed to fetch real-time PC info", err);
       });
-  }, [apiUserId, data, isError]);
+  }, [apiUserId, data, isError, fetchInstanceDetails]);
 
   useEffect(() => {
     if (config.show) newPCDialog.onTrue();
@@ -389,8 +398,7 @@ const CloudPCPage = () => {
 
   const handleDeleteClick = (pc: DesktopInstance) => {
     const state = pc.state?.toLowerCase();
-    const assigned =
-      !!pc.instanceId && isPCAssigned(pc.instanceId);
+    const assigned = !!pc.instanceId && isPCAssigned(pc.instanceId);
 
     if (state === "running" && assigned) {
       toast({
@@ -543,68 +551,100 @@ const CloudPCPage = () => {
                               >
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                      <div className="min-w-0 flex items-center gap-2">
-                                        <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-                                        <span className="truncate">
-                                          {shouldShowStoppedUptimeMessage(pc) ? (
-                                            "Unlimited"
-                                          ) : pcInfo?.uptimeInfo ? (
-                                            `${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.currentUptimeHours))} / ${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.maxUptimeHours))} Max`
-                                          ) : typeof pcInfo?.uptime === "string" &&
-                                            pcInfo.uptime.trim() &&
-                                            pcInfo.uptime.trim().toLowerCase() !== "n/a" ? (
-                                            pcInfo.uptime
-                                          ) : (
-                                            "—"
-                                          )}
-                                        </span>
-                                      </div>
-                                    </TooltipTrigger>
+                                    <div className="min-w-0 flex items-center gap-2">
+                                      <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                                      <span className="truncate">
+                                        {shouldShowStoppedUptimeMessage(pc)
+                                          ? "Unlimited"
+                                          : pcInfo?.uptimeInfo
+                                            ? `${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.currentUptimeHours))} / ${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.maxUptimeHours))} Max`
+                                            : typeof pcInfo?.uptime ===
+                                                  "string" &&
+                                                pcInfo.uptime.trim() &&
+                                                pcInfo.uptime
+                                                  .trim()
+                                                  .toLowerCase() !== "n/a"
+                                              ? pcInfo.uptime
+                                              : "—"}
+                                      </span>
+                                    </div>
+                                  </TooltipTrigger>
                                   <TooltipContent>Uptime</TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
 
                               {/* Location (Region) */}
-                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                              <TooltipProvider
+                                delayDuration={0}
+                                skipDelayDuration={0}
+                              >
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="min-w-0 flex items-center gap-2">
                                       <Shield className="h-4 w-4 text-muted-foreground shrink-0" />
-                                      <span className="truncate">{getFriendlyLocation(pcInfo?.region)}</span>
+                                      <span className="truncate">
+                                        {getFriendlyLocation(pcInfo?.region)}
+                                      </span>
                                     </div>
                                   </TooltipTrigger>
 
-                                  <TooltipContent side="top" align="center" className="max-w-[260px]">
-                                    This shows the approximate area where your computer is hosted, based on nearby available data centers to help reduce latency.
+                                  <TooltipContent
+                                    side="top"
+                                    align="center"
+                                    className="max-w-[260px]"
+                                  >
+                                    This shows the approximate area where your
+                                    computer is hosted, based on nearby
+                                    available data centers to help reduce
+                                    latency.
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
 
                               {/* Schedule */}
-                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                              <TooltipProvider
+                                delayDuration={0}
+                                skipDelayDuration={0}
+                              >
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="min-w-0 flex items-center gap-2">
                                       <CalendarClock className="h-4 w-4 text-muted-foreground shrink-0" />
 
                                       {pcInfo?.schedule?.enabled === false ? (
-                                        <span className="truncate">No schedule</span>
-                                      ) : pcInfo?.schedule?.autoStartTime || pcInfo?.schedule?.autoStopTime ? (
-                                        <span className="truncate">{formatScheduleTime(pcInfo)}</span>
+                                        <span className="truncate">
+                                          No schedule
+                                        </span>
+                                      ) : pcInfo?.schedule?.autoStartTime ||
+                                        pcInfo?.schedule?.autoStopTime ? (
+                                        <span className="truncate">
+                                          {formatScheduleTime(pcInfo)}
+                                        </span>
                                       ) : (
-                                        <span className="truncate italic">No schedule</span>
+                                        <span className="truncate italic">
+                                          No schedule
+                                        </span>
                                       )}
                                     </div>
                                   </TooltipTrigger>
 
-                                  <TooltipContent side="top" align="center" className="max-w-[260px]">
-                                    Schedule controls automatic start/stop times for your PC. You can enable or change it anytime.
+                                  <TooltipContent
+                                    side="top"
+                                    align="center"
+                                    className="max-w-[260px]"
+                                  >
+                                    Schedule controls automatic start/stop times
+                                    for your PC. You can enable or change it
+                                    anytime.
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
 
                               {/* Idle Timeout */}
-                              <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                              <TooltipProvider
+                                delayDuration={0}
+                                skipDelayDuration={0}
+                              >
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="min-w-0 flex items-center gap-2">
@@ -617,8 +657,14 @@ const CloudPCPage = () => {
                                     </div>
                                   </TooltipTrigger>
 
-                                  <TooltipContent side="top" align="center" className="max-w-[260px]">
-                                    Estimated idle timeout — your PC may automatically stop after this much inactivity to help save cost.
+                                  <TooltipContent
+                                    side="top"
+                                    align="center"
+                                    className="max-w-[260px]"
+                                  >
+                                    Estimated idle timeout — your PC may
+                                    automatically stop after this much
+                                    inactivity to help save cost.
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
@@ -632,60 +678,60 @@ const CloudPCPage = () => {
                               "flex-wrap justify-start",
                               "md:w-auto md:flex-nowrap md:justify-end",
                             )}
+                          >
+                            <TooltipProvider
+                              delayDuration={0}
+                              skipDelayDuration={0}
                             >
-                              <TooltipProvider
-                                delayDuration={0}
-                                skipDelayDuration={0}
-                              >
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <span>
-                                      <SmartPcConnectButton
-                                        pc={pc}
-                                        isMember={isMember}
-                                        userId={userId}
-                                        isPCAssigned={isPCAssigned}
-                                      />
-                                    </span>
-                                  </TooltipTrigger>
-                                  {!isMember && isPCAssigned(pc.instanceId) && (
-                                    <TooltipContent>
-                                      This PC is assigned to a member, unassign
-                                      to launch.
-                                    </TooltipContent>
-                                  )}
-                                </Tooltip>
-                              </TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span>
+                                    <SmartPcConnectButton
+                                      pc={pc}
+                                      isMember={isMember}
+                                      userId={userId}
+                                      isPCAssigned={isPCAssigned}
+                                    />
+                                  </span>
+                                </TooltipTrigger>
+                                {!isMember && isPCAssigned(pc.instanceId) && (
+                                  <TooltipContent>
+                                    This PC is assigned to a member, unassign to
+                                    launch.
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
+                            </TooltipProvider>
 
-                              {pc.state === "running" ? (
-                                <>
-                                  <TooltipProvider
-                                    delayDuration={0}
-                                    skipDelayDuration={0}
-                                  >
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <span>
-                                          <SmartPcStopButton
-                                            pc={pc}
-                                            isMember={isMember}
-                                            isPCAssigned={isPCAssigned}
-                                          />
-                                        </span>
-                                      </TooltipTrigger>
-                                      {!isMember &&
-                                        isPCAssigned(pc.instanceId) && (
-                                          <TooltipContent>
-                                            This PC is assigned to a member.
-                                            Unassign to stop.
-                                          </TooltipContent>
-                                        )}
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                  <SmartPcRebootButton
-                                    pc={pc}
-                                    isMember={isMember}
-                                    isStarting={isStarting}
+                            {pc.state === "running" ? (
+                              <>
+                                <TooltipProvider
+                                  delayDuration={0}
+                                  skipDelayDuration={0}
+                                >
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span>
+                                        <SmartPcStopButton
+                                          pc={pc}
+                                          isMember={isMember}
+                                          isPCAssigned={isPCAssigned}
+                                        />
+                                      </span>
+                                    </TooltipTrigger>
+                                    {!isMember &&
+                                      isPCAssigned(pc.instanceId) && (
+                                        <TooltipContent>
+                                          This PC is assigned to a member.
+                                          Unassign to stop.
+                                        </TooltipContent>
+                                      )}
+                                  </Tooltip>
+                                </TooltipProvider>
+                                <SmartPcRebootButton
+                                  pc={pc}
+                                  isMember={isMember}
+                                  isStarting={isStarting}
                                   isPCAssigned={isPCAssigned}
                                 />
                               </>
@@ -809,23 +855,27 @@ const CloudPCPage = () => {
                           {/* info grid */}
                           <div className="grid grid-cols-2 gap-x-6 gap-y-[14px] text-[14px] leading-5 tracking-[-0.2px]">
                             {/* Uptime */}
-                            <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                            <TooltipProvider
+                              delayDuration={0}
+                              skipDelayDuration={0}
+                            >
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <div className="min-w-0 flex items-center gap-2 text-foreground">
                                     <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
                                     <span className="truncate">
-                                      {shouldShowStoppedUptimeMessage(pc) ? (
-                                        "Unlimited"
-                                      ) : pcInfo?.uptimeInfo ? (
-                                        `${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.currentUptimeHours))} / ${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.maxUptimeHours))} Max`
-                                      ) : typeof pcInfo?.uptime === "string" &&
-                                        pcInfo.uptime.trim() &&
-                                        pcInfo.uptime.trim().toLowerCase() !== "n/a" ? (
-                                        pcInfo.uptime
-                                      ) : (
-                                        "—"
-                                      )}
+                                      {shouldShowStoppedUptimeMessage(pc)
+                                        ? "Unlimited"
+                                        : pcInfo?.uptimeInfo
+                                          ? `${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.currentUptimeHours))} / ${formatUptimeHours(parseFloat(pcInfo.uptimeInfo.maxUptimeHours))} Max`
+                                          : typeof pcInfo?.uptime ===
+                                                "string" &&
+                                              pcInfo.uptime.trim() &&
+                                              pcInfo.uptime
+                                                .trim()
+                                                .toLowerCase() !== "n/a"
+                                            ? pcInfo.uptime
+                                            : "—"}
                                     </span>
                                   </div>
                                 </TooltipTrigger>
@@ -834,29 +884,45 @@ const CloudPCPage = () => {
                             </TooltipProvider>
 
                             {/* Location (Region) + Info tooltip */}
-                            <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                            <TooltipProvider
+                              delayDuration={0}
+                              skipDelayDuration={0}
+                            >
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <div className="min-w-0 flex items-center gap-2 text-foreground">
                                     <Shield className="h-4 w-4 text-muted-foreground shrink-0" />
-                                    <span className="truncate">{getFriendlyLocation(pcInfo?.region)}</span>
+                                    <span className="truncate">
+                                      {getFriendlyLocation(pcInfo?.region)}
+                                    </span>
                                   </div>
                                 </TooltipTrigger>
-                                <TooltipContent side="top" align="center" className="max-w-[260px]">
-                                  This shows the approximate area where your computer is hosted, based on nearby available data centers to help reduce latency.
+                                <TooltipContent
+                                  side="top"
+                                  align="center"
+                                  className="max-w-[260px]"
+                                >
+                                  This shows the approximate area where your
+                                  computer is hosted, based on nearby available
+                                  data centers to help reduce latency.
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
 
-                            <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                            <TooltipProvider
+                              delayDuration={0}
+                              skipDelayDuration={0}
+                            >
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <div className="flex items-center gap-2 text-foreground">
                                     <CalendarClock className="h-4 w-4 text-muted-foreground" />
-                                    {pcInfo?.schedule?.autoStartTime || pcInfo?.schedule?.autoStopTime ? (
+                                    {pcInfo?.schedule?.autoStartTime ||
+                                    pcInfo?.schedule?.autoStopTime ? (
                                       <span>
                                         {formatScheduleTime(pcInfo)}
-                                        {!pcInfo.schedule.enabled && " (disabled)"}
+                                        {!pcInfo.schedule.enabled &&
+                                          " (disabled)"}
                                       </span>
                                     ) : (
                                       <span>No schedule</span>
@@ -864,13 +930,22 @@ const CloudPCPage = () => {
                                   </div>
                                 </TooltipTrigger>
 
-                                <TooltipContent side="top" align="center" className="max-w-[260px]">
-                                  Schedule controls automatic start/stop times for your PC. You can enable or change it anytime.
+                                <TooltipContent
+                                  side="top"
+                                  align="center"
+                                  className="max-w-[260px]"
+                                >
+                                  Schedule controls automatic start/stop times
+                                  for your PC. You can enable or change it
+                                  anytime.
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
 
-                            <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                            <TooltipProvider
+                              delayDuration={0}
+                              skipDelayDuration={0}
+                            >
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <div className="flex items-center gap-2 text-foreground">
@@ -883,8 +958,14 @@ const CloudPCPage = () => {
                                   </div>
                                 </TooltipTrigger>
 
-                                <TooltipContent side="top" align="center" className="max-w-[260px]">
-                                  Estimated idle timeout — your PC may automatically stop after this much inactivity to help save cost.
+                                <TooltipContent
+                                  side="top"
+                                  align="center"
+                                  className="max-w-[260px]"
+                                >
+                                  Estimated idle timeout — your PC may
+                                  automatically stop after this much inactivity
+                                  to help save cost.
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
@@ -987,12 +1068,13 @@ const CloudPCPage = () => {
                                         />
                                       </span>
                                     </TooltipTrigger>
-                                    {!isMember && isPCAssigned(pc.instanceId) && (
-                                      <TooltipContent>
-                                        This PC is assigned to a member. Unassign
-                                        to start.
-                                      </TooltipContent>
-                                    )}
+                                    {!isMember &&
+                                      isPCAssigned(pc.instanceId) && (
+                                        <TooltipContent>
+                                          This PC is assigned to a member.
+                                          Unassign to start.
+                                        </TooltipContent>
+                                      )}
                                   </Tooltip>
                                 </TooltipProvider>
                               )}
@@ -1010,9 +1092,9 @@ const CloudPCPage = () => {
           {/* Details Panel */}
           <div className="min-w-0 overflow-x-hidden">
             <SelectedPc
-              key={selectedPcKey}                 // ✅ resets detail panel when unselect
+              key={selectedPcKey} // ✅ resets detail panel when unselect
               selectedPCs={selectedPCs}
-              showDetails={effectiveShowDetails}  // ✅ hides when no selection
+              showDetails={effectiveShowDetails} // ✅ hides when no selection
               setShowDetails={setShowDetails}
               cloudPCs={cloudPCs}
               setCloudPCs={setCloudPCs}
@@ -1035,7 +1117,7 @@ const CloudPCPage = () => {
         onClose={idleDialog.onFalse}
         realtimePcInfo={realtimePcInfo}
         selectedInstance={selectedInstance}
-        selectedPcOs={selectedPcOs}   // ✅ NEW
+        selectedPcOs={selectedPcOs} // ✅ NEW
         onSuccess={refetchRemoteDesktops}
       />
 
