@@ -766,7 +766,9 @@ def handle_upload(event):
     body = json.loads(event['body']) if 'body' in event else event
     region = body.get('region')
     file_name = body.get('fileName')
-    file_type = body.get('fileType', 'application/octet-stream')
+    # Some files (e.g. .pkg) may come with an empty MIME type from the browser.
+    # Use octet-stream so presigned signature matches upload request headers.
+    file_type = body.get('fileType') or 'application/octet-stream'
     user_id = body.get('userId')
 
     # normalize size → bytes (safe for '1.74 MB', 102400, etc.)
