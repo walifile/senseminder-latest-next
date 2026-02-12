@@ -65,6 +65,7 @@ const SmartPcConfigForm = ({
     control,
     watch,
     setValue,
+    getValues,
     formState: { errors },
   } = methods;
 
@@ -118,6 +119,11 @@ const SmartPcConfigForm = ({
     [isLinuxOS, linuxCategoryCpuOptions, apiCpuOptions, selectedOS],
   );  
 
+  const linuxCategories = useMemo(
+    () => Object.keys(apiCpuCategories?.Linux || {}),
+    [apiCpuCategories],
+  );
+
   /* ----- auto selection (CREATE only) ----- */
   useEffect(() => {
     if (isResize) return;
@@ -125,13 +131,40 @@ const SmartPcConfigForm = ({
     if (!region) return;
     if (configLoading) return;
 
-    // Default Linux category (harmless for non-Linux if your schema allows it)
-    setValue("linuxCategory", "Ubuntu_24.04_LTS_X64", { shouldValidate: true });
+    if (isLinuxOS) {
+      const currentLinuxCategory = getValues("linuxCategory");
+      const defaultLinuxCategory = linuxCategories.includes("Ubuntu_24.04_LTS_X64")
+        ? "Ubuntu_24.04_LTS_X64"
+        : linuxCategories[0];
+      const isCurrentLinuxCategoryValid =
+        !!currentLinuxCategory && linuxCategories.includes(currentLinuxCategory);
+
+      if (!isCurrentLinuxCategoryValid && defaultLinuxCategory) {
+        setValue("linuxCategory", defaultLinuxCategory, { shouldValidate: true });
+      }
+    }
 
     if (cpuOptionsForOS.length > 0) {
-      setValue("cpu", cpuOptionsForOS[0].value, { shouldValidate: true });
+      const currentCpu = getValues("cpu");
+      const isCurrentCpuValid = cpuOptionsForOS.some(
+        (option) => option.value === currentCpu,
+      );
+
+      if (!isCurrentCpuValid) {
+        setValue("cpu", cpuOptionsForOS[0].value, { shouldValidate: true });
+      }
     }
-  }, [isResize, selectedOS, region, setValue, configLoading, cpuOptionsForOS]);
+  }, [
+    isResize,
+    selectedOS,
+    region,
+    isLinuxOS,
+    linuxCategories,
+    getValues,
+    setValue,
+    configLoading,
+    cpuOptionsForOS,
+  ]);
 
   useEffect(() => {
     if (isResize) return;
