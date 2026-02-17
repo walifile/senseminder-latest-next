@@ -23,6 +23,7 @@ const PublicLightBackground: React.FC = () => (
         sizes="100vw"
         className="block max-w-none w-full h-[305.951px]"
         style={{ objectFit: "fill" }}
+        quality={60}
       />
     </div>
     <div
@@ -42,6 +43,7 @@ const PublicLightBackground: React.FC = () => (
         sizes="100vw"
         className="block max-w-none h-[680px]"
         style={{ width: "auto" }}
+        quality={60}
       />
     </div>
 
@@ -83,6 +85,7 @@ const PublicLightBackground: React.FC = () => (
         sizes="100vw"
         className="block edf w-full max-w-none"
         style={{ height: "auto" }}
+        quality={60}
       />
     </div>
   </>

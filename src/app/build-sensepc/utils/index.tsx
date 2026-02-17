@@ -321,14 +321,15 @@ export function formatCycleDateUTC(iso?: string | null) {
 export const isFiniteNumber = (v: unknown): v is number =>
   typeof v === "number" && Number.isFinite(v);
 
-export const truncateTo = (value: number, decimals: number) => {
+export const roundTo = (value: number, decimals: number) => {
   const factor = 10 ** decimals;
-  const epsilon = 1e-9;
-  return Math.trunc((value + epsilon) * factor) / factor;
+  const scaled = Math.abs(value) * factor;
+  const rounded = Math.round(scaled + Number.EPSILON);
+  return Math.sign(value) * (rounded / factor);
 };
 
 export const formatUsd = (value: number, decimals: number) => {
-  const truncated = truncateTo(value, decimals);
-  const normalized = Object.is(truncated, -0) ? 0 : truncated;
+  const rounded = roundTo(value, decimals);
+  const normalized = Object.is(rounded, -0) ? 0 : rounded;
   return `$${normalized.toFixed(decimals)}`;
 };

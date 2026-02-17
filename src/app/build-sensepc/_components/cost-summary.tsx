@@ -9,7 +9,7 @@ import { PublicCard } from "@/components/ui/public-card";
 
 import { ArrowUpRight } from "lucide-react";
 
-import { formatUsd, truncateTo, isFiniteNumber } from "../utils";
+import { roundTo, formatUsd, isFiniteNumber } from "../utils";
 
 import type { BillingPlan } from "../data/billing";
 import type { EstimateData, TotalEstimate } from "../types";
@@ -59,9 +59,8 @@ const CostSummary = ({
       const rawStorage = estimateData.storage?.[planKey];
 
       if (isFiniteNumber(rawInstance) && isFiniteNumber(rawStorage)) {
-        const total =
-          truncateTo(rawInstance, 2) + truncateTo(rawStorage, 2);
-          return formatUsd(total, 2);
+        const total = roundTo(rawInstance, 2) + roundTo(rawStorage, 2);
+        return formatUsd(total, 2);
       }
 
       const rawTotal = estimateData.total?.[planKey];

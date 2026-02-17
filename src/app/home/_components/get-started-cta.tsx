@@ -1,9 +1,5 @@
-"use client";
-
 import React from "react";
 import Image from "next/image";
-
-import { motion } from "framer-motion";
 
 type GetStartedCTAProps = {
   children: React.ReactNode;
@@ -19,24 +15,14 @@ export default function GetStartedCTA({
   return (
     <section data-testid="home-get-started-cta" className="relative">
       <div className="relative container my-12 md:my-20">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
+        <div
           className={`relative rounded-2xl ${padding} overflow-hidden bg-[#F4F1FF] dark:bg-transparent dark:bg-[linear-gradient(276.71deg,rgba(128,134,243,0.5)_-194.99%,rgba(3,10,135,0.25)_-40.44%,rgba(186,37,240,0.5)_248.78%)]`}
           role="img"
           aria-label="Get started background"
         >
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="relative mx-auto w-fit text-center space-y-4 md:space-y-8"
-          >
+          <div className="relative mx-auto w-fit text-center space-y-4 md:space-y-8">
             {children}
-          </motion.div>
+          </div>
 
           <Image
             src="/assets/svg/get-started-cta-top.svg"
@@ -65,7 +51,7 @@ export default function GetStartedCTA({
               className="object-contain"
             />
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {gradient}

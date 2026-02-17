@@ -3,7 +3,6 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 
-import { motion } from "framer-motion";
 import { XCircle, ArrowRight, CheckCircle } from "lucide-react";
 
 const ProblemSolution = () => (
@@ -14,27 +13,15 @@ const ProblemSolution = () => (
 
     <div className="container mx-auto px-4 md:px-6">
       <div className="text-center mb-8 max-w-4xl mx-auto">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-2xl md:text-3xl font-bold mb-4"
-        >
+        <h2 className="text-2xl md:text-3xl font-bold mb-4">
           Why Buy Expensive <span className="gradient-text">Hardware</span> When
           You Can Rent Smarter?
-        </motion.h2>
+        </h2>
       </div>
 
       <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
         {/* Problem Card */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="glass-card p-8 border border-destructive/20 dark:border-destructive/30 relative overflow-hidden group"
-        >
+        <div className="glass-card p-8 border border-destructive/20 dark:border-destructive/30 relative overflow-hidden group">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-destructive/40 to-destructive/20 dark:from-destructive/50 dark:to-destructive/30" />
           <div className="flex items-center gap-3 mb-6">
             <XCircle className="h-8 w-8 text-destructive" />
@@ -43,16 +30,10 @@ const ProblemSolution = () => (
           <p className="text-lg text-muted-foreground leading-relaxed">
             Physical computers are expensive, inflexible, and hard to upgrade.
           </p>
-        </motion.div>
+        </div>
 
         {/* Solution Card */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="glass-card p-8 border border-primary/20 dark:border-primary/30 relative overflow-hidden group"
-        >
+        <div className="glass-card p-8 border border-primary/20 dark:border-primary/30 relative overflow-hidden group">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/40 to-primary/20 dark:from-primary/50 dark:to-primary/30" />
           <div className="flex items-center gap-3 mb-6">
             <CheckCircle className="h-8 w-8 text-primary" />
@@ -62,17 +43,11 @@ const ProblemSolution = () => (
             Sense PC offers flexible, cost-effective cloud computing that scales
             with your needs.
           </p>
-        </motion.div>
+        </div>
       </div>
 
       {/* Call to Action */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-        className="text-center mt-12"
-      >
+      <div className="text-center mt-12">
         <h3 className="text-2xl md:text-2xl font-bold mb-8">
           Make the <span className="gradient-text">Smart Move</span> — Switch to
           Sense PC!
@@ -88,7 +63,7 @@ const ProblemSolution = () => (
             <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary/0 via-primary-foreground/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
           </Link>
         </Button>
-      </motion.div>
+      </div>
     </div>
   </section>
 );

@@ -1,9 +1,5 @@
-"use client";
-
 import React from "react";
 import Image from "next/image";
-
-import { motion } from "framer-motion";
 
 const RentSmarter: React.FC = () => (
   <section data-testid="home-rent-smarter" className="relative">
@@ -12,12 +8,7 @@ const RentSmarter: React.FC = () => (
 
     <div className="container my-12 md:my-20 relative grid md:grid-cols-2 gap-8 md:gap-24">
       {/* Left Illustration */}
-      <motion.div
-        initial={{ opacity: 0, x: -50 }}
-        whileInView={{ opacity: 1, x: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.6 }}
-      >
+      <div>
         {/* Light mode image */}
         <Image
           src="/assets/svg/rent-smarter-light.svg"
@@ -34,15 +25,9 @@ const RentSmarter: React.FC = () => (
           height={578}
           className="w-full h-auto hidden dark:block"
         />
-      </motion.div>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, x: 50 }}
-        whileInView={{ opacity: 1, x: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.6 }}
-        className="space-y-4 md:space-y-12"
-      >
+      <div className="space-y-4 md:space-y-12">
         <h2 className="font-space-grotesk font-bold text-2xl md:text-4xl">
           Why Buy
           <br /> Hardware When You Can Run It Into The Cloud?
@@ -94,7 +79,7 @@ const RentSmarter: React.FC = () => (
             </p>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   </section>
 );

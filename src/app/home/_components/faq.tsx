@@ -1,6 +1,3 @@
-"use client";
-
-import React from "react";
 import Image from "next/image";
 
 import { cn } from "@/lib/utils";
@@ -11,10 +8,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-import { motion } from "framer-motion";
-
 import { type FAQItem, defaultFaqItems } from "../data/faq-data";
-
 
 type FAQProps = {
   items?: FAQItem[];
@@ -22,14 +16,11 @@ type FAQProps = {
   subtitle?: string;
 };
 
-
 export default function FAQ({
   items = defaultFaqItems,
   title = "Frequently Asked Questions",
   subtitle,
 }: FAQProps) {
-  const [value, setValue] = React.useState<string | undefined>("item-2");
-
   return (
     <section
       id="faq"
@@ -37,15 +28,8 @@ export default function FAQ({
       className="container relative my-12 md:my-20"
     >
       <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-24">
-        {/* Left: Heading + Illustration */}
         <div className="relative lg:col-span-2 space-y-8 md:space-y-28">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4 }}
-            className="space-y-2.5"
-          >
+          <div className="space-y-2.5">
             <h2 className="font-space-grotesk font-semibold text-2xl md:text-4xl">
               {title}
             </h2>
@@ -54,7 +38,7 @@ export default function FAQ({
                 {subtitle}
               </p>
             ) : null}
-          </motion.div>
+          </div>
 
           <Image
             src="/assets/svg/faq.svg"
@@ -65,32 +49,37 @@ export default function FAQ({
           />
         </div>
 
-        {/* Right: Accordion */}
         <div className="lg:col-span-3">
           <Accordion
             type="single"
             collapsible
-            value={value}
-            onValueChange={setValue}
+            defaultValue="item-2"
             className="space-y-4 md:space-y-5"
           >
             {items.map((item, idx) => {
               const id = `item-${idx + 1}`;
-              const open = value === id;
               return (
-                <AccordionItem key={id} value={id} className="border-0">
+                <AccordionItem
+                  key={id}
+                  value={id}
+                  className={cn(
+                    "border-0",
+                    "[&[data-state=open]_.faq-card]:text-white",
+                    "[&[data-state=open]_.faq-card]:shadow-[0px_10px_50px_0px_#00000017]",
+                    "[&[data-state=open]_.faq-card]:bg-[linear-gradient(320deg,rgba(116,0,158,0.37)_5%,#060866_100%)]",
+                    "[&[data-state=open]_.faq-index]:text-white"
+                  )}
+                >
                   <div
                     className={cn(
-                      "rounded-lg transition-colors p-4 md:p-6",
+                      "faq-card rounded-lg transition-colors p-4 md:p-6",
                       "space-y-2 md:space-y-3",
-                      "bg-white shadow-[0px_12px_24px_0px_#2530F014] border border-[#2530F033] dark:shadow-none dark:border-none dark:bg-[#000332]",
-                      open &&
-                        "text-white shadow-[0px_10px_50px_0px_#00000017] bg-[linear-gradient(320deg,rgba(116,0,158,0.37)_5%,#060866_100%)]"
+                      "bg-white shadow-[0px_12px_24px_0px_#2530F014] border border-[#2530F033] dark:shadow-none dark:border-none dark:bg-[#000332]"
                     )}
                   >
                     <AccordionTrigger className="py-0 text-start hover:no-underline">
                       <div className="flex gap-3">
-                        <span className="text-2xl font-bold text-paragraph">
+                        <span className="faq-index text-2xl font-bold text-paragraph">
                           {String(idx + 1).padStart(2, "0")}
                         </span>
 

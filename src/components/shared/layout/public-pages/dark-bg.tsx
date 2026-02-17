@@ -61,6 +61,7 @@ const PublicDarkBackground: React.FC = () => {
           height={0}
           sizes="85vw"
           className="block h-full w-full max-w-none"
+          quality={60}
         />
       </div>
 
@@ -72,6 +73,7 @@ const PublicDarkBackground: React.FC = () => {
           height={0}
           sizes="85vw"
           className="block h-auto w-auto max-w-none"
+          quality={60}
         />
       </div>
 

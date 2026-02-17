@@ -28,6 +28,7 @@ export default function AuthGuard({ children }: AuthProviderProps) {
 
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [initialized, setInitialized] = useState(false);
+  const isLanding = pathname === "/";
 
   // Treat entries ending with "/" as prefixes, except the root "/".
   const isPublicRoute = publicRoutes.some(
@@ -67,12 +68,11 @@ export default function AuthGuard({ children }: AuthProviderProps) {
   };
 
   useEffect(() => {
+    if (isLanding) return;
     if (!initialized) {
       initializeAuth();
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initialized, isLanding]);
 
   useEffect(() => {
     if (initialized && !isAuthenticated && !isPublicRoute) {

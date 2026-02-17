@@ -24,6 +24,8 @@ import { useSelector } from "react-redux";
 import { useToast } from "@/hooks/use-toast";
 import { useFeedback } from "@/hooks/use-feedback";
 
+import { formatUsd, isFiniteNumber } from "../utils";
+
 import type { FormValues } from "../schema";
 
 type Props = {
@@ -112,17 +114,18 @@ const ConfirmPurchaseDialog = ({
     if (isEstimating || !estimateData?.total) return "...";
     const price =
       billingPlan === "hourly"
-        ? estimateData.total.pricePerHour?.toFixed(3)
+        ? estimateData.total.pricePerHour
         : billingPlan === "daily"
-        ? estimateData.total.pricePerDay?.toFixed(2)
-        : estimateData.total.pricePerMonth?.toFixed(2);
+        ? estimateData.total.pricePerDay
+        : estimateData.total.pricePerMonth;
+    if (!isFiniteNumber(price)) return "-";
     const suffix =
       billingPlan === "hourly"
         ? "/hour"
         : billingPlan === "daily"
         ? "/day"
         : "/month";
-    return `$${price} ${suffix}`;
+    return `${formatUsd(price, 2)} ${suffix}`;
   };
 
   const closeDialog = useCallback(() => {

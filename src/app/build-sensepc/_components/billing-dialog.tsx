@@ -27,7 +27,13 @@ import {
 } from "lucide-react";
 
 import { PLAN_COPY, PLAN_ORDER } from "../data/billing";
-import { formatUsd, truncateTo, normalizeGB, isFiniteNumber, formatCycleDateUTC } from "../utils";
+import {
+  roundTo,
+  formatUsd,
+  normalizeGB,
+  isFiniteNumber,
+  formatCycleDateUTC,
+} from "../utils";
 
 import type { BillingPlan } from "../data/billing";
 import type { BillingCycle, EstimateData } from "../types";
@@ -188,7 +194,7 @@ export const BillingPlanDialog: React.FC<Props> = ({
     const storage = data?.storage;
     if (!instance || !storage) return "-";
 
-    const decimals = plan === "hourly" ? 3 : 2;
+    const decimals = 2;
 
     const inst =
       plan === "hourly"
@@ -206,9 +212,8 @@ export const BillingPlanDialog: React.FC<Props> = ({
 
     if (!isFiniteNumber(inst) || !isFiniteNumber(ssd)) return "-";
 
-    // IMPORTANT: recompute total from parts and truncate (ROUND_DOWN) per plan
-    const total =
-      truncateTo(inst, decimals) + truncateTo(ssd, decimals);
+    // IMPORTANT: recompute total from parts and round (HALF_UP) per plan
+    const total = roundTo(inst, decimals) + roundTo(ssd, decimals);
 
     return formatUsd(total, decimals);
   };

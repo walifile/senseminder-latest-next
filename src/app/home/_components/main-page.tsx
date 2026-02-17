@@ -1,19 +1,5 @@
-"use client";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { routes } from "@/constants/routes";
-
-import { Logger } from "@/lib/utils/logger";
-import { Button } from "@/components/ui/button";
-import { checkOnboarded } from "@/lib/utils/checkOnboarded";
-
-import { ArrowUpRight } from "lucide-react";
-
-import { useGetStartedNav } from "@/hooks/use-get-started";
-
 import FAQ from "./faq";
-import Hero from "./hero";
+import HomeHero from "./home-hero";
 import { MainLayout } from "./layout";
 import SensePCCost from "./sensepc-cost";
 import RentSmarter from "./rent-smarter";
@@ -22,30 +8,15 @@ import GetStartedCTA from "./get-started-cta";
 import TutorialSection from "./tutorial-section";
 import ProductHighlights from "./product-highlights";
 import FutureOfComputing from "./future-of-computing";
+import HomeClientEffects from "./home-client-effects";
 import RentSmarterProcess from "./rent-smarter-process";
+import GetStartedCTAButton from "./get-started-cta-button";
 
 export default function HomePage() {
-  const onGetStarted = useGetStartedNav();
-
-  const router = useRouter();
-
-  useEffect(() => {
-    async function handleRedirect() {
-      try {
-        const onboarded = await checkOnboarded();
-        if (onboarded === false) {
-          router.replace(routes.welcome);
-        }
-      } catch (err) {
-        Logger.error("Onboarding check failed:", err);
-      }
-    }
-
-    handleRedirect();
-  }, [router]);
   return (
     <MainLayout>
-      <Hero
+      <HomeClientEffects />
+      <HomeHero
         imageSrc="/assets/svg/hero-img-dark.svg"
         imageWidth={600}
         imageHeight={400}
@@ -64,7 +35,7 @@ export default function HomePage() {
           Build a high-performing cloud computer in minutes with Sense PC. No
           hardware. No security threat. No overpaying.
         </p>
-      </Hero>
+      </HomeHero>
       <FutureOfComputing />
       <WayWeCompute />
       <ProductHighlights />
@@ -88,15 +59,7 @@ export default function HomePage() {
           <br />
         </h2>
 
-        <Button
-          data-testid="home-get-started-button"
-          size="lg"
-          className="w-full md:w-fit"
-          onClick={onGetStarted}
-        >
-          Switch to Sense PC
-          <ArrowUpRight />
-        </Button>
+        <GetStartedCTAButton />
       </GetStartedCTA>
       <RentSmarterProcess />
       <SensePCCost />
