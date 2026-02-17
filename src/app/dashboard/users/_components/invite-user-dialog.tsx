@@ -62,10 +62,19 @@ const InviteUserDialog = ({ open, onClose }: Props) => {
       });
       closeDialog();
     } catch (e) {
+      const maybeData = (e as { data?: { code?: unknown } })?.data;
+      const code =
+        typeof maybeData?.code === "string" ? maybeData.code : undefined;
+
+      const description =
+        code === "EMAIL_ALREADY_EXISTS"
+          ? "This email address is already invited."
+          : getErrorMessage(e, "Failed to invite user");
+
       toast({
         title: "Failed to invite user",
         variant: "destructive",
-        description: getErrorMessage(e, "Failed to invite user"),
+        description,
       });
     }
   });
@@ -101,7 +110,7 @@ const InviteUserDialog = ({ open, onClose }: Props) => {
             label="Name"
             inputVariant="auth"
             placeholder="John Doe"
-            inputClassName="justify-start h-auto px-5 py-4 text-paragraph text-base font-normal placeholder:font-normal font-['Inter'] leading-6 !border-0 !ring-0 !outline-none"
+            inputClassName="justify-start h-auto px-5 py-4  placeholder:font-normal font-['Inter'] leading-6 !border-0 !ring-0 !outline-none"
             inputTestId="user-management-name-input"
           />
 
@@ -111,7 +120,7 @@ const InviteUserDialog = ({ open, onClose }: Props) => {
           label="Email"
           inputVariant="auth"
           placeholder="john.doe@example.com"
-          inputClassName="justify-start h-auto px-5 py-4 text-paragraph text-base font-normal placeholder:font-normal font-['Inter'] leading-6 !border-0 !ring-0 !outline-none"
+          inputClassName="justify-start h-auto px-5 py-4  placeholder:font-normal font-['Inter'] leading-6 !border-0 !ring-0 !outline-none"
           inputTestId="user-management-email-input"
         />
 

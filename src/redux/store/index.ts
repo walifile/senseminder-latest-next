@@ -7,13 +7,21 @@ import { billingAPI } from "@/api/billing";
 import appConfig from "@/config/app-config";
 import { feedbackAPI } from "@/api/feedback";
 import { ticketsAPI } from "@/api/supportAPI";
+import { realtimeAPI } from "@/api/realtime";
+import { mfaRecoveryAPI } from "@/api/mfa-recovery";
+import { profileManagementAPI } from "@/api/profileManagement";
+import { promoCashbackAPI } from "@/api/promocashback";
+import { scheduleAPI } from "@/api/schedule";
+import { securityQuestionAPI } from "@/api/security-question";
+import { sessionAPI } from "@/api/session";
+import { assignPcAPI } from "@/api/assignpc";
 import { newsletterAPI } from "@/api/newsletterAPI";
 import { vmManagementAPI } from "@/api/vmManagement";
 import { fileManagerAPI } from "@/api/fileManagerAPI";
 import { firstTimeSetupAPI } from "@/api/first-time-setup";
 import { smartPCIdleSettingsAPI } from "@/api/smartPC-Idle-settings";
 import { legalDocumentsAPI } from "@/api/legalDocumentsAPI";
-import { smartPCConfigAPI } from "@/api/smartPCConfigAPI";
+import { smartPCConfigAPI } from "@/api/pc-config-api";
 
 import storage from "redux-persist/lib/storage";
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
@@ -51,6 +59,14 @@ interface RootStateType {
   [userAPI.reducerPath]: ReturnType<typeof userAPI.reducer>;
   [feedbackAPI.reducerPath]: ReturnType<typeof feedbackAPI.reducer>;
   [firstTimeSetupAPI.reducerPath]: ReturnType<typeof firstTimeSetupAPI.reducer>;
+  [realtimeAPI.reducerPath]: ReturnType<typeof realtimeAPI.reducer>;
+  [mfaRecoveryAPI.reducerPath]: ReturnType<typeof mfaRecoveryAPI.reducer>;
+  [profileManagementAPI.reducerPath]: ReturnType<typeof profileManagementAPI.reducer>;
+  [promoCashbackAPI.reducerPath]: ReturnType<typeof promoCashbackAPI.reducer>;
+  [scheduleAPI.reducerPath]: ReturnType<typeof scheduleAPI.reducer>;
+  [securityQuestionAPI.reducerPath]: ReturnType<typeof securityQuestionAPI.reducer>;
+  [sessionAPI.reducerPath]: ReturnType<typeof sessionAPI.reducer>;
+  [assignPcAPI.reducerPath]: ReturnType<typeof assignPcAPI.reducer>;
   [smartPCIdleSettingsAPI.reducerPath]: ReturnType<typeof smartPCIdleSettingsAPI.reducer>;
   [smartPCConfigAPI.reducerPath]: ReturnType<typeof smartPCConfigAPI.reducer>;
 }
@@ -76,6 +92,14 @@ const rootReducer = combineReducers({
   [userAPI.reducerPath]: userAPI.reducer,
   [feedbackAPI.reducerPath]: feedbackAPI.reducer,
   [firstTimeSetupAPI.reducerPath]: firstTimeSetupAPI.reducer,
+  [realtimeAPI.reducerPath]: realtimeAPI.reducer,
+  [mfaRecoveryAPI.reducerPath]: mfaRecoveryAPI.reducer,
+  [profileManagementAPI.reducerPath]: profileManagementAPI.reducer,
+  [promoCashbackAPI.reducerPath]: promoCashbackAPI.reducer,
+  [scheduleAPI.reducerPath]: scheduleAPI.reducer,
+  [securityQuestionAPI.reducerPath]: securityQuestionAPI.reducer,
+  [sessionAPI.reducerPath]: sessionAPI.reducer,
+  [assignPcAPI.reducerPath]: assignPcAPI.reducer,
   [smartPCIdleSettingsAPI.reducerPath]: smartPCIdleSettingsAPI.reducer,
   [smartPCConfigAPI.reducerPath]: smartPCConfigAPI.reducer,
 });
@@ -100,6 +124,14 @@ export const store = configureStore({
       userAPI.middleware,
       feedbackAPI.middleware,
       firstTimeSetupAPI.middleware,
+      realtimeAPI.middleware,
+      mfaRecoveryAPI.middleware,
+      profileManagementAPI.middleware,
+      promoCashbackAPI.middleware,
+      scheduleAPI.middleware,
+      securityQuestionAPI.middleware,
+      sessionAPI.middleware,
+      assignPcAPI.middleware,
       smartPCIdleSettingsAPI.middleware,
       smartPCConfigAPI.middleware
     ),

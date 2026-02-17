@@ -32,7 +32,12 @@ export default function ActionsMenu({ actions }: MoreActionsMenuProps) {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent
+        align="end"
+        side="bottom"
+        sideOffset={8}
+        collisionPadding={12}
+      >
         {actions.map((action, index) => (
           <DropdownMenuItem
             key={index}

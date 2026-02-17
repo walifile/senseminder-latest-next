@@ -8,7 +8,7 @@ import { routes } from "@/constants/routes";
 import { useCreateVMMutation } from "@/api/vmManagement";
 import React, { useRef, useMemo, useEffect } from "react";
 import { FEEDBACK_TRIGGERS } from "@/constants/app-constants";
-import { useGetSmartPcConfigQuery } from "@/api/smartPCConfigAPI";
+import { useGetSmartPcConfigQuery } from "@/api/pc-config-api";
 import {
   useGetEstimateMutation,
   useListRemoteDesktopQuery,
@@ -123,7 +123,10 @@ export default function BuildSensePcPage() {
   const isLinuxOS = selectedOS === "Linux";
 
   // API-driven options
-  const { data: apiConfig } = useGetSmartPcConfigQuery();
+  const { data: apiConfig } = useGetSmartPcConfigQuery(
+    { region },
+    { skip: !region },
+  );
 
   const apiCpuOptions = useMemo(
     () => apiConfig?.cpuOptions ?? {},

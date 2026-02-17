@@ -27,7 +27,7 @@ import { Form, Field } from "@/components/shared/hook-form";
 import FieldChangePreview from "./field-change-preview";
 import { osOptions, storageOptions, locationOptions } from "../data";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useGetSmartPcConfigQuery } from "@/api/smartPCConfigAPI";
+import { useGetSmartPcConfigQuery } from "@/api/pc-config-api";
 
 import type { FormValues } from "../schema";
 import type { ResizeInitial } from "../types";
@@ -65,6 +65,7 @@ const SmartPcConfigForm = ({
     control,
     watch,
     setValue,
+    getValues,
     formState: { errors },
   } = methods;
 
@@ -74,6 +75,7 @@ const SmartPcConfigForm = ({
     linuxCategory: selectedLinuxCategory,
     cpu,
     storage,
+    region,
   } = values;
 
   const isLinuxOS = selectedOS === "Linux";
@@ -82,7 +84,10 @@ const SmartPcConfigForm = ({
     data: apiConfig,
     isLoading: isConfigLoading,
     isFetching: isConfigFetching,
-  } = useGetSmartPcConfigQuery();
+  } = useGetSmartPcConfigQuery(
+    { region },
+    { skip: !region },
+  );
 
   const apiCpuOptions = useMemo(
     () =>
@@ -114,30 +119,63 @@ const SmartPcConfigForm = ({
     [isLinuxOS, linuxCategoryCpuOptions, apiCpuOptions, selectedOS],
   );  
 
+  const linuxCategories = useMemo(
+    () => Object.keys(apiCpuCategories?.Linux || {}),
+    [apiCpuCategories],
+  );
+
   /* ----- auto selection (CREATE only) ----- */
   useEffect(() => {
     if (isResize) return;
     if (!selectedOS) return;
+    if (!region) return;
     if (configLoading) return;
 
-    // Default Linux category (harmless for non-Linux if your schema allows it)
-    setValue("linuxCategory", "Ubuntu_24.04_LTS_X64", { shouldValidate: true });
+    if (isLinuxOS) {
+      const currentLinuxCategory = getValues("linuxCategory");
+      const defaultLinuxCategory = linuxCategories.includes("Ubuntu_24.04_LTS_X64")
+        ? "Ubuntu_24.04_LTS_X64"
+        : linuxCategories[0];
+      const isCurrentLinuxCategoryValid =
+        !!currentLinuxCategory && linuxCategories.includes(currentLinuxCategory);
 
-    const opts = apiCpuOptions?.[selectedOS];
-    if (opts && opts.length > 0) {
-      setValue("cpu", opts[0].value, { shouldValidate: true });
+      if (!isCurrentLinuxCategoryValid && defaultLinuxCategory) {
+        setValue("linuxCategory", defaultLinuxCategory, { shouldValidate: true });
+      }
     }
-  }, [isResize, selectedOS, setValue, apiCpuOptions, configLoading]);
+
+    if (cpuOptionsForOS.length > 0) {
+      const currentCpu = getValues("cpu");
+      const isCurrentCpuValid = cpuOptionsForOS.some(
+        (option) => option.value === currentCpu,
+      );
+
+      if (!isCurrentCpuValid) {
+        setValue("cpu", cpuOptionsForOS[0].value, { shouldValidate: true });
+      }
+    }
+  }, [
+    isResize,
+    selectedOS,
+    region,
+    isLinuxOS,
+    linuxCategories,
+    getValues,
+    setValue,
+    configLoading,
+    cpuOptionsForOS,
+  ]);
 
   useEffect(() => {
     if (isResize) return;
     if (!isLinuxOS) return;
+    if (!region) return;
     if (configLoading) return;
 
     if (linuxCategoryCpuOptions.length > 0) {
       setValue("cpu", linuxCategoryCpuOptions[0].value, { shouldValidate: true });
     }
-  }, [isResize, isLinuxOS, linuxCategoryCpuOptions, setValue, configLoading]);
+  }, [isResize, isLinuxOS, region, linuxCategoryCpuOptions, setValue, configLoading]);
 
   /* ----- CREATE: GPU checkbox filter ----- */
   const [showGpuOnly, setShowGpuOnly] = useState(false);
@@ -313,6 +351,41 @@ const SmartPcConfigForm = ({
                 </p>
               </div>
             </div>
+
+            {/* Location (tooltip to the right of label) */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Label className="text-sm font-semibold">Location</Label>
+
+                <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex h-5 w-5 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10"
+                        onClick={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        aria-label="Location info"
+                      >
+                        <Info className="h-4 w-4 text-muted-foreground" />
+                      </button>
+                    </TooltipTrigger>
+
+                    <TooltipContent side="top" align="start" className="max-w-[260px]">
+                      Pick the closest location for faster response and smoother performance.
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+
+              <Field.Select
+                name="region"
+                selectVariant="glowingSelector"
+                placeholder="Select nearest datacenter"
+                options={locationOptions}
+                disabled={isLocked("region")}
+              />
+            </div>
           </section>
 
           {/* ========== CONFIGURATIONS ========== */}
@@ -416,40 +489,6 @@ const SmartPcConfigForm = ({
               />
             </div>
 
-            {/* Location (tooltip to the right of label) */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Label className="text-sm font-semibold">Location</Label>
-
-                <TooltipProvider delayDuration={0} skipDelayDuration={0}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        className="inline-flex h-5 w-5 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10"
-                        onClick={(e) => e.stopPropagation()}
-                        onMouseDown={(e) => e.stopPropagation()}
-                        aria-label="Location info"
-                      >
-                        <Info className="h-4 w-4 text-muted-foreground" />
-                      </button>
-                    </TooltipTrigger>
-
-                    <TooltipContent side="top" align="start" className="max-w-[260px]">
-                      Pick the closest location for faster response and smoother performance.
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-
-              <Field.Select
-                name="region"
-                selectVariant="glowingSelector"
-                placeholder="Select nearest datacenter"
-                options={locationOptions}
-                disabled={isLocked("region")}
-              />
-            </div>
           </section>
 
           {/* ========== BILLING ========== */}

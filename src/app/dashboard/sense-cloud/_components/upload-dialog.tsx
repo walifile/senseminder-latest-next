@@ -41,6 +41,7 @@ import { useSelector } from "react-redux";
 
 import { X, Check, Upload, Trash2, Loader2 } from "lucide-react";
 
+import { useToast } from "@/hooks/use-toast";
 import { useFeedback } from "@/hooks/use-feedback";
 
 interface UploadDialogProps {
@@ -79,6 +80,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   const [uploadToPresignedUrl] = useUploadToPresignedUrlMutation();
   const { user } = useSelector((state: RootState) => state.auth);
   const { triggerFeedback } = useFeedback();
+  const { toast } = useToast();
 
   const isUploading = Object.values(uploadStatus).includes("loading");
   const regionOptions = regions?.length ? regions : STORAGE_REGIONS;
@@ -121,9 +123,16 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
   };
 
   const handleFileRemove = (index: number) => {
-    const updated = [...selectedFiles];
-    updated.splice(index, 1);
-    setSelectedFiles(updated);
+    const fileToRemove = selectedFiles[index];
+    if (!fileToRemove) return;
+
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    setUploadStatus((prev) => {
+      if (!(fileToRemove.name in prev)) return prev;
+      const next = { ...prev };
+      delete next[fileToRemove.name];
+      return next;
+    });
   };
 
   const handleUpload = async () => {
@@ -131,7 +140,7 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
     selectedFiles.forEach((file) => (newStatus[file.name] = "loading"));
     setUploadStatus(newStatus);
 
-    await Promise.all(
+    const results = await Promise.all(
       selectedFiles.map(async (file) => {
         try {
           const { uploadUrl, finalFileName, key } = await uploadFile({
@@ -164,12 +173,43 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
             trigger: FEEDBACK_TRIGGERS.PC_ACTION,
             delayMinutes: 0,
           });
+
+          return { file, status: "success" as const };
         } catch (err) {
           Logger.error(err);
           setUploadStatus((prev) => ({ ...prev, [file.name]: "error" }));
+          return { file, status: "error" as const };
         }
       })
     );
+
+    const successCount = results.filter((result) => result.status === "success")
+      .length;
+    const errorCount = results.length - successCount;
+
+    if (successCount > 0 && errorCount === 0) {
+      toast({
+        title: "Upload complete",
+        description: `${successCount} file${
+          successCount === 1 ? "" : "s"
+        } uploaded successfully.`,
+      });
+      closeDialog();
+    } else if (successCount > 0 && errorCount > 0) {
+      toast({
+        title: "Upload completed with errors",
+        description: `${successCount} file${
+          successCount === 1 ? "" : "s"
+        } uploaded, ${errorCount} failed.`,
+        variant: "destructive",
+      });
+    } else if (errorCount > 0) {
+      toast({
+        title: "Upload failed",
+        description: "No files were uploaded. Please try again.",
+        variant: "destructive",
+      });
+    }
 
     // ✅ DO NOT close dialog after upload.
     // Let the user review results and close manually.
@@ -326,7 +366,14 @@ const UploadDialog: React.FC<UploadDialogProps> = ({
                       <Check className="w-4 h-4 text-green-500" />
                     )}
                     {uploadStatus[file.name] === "error" && (
-                      <X className="w-4 h-4 text-red-500" />
+                      <button
+                        type="button"
+                        onClick={() => handleFileRemove(index)}
+                        disabled={isUploading}
+                        aria-label={`Remove failed file ${file.name}`}
+                      >
+                        <X className="w-4 h-4 text-red-500" />
+                      </button>
                     )}
 
                     {!uploadStatus[file.name] && (

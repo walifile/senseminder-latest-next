@@ -12,31 +12,21 @@ import appConfig from "@/config/app-config";
 
 import { ensureOkInstanceId } from "@/lib/utils";
 
-import { fetchAuthSession } from "aws-amplify/auth";
+import { createApi } from "@reduxjs/toolkit/query/react";
 
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { baseQueryWithReauth } from "./apiUtils";
 
 const { IDLE_API_URL } = appConfig;
 
-async function getIdToken() {
-  const session = await fetchAuthSession();
-  const idToken = session.tokens?.idToken?.toString();
-  if (!idToken) throw new Error("User is not authenticated.");
-  return idToken;
-}
-
-const baseQuery = fetchBaseQuery({
-  baseUrl: IDLE_API_URL,
-  responseHandler: async (response) => {
-    const text = await response.text();
-    if (!text) return {};
-    try {
-      return JSON.parse(text) as unknown;
-    } catch {
-      return { message: text };
-    }
-  },
-});
+const responseHandler = async (response: Response) => {
+  const text = await response.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return { message: text };
+  }
+};
 
 type IdleSettingsUpdateResponse = {
   message: string;
@@ -59,14 +49,12 @@ const toCustomError = (error: unknown) => ({
 
 export const smartPCIdleSettingsAPI = createApi({
   reducerPath: "smartPCIdleSettingsAPI",
-  baseQuery,
+  baseQuery: baseQueryWithReauth(true, IDLE_API_URL),
   endpoints: (builder) => ({
     getIdleSettings: builder.query<IdleSettingsResponse, { instanceId: string }>(
       {
         async queryFn({ instanceId }, _api, _extraOptions, baseQuery) {
-          let idToken: string;
           try {
-            idToken = await getIdToken();
             ensureOkInstanceId(instanceId);
           } catch (error) {
             return toCustomError(error);
@@ -76,10 +64,7 @@ export const smartPCIdleSettingsAPI = createApi({
             url: "",
             method: "GET",
             params: { instanceId },
-            headers: {
-              Authorization: idToken,
-              "Content-Type": "application/json",
-            },
+            responseHandler,
           });
 
           if (result.error) return { error: result.error };
@@ -92,9 +77,7 @@ export const smartPCIdleSettingsAPI = createApi({
       SetIdleSettingsPayload
     >({
       async queryFn(payload, _api, _extraOptions, baseQuery) {
-        let idToken: string;
         try {
-          idToken = await getIdToken();
           ensureOkInstanceId(payload.instanceId);
 
           if (!Number.isInteger(payload.timeout) || payload.timeout < 0) {
@@ -125,9 +108,9 @@ export const smartPCIdleSettingsAPI = createApi({
           method: "POST",
           body,
           headers: {
-            Authorization: idToken,
             "Content-Type": "application/json",
           },
+          responseHandler,
         });
 
         if (result.error) return { error: result.error };
@@ -136,9 +119,7 @@ export const smartPCIdleSettingsAPI = createApi({
     }),
     deleteIdleTimeout: builder.mutation<{ message: string }, { instanceId: string }>({
       async queryFn({ instanceId }, _api, _extraOptions, baseQuery) {
-        let idToken: string;
         try {
-          idToken = await getIdToken();
           ensureOkInstanceId(instanceId);
         } catch (error) {
           return toCustomError(error);
@@ -149,9 +130,9 @@ export const smartPCIdleSettingsAPI = createApi({
           method: "DELETE",
           body: { instanceId },
           headers: {
-            Authorization: idToken,
             "Content-Type": "application/json",
           },
+          responseHandler,
         });
 
         if (result.error) return { error: result.error };

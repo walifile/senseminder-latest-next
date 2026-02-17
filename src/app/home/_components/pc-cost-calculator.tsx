@@ -9,7 +9,7 @@ import { routes } from "@/constants/routes";
 import React, { useMemo, useState, useEffect } from "react";
 import { baseFormSchema } from "@/app/build-sensepc/schema";
 import { useGetEstimateMutation } from "@/api/fileManagerAPI";
-import { useGetSmartPcConfigQuery } from "@/api/smartPCConfigAPI";
+import { useGetSmartPcConfigQuery } from "@/api/pc-config-api";
 import { setSmartPcConfig } from "@/redux/slices/build-pc/smart-pc-config-slice";
 import { osOptions, storageOptions, locationOptions } from "@/app/build-sensepc/data";
 
@@ -80,7 +80,7 @@ export default function PCCostCalculator() {
       operatingSystem: "",
       cpu: "",
       storage: "",
-      region: "",
+      region: locationOptions[0]?.value || "",
       linuxCategory: "Ubuntu_24.04_LTS_X64",
     },
   });
@@ -134,7 +134,10 @@ export default function PCCostCalculator() {
   const isLinuxOS = selectedOS === "Linux";
 
   // Fetch API cpuOptions via RTK Query
-  const { data: apiConfig } = useGetSmartPcConfigQuery();
+  const { data: apiConfig } = useGetSmartPcConfigQuery(
+    { region: values.region },
+    { skip: !values.region },
+  );
 
   const apiCpuOptions = useMemo(
     () => apiConfig?.cpuOptions ?? {},

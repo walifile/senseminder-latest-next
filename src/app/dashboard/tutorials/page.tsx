@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { tutorials } from "@/constants/tutorials";
+import { TutorialDialog } from "@/app/tutorials/_components/tutorial-dialog";
 
 import {
   Select,
@@ -13,54 +15,6 @@ import {
 import { motion } from "framer-motion";
 
 import GradientSearchInput from "@/components/shared/inputs/gradient-search-input";
-
-import { type Tutorial, TutorialDialog } from "./_components/tutorial-dialog";
-
-// Tutorial data
-const tutorials: Tutorial[] = [
-  {
-    id: 1,
-    title: "Introduce Sense PC ",
-    duration: "0:56",
-    description: "Build a powerful cloud PC in minutes and access it from any browser, on any device, from anywhere—no hardware needed.",
-    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%201.mp4",
-    youtubeUrl: "https://youtube.com",
-    thumbnail: "/assets/images/gettingStartedWithSensePc.png",
-    category: "Basic",
-    difficulty: "Beginner",
-    uploadDate: "2025-12-25",
-    lastUpdated: "2025-12-25",
-    showCategory: true
-  },
-  {
-    id: 2,
-    title: "How Sense PC Works",
-    duration: "1:30",
-    description: "See how SensePC delivers fast performance with built-in security—plus user management, billing, support ticketing, and in-app tutorials after login.",
-    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%203.mp4",
-    youtubeUrl: "https://youtube.com/watch?v=performance",
-    thumbnail: "/assets/images/optimizing.jpg",
-    category: "Sense PC Overview",
-    difficulty: "Beginner",
-    uploadDate: "2025-12-25",
-    lastUpdated: "2025-12-25",
-    showCategory: true
-  },
-  {
-    id: 3,
-    title: "Introduce Sense Cloud",
-    duration: "0:50",
-    description: "Securely store, organize, preview, and share files with smart cloud storage that stays synced across all your devices.",
-    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%202.mp4",
-    youtubeUrl: "https://youtube.com/watch?v=storage",
-    thumbnail: "/assets/images/storageManagement.png",
-    category: "Storage",
-    difficulty: "Beginner",
-    uploadDate: "2025-12-25",
-    lastUpdated: "2025-12-25",
-    showCategory: true
-  }
-];
 
 const TutorialsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");

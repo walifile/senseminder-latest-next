@@ -90,6 +90,12 @@ const DashboardSidebar = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  const handleNavClick = () => {
+    if (mobileOpen) {
+      setMobileOpen(false);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       const response = await handleSignOut();
@@ -251,6 +257,7 @@ const DashboardSidebar = () => {
                   key={item.path}
                   href={item.path}
                   data-testid={testId}
+                  onClick={handleNavClick}
                   className={cn(
                     "flex items-center px-4 py-[10px] rounded-full transition-colors",
                     pathname === stripQuery(item.path)

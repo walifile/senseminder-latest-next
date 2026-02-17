@@ -1,7 +1,10 @@
 "use client";
 
+import type { Tutorial } from "@/types/tutorial";
+
 import Link from "next/link";
 import React, { useRef, useState } from "react";
+import { tutorials } from "@/constants/tutorials";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,43 +18,10 @@ import { motion } from "framer-motion";
 
 import { TutorialCard } from "./tutorial-card";
 
-const tutorials = [
-  {
-    id: 1,
-    title: "Introduce Sense PC",
-    duration: "0:56",
-    description:
-      "Build a powerful cloud PC in minutes and access it from any browser, on any device, from anywhere—no hardware needed.",
-    image: "/assets/images/gettingStartedWithSensePc.png",
-    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%201.mp4",
-    youtubeUrl: "https://youtube.com",
-  },
-  {
-    id: 2,
-    title: "How Sense PC works",
-    duration: "1:30",
-    description:
-      "See how SensePC delivers fast performance with built-in security—plus user management, billing, support ticketing, and in-app tutorials after login.",
-    image: "/assets/images/optimizing.jpg",
-    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%203.mp4",
-    youtubeUrl: "https://youtube.com",
-  },
-  {
-    id: 3,
-    title: "Introduce Sense Cloud",
-    duration: "0:50",
-    description:
-      "Securely store, organize, preview, and share files with smart cloud storage that stays synced across all your devices.",
-    image: "/assets/images/storageManagement.png",
-    videoUrl: "https://d2dlj0hxnln4ry.cloudfront.net/SENSEPC%202.mp4",
-    youtubeUrl: "https://youtube.com",
-  },
-];
+const homeTutorials = tutorials.slice(0, 3);
 
 const TutorialSection = () => {
-  const [selectedVideo, setSelectedVideo] = useState<
-    (typeof tutorials)[0] | null
-  >(null);
+  const [selectedVideo, setSelectedVideo] = useState<Tutorial | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
   // const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -107,7 +77,7 @@ const TutorialSection = () => {
     const isLeftSwipe = distance > 50;
     const isRightSwipe = distance < -50;
 
-    if (isLeftSwipe && currentIndex < tutorials.length - 1) {
+    if (isLeftSwipe && currentIndex < homeTutorials.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
 
@@ -175,7 +145,7 @@ const TutorialSection = () => {
           className="hidden md:flex gap-6 overflow-x-auto overflow-y-hidden no-scrollbar scroll-smooth"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {tutorials.map((tutorial, index) => (
+          {homeTutorials.map((tutorial, index) => (
             <TutorialCard
               key={tutorial.id}
               tutorial={tutorial}
@@ -206,7 +176,7 @@ const TutorialSection = () => {
               }rem + 2%))`,
             }}
           >
-            {tutorials.map((tutorial, index) => (
+            {homeTutorials.map((tutorial, index) => (
               <TutorialCard
                 key={tutorial.id}
                 tutorial={tutorial}
@@ -225,7 +195,7 @@ const TutorialSection = () => {
 
           {/* Mobile Dots Indicator */}
           <div className="flex justify-center gap-4">
-            {tutorials.map((_, index) => (
+            {homeTutorials.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}

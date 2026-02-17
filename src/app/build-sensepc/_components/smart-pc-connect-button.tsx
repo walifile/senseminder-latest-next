@@ -1,15 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import type { RootState } from "@/redux/store";
+
 import { routes } from "@/constants/routes";
+import React, { useMemo, useState } from "react";
 import { isBusy } from "@/app/build-sensepc/utils";
-import { useLaunchVMMutation } from "@/api/fileManagerAPI";
-import { setLaunchVMResponse } from "@/redux/slices/dcv/dcv-slice";
+import { useLaunchVMMutation, useValidateSessionMutation } from "@/api/fileManagerAPI";
+import { validateSessionWithPolling } from "@/app/pc-viewer/_components/sensepc-session";
+import { setLaunchVMResponse, selectLaunchVMResponse } from "@/redux/slices/dcv/dcv-slice";
 
 import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
 
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { ExternalLink } from "lucide-react";
 
@@ -35,20 +38,65 @@ const SmartPcConnectButton = ({
   const { toast } = useToast();
   const dispatch = useDispatch();
   const [launchVM, { isLoading }] = useLaunchVMMutation();
+  const [validateSession] = useValidateSessionMutation();
   const [launchingInstances, setLaunchingInstances] = useState<string[]>([]);
   const [showPopup, setShowPopup] = useState(false);
+  const defaultSessionKey = useMemo(
+    () => pc.systemName?.trim() || pc.instanceId,
+    [pc.instanceId, pc.systemName]
+  );
+  const existingSession = useSelector((state: RootState) =>
+    defaultSessionKey ? selectLaunchVMResponse(state, defaultSessionKey) : null
+  );
 
   const handleLaunch = async (instanceId: string, pcName: string) => {
     setLaunchingInstances((prev) => [...prev, instanceId]);
     setShowPopup(true); 
 
     try {
-      const response = await launchVM({ instanceId, userId }).unwrap();
       const sessionKey = pcName?.trim() || instanceId;
-      dispatch(setLaunchVMResponse({ sessionKey, response, pcName }));
+      if (
+        existingSession &&
+        existingSession.sessionId &&
+        existingSession.sessionToken &&
+        existingSession.dnsName &&
+        existingSession.instanceId === instanceId &&
+        userId
+      ) {
+        const validation = await validateSessionWithPolling(
+          (args) => validateSession(args).unwrap(),
+          {
+            instanceId,
+            userId,
+            sessionToken: existingSession.sessionToken,
+          },
+          { maxAttempts: 2, delayMs: 1500 }
+        );
+
+        if (validation.status === "active" || validation.status === "creating") {
+          dispatch(
+            setLaunchVMResponse({ sessionKey, response: existingSession, pcName, instanceId, userId })
+          );
+          const pcParam = encodeURIComponent(sessionKey);
+          window.open(
+            `${routes?.pcViewer}?pc=${pcParam}&instanceId=${encodeURIComponent(instanceId)}`,
+            "_blank",
+            "noopener,noreferrer"
+          );
+          toast({
+            title: "Computer Connected",
+            description:
+              "The Computer has been connected successfully. Redirecting...",
+          });
+          return;
+        }
+      }
+
+      const response = await launchVM({ instanceId, userId }).unwrap();
+      dispatch(setLaunchVMResponse({ sessionKey, response, pcName, instanceId, userId }));
       const pcParam = encodeURIComponent(sessionKey);
       window.open(
-        `${routes?.pcViewer}?pc=${pcParam}`,
+        `${routes?.pcViewer}?pc=${pcParam}&instanceId=${encodeURIComponent(instanceId)}`,
         "_blank",
         "noopener,noreferrer"
       );

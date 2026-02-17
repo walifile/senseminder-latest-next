@@ -1,24 +1,38 @@
 
-/* eslint perfectionist/sort-imports: "off" */
-
 "use client";
 
 import type { RootState } from "@/redux/store";
-import React, { useState, useEffect   } from "react";
+
+import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useDispatch, useSelector } from "react-redux";
+import { routes } from "@/constants/routes";
+import React, { useState, useEffect } from "react";
+import { setLoading, setTempUser } from "@/redux/slices/auth/auth-slice";
+
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogTitle,
+  DialogHeader,
+  DialogContent,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
 import { confirmSignIn } from "aws-amplify/auth";
 
-import { setLoading, setTempUser } from "@/redux/slices/auth/auth-slice";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { handleSignOut } from "@/lib/services/auth";
+import { useDispatch, useSelector } from "react-redux";
 
 import { useForm } from "react-hook-form";
+
+import { useTheme } from "next-themes";
+import { Loader2 } from "lucide-react";
+
+import { useToast } from "@/hooks/use-toast";
+
+import { handleSignOut } from "@/lib/services/auth";
+
 import { Form, Field } from "@/components/shared/hook-form";
-import { routes } from "@/constants/routes";
-import Link from "next/link";
 
 
 type ChangePasswordFormValues = {
@@ -31,6 +45,8 @@ export default function ChangePasswordPage() {
   const router = useRouter();
   const tempUser = useSelector((state: RootState) => state.auth.tempUser);
   const { toast } = useToast();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   const [isChanging, setIsChanging] = useState(false);
 
@@ -44,10 +60,11 @@ export default function ChangePasswordPage() {
   const {
     handleSubmit,
     setError,
+    formState: { isSubmitting },
   } = methods;
 
   useEffect(() => {
-    if (!tempUser) router.push(routes.auth);;
+    if (!tempUser) router.push(routes.auth);
   }, [tempUser, router]);
 
   const onSubmit = async (data: ChangePasswordFormValues) => {
@@ -74,13 +91,14 @@ export default function ChangePasswordPage() {
         });
         dispatch(setTempUser(null));
         router.push(routes.auth);
-      } else {
-        toast({
-          title: "Unexpected response",
-          description: "Please try logging in again.",
-          variant: "destructive",
-        });
-      router.push(routes.auth);      }
+        } else {
+          toast({
+            title: "Unexpected response",
+            description: "Please try logging in again.",
+            variant: "destructive",
+          });
+          router.push(routes.auth);
+        }
     } catch (err) {
       toast({
         title: "Failed to change password",
@@ -94,57 +112,98 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-blue-600 -mx-8 -mt-8 mb-4 rounded-t-2xl" />
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) router.push(routes.auth);
+      }}
+    >
+      <DialogContent className="w-full max-w-[480px] p-8">
+        <div className="w-full flex flex-col items-center gap-5">
+          <div className="flex justify-center">
+            <Image
+              src={
+                isDark
+                  ? "/assets/authlayout/dark/sensepc-logo-code-dark.svg"
+                  : "/assets/authlayout/light/sensepc-logo-code.svg"
+              }
+              alt="SensePC Logo"
+              width={243}
+              height={60}
+              className="h-[60px] w-auto"
+              priority
+            />
+          </div>
 
-      <div className="space-y-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Change Password
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Please choose a unique password to secure your account
-        </p>
-      </div>
+          <DialogHeader className="items-center text-center">
+            <DialogTitle className="self-center text-center">
+              Change Password
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              Please choose a unique password to secure your account.
+            </DialogDescription>
+          </DialogHeader>
 
-      <Form methods={methods} onSubmit={handleSubmit(onSubmit)}>
-        <div className="space-y-4">
-          <Field.Text
-            name="newPassword"
-            label="New Password"
-            type="password"
-            placeholder="Enter new password"
-          />
+          <Form
+            methods={methods}
+            onSubmit={handleSubmit(onSubmit)}
+            className="w-full flex flex-col gap-4 mt-1"
+          >
+            <div className="space-y-4">
+              <Field.Text
+                name="newPassword"
+                label="New Password"
+                placeholder="Enter new password"
+                type="password"
+                inputVariant="auth"
+                inputUiSize="lg"
+              />
 
-          <Field.Text
-            name="confirmPassword"
-            label="Confirm Password"
-            type="password"
-            placeholder="Confirm new password"
-          />
+              <Field.Text
+                name="confirmPassword"
+                label="Confirm Password"
+                placeholder="Confirm new password"
+                type="password"
+                inputVariant="auth"
+                inputUiSize="lg"
+              />
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isSubmitting || isChanging}
+              size="lg"
+              className="
+                w-full
+                rounded-full
+                bg-gradient-to-l from-[#A801BA] to-[#2530F0]
+                hover:opacity-90
+                text-sm font-medium
+                border-0
+              "
+            >
+              {isChanging ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Changing...
+                </>
+              ) : (
+                "Change Password"
+              )}
+            </Button>
+          </Form>
+
+          <p className="mt-2 text-sm text-center text-muted-foreground">
+            Remember your password?{" "}
+            <Link
+              href={routes.auth}
+              className="font-medium text-link-primary hover:underline"
+            >
+              Back to Sign in
+            </Link>
+          </p>
         </div>
-
-        <Button
-          type="submit"
-          disabled={isChanging}
-          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white dark:from-[#0EA5E9] dark:to-[#6366F1] dark:hover:from-[#0284C7] dark:hover:to-[#4F46E5] disabled:opacity-60 disabled:cursor-not-allowed mt-6"
-        >
-          {isChanging ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Changing...
-            </>
-          ) : (
-            "Change Password"
-          )}
-        </Button>
-      </Form>
-
-      <p className="text-center text-sm text-muted-foreground">
-        <Link href={routes.auth} className="text-blue-600 hover:underline">
-          Back to Sign in
-        </Link>
-
-      </p>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

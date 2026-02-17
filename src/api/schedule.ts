@@ -1,6 +1,10 @@
+"use client";
+
 import appConfig from "@/config/app-config";
 
-import { fetchAuthSession } from "aws-amplify/auth";
+import { createApi } from "@reduxjs/toolkit/query/react";
+
+import { baseQueryWithReauth } from "./apiUtils";
 
 const { SAVE_VM_SCHEDULE_URL } = appConfig;
 
@@ -16,72 +20,45 @@ export type Schedule = {
   createdAt?: string;
 };
 
-async function getIdToken(): Promise<string> {
-  const session = await fetchAuthSession();
-  const idToken = session.tokens?.idToken?.toString();
-  if (!idToken) throw new Error("User is not authenticated.");
-  return idToken;
-}
+type ScheduleResponse = {
+  data?: Schedule;
+};
 
-export async function saveSchedule(data: Schedule): Promise<Schedule> {
-  const idToken = await getIdToken();
-  const res = await fetch(SAVE_VM_SCHEDULE_URL, {
-    method: "POST",
-    headers: {
-      Authorization: idToken,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
+export const scheduleAPI = createApi({
+  reducerPath: "scheduleAPI",
+  baseQuery: baseQueryWithReauth(true, SAVE_VM_SCHEDULE_URL),
+  endpoints: (builder) => ({
+    getSchedule: builder.query<ScheduleResponse, { instanceId: string }>({
+      query: ({ instanceId }) => ({
+        url: `?instanceId=${encodeURIComponent(instanceId)}`,
+        method: "GET",
+      }),
+    }),
+    saveSchedule: builder.mutation<ScheduleResponse, Schedule>({
+      query: (body) => ({
+        url: "",
+        method: "POST",
+        body,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    }),
+    deleteSchedule: builder.mutation<unknown, { instanceId: string }>({
+      query: ({ instanceId }) => ({
+        url: "",
+        method: "DELETE",
+        body: { instanceId },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    }),
+  }),
+});
 
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || "Failed to save schedule");
-  }
-
-  const result = await res.json();
-  return result.data;
-}
-
-export async function getSchedule(
-  instanceId: string
-): Promise<Schedule | null> {
-  const idToken = await getIdToken();
-  const url = `${SAVE_VM_SCHEDULE_URL}?instanceId=${encodeURIComponent(
-    instanceId
-  )}`;
-
-  const res = await fetch(url, {
-    method: "GET",
-    headers: {
-      Authorization: idToken,
-    },
-  });
-
-  if (res.status === 404) return null;
-
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || "Failed to fetch schedule");
-  }
-
-  const result = await res.json();
-  return result.data;
-}
-
-export async function deleteSchedule(instanceId: string): Promise<void> {
-  const idToken = await getIdToken();
-  const res = await fetch(SAVE_VM_SCHEDULE_URL, {
-    method: "DELETE",
-    headers: {
-      Authorization: idToken,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ instanceId }),
-  });
-
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || "Failed to delete schedule");
-  }
-}
+export const {
+  useLazyGetScheduleQuery,
+  useSaveScheduleMutation,
+  useDeleteScheduleMutation,
+} = scheduleAPI;

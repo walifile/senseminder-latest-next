@@ -44,7 +44,7 @@ const FeedbackForm = ({ onClose }: Props) => {
       rating: 0,
       comment: "",
     }),
-    []
+    [],
   );
 
   const methods = useForm<FeedbackFormValues>({
@@ -103,10 +103,11 @@ const FeedbackForm = ({ onClose }: Props) => {
         name="type"
         label="Feedback Type"
         placeholder="Select feedback type"
+        contentClassName="z-[100000]"
         options={[
-          { value: "bug", label: "Bug Report" },
-          { value: "feature", label: "Feature Request" },
           { value: "general", label: "General Feedback" },
+          { value: "feature", label: "Feature Request" },
+          { value: "bug", label: "Bug Report" },
         ]}
       />
 

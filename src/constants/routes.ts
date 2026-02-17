@@ -13,7 +13,7 @@ export const routes = {
   smartStorage: "/sense-cloud",
   buildPc: "/build-sensepc",
   pcViewer: "/pc-viewer",
-  changePassword: "/auth/change-password", 
+  changePassword: "/auth/change-password",
   users: "/dashboard/users",
   billing: "/dashboard/billing",
   support: "/dashboard/support",

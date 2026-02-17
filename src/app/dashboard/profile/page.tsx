@@ -3,7 +3,11 @@
 
 import { useSearchParams } from "next/navigation";
 import React, { useRef, useMemo, useState, useEffect } from "react";
-import { getUserProfile, updateUserProfile } from "@/api/profileManagement";
+import {
+  type UserProfile,
+  useLazyGetUserProfileQuery,
+  useUpdateUserProfileMutation,
+} from "@/api/profileManagement";
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -20,15 +24,6 @@ import { ProfileSecurityTab } from "./_components/profile-security-tab";
 
 import type { ApiUser } from "../users/types";
 
-type Profile = {
-  email: string;
-  firstName: string;
-  lastName: string;
-  country: string;
-  organization: string;
-  role: string;
-};
-
 const ICONS = {
   orgEditLight: "/assets/dashboard/write-light.svg",
   orgEditDark: "/assets/dashboard/write-dark.svg",
@@ -38,7 +33,9 @@ const ProfilePage = () => {
   const { toast } = useToast();
 
   // ===== API-driven Profile State =====
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [triggerGetUserProfile] = useLazyGetUserProfileQuery();
+  const [updateUserProfile] = useUpdateUserProfileMutation();
 
   // ===== Form States =====
   const [orgEditing, setOrgEditing] = useState(false);
@@ -60,7 +57,7 @@ const ProfilePage = () => {
     const fetchProfile = async () => {
       setLoading(true);
       try {
-        const data = await getUserProfile();
+        const data = await triggerGetUserProfile().unwrap();
         setProfile(data);
 
         const first = (data.firstName || "").trim();
@@ -100,7 +97,7 @@ const ProfilePage = () => {
     const parts = [profile.firstName, profile.lastName].filter(Boolean);
     return (
       parts
-        .map((s) => s.trim().charAt(0).toUpperCase())
+        .map((s) => (s ?? "").trim().charAt(0).toUpperCase())
         .join("")
         .slice(0, 2) || "JD"
     );
@@ -151,14 +148,14 @@ const ProfilePage = () => {
     }
 
     try {
-      await updateUserProfile(payload);
+      await updateUserProfile(payload).unwrap();
 
       toast({
         title: "Profile Updated",
         description: "Your profile changes have been saved.",
       });
 
-      const data = await getUserProfile();
+      const data = await triggerGetUserProfile().unwrap();
       setProfile(data);
 
       const first = (data.firstName || "").trim();
@@ -184,9 +181,9 @@ const ProfilePage = () => {
     if (!canEditOrg) return;
     setSaving(true);
     try {
-      await updateUserProfile({ organization: orgInput });
+      await updateUserProfile({ organization: orgInput }).unwrap();
 
-      const data = await getUserProfile();
+      const data = await triggerGetUserProfile().unwrap();
       setProfile(data);
       setOrgInput(data.organization || "");
       setOrgEditing(false);

@@ -6,8 +6,14 @@ import type { RootState } from "@/redux/store";
 /* ---- External (alias first, then next/react) ---- */
 import { useSearchParams } from "next/navigation";
 import DCVViewer from "@/app/pc-viewer/_components/dcv-viewer";
-import { selectLaunchVMResponse } from "@/redux/slices/dcv/dcv-slice";
 import React, { useRef, useState, Suspense, useEffect, useCallback } from "react";
+import { validateSessionWithPolling } from "@/app/pc-viewer/_components/sensepc-session";
+import { setLaunchVMResponse, selectLaunchVMResponse } from "@/redux/slices/dcv/dcv-slice";
+import {
+  useLaunchVMMutation,
+  useStopSessionMutation,
+  useValidateSessionMutation,
+} from "@/api/fileManagerAPI";
 
 /* ---- External: custom-shadcn (must be before custom-redux) ---- */
 import { cn } from "@/lib/utils";
@@ -16,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 /* ---- External: custom-redux ---- */
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 /* ---- External: custom-ui ---- */
 import { motion, AnimatePresence } from "framer-motion";
@@ -162,6 +168,13 @@ const DCViewerContent: React.FC = () => {
   const searchParams = useSearchParams();
   const pcParam = searchParams.get("pc");
   const sessionKey = pcParam ? decodeURIComponent(pcParam) : null;
+  const instanceIdParam = searchParams.get("instanceId") || undefined;
+
+  const [stopSession] = useStopSessionMutation();
+  const [launchVM] = useLaunchVMMutation();
+  const [validateSession] = useValidateSessionMutation();
+  const dispatch = useDispatch();
+  const authUserId = useSelector((state: RootState) => state.auth.user?.id);
 
   const [isConnected, setIsConnected] = useState(false);
   const [connectionState, setConnectionState] = useState<ConnectionState>("DISCONNECTED");
@@ -255,9 +268,17 @@ const DCViewerContent: React.FC = () => {
     sessionKey ? selectLaunchVMResponse(state, sessionKey) : null
   );
 
+  const instanceId =
+    instanceIdParam ??
+    launchVMResponse?.instanceId ??
+    (sessionKey && sessionKey.startsWith("i-") ? sessionKey : undefined);
+  const userId = launchVMResponse?.userId ?? authUserId;
+
   const sessionId = launchVMResponse?.sessionId;
   const authToken = launchVMResponse?.sessionToken;
   const url = launchVMResponse?.dnsName;
+  const canConnectSession = Boolean(sessionId && authToken && url);
+  const canLaunchSession = Boolean(instanceId && userId);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
@@ -397,12 +418,21 @@ const DCViewerContent: React.FC = () => {
 
 
   // ---- Connect & auto-fit ----
-  const connectToDcv = async (): Promise<void> => {
+  const connectToDcv = async (
+    overrides?: { sessionId: string; authToken: string; url: string }
+  ): Promise<{ ok: boolean; error?: string }> => {
     const assetsPath = "/dcvjs";           // matches /public/dcvjs/*
-    const gatewayBase = `https://${url}`;  // DCV Gateway host (no manual port)
+    const activeSessionId = overrides?.sessionId ?? sessionId;
+    const activeAuthToken = overrides?.authToken ?? authToken;
+    const activeUrl = overrides?.url ?? url;
+    const gatewayBase = `https://${activeUrl}`;  // DCV Gateway host (no manual port)
 
-    if (connRef.current) return;
-    if (!(sessionId && authToken)) return;
+    if (connRef.current) {
+      return { ok: false, error: "Connection already exists" };
+    }
+    if (!(activeSessionId && activeAuthToken && activeUrl)) {
+      return { ok: false, error: "Missing session data" };
+    }
     setIsDisconnecting(false);
     setTvEffect(null); // we won't use tvEffect overlays anymore
     setIsLoading(true);
@@ -452,9 +482,9 @@ const DCViewerContent: React.FC = () => {
     try {
       const isHiDpi = typeof window !== "undefined" && window.devicePixelRatio > 1;
       const conn = (await dcv.connect({
-        url: `https://${url}`,
-        sessionId,
-        authToken,
+        url: `https://${activeUrl}`,
+        sessionId: activeSessionId,
+        authToken: activeAuthToken,
         useGateway: true,
         divId: "remote-desktop",
         clientHiDpiScaling: !isHiDpi ? true : false,
@@ -520,6 +550,12 @@ const DCViewerContent: React.FC = () => {
             setWebcamError(null);
             setMicEnabled(false);
             setMicError(null);
+            try {
+              conn._sensepcCleanup?.();
+            } catch {
+              /* no-op */
+            }
+            connRef.current = null;
           },
 
           // keep these for FileStorage & feature probing
@@ -549,13 +585,20 @@ const DCViewerContent: React.FC = () => {
         document.removeEventListener("fullscreenchange", fsHandler);
       };
       conn._sensepcCleanup = cleanup;
+      return { ok: true };
     } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : (error as { message?: string })?.message ?? "Unknown error";
       setDcvError(error as Error);
       setTvEffect(null);
       setIsLoading(false);
       setIsDisconnecting(false);
       setIsConnected(false);
       setConnectionState("DISCONNECTED");
+      connRef.current = null;
+      return { ok: false, error: errorMessage };
     }
 
   };
@@ -586,15 +629,73 @@ const DCViewerContent: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleConnect = () => {
-    if (!connRef.current && sessionId && authToken) void connectToDcv();
+  const handleConnect = async () => {
+    if (connRef.current) return;
+    setIsDisconnecting(false);
+    setIsLoading(true);
+    setConnectionState("RECONNECTING");
+
+    if (sessionId && authToken && url && instanceId && userId) {
+      const validation = await validateSessionWithPolling(
+        (args) => validateSession(args).unwrap(),
+        {
+          instanceId,
+          userId,
+          sessionToken: authToken,
+        },
+        { maxAttempts: 3, delayMs: 1500 }
+      );
+
+      if (validation.status === "active" || validation.status === "creating") {
+        const existingResult = await connectToDcv();
+        const isInvalidSession =
+          existingResult.error?.toLowerCase().includes("invalid session id") ?? false;
+        if (existingResult.ok) return;
+        if (!isInvalidSession) {
+          setIsLoading(false);
+          setConnectionState("DISCONNECTED");
+          return;
+        }
+      }
+    }
+
+    if (!instanceId || !userId) {
+      setIsLoading(false);
+      setConnectionState("DISCONNECTED");
+      return;
+    }
+
+    try {
+      const response = await launchVM({ instanceId, userId }).unwrap();
+      const sessionKeyForStore = sessionKey ?? instanceId;
+      if (sessionKeyForStore) {
+        dispatch(
+          setLaunchVMResponse({
+            sessionKey: sessionKeyForStore,
+            response,
+            instanceId,
+            userId,
+          })
+        );
+      }
+      await connectToDcv({
+        sessionId: response.sessionId,
+        authToken: response.sessionToken,
+        url: response.dnsName,
+      });
+    } catch {
+      setIsLoading(false);
+      setConnectionState("DISCONNECTED");
+    }
   };
 
   const handleDisconnect = () => {
   const c = connRef.current;
   if (!c) return;
+  if (instanceId && userId) {
+    void stopSession({ instanceId, userId });
+  }
 
-  // ✅ show custom UI while disconnecting
   setIsDisconnecting(true);
   setIsLoading(true);
 
@@ -621,8 +722,6 @@ const DCViewerContent: React.FC = () => {
   setWebcamError(null);
   setMicEnabled(false);
   setMicError(null);
-
-  // ✅ if callback doesn't fire for any reason
   setIsLoading(false);
   setIsDisconnecting(false);
 };
@@ -756,7 +855,7 @@ const DCViewerContent: React.FC = () => {
                     variant="default"
                     className="h-9 px-6"
                     onClick={handleConnect}
-                    disabled={isLoading || !sessionId || !authToken}
+                    disabled={isLoading || !(canConnectSession || canLaunchSession)}
                     data-testid="sensepc-overlay-connect-button"
                   >
                     <Power className="mr-2 h-4 w-4" />
@@ -1174,7 +1273,7 @@ const DCViewerContent: React.FC = () => {
                           variant="destructive"
                           className="w-full h-9"
                           onClick={handleDisconnect}
-                          disabled={isLoading}
+                          disabled={isLoading || !(canConnectSession || canLaunchSession)}
                           data-testid="sensepc-disconnect-button"
                         >
                           {isLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Power className="h-4 w-4 mr-2" />}

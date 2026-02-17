@@ -8,6 +8,8 @@ interface LaunchVMResponse {
   dnsName: string;
   authToken?: string;
   pcName?: string;
+  instanceId?: string;
+  userId?: string;
 }
 
 interface DcvState {
@@ -32,14 +34,18 @@ const dcvSlice = createSlice({
         sessionKey: string;
         response: LaunchVMResponse;
         pcName?: string;
+        instanceId?: string;
+        userId?: string;
       }>
     ) => {
-      const { sessionKey, response, pcName } = action.payload;
+      const { sessionKey, response, pcName, instanceId, userId } = action.payload;
 
       state.instances[sessionKey] = {
         ...state.instances[sessionKey],
         ...response,
         ...(pcName ? { pcName } : {}),
+        ...(instanceId ? { instanceId } : {}),
+        ...(userId ? { userId } : {}),
       };
     },
     removeLaunchVMResponse: (state, action: PayloadAction<string>) => {

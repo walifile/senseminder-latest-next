@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 import { routes } from "@/constants/routes";
-import { claimSessionIfAvailable } from "@/api/session";
+import { useClaimSessionIfAvailableMutation } from "@/api/session";
 import useErrorToast from "@/hooks/useErrorToast";
 import { handleAuthRedirect } from "@/lib/services/auth";
 import { Logger } from "@/lib/utils/logger";
@@ -18,6 +18,7 @@ import ErrorIcon from "./ErrorIcon";
 
 export default function AuthCallback() {
   const router = useRouter();
+  const [claimSessionIfAvailable] = useClaimSessionIfAvailableMutation();
   const searchParams = useSearchParams();
   const { handleError } = useErrorToast();
 
@@ -43,7 +44,7 @@ export default function AuthCallback() {
         const result = await handleAuthRedirect();
         if (result.success) {
           try {
-            await claimSessionIfAvailable();
+            await claimSessionIfAvailable().unwrap();
             router.replace(routes.dashboard);
           } catch (err) {
             Logger.warn("Session claim or first login check failed:", err);

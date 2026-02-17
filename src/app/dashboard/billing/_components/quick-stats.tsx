@@ -2,11 +2,14 @@
 
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
-import { redeemPromo, getPromoInfo } from "@/api/promocashback";
 import {
   useGetCurrentBalanceQuery,
   useGetMonthlySpendingQuery,
 } from "@/api/billing";
+import {
+  useRedeemPromoMutation,
+  useLazyGetPromoInfoQuery,
+} from "@/api/promocashback";
 
 import { Logger } from "@/lib/utils/logger";
 import { Button } from "@/components/ui/button";
@@ -46,7 +49,11 @@ type BalanceDataWithPromo =
   | null
   | undefined;
 
-const QuickStats = () => {
+type QuickStatsProps = {
+  blurValues?: boolean;
+};
+
+const QuickStats = ({ blurValues = false }: QuickStatsProps) => {
   const { refreshKey } = useBillingRefresh();
 
   const {
@@ -69,6 +76,8 @@ const QuickStats = () => {
   const [redeemedAmount, setRedeemedAmount] = useState<number | null>(null);
   const [promoLoading, setPromoLoading] = useState(true);
   const [promoInfo, setPromoInfo] = useState<PromoInfoType>(null);
+  const [triggerGetPromoInfo] = useLazyGetPromoInfoQuery();
+  const [redeemPromo] = useRedeemPromoMutation();
 
   const [open, setOpen] = useState(false);
   const [redeeming, setRedeeming] = useState(false);
@@ -86,7 +95,7 @@ const QuickStats = () => {
     (async () => {
       setPromoLoading(true);
       try {
-        const info = await getPromoInfo();
+        const info = await triggerGetPromoInfo().unwrap();
         setPromoInfo(info);
       } catch (e) {
         Logger.error("Failed to load promo info:", e);
@@ -121,7 +130,7 @@ const QuickStats = () => {
             "relative min-h-[180px] overflow-hidden md:col-span-2",
             "border-none p-[20px] md:p-6",
             "bg-[linear-gradient(156deg,#2530F0_10%,#4C55F8_48%,#D971FF_105%)]",
-            "text-white"
+            "text-white",
           )}
         >
           {/* Content sits on top of illustration */}
@@ -174,7 +183,7 @@ const QuickStats = () => {
                       },
                       ...promotionsAndCashback
                         .filter((item) =>
-                          item.label.toLowerCase().includes("cashback")
+                          item.label.toLowerCase().includes("cashback"),
                         )
                         .map((item) => ({
                           ...item,
@@ -187,7 +196,12 @@ const QuickStats = () => {
                       return (
                         <React.Fragment key={item.label}>
                           <div className="flex flex-col gap-px">
-                            <span className="text-white text-[32px] font-bold leading-[42px] tracking-[-0.5px]">
+                            <span
+                              className={cn(
+                                "text-white text-[32px] font-bold leading-[42px] tracking-[-0.5px]",
+                                blurValues && "blur-[6px] select-none",
+                              )}
+                            >
                               {showLoading ? (
                                 <QuickStatsLoading />
                               ) : (
@@ -255,22 +269,27 @@ const QuickStats = () => {
 
             <div className="flex flex-col gap-px">
               <div
-                className="text-[28px] font-bold leading-[1.3125] tracking-[-0.016em] md:text-[32px] text-[#020816] dark:text-white"
+                className={cn(
+                  "text-[28px] font-bold leading-[1.3125] tracking-[-0.016em] md:text-[32px] text-[#020816] dark:text-white",
+                  blurValues && "blur-[6px] select-none",
+                )}
                 data-testid="billing-wallet-balance"
               >
                 {balanceLoading ? <QuickStatsLoading /> : fCurrency(balance)}
               </div>
 
               <p className="text-sm font-normal leading-[1.43] tracking-[-0.014em] text-[#454545] dark:text-[#B9C2D5]">
-                {lastRechargeTimestamp
-                  ? `Last recharged on ${new Date(
-                      lastRechargeTimestamp
-                    ).toLocaleDateString(undefined, {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}`
-                  : "No recharge history yet"}
+                {blurValues
+                  ? ""
+                  : lastRechargeTimestamp
+                    ? `Last recharged on ${new Date(
+                        lastRechargeTimestamp,
+                      ).toLocaleDateString(undefined, {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}`
+                    : "No recharge history yet"}
               </p>
             </div>
           </div>
@@ -307,7 +326,12 @@ const QuickStats = () => {
             </p>
 
             <div className="flex flex-col gap-px">
-              <div className="text-[28px] font-bold leading-[1.3125] tracking-[-0.016em] md:text-[32px] text-[#020816] dark:text-white">
+              <div
+                className={cn(
+                  "text-[28px] font-bold leading-[1.3125] tracking-[-0.016em] md:text-[32px] text-[#020816] dark:text-white",
+                  blurValues && "blur-[6px] select-none",
+                )}
+              >
                 {spendingLoading ? (
                   <QuickStatsLoading />
                 ) : (
@@ -315,7 +339,12 @@ const QuickStats = () => {
                 )}
               </div>
 
-              <p className="text-sm font-normal leading-[1.43] tracking-[-0.014em] text-[#454545] dark:text-[#B9C2D5]">
+              <p
+                className={cn(
+                  "text-sm font-normal leading-[1.43] tracking-[-0.014em] text-[#454545] dark:text-[#B9C2D5]",
+                  blurValues && "blur-[6px] select-none",
+                )}
+              >
                 {!spendingLoading &&
                   `${monthSpendingPercentChange}% from last month`}
               </p>
@@ -348,7 +377,7 @@ const QuickStats = () => {
             "font-['Space_Grotesk']", // ✅ apply font inside modal (portal)
             "sm:max-w-md",
             step === "success" &&
-              "sm:max-w-md p-0 px-6 pt-10 pb-8 sm:px-[40px] sm:pt-[50px] sm:pb-[40px]"
+              "sm:max-w-md p-0 px-6 pt-10 pb-8 sm:px-[40px] sm:pt-[50px] sm:pb-[40px]",
           )}
         >
           {step === "confirm" ? (
@@ -388,9 +417,9 @@ const QuickStats = () => {
                   onClick={async () => {
                     setRedeeming(true);
                     try {
-                      const res = await redeemPromo();
-                      setRedeemedAmount(res.amountAdded);
-                      const info = await getPromoInfo();
+                      const res = await redeemPromo().unwrap();
+                      setRedeemedAmount(res.amountAdded ?? null);
+                      const info = await triggerGetPromoInfo().unwrap();
                       setPromoInfo(info);
                       setStep("success");
                     } catch (e) {
