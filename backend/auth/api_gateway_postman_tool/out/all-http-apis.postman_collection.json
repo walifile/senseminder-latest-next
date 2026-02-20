@@ -1,0 +1,1580 @@
+{
+  "info": {
+    "name": "all-http-apis",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Combined collection for all HTTP APIs."
+  },
+  "item": [
+    {
+      "name": "product-feedback/tasks/create (1pu735oht1)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "GET /feedback/prompt/next",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://1pu735oht1.execute-api.us-east-1.amazonaws.com/dev/feedback/prompt/next",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /feedback/tasks/create",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://1pu735oht1.execute-api.us-east-1.amazonaws.com/dev/feedback/tasks/create",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "launch-vm (2guxm1zj99)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "POST /dcv-integration",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://2guxm1zj99.execute-api.us-east-1.amazonaws.com/dev/dcv-integration",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ContactFormAPI (30zi3v2wnf)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "GET /contact/list",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://30zi3v2wnf.execute-api.us-east-1.amazonaws.com/dev/contact/list",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /contact",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://30zi3v2wnf.execute-api.us-east-1.amazonaws.com/dev/contact",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /contact/reply",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://30zi3v2wnf.execute-api.us-east-1.amazonaws.com/dev/contact/reply",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "admin-support-api (3vtjt7ugh2)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "GET /admin/dashboard-metrics",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/dashboard-metrics",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/owner/{ownerId}",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/owner/:ownerId",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/owner/{ownerId}/cashbacks",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/owner/:ownerId/cashbacks",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/owner/{ownerId}/instance-billing",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/owner/:ownerId/instance-billing",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/owner/{ownerId}/promos",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/owner/:ownerId/promos",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/owner/{ownerId}/recharges",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/owner/:ownerId/recharges",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/owner/{ownerId}/refunds",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/owner/:ownerId/refunds",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/owner/{ownerId}/storage-billing",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/owner/:ownerId/storage-billing",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/revenue/export",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/revenue/export",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/revenue/forecast",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/revenue/forecast",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/revenue/metrics",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/revenue/metrics",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/revenue/promo-claims",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/revenue/promo-claims",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/revenue/recharges",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/revenue/recharges",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/revenue/refunds",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/revenue/refunds",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/revenue/streams",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/revenue/streams",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/search/billing",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/search/billing",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/ticket/{ticketId}",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/ticket/:ticketId",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/ticket/{ticketId}/messages",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/ticket/:ticketId/messages",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/tickets",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/tickets",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH /admin/ticket/{ticketId}/assign",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/ticket/:ticketId/assign",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH /admin/ticket/{ticketId}/status",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/ticket/:ticketId/status",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /admin/owner/{ownerId}/refunds/create",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/owner/:ownerId/refunds/create",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /admin/owner/{ownerId}/refunds/process",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/owner/:ownerId/refunds/process",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /admin/revenue/credits",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/revenue/credits",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /admin/revenue/refunds/{id}/approve",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/revenue/refunds/:id/approve",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /admin/revenue/refunds/{id}/deny",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/revenue/refunds/:id/deny",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /admin/revenue/refunds/{id}/process",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/revenue/refunds/:id/process",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /admin/ticket/{ticketId}/message",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/ticket/:ticketId/message",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /admin/ticket/{ticketId}/presign-download",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/ticket/:ticketId/presign-download",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /admin/ticket/{ticketId}/presign-upload",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://3vtjt7ugh2.execute-api.us-east-1.amazonaws.com/dev/admin/ticket/:ticketId/presign-upload",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sms-storage-management-api (40hp4z0o42)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "PATCH /admin/buckets/{region}",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": "https://40hp4z0o42.execute-api.us-east-1.amazonaws.com/dev/admin/buckets/:region",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "DELETE /admin/buckets/{region}",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "https://40hp4z0o42.execute-api.us-east-1.amazonaws.com/dev/admin/buckets/:region",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /admin/buckets",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://40hp4z0o42.execute-api.us-east-1.amazonaws.com/dev/admin/buckets",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /admin/buckets",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://40hp4z0o42.execute-api.us-east-1.amazonaws.com/dev/admin/buckets",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "realtime-instance-metrics-api (4oacxj1xyk)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "GET /instance-details",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://4oacxj1xyk.execute-api.us-east-1.amazonaws.com/$default/instance-details",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /instance-details-v2",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://4oacxj1xyk.execute-api.us-east-1.amazonaws.com/$default/instance-details-v2",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sms-product-feedback (6xe3uuzk31)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "GET /feedback",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://6xe3uuzk31.execute-api.us-east-1.amazonaws.com/dev/feedback",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /feedback/count",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://6xe3uuzk31.execute-api.us-east-1.amazonaws.com/dev/feedback/count",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "StorageManagementAPI (bijv5mqt5l)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "DELETE /delete",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/delete",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /download",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/download",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /download-folder",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/download-folder",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /list",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/list",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /list-hierarchy",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/list-hierarchy",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /public-shared-list",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/public-shared-list",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /regions",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/regions",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /shares",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/shares",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /shares/{shareId}",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/shares/:shareId",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /shares/{shareId}/download",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/shares/:shareId/download",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /usage",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/usage",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /user-region",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/user-region",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /complete-multipart-upload",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/complete-multipart-upload",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /copy",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/copy",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /create-folder",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/create-folder",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /dedup/merge",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/dedup/merge",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /dedup/scan",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/dedup/scan",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /delete-multiple",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/delete-multiple",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /move",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/move",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /presign-multipart-part",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/presign-multipart-part",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /rename",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/rename",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /share",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/share",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /share-multiple",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/share-multiple",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /shares/{shareId}/cancel",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/shares/:shareId/cancel",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /star",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/star",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /unstar",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/unstar",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /upload",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/upload",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /upload-complete",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/upload-complete",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /upload-multiple",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://bijv5mqt5l.execute-api.us-east-1.amazonaws.com/dev/upload-multiple",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dcvHelper-API (e33pomxauh)",
+      "item": []
+    },
+    {
+      "name": "DCVSessionManagerAPI (hxmwrrakc6)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "OPTIONS /",
+              "request": {
+                "method": "OPTIONS",
+                "header": [],
+                "url": "https://hxmwrrakc6.execute-api.us-east-1.amazonaws.com/dev/",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /start-session",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://hxmwrrakc6.execute-api.us-east-1.amazonaws.com/dev/start-session",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "OPTIONS /start-session",
+              "request": {
+                "method": "OPTIONS",
+                "header": [],
+                "url": "https://hxmwrrakc6.execute-api.us-east-1.amazonaws.com/dev/start-session",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /extend-session",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://hxmwrrakc6.execute-api.us-east-1.amazonaws.com/dev/extend-session",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /stop-session",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://hxmwrrakc6.execute-api.us-east-1.amazonaws.com/dev/stop-session",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /validate-session",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://hxmwrrakc6.execute-api.us-east-1.amazonaws.com/dev/validate-session",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sms-qa-auth-token (l14mhv118a)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "POST /auth/confirm",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://l14mhv118a.execute-api.us-east-1.amazonaws.com/$default/auth/confirm",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /auth/login",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://l14mhv118a.execute-api.us-east-1.amazonaws.com/$default/auth/login",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /auth/select-mfa",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://l14mhv118a.execute-api.us-east-1.amazonaws.com/$default/auth/select-mfa",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "vm-management-api (lul5oxdwic)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "GET /instance",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://lul5oxdwic.execute-api.us-east-1.amazonaws.com/dev/instance",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /instance",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://lul5oxdwic.execute-api.us-east-1.amazonaws.com/dev/instance",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "DELETE /instance",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "https://lul5oxdwic.execute-api.us-east-1.amazonaws.com/dev/instance",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "support-management-api (lvir6hp7hb)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "GET /ticket/{ticketId}",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://lvir6hp7hb.execute-api.us-east-1.amazonaws.com/dev/ticket/:ticketId",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /ticket/{ticketId}/messages",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://lvir6hp7hb.execute-api.us-east-1.amazonaws.com/dev/ticket/:ticketId/messages",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /tickets",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://lvir6hp7hb.execute-api.us-east-1.amazonaws.com/dev/tickets",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "OPTIONS /{proxy+}",
+              "request": {
+                "method": "OPTIONS",
+                "header": [],
+                "url": "https://lvir6hp7hb.execute-api.us-east-1.amazonaws.com/dev/:proxy+",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH /ticket/{ticketId}/assign",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": "https://lvir6hp7hb.execute-api.us-east-1.amazonaws.com/dev/ticket/:ticketId/assign",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH /ticket/{ticketId}/priority",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": "https://lvir6hp7hb.execute-api.us-east-1.amazonaws.com/dev/ticket/:ticketId/priority",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "PATCH /ticket/{ticketId}/status",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": "https://lvir6hp7hb.execute-api.us-east-1.amazonaws.com/dev/ticket/:ticketId/status",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /presign-upload-2",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://lvir6hp7hb.execute-api.us-east-1.amazonaws.com/dev/presign-upload-2",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /ticket",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://lvir6hp7hb.execute-api.us-east-1.amazonaws.com/dev/ticket",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /ticket/{ticketId}/message",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://lvir6hp7hb.execute-api.us-east-1.amazonaws.com/dev/ticket/:ticketId/message",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /ticket/{ticketId}/presign-download",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://lvir6hp7hb.execute-api.us-east-1.amazonaws.com/dev/ticket/:ticketId/presign-download",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /ticket/{ticketId}/presign-upload",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://lvir6hp7hb.execute-api.us-east-1.amazonaws.com/dev/ticket/:ticketId/presign-upload",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cpu-config-api (sx6x319uq1)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "GET /config",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://sx6x319uq1.execute-api.us-east-1.amazonaws.com/dev/config",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "devexauthfahim2 (t15cnwpidi)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "POST /dcvexauthfahim_1",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://t15cnwpidi.execute-api.us-east-1.amazonaws.com/dev/dcvexauthfahim_1",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sensepc-dcv-external-authenticator-api (tpgn2b2gd5)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "POST /sensepc-dcv-external-authenticator",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://tpgn2b2gd5.execute-api.us-east-1.amazonaws.com/$default/sensepc-dcv-external-authenticator",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FetchPcApi (vj9idlbwf7)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "GET /FetchPCdata",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://vj9idlbwf7.execute-api.us-east-1.amazonaws.com/$default/FetchPCdata",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "legal-documents (w38q0uwj2e)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "GET /content",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://w38q0uwj2e.execute-api.us-east-1.amazonaws.com/dev/content",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /add-content",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://w38q0uwj2e.execute-api.us-east-1.amazonaws.com/dev/add-content",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "subscribe-newsletter-api (wqwq2syx38)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "GET /unsubscribe",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://wqwq2syx38.execute-api.us-east-1.amazonaws.com/dev/unsubscribe",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /subscribe",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://wqwq2syx38.execute-api.us-east-1.amazonaws.com/dev/subscribe",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "internal-vm-management-svc-api (x5enlk8ytc)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "DELETE /instance",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/instance",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "OPTIONS /instance",
+              "request": {
+                "method": "OPTIONS",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/instance",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /assignments",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/assignments",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "OPTIONS /assignments",
+              "request": {
+                "method": "OPTIONS",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/assignments",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /config",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/config",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "OPTIONS /config",
+              "request": {
+                "method": "OPTIONS",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/config",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /instance-details",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/instance-details",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "OPTIONS /instance-details",
+              "request": {
+                "method": "OPTIONS",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/instance-details",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /instances",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/instances",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "OPTIONS /instances",
+              "request": {
+                "method": "OPTIONS",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/instances",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /metrics",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/metrics",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "OPTIONS /metrics",
+              "request": {
+                "method": "OPTIONS",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/metrics",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "GET /user",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/user",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "OPTIONS /user",
+              "request": {
+                "method": "OPTIONS",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/user",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /instance/connect",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/instance/connect",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "OPTIONS /instance/connect",
+              "request": {
+                "method": "OPTIONS",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/instance/connect",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /instance/maintenance",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/instance/maintenance",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "OPTIONS /instance/maintenance",
+              "request": {
+                "method": "OPTIONS",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/instance/maintenance",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /instance/restart",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/instance/restart",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "OPTIONS /instance/restart",
+              "request": {
+                "method": "OPTIONS",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/instance/restart",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /instance/start",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/instance/start",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "OPTIONS /instance/start",
+              "request": {
+                "method": "OPTIONS",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/instance/start",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /instance/stop",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/instance/stop",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "OPTIONS /instance/stop",
+              "request": {
+                "method": "OPTIONS",
+                "header": [],
+                "url": "https://x5enlk8ytc.execute-api.us-east-1.amazonaws.com/default/instance/stop",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sensepc-pc-resize-api (y2yvok8mk6)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "POST /increase-volume",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://y2yvok8mk6.execute-api.us-east-1.amazonaws.com/dev/increase-volume",
+                "description": ""
+              },
+              "response": []
+            },
+            {
+              "name": "POST /resize",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://y2yvok8mk6.execute-api.us-east-1.amazonaws.com/dev/resize",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "create-product-feedback (ydgjuusszh)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "POST /feedback",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://ydgjuusszh.execute-api.us-east-1.amazonaws.com/dev/feedback",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SmartPCPricingCalculatorAPI (zxxx3xjbb0)",
+      "item": [
+        {
+          "name": "Untagged",
+          "item": [
+            {
+              "name": "POST /calculate-cost",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "https://zxxx3xjbb0.execute-api.us-east-1.amazonaws.com/$default/calculate-cost",
+                "description": ""
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  }
+}

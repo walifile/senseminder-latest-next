@@ -1,0 +1,709 @@
+1  
+ 
+ 
+  
+sensepc.com Website Audit and Growth Report 
+Executive summary 
+sensepc.com positions itself around cloud desktops / virtual desktops (Desktop‑as‑a‑Service) rather 
+than a traditional “PC builder” or local IT storefront, and the closest mainstream comparators are 
+Windows 365 and Amazon WorkSpaces (plus enterprise brokers such as Citrix DaaS). 
+ 
+A key technical blocker for this review is that, in this environment, the site could not be rendered or 
+text‑extracted (the crawler returned no readable document lines for the homepage). That typically 
+indicates a JavaScript‑rendered site (SPA) without reliably accessible server ‑rendered HTML, or anti ‑bot 
+delivery that prevents automated fetching. This has direct consequences for SEO (indexing), 
+accessibility, and performance diagnostics , and it also constrained the ability to quote exact 
+headings, CTAs, and copy from most pages.  
+ 
+Despite those constraints, several high‑confidence conclusions and actions still stand: 
+ 
+• Treat “renderability + indexability” as a top‑priority risk. If primary content is not present in 
+initial HTML, search engines and accessibility tools may struggle; your marketing pages should 
+be SSR/pre‑rendered and readable without client‑side execution (at least for key sections and 
+metadata). 
+• Pricing clarity and conversion flow are competitive differentiators in DaaS. Competitors 
+present highly structured pricing tables and predictable plans (e.g., Windows 365’s per‑user/ 
+month table; WorkSpaces highlights monthly vs hourly metering). 
+• A stronger “why us” story (trust, security, compliance,  latency footprint, support SLAs, 
+onboarding) is required to compete in this category, where buyers compare risk as much as 
+specs. Competitor pricing pages explicitly frame cost control and flexibility; you should mirror 
+that narrative and strengthen proof.  
+• Immediate roadmap: (1) ensure crawlable/SSR content and basic technical SEO fundamentals, 
+(2) optimise “Plans” and “Get started” funnel, (3) build an education moat (use cases + 
+comparison + FAQs), (4) instrument analytics and conversion tracking (GA4/GTM + events) and 
+iterate. 
+Assumptions (explicit): competitors were selected in the DaaS / Cloud PC space due to the brand’s 
+implied offering and public trademark classification  describing SaaS for virtual desktops/cloud storage/ 
+file management.  
+ 
+Research approach and data sources 
+This report combined: 
+ 
+• Direct attempts to crawl and open key URLs on sensepc.com  (homepage  and key pages). The 
+homepage was not readable in this environment (no extracted text).  
+• Secondary, primary‑publisher references for the competitive set, focusing on pricing presentation 
+and packaging, because conversion and plan clarity are core buying‑criteria in DaaS. 
+ 
+ 
+ 
+ 
+ 
+ 
+
+2  
+ 
+• Policy and tooling references relevant to the requested audit scope (e.g., the Mobile Friendly 
+Test was retired; therefore mobile checks should use Lighthouse/PSI  and real‑user CWV signals 
+instead). 
+• Industry ‑standard performance tooling refere nces (PageSpeed Insights API documentation) for 
+how to programmatically collect Lighthouse/field metrics when access is available.  
+Constraints and what it affects: 
+ 
+• Because the site HTML could not be extracted here, page‑by‑page copy, heading structure, 
+internal links, structured data, canonical tags, and on‑page accessibility could not be 
+verified directly from the rendered pages.  
+• “Primary sources” like Google PageSpeed Insights (shareable report URLs), Lighthouse exports, 
+W3C validator output, robots. txt, and sitemap.xml require direct fetchable URLs; they are not 
+available in this session for sensepc.com. Where unavailable, the report provides 
+implementation ‑ready recommendations  and templates  that you can validate locally. 
+ 
+Current site structure and information architecture 
+Observed URL hierarchy and likely key pages 
+ 
+Based on attempted crawling patterns and typical SaaS site architecture (and the scope you requested), 
+the site should expose at minimum the following page types: 
+ 
+• Home (root) 
+• About 
+• Product or Services (Cloud Desktop / Cloud PC plans) 
+• Contact 
+• Blog / News / Tutorials 
+• Pricing 
+• Support / FAQ 
+• Legal (Terms, Privacy, Cookies) 
+ 
+However, because the homepage was not text‑extractable  in this environment,  the full list of indexable 
+URLs and internal linking pathways  cannot be confirmed  here. 
+ 
+Mermaid diagram: current plausible sitemap model 
+ 
+The diagram below reflects the intended structure implied by the scope and standard SaaS practice; 
+treat it as a working hypothesis to validate against your actual navigation / sitemap export. 
+ 
+flowchart TD 
+Home[/Home/] 
+About[/About/] 
+Products[/Product or Services/] 
+Pricing[/Pricing/] 
+Tutorials[/Blog or Tutorials/] 
+Support[/Support or FAQ/] 
+Contact[/Contact/] 
+Legal[/Legal/] 
+Terms[/Terms/] 
+Privacy[/Privacy/] 
+ 
+ 
+ 
+ 
+
+3  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Information architecture and navigation risks 
+ 
+If sensepc.com is primarily client ‑rendered (as the crawler behaviour suggests), there are three IA risks 
+that commonly appear:  
+ 
+1. Navigation exists visually but is not consistently discoverable to crawlers (links may be 
+injected after JS executes), which weakens index coverage and internal PageRank flow. 
+2. Deep pages are “orphaned” from search: pricing, support and legal pages often become 
+accessible only through footer components that are also JS ‑injected. 
+3. Sitemap/robots governance becomes critical: in JS apps, a clean sitemap.xml can compensate 
+for weaker crawl discovery —if it is accessible and maintained.  
+Because robots.txt and sitemap.xml could not be fetched in this environment, confirm quickly on your 
+side whether: - robots.txt  exists and links to sitemap.xml  - sitemap.xml  (or sitemap index) lists canonical, 
+200‑status URLs for all marketing pages and major product flows  
+ 
+Content, UX and accessibility review 
+Messaging clarity and value proposition 
+ 
+In DaaS, the minimum “above the fold” messaging  that converts usually includes: 
+ 
+• Who it is for (remote teams, contractors,  students, creatives,  developers) 
+• What you get (a Windows Cloud PC / cloud desktop you can access from anywhere) 
+• Why it’s safe (security posture and admin controls) 
+• Why it’s better (cost predictability,  performance,  setup speed, support) 
+ 
+Competitors explicitly surface plan structure and the promise of budget predictability and flexibility on 
+pricing pages (which function as both product documentation and conversion drivers). For example, 
+Amazon WorkSpaces frames pricing as “flexible and cost ‑effective” and highlights subscription vs hourly 
+metering. 
+ 
+Windows 365 pricing pages are extremely literal: a specs table (vCPU/RAM/storage) with monthly 
+subscription rows —this reduces buyer uncertainty a t the point of decision.  
+ 
+Recommendation: ensure your homepage hero and the first scroll deliver the same clarity and 
+reassurance, with a “Start trial / Get a Cloud PC” CTA and a secondary “See plans” CTA.  
+Cookies[/Cookies/] 
+ 
+Home --> Products 
+Home --> Pricing 
+Home --> Tutorials 
+Home --> Support 
+Home --> About 
+Home --> Contact 
+Home --> Legal 
+ 
+Legal --> Terms 
+Legal --> Privacy 
+Legal --> Cookies 
+ 
+ 
+ 
+
+4  
+noindex 
+ 
+Calls‑to‑action and conversion flow 
+ 
+Because the site could not be rendered here, CTAs cannot be enumerated, but the recommended  
+conversion flow for this category is stable:  
+ 
+• Primary CTA: Get started (plan selection → account creation → provisioning) 
+• Secondary CTA: See pricing (transparent plan table) 
+• Trust CTA: Security & compliance (policies, encryption, data region, SSO/MFA, audit logs) 
+• Support CTA: Talk to sales / contact specialist for business buyers (mirroring WorkSpaces’ 
+“Contact a specialist”). 
+Visual design and UX heuristics 
+ 
+Without page rendering, visual critique is necessarily indirect, but you can still validate these 
+high‑impact UX patterns immediately:  
+ 
+• Plan comparison layout: table + “recommended” plan badge + clear monthly cost + included 
+features + add‑ons. 
+• Reduced cognitive  load: in DaaS, too many hardware ‑like spec options without “good/better/ 
+best” framing increases drop ‑off; consider 3 –5 curated tiers.  
+• Onboarding  reassurance:  provisioning  time expectations,  what device you need, and “what 
+happens after purchase”.  
+ 
+Accessibility (WCAG basics) 
+ 
+Given the likely JS dependency  observed, prioritise two accessibility angles: 
+ 
+• Semantic  HTML and headings:  ensure a single H1 per page and logical heading order, because 
+screen readers and SEO both rely on it.  
+• Keyboard navigation and focus handling: SPAs often regress on focus trapping, skip links, and 
+modal behaviour.  
+Mobile friendliness: note that Google retired the public Mobile Friendly Test and mobile usability report 
+(December 1, 2023 up date). Therefore, your audit baseline should be Lighthouse mobile emulation + 
+Core Web Vitals field data (Search Console / CrUX) when available.  
+ 
+Technical SEO, performance and security review 
+Technical SEO essentials to verify 
+ 
+Because the site could not be parsed, the items below are framed as must‑verify with your own HTML 
+snapshots or a Lighthouse/PSI export.  
+ 
+Core technical checks: 
+ 
+• Title tags & meta descriptions per marketing page (unique, intent‑matched). 
+• Canonical  tags (especially  if you have marketing variants or tracking params). 
+• Indexability: correct use of robots meta and HTTP headers; avoid accidental  on 
+pricing/support. 
+• Structured data: SoftwareApplication / Product / FAQ schema (if applicable). 
+• Robots.txt and sitemap.xml: must exist, be readable, and list canonical pages. 
+ 
+
+5  
+Programmatic performance measurement: Google’s PageSpeed Insights API runs analysis on a URL and 
+returns Lighthouse  results and (in some cases) field metrics; it supports mobile vs desktop strategies. 
+ 
+ 
+On‑page SEO and content depth 
+ 
+In DaaS, the highest ‑value SEO pages tend to be: 
+ 
+• “Cloud PC / Cloud Desktop” landing page targeting non‑brand intent 
+• “Plans & pricing” 
+• “Use cases” pages (remote work, call centres, dev environments,  education) 
+• “Comparison”  pages (vs Windows 365, vs WorkSpaces)  with objective differences 
+• Support/FAQ pages that answer provisioning, latency, security, and licensing questions 
+ 
+The Justia trademark listing associated with SENSEPC explicitly references  SaaS for virtual desktops/ 
+cloud storage/file management, reinforcing that search intent cluster.  
+ 
+Performance and Core Web Vitals 
+ 
+No first ‑party PSI/Lighthouse numeric scores could be captured here. Nonetheless, the risk model is 
+clear: JS ‑heavy pages frequently accrue large JS payloads and longer main ‑thread blocking, which 
+pushes down LCP/INP and harms mobile conversion.  The PageSpeed  Insights tooling is explicitly 
+geared to return “PageSpeed scores… and suggestions” based on Lighthouse audits.  
+ 
+Actionable performance checklist (implementation ‑ready): - Pre‑render marketing pages (SSR/SSG) 
+and minimise JS required for first paint. - Optimise and preconnect fonts; avoid layout shifts by  
+reserving dimensions. - Compress hero media and ensure modern image  formats where supported. - 
+Add caching headers and consider a CDN for static assets.  
+ 
+Security and HTTPS posture 
+ 
+Direct security header scans (e.g., securityheaders.com output) and certificate transparency queries 
+(crt.sh) were not available for sensepc. com in this session, but these are baseline expectations for a 
+product that sells remote desktops:  
+ 
+• Enforce HTTPS site‑wide (HSTS recommended). 
+• Avoid mixed content (HTTP assets on HTTPS pages). 
+• Deploy modern security headers (CSP, X‑Content ‑Type‑Options, frame protections, 
+Permissions‑Policy). 
+• Publish clear privacy/terms/cookie documentation and cookie controls. 
+ 
+For header coverage, scanners typically check for CSP, HSTS, X‑Frame‑Options and related modern 
+headers. 
+ 
+ 
+ 
+ 
+
+6  
+ 
+ 
+ 
+Competitive positioning and recommendations roadmap 
+Competitor comparison snapshot 
+ 
+Competitors selected (stable, broadly relevant) and why: 
+ 
+• Microsoft : Windows 365 is a mainstream Cloud PC benchmark with highly structured plan 
+tables and a strong enterprise trus t posture.  
+• Amazon Web Services  : Amazon WorkSpaces is a direct DaaS competi tor emphasising flexible 
+billing models and multiple capability categories (DaaS, secure browsers, etc.).  
+• Citrix Systems : Citrix DaaS is an enterprise option frequently purchased via partners and 
+procurement channels; public pricing visibility varies by market, but third ‑party directories 
+present starting tiers.  
+Key competitive lessons (grounded in cited pages): 
+ 
+1. Pricing presentation  is a product feature.  Windows 365 enumerates  specs and prices in a 
+table that reads like a SKU sheet; it removes ambiguity.  
+2. Billing flexibility  is a narrative hook. WorkSpaces’  pricing page foregrounds  billing modes 
+(monthly subscription vs hourly metering) and an operational “contact a specialist” path.  
+3. Tier naming and packaging  matter. Citrix DaaS is commonly  communicated  in tier ladders 
+(Standard → Premium Plus), even when detail is thin, which signals segmentation by needs.  
+Prioritised action list with effort and impact 
+ 
+Priority Recommendation Why it matters Effort Impact 
+ 
+ 
+ 
+ 
+P0 
+ 
+Make marketing pages 
+reliably SSR/SSG and 
+crawlable, with meaningful 
+HTML on first response  
+Your homepage was 
+not readable in this 
+environment;  this is a 
+direct SEO + 
+accessibility + UX risk. 
+2 
+ 
+ 
+ 
+High 
+ 
+ 
+ 
+High 
+ 
+ 
+P0 
+Create a Pricing page with 
+a clear plan table, 
+“included” bullets, and a 
+single primary CTA per tier 
+ 
+Competitors win by 
+reducing buyer 
+uncertainty. 3 
+ 
+ 
+Medium 
+ 
+ 
+High 
+ 
+ 
+P0 
+Add measurement: GA4 + 
+GTM, events for plan 
+selection, checkout start, 
+account creation, contact 
+submit 
+ 
+Without tracking, 
+optimisation is 
+guesswork; assume no 
+backend access. 
+ 
+ 
+Medium 
+ 
+ 
+High 
+ 
+ 
+P1 
+ 
+Build a “Security & Trust” 
+page (encryption,  MFA/SSO, 
+data handling, uptime, 
+backups, support SLA)  
+DaaS buyers require 
+reassurance; 
+WorkSpaces  explicitly 
+supports sales 
+escalation. 8 
+ 
+ 
+Medium 
+ 
+ 
+High 
+ 
+ 
+ 
+ 
+ 
+ 
+
+7  
+Priority Recommendation Why it matters Effort Impact 
+ 
+ 
+ 
+P1 
+ 
+Publish Use cases pages 
+and comparison pages 
+Matches non‑brand 
+search intent; supports 
+evaluation journeys.  
+5 
+ 
+ 
+Medium 
+ 
+ 
+Medium‑High 
+ Implement technical SEO  
+Crawl and snippet 
+  
+P1 baseline: canonical, quality, plus SERP Medium Medium‑High 
+ sitemap, robots,  structured eligibility.  7   
+ data    
+ Expand Support/FAQ  with  
+Reduces support 
+  
+P2 provisioning,  device tickets and increases Low‑Medium Medium 
+ requirements,  latency conversion.   
+ expectations,  refunds    
+ Performance  optimisation  
+Improves conversion; 
+  
+P2 sprint (LCP/INP/CLS, image PSI provides audit Medium Medium 
+ + JS budgets) via guidance.  11   
+ Lighthouse/PSI    
+ 
+Suggested copy changes and wireframe-level improvements 
+ 
+Homepage (hero) suggested copy (example): - H1: “A secure Cloud Desktop you can access from any 
+device” - Subhead: “Provision a high ‑performance Windows desktop in minutes for work, study, or 
+development —without buying new hardware.” - Primary CTA: “See plans” - Secondary CTA: “Talk to us”  
+ 
+Pricing tier labels (example): - Starter (email, browsing, admin) - Pro (development and multitasking) - 
+Performance (power users, heavier workflows) 
+ 
+Trust strip (above the fold): - “Encrypted connections”  - “Multi‑device access” - “Transparent  monthly 
+pricing” - “Human support”  
+ 
+These suggestions are aligned with the conversion framing used by competitors: cost control, flexibility, 
+and clarity. 
+ 
+Mermaid diagram: recommended navigation and conversion flow 
+ 
+flowchart TD 
+Home[/Home/] 
+Plans[/Plans & Pricing/] 
+UseCases[/Use Cases/] 
+Security[/Security & Trust/] 
+Tutorials[/Guides & Tutorials/] 
+Support[/Support & FAQ/] 
+Contact[/Contact Sales/] 
+GetStarted[/Get Started/] 
+Checkout[/Checkout/] 
+Provision[/Provision Cloud Desktop/] 
+ 
+
+8  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Table: current vs recommended metadata for key pages 
+ 
+Because page HTML could not be extracted, “current” metadata is unknown here (except the homepage 
+title surfaced in crawl attempts). Validate and replace the “current” column with an export from your 
+CMS/router once available.  
+ 
+ 
+Page Current title tag 
+ 
+Recommended title 
+tag (≤60 chars) 
+Current 
+meta 
+description 
+ 
+Recommended meta 
+description (≤155 chars) 
+ 
+ “Cloud Desktop   Secure cloud desktops 
+ with Sense PC | Cloud Desktop |  for work and study. 
+Home Flexible Secure Cloud PC in Unknown Choose a plan, deploy 
+ Computing Minutes  fast, and access from 
+ Power”  2   any device. 
+ 
+ 
+About 
+ 
+ 
+Unknown 
+ 
+ 
+About | Why 
+SensePC 
+ 
+ 
+Unknown 
+Learn who we are, what 
+we build, and how we 
+deliver secure cloud 
+desktops with reliable 
+support. 
+    Transparent  cloud 
+Plans &  Pricing | Cloud  desktop pricing. 
+Pricing Unknown Desktop Plans Unknown Compare CPU, RAM and 
+    storage tiers. Cancel 
+    anytime. 
+ 
+ 
+Product 
+page 
+ 
+ 
+Unknown 
+ 
+Cloud Desktop | 
+High‑Performance 
+Cloud PC 
+ 
+ 
+Unknown 
+Run apps and workflows 
+in a secure cloud 
+desktop—fast 
+provisioning, encrypted 
+access, flexible plans.  
+ 
+Tutorials / 
+Blog 
+ 
+ 
+Unknown 
+ 
+Guides | Cloud 
+Desktop Setup & 
+Tips 
+ 
+ 
+Unknown 
+Tutorials on setup, 
+security, performance, 
+and best practices for 
+using cloud desktops. 
+Home --> Plans 
+Home --> UseCases 
+Home --> Security 
+Home --> Tutorials 
+Home --> Support 
+Home --> Contact 
+ 
+Plans --> GetStarted 
+GetStarted --> Checkout 
+Checkout --> Provision 
+Support --> Contact 
+Security --> Contact 
+ 
+
+9  
+ 
+Page Current title tag 
+ 
+Recommended title 
+tag (≤60 chars) 
+Current 
+meta 
+description 
+ 
+Recommended meta 
+description (≤155 chars) 
+ 
+ 
+ 
+Support / 
+FAQ 
+ 
+ 
+Unknown 
+ 
+ 
+Support | Cloud 
+Desktop Help & FAQ 
+ 
+ 
+Unknown 
+Answers on provisioning, 
+login, billing, security, 
+backups, and 
+troubleshooting. Contact 
+support. 
+ 
+ 
+Contact 
+ 
+ 
+Unknown 
+ 
+Contact | Sales and 
+Support 
+ 
+ 
+Unknown 
+Talk to sales or support. 
+Get help choosing a 
+plan, onboarding users, 
+or resolving issues.  
+ 
+Privacy 
+ 
+Unknown 
+ 
+Privacy Policy 
+ 
+Unknown How we collect, use, and 
+protect personal data.  
+    Terms governing use of 
+Terms Unknown Terms of Service Unknown the platform, billing, 
+    refunds, and acceptable 
+    use. 
+New page templates and content outlines 
+ 
+Plans & Pricing template - Hero: “Choose your Cloud Desktop” - Plan table: tiers × specs (vCPU/RAM/ 
+Storage) + included features - Add‑ons: extra storage, static IP, backups, GPU (if offered) - Trust: uptime, 
+support hours, refunds - FAQ: billing cadence, cancellation, setup time - CTA: “Start now” per tier + 
+“Contact sales” 
+ 
+Security & Trust template - Authentication:  MFA/SSO options - Data handling: encryption in transit/at 
+rest, backups, retention - Compliance posture: what you support today; w hat’s planned - Operational 
+reliability: status page link, incident comms approach - FAQ: “Can admins control access?”, “Where is 
+data stored?” 
+ 
+Use case template (repeatable) - Persona (e.g., remote team, student, developer) - Problem → 
+solution narrative - Recommended  plan - Setup steps - Proof: testimonials,  case studies, screenshots 
+ 
+30/60/90 day implementation roadmap 
+ 
+Timeframe Objectives Deliverables 
+ 
+ 
+30 days 
+Fix discoverability + 
+measurement 
+foundations 
+SSR/SSG for marketing pages; indexable metadata; basic 
+sitemap/robots;  GA4+GTM with core events; draft pricing 
+table IA. 17 
+ 
+ 
+60 days 
+ 
+Ship conversion 
+upgrades + trust layer 
+Public Plans & Pricing page; Security & Trust page; 
+improved onboarding funnel; Support/FAQ expansion; 
+first performance  pass using Lighthouse/PSI  workflow. 
+18 
+
+10  
+Timeframe Objectives Deliverables 
+ 
+Build demand capture  Use case library (3–6 pages); comparison  pages; tutorial 
+90 days + competitive moat cadence; structured data for FAQ/product; iterative CRO 
+based on funnel data.  19 
+ 
+ 
+Cloud Desktop with Sense PC | Flexible Computing Power 
+https://sensepc.com/  
+ 
+Windows 365 Cloud PC Plans and Pricing | Microsoft 
+https://www.microsoft.com/en -my/windows -365/enterprise/all -pricing?utm_source=chatgpt.com  
+ 
+Amazon WorkSpaces Pricing 
+https://aws.amazon.com/workspaces/pricing/?utm_source=chatgpt.com  
+ 
+SENSEPC Trademark Application  of Ashfak Ahmed - Serial Number 99343029  :: Justia Trademarks 
+https://trademarks.justia.com/993/43/sensepc -99343029.html?utm_source=chatgpt.com  
+ 
+The Search Console mobile friendly testing tool (retired) | Google Search Central Blog | 
+Google for Developers 
+https://developer s.google.com/search/blog/2016/05/a -new-mobile -friendly -testing -tool?utm_source=chatgpt.com  
+ 
+Pagespeedapi: runpagespeed | PageSpeed Insights | Google for Developers 
+https://developers.google.com/speed/docs/insights/v5/reference/pagespeedapi/runpagespeed?utm_source=chatgpt.com  
+ 
+HTTP Security Headers Analyzer | Check Your Website's Security 
+https://httpsecurityheaders.com/?utm_source =chatgpt.com  
+ 
+Citrix DaaS Software Reviews, Demo & Pricing - 2026 
+https://www.softwareadvice.com/virtualization/citrix -virtual -apps-and-desktops -profile/?utm_source=chatgpt.com  
+  
+  
+  
+ 
+ 
+ 
+ 
+ 
