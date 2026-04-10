@@ -6,6 +6,7 @@ import { userAPI } from "@/api/user";
 import { billingAPI } from "@/api/billing";
 import appConfig from "@/config/app-config";
 import { feedbackAPI } from "@/api/feedback";
+import { announcementsAPI } from "@/api/announcementsAPI";
 import { ticketsAPI } from "@/api/supportAPI";
 import { realtimeAPI } from "@/api/realtime";
 import { mfaRecoveryAPI } from "@/api/mfa-recovery";
@@ -69,6 +70,7 @@ interface RootStateType {
   [assignPcAPI.reducerPath]: ReturnType<typeof assignPcAPI.reducer>;
   [smartPCIdleSettingsAPI.reducerPath]: ReturnType<typeof smartPCIdleSettingsAPI.reducer>;
   [smartPCConfigAPI.reducerPath]: ReturnType<typeof smartPCConfigAPI.reducer>;
+  [announcementsAPI.reducerPath]: ReturnType<typeof announcementsAPI.reducer>;
 }
 
 const persistConfig: PersistConfig<RootStateType> = {
@@ -102,6 +104,7 @@ const rootReducer = combineReducers({
   [assignPcAPI.reducerPath]: assignPcAPI.reducer,
   [smartPCIdleSettingsAPI.reducerPath]: smartPCIdleSettingsAPI.reducer,
   [smartPCConfigAPI.reducerPath]: smartPCConfigAPI.reducer,
+  [announcementsAPI.reducerPath]: announcementsAPI.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -133,7 +136,8 @@ export const store = configureStore({
       sessionAPI.middleware,
       assignPcAPI.middleware,
       smartPCIdleSettingsAPI.middleware,
-      smartPCConfigAPI.middleware
+      smartPCConfigAPI.middleware,
+      announcementsAPI.middleware
     ),
 });
 

@@ -79,6 +79,7 @@ import {
 import { useSelector } from "react-redux";
 
 import {
+  X,
   Eye,
   Star,
   Info,
@@ -925,46 +926,23 @@ const CloudStorage = () => {
                   </div>
                 </div>
               )}
-              <div className="border-b border-border p-6 flex flex-col md:flex-row flex-wrap gap-4 items-center justify-between">
-                <div className="md:hidden flex items-center justify-between gap-4 w-full">
-                  {isMobile && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSidebarOpen(true)}
-                      className="h-14"
-                    >
-                      <ListFilter className="h-4 w-4" />
-                      Categories
-                    </Button>
-                  )}
-                  <div className="md:ml-auto self-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowStoragePlans(true)}
-                      className="h-14"
-                    >
-                      <HardDrive className="h-4 w-4" />
-                      <span>Storage Plans</span>
-                    </Button>
+              <div className="border-b border-border p-6 flex flex-col gap-4 md:flex-row md:flex-wrap md:items-center md:justify-between">
+                <div className="mt-2 flex w-full flex-col gap-4 md:mt-0 md:w-auto md:flex-row md:items-center">
+                  <div className="flex min-w-0 items-center gap-3">
+                    {selectedFolder && (
+                      <button
+                        onClick={handleCloseFolder}
+                        className="flex items-center"
+                      >
+                        <ArrowLeft className="h-5 w-5 text-muted-foreground" />
+                      </button>
+                    )}
+                    <h3 className="min-w-0 text-2xl font-semibold leading-tight break-words">
+                      {selectedFolder
+                        ? selectedFolder?.fileName
+                        : selectedCategory}
+                    </h3>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-4 w-full md:w-auto mt-4 md:mt-0">
-                  {selectedFolder && (
-                    <button
-                      onClick={handleCloseFolder}
-                      className="flex items-center"
-                    >
-                      <ArrowLeft className="h-5 w-5 text-muted-foreground" />
-                    </button>
-                  )}
-                  <h3 className="flex-shrink-0 text-2xl font-semibold">
-                    {selectedFolder
-                      ? selectedFolder?.fileName
-                      : selectedCategory}
-                  </h3>
                   {selectedCategory !== "Duplicates" && (
                     <GradientSearchInput
                       value={searchQuery}
@@ -972,8 +950,32 @@ const CloudStorage = () => {
                       placeholder="Search files..."
                       id="searchstorage"
                       name="searchstorage"
+                      wrapperClassName="w-full max-w-none min-w-0 md:w-auto md:min-w-[320px]"
+                      inputClassName="border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-transparent"
                     />
                   )}
+                  <div className="grid w-full grid-cols-2 gap-2 md:hidden">
+                    {isMobile && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSidebarOpen(true)}
+                        className="h-11 w-full justify-center gap-2 text-sm"
+                      >
+                        <ListFilter className="h-4 w-4" />
+                        Categories
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowStoragePlans(true)}
+                      className="h-11 w-full justify-center gap-2 text-sm"
+                    >
+                      <HardDrive className="h-4 w-4" />
+                      <span>Plans</span>
+                    </Button>
+                  </div>
                 </div>
 
                 {/* <Button
@@ -1026,226 +1028,262 @@ const CloudStorage = () => {
                 </div>
               </div>
               {selectedCategory !== "Duplicates" && (
-                <div className="p-4 flex flex-col lg:flex-row flex-wrap gap-4 items-start lg:items-center justify-between">
-                  <div className="flex flex-wrap items-center gap-4 lg:w-auto">
-                    {selectedFiles.length > 0 && (
-                      <>
+                <div className="flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:justify-between">
+                  {isMobile && selectedFiles.length > 0 ? (
+                    <div className="w-full space-y-3 sm:hidden">
+                      <div className="flex items-center justify-between rounded-2xl border border-[#2530F0]/20 bg-[rgba(37,48,240,0.07)] px-4 py-3 dark:border-white/10 dark:bg-[#ffffff08]">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex min-w-7 items-center justify-center rounded-full bg-gradient-to-r from-[#3A29E7] to-[#A601BA] px-2 py-1 text-xs font-semibold text-white">
+                            {selectedFiles.length}
+                          </span>
+                          <span className="text-sm font-medium text-[#020816] dark:text-white">
+                            {selectedFiles.length === 1
+                              ? "1 item selected"
+                              : `${selectedFiles.length} items selected`}
+                          </span>
+                        </div>
                         <Button
                           size="sm"
-                          variant="outline"
-                          onClick={() => setCopyDialogOpen(true)}
-                          className="text-base [&_svg]:size-5 gap-2"
+                          variant="ghost"
+                          className="h-9 px-3 text-sm text-[#454545] dark:text-[#B9C2D5]"
+                          onClick={() => setSelectedFiles([])}
                         >
-                          <Copy className="h-5 w-5" />
-                          Copy
+                          <X className="h-4 w-4" />
+                          Clear
                         </Button>
+                      </div>
+
+                      <div className="grid w-full grid-cols-3 gap-2">
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => setMoveDialogOpen(true)}
-                          className="text-base [&_svg]:size-5 gap-2"
+                          className="h-11 w-full justify-center gap-2 text-sm"
                         >
-                          <FolderIcon className="h-5 w-5" />
+                          <FolderIcon className="h-4 w-4" />
                           Move
                         </Button>
-                      </>
-                    )}
-
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setShowNewFolderDialog(true)}
-                      className="text-base [&_svg]:size-5 gap-2"
-                    >
-                      <FolderPlus className="h-5 w-5" />
-                      New
-                    </Button>
-                    {/* Filter */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
                         <Button
                           size="sm"
-                          variant="ghost"
-                          className="text-base [&_svg]:size-5 text-[#454545] dark:text-[#B9C2D5] gap-2"
+                          variant="outline"
+                          onClick={() => setCopyDialogOpen(true)}
+                          className="h-11 w-full justify-center gap-2 text-sm"
                         >
-                          <Filter className="h-5 w-5" />
-                          Filter
+                          <Copy className="h-4 w-4" />
+                          Copy
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-                        <DropdownMenuCheckboxItem
-                          checked={filters.modified === ""}
-                          onCheckedChange={() =>
-                            setFilters((prev) => ({
-                              ...prev,
-                              modified: "",
-                            }))
-                          }
-                        >
-                          All uploads
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem
-                          checked={filters.modified === "today"}
-                          onCheckedChange={() =>
-                            setFilters((prev) => ({
-                              ...prev,
-                              modified: "today",
-                            }))
-                          }
-                        >
-                          Uploaded today
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem
-                          checked={filters.modified === "week"}
-                          onCheckedChange={() =>
-                            setFilters((prev) => ({
-                              ...prev,
-                              modified: "week",
-                            }))
-                          }
-                        >
-                          Uploaded this week
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem
-                          checked={filters.modified === "month"}
-                          onCheckedChange={() =>
-                            setFilters((prev) => ({
-                              ...prev,
-                              modified: "month",
-                            }))
-                          }
-                        >
-                          Uploaded this month
-                        </DropdownMenuCheckboxItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                        <div className="flex justify-end rounded-full border border-[#2530F0]/20 bg-[rgba(37,48,240,0.07)] px-1.5 py-1 dark:border-white/10 dark:bg-[#ffffff08]">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-9 w-9"
+                                data-testid="storage-top-right-menu"
+                              >
+                                <MoreHorizontal className="h-5 w-5" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="w-full">
+                                      <DropdownMenuItem
+                                        onClick={handleBulkShare}
+                                        disabled={selectedFiles.length !== 1}
+                                        className={
+                                          selectedFiles.length !== 1
+                                            ? "cursor-not-allowed opacity-50 pointer-events-none w-full gap-2"
+                                            : "w-full gap-2"
+                                        }
+                                        data-testid="storage-share-button"
+                                      >
+                                        <Share2 className="h-4 w-4" />
+                                        Share
+                                      </DropdownMenuItem>
+                                    </div>
+                                  </TooltipTrigger>
+                                  {selectedFiles.length !== 1 && (
+                                    <TooltipContent side="left">
+                                      You can only share one file at a time
+                                    </TooltipContent>
+                                  )}
+                                </Tooltip>
+                              </TooltipProvider>
 
-                    {/* Sort */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-base [&_svg]:size-5 text-[#454545] dark:text-[#B9C2D5] gap-2"
-                        >
-                          {/* {sortOrder === "asc" ? ( */}
-                          <ArrowUpDown className="h-5 w-5" />
-                          {/* // ) : (
-                        //   <SortDesc className="h-4 w-4" />
-                        // )} */}
-                          Sort
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                        <DropdownMenuRadioGroup
-                          value={sortBy}
-                          onValueChange={handleSort}
-                        >
-                          <DropdownMenuRadioItem value="name">
-                            Name
-                          </DropdownMenuRadioItem>
-                          <DropdownMenuRadioItem value="date">
-                            Date
-                          </DropdownMenuRadioItem>
-                          <DropdownMenuRadioItem value="size">
-                            Size
-                          </DropdownMenuRadioItem>
-                        </DropdownMenuRadioGroup>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    {/* View toggle */}
-                    {/* <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() =>
-                        setViewMode(viewMode === "list" ? "grid" : "list")
-                      }
-                    >
-                      {viewMode === "list" ? (
-                        <Grid className="h-4 w-4" />
-                      ) : (
-                        <List className="h-4 w-4" />
-                      )}
-                    </Button> */}
-
-                    {/* Refresh */}
-                    {/* <Button size="sm" variant="ghost" onClick={() => refetch()}>
-                      <RefreshCw className="h-4 w-4" />
-                    </Button> */}
-
-                    {/* More menu */}
-                    {/* <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button size="sm" variant="ghost">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="w-full">
-                                <DropdownMenuItem
-                                  onClick={handleBulkShare}
-                                  disabled={selectedFiles.length !== 1}
-                                  className={
-                                    selectedFiles.length !== 1
-                                      ? "cursor-not-allowed opacity-50 pointer-events-none w-full"
-                                      : "w-full"
+                              <DropdownMenuItem
+                                onClick={handleBulkDownload}
+                                disabled={
+                                  selectedFiles.length === 0 ||
+                                  isBulkDownloading
+                                }
+                                className="gap-2"
+                              >
+                                {isBulkDownloading ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                                    Downloading...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Download className="h-4 w-4" />
+                                    Download
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-destructive gap-2"
+                                onClick={() => {
+                                  if (selectedFiles.length !== 0) {
+                                    setBulkDeleteDialogOpen(true);
                                   }
-                                >
-                                  <Share2 className="h-4 w-4 mr-2" />
-                                  Share
-                                </DropdownMenuItem>
-                              </div>
-                            </TooltipTrigger>
-                            {selectedFiles.length !== 1 && (
-                              <TooltipContent side="left">
-                                You can only share one file at a time
-                              </TooltipContent>
-                            )}
-                          </Tooltip>
-                        </TooltipProvider>
+                                }}
+                                data-testid="storage-bulk-delete-button"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                <span data-testid="storage-delete-selected-button">
+                                  Delete Selected
+                                </span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid w-full grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-4 lg:w-auto">
+                      {selectedFiles.length > 0 && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setCopyDialogOpen(true)}
+                            className="hidden w-full justify-center gap-2 text-base [&_svg]:size-5 sm:inline-flex sm:w-auto"
+                          >
+                            <Copy className="h-5 w-5" />
+                            Copy
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setMoveDialogOpen(true)}
+                            className="hidden w-full justify-center gap-2 text-base [&_svg]:size-5 sm:inline-flex sm:w-auto"
+                          >
+                            <FolderIcon className="h-5 w-5" />
+                            Move
+                          </Button>
+                        </>
+                      )}
 
-                        <DropdownMenuItem
-                          onClick={handleBulkDownload}
-                          disabled={
-                            selectedFiles.length === 0 || isBulkDownloading
-                          }
-                        >
-                          {isBulkDownloading ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin text-primary" />
-                              Downloading...
-                            </>
-                          ) : (
-                            <>
-                              <Download className="h-4 w-4 mr-2" />
-                              Download
-                            </>
-                          )}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => {
-                            if (selectedFiles.length !== 0) {
-                              setBulkDeleteDialogOpen(true);
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setShowNewFolderDialog(true)}
+                        className="h-11 w-full justify-center gap-2 text-base [&_svg]:size-5 sm:h-10 sm:w-auto"
+                      >
+                        <FolderPlus className="h-5 w-5" />
+                        New
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-11 w-full justify-center gap-2 text-base text-[#454545] dark:text-[#B9C2D5] [&_svg]:size-5 sm:h-10 sm:w-auto"
+                          >
+                            <Filter className="h-5 w-5" />
+                            Filter
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Filter by</DropdownMenuLabel>
+                          <DropdownMenuCheckboxItem
+                            checked={filters.modified === ""}
+                            onCheckedChange={() =>
+                              setFilters((prev) => ({
+                                ...prev,
+                                modified: "",
+                              }))
                             }
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete Selected
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu> */}
-                  </div>
-                  <div className="flex ml-auto gap-2">
+                          >
+                            All uploads
+                          </DropdownMenuCheckboxItem>
+                          <DropdownMenuCheckboxItem
+                            checked={filters.modified === "today"}
+                            onCheckedChange={() =>
+                              setFilters((prev) => ({
+                                ...prev,
+                                modified: "today",
+                              }))
+                            }
+                          >
+                            Uploaded today
+                          </DropdownMenuCheckboxItem>
+                          <DropdownMenuCheckboxItem
+                            checked={filters.modified === "week"}
+                            onCheckedChange={() =>
+                              setFilters((prev) => ({
+                                ...prev,
+                                modified: "week",
+                              }))
+                            }
+                          >
+                            Uploaded this week
+                          </DropdownMenuCheckboxItem>
+                          <DropdownMenuCheckboxItem
+                            checked={filters.modified === "month"}
+                            onCheckedChange={() =>
+                              setFilters((prev) => ({
+                                ...prev,
+                                modified: "month",
+                              }))
+                            }
+                          >
+                            Uploaded this month
+                          </DropdownMenuCheckboxItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-11 w-full justify-center gap-2 text-base text-[#454545] dark:text-[#B9C2D5] [&_svg]:size-5 sm:h-10 sm:w-auto"
+                          >
+                            <ArrowUpDown className="h-5 w-5" />
+                            Sort
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                          <DropdownMenuRadioGroup
+                            value={sortBy}
+                            onValueChange={handleSort}
+                          >
+                            <DropdownMenuRadioItem value="name">
+                              Name
+                            </DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="date">
+                              Date
+                            </DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="size">
+                              Size
+                            </DropdownMenuRadioItem>
+                          </DropdownMenuRadioGroup>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  )}
+                  <div
+                    className={`${
+                      isMobile && selectedFiles.length > 0 ? "hidden" : "flex"
+                    } w-full items-center justify-end gap-2 self-end rounded-full border border-[#2530F0]/20 bg-[rgba(37,48,240,0.07)] px-1.5 py-1 dark:border-white/10 dark:bg-[#ffffff08] sm:flex sm:self-auto sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 lg:ml-auto lg:w-auto`}
+                  >
                     <Button
-                      size="sm"
+                      size={isMobile ? "icon" : "sm"}
                       variant="ghost"
                       className="text-base [&_svg]:size-5 gap-2"
                       onClick={() =>
@@ -1259,7 +1297,7 @@ const CloudStorage = () => {
                       )}
                     </Button>
                     <Button
-                      size="sm"
+                      size={isMobile ? "icon" : "sm"}
                       variant="ghost"
                       className="text-base [&_svg]:size-5 gap-2"
                       onClick={() => refetch()}
@@ -1269,7 +1307,7 @@ const CloudStorage = () => {
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
-                          size="sm"
+                          size={isMobile ? "icon" : "sm"}
                           variant="ghost"
                           className="text-base [&_svg]:size-5 gap-2"
                           data-testid="storage-top-right-menu"
@@ -1278,6 +1316,25 @@ const CloudStorage = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        {isMobile && selectedFiles.length > 0 && (
+                          <>
+                            <DropdownMenuItem
+                              onClick={() => setCopyDialogOpen(true)}
+                              className="gap-2"
+                            >
+                              <Copy className="h-4 w-4" />
+                              Copy
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => setMoveDialogOpen(true)}
+                              className="gap-2"
+                            >
+                              <FolderIcon className="h-4 w-4" />
+                              Move
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                          </>
+                        )}
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -1398,12 +1455,19 @@ const CloudStorage = () => {
                                     : "Upload files or create a new folder to get started"}
                                 </p>
                                 {!searchQuery && (
-                                  <div className="flex gap-4">
-                                    <Button onClick={handleUpload}>
+                                  <div className="flex w-full max-w-sm flex-col gap-3 sm:flex-row">
+                                    <Button
+                                      onClick={handleUpload}
+                                      className="w-full justify-center sm:w-auto"
+                                    >
                                       <Upload className="h-4 w-4 mr-2" />
                                       Upload Files
                                     </Button>
-                                    <Button variant="outline" asChild>
+                                    <Button
+                                      variant="outline"
+                                      asChild
+                                      className="w-full justify-center sm:w-auto"
+                                    >
                                       <Link href="/dashboard/tutorials">
                                         <GraduationCap className="h-4 w-4 mr-2" />
                                         View Tutorials
@@ -1413,9 +1477,9 @@ const CloudStorage = () => {
                                 )}
                               </div>
                             ) : (
-                              <div className="flex flex-col gap-2 justify-between px-8">
+                              <div className="flex flex-col justify-between gap-2 px-4 sm:px-6 lg:px-8">
                                 {viewMode === "list" ? (
-                                  <div className="rounded-2xl border border-[#ffffff1a] overflow-hidden bg-[#ffffff05]">
+                                  <div className="overflow-x-auto rounded-2xl border border-[#ffffff1a] bg-[#ffffff05]">
                                     <Table>
                                       <TableHeader>
                                         <TableRow className="bg-blue-700/10 dark:bg-[#ffffff0f] hover:bg-blue-700/10 dark:hover:bg-[#ffffff0f]">
@@ -1791,8 +1855,8 @@ const CloudStorage = () => {
                                 )}
 
                                 {/* ✅ Pagination */}
-                                <div className="flex flex-col md:flex-row items-center justify-between overflow-x-auto scrollbar-hide px-4 py-4 gap-4">
-                                  <div className="w-full md:w-auto text-sm text-muted-foreground whitespace-nowrap">
+                                <div className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                                  <div className="w-full text-sm text-muted-foreground sm:w-auto sm:whitespace-nowrap">
                                     Showing{" "}
                                     {pagination.total === 0
                                       ? 0
@@ -1807,10 +1871,14 @@ const CloudStorage = () => {
                                     of {pagination.total} files
                                   </div>
 
-                                  <div className="w-full md:w-auto flex items-center space-x-4">
+                                  <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
                                     <DropdownMenu>
                                       <DropdownMenuTrigger asChild>
-                                        <Button size="sm" variant="ghost">
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          className="w-full justify-center sm:w-auto"
+                                        >
                                           <ListFilter className="h-4 w-4 mr-2" />
                                           Items per page
                                         </Button>
@@ -1838,69 +1906,107 @@ const CloudStorage = () => {
                                       </DropdownMenuContent>
                                     </DropdownMenu>
 
-                                    <Pagination className="w-auto">
-                                      <PaginationContent>
-                                        <PaginationItem>
-                                          <PaginationPrevious
-                                            href="#"
-                                            onClick={(event) => {
-                                              event.preventDefault();
-                                              if (pagination?.hasPrevious) {
-                                                handlePageChange(page - 1);
+                                    <Pagination className="w-full justify-start sm:w-auto sm:justify-end">
+                                      {isMobile ? (
+                                        <PaginationContent className="w-full flex-nowrap justify-between gap-3">
+                                          <PaginationItem className="flex-1">
+                                            <PaginationPrevious
+                                              href="#"
+                                              onClick={(event) => {
+                                                event.preventDefault();
+                                                if (pagination?.hasPrevious) {
+                                                  handlePageChange(page - 1);
+                                                }
+                                              }}
+                                              className={
+                                                pagination?.hasPrevious
+                                                  ? "w-full min-w-0 justify-center"
+                                                  : "pointer-events-none w-full min-w-0 justify-center opacity-50"
                                               }
-                                            }}
-                                            className={
-                                              pagination?.hasPrevious
-                                                ? ""
-                                                : "pointer-events-none opacity-50"
+                                            />
+                                          </PaginationItem>
+                                          <PaginationItem className="flex-1">
+                                            <PaginationNext
+                                              href="#"
+                                              onClick={(event) => {
+                                                event.preventDefault();
+                                                if (pagination?.hasNext) {
+                                                  handlePageChange(page + 1);
+                                                }
+                                              }}
+                                              className={
+                                                pagination?.hasNext
+                                                  ? "w-full min-w-0 justify-center"
+                                                  : "pointer-events-none w-full min-w-0 justify-center opacity-50"
+                                              }
+                                            />
+                                          </PaginationItem>
+                                        </PaginationContent>
+                                      ) : (
+                                        <PaginationContent className="w-full flex-wrap justify-between gap-2 sm:w-auto sm:flex-nowrap sm:justify-start sm:gap-1">
+                                          <PaginationItem>
+                                            <PaginationPrevious
+                                              href="#"
+                                              onClick={(event) => {
+                                                event.preventDefault();
+                                                if (pagination?.hasPrevious) {
+                                                  handlePageChange(page - 1);
+                                                }
+                                              }}
+                                              className={
+                                                pagination?.hasPrevious
+                                                  ? "min-w-[118px] justify-center"
+                                                  : "pointer-events-none min-w-[118px] justify-center opacity-50"
+                                              }
+                                            />
+                                          </PaginationItem>
+                                          {paginationItems.map((item, index) => {
+                                            if (item === "ellipsis") {
+                                              return (
+                                                <PaginationItem
+                                                  key={`ellipsis-${index}`}
+                                                >
+                                                  <PaginationEllipsis />
+                                                </PaginationItem>
+                                              );
                                             }
-                                          />
-                                        </PaginationItem>
-                                        {paginationItems.map((item, index) => {
-                                          if (item === "ellipsis") {
+
                                             return (
-                                              <PaginationItem
-                                                key={`ellipsis-${index}`}
-                                              >
-                                                <PaginationEllipsis />
+                                              <PaginationItem key={item}>
+                                                <PaginationLink
+                                                  href="#"
+                                                  className="min-w-10 justify-center"
+                                                  isActive={
+                                                    pagination.page === item
+                                                  }
+                                                  onClick={(event) => {
+                                                    event.preventDefault();
+                                                    handlePageChange(item);
+                                                  }}
+                                                >
+                                                  {item}
+                                                </PaginationLink>
                                               </PaginationItem>
                                             );
-                                          }
-
-                                          return (
-                                            <PaginationItem key={item}>
-                                              <PaginationLink
-                                                href="#"
-                                                isActive={
-                                                  pagination.page === item
+                                          })}
+                                          <PaginationItem>
+                                            <PaginationNext
+                                              href="#"
+                                              onClick={(event) => {
+                                                event.preventDefault();
+                                                if (pagination?.hasNext) {
+                                                  handlePageChange(page + 1);
                                                 }
-                                                onClick={(event) => {
-                                                  event.preventDefault();
-                                                  handlePageChange(item);
-                                                }}
-                                              >
-                                                {item}
-                                              </PaginationLink>
-                                            </PaginationItem>
-                                          );
-                                        })}
-                                        <PaginationItem>
-                                          <PaginationNext
-                                            href="#"
-                                            onClick={(event) => {
-                                              event.preventDefault();
-                                              if (pagination?.hasNext) {
-                                                handlePageChange(page + 1);
+                                              }}
+                                              className={
+                                                pagination?.hasNext
+                                                  ? "min-w-[96px] justify-center"
+                                                  : "pointer-events-none min-w-[96px] justify-center opacity-50"
                                               }
-                                            }}
-                                            className={
-                                              pagination?.hasNext
-                                                ? ""
-                                                : "pointer-events-none opacity-50"
-                                            }
-                                          />
-                                        </PaginationItem>
-                                      </PaginationContent>
+                                            />
+                                          </PaginationItem>
+                                        </PaginationContent>
+                                      )}
                                     </Pagination>
                                   </div>
                                 </div>

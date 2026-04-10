@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import { countryCodes } from "@/constants/country-codes";
 import {
   uploadAvatarToS3,
   type UserProfile,
@@ -15,6 +16,13 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/components/ui/dashboard/dashboard-card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Select,
+  SelectItem,
+  SelectValue,
+  SelectContent,
+  SelectTrigger,
+} from "@/components/ui/select";
 
 import { Camera } from "lucide-react";
 
@@ -25,6 +33,7 @@ type Props = {
   loading: boolean;
   saving: boolean;
   fullName: string;
+  fullNameMaxLength: number;
   setFullName: React.Dispatch<React.SetStateAction<string>>;
   country: string;
   setCountry: React.Dispatch<React.SetStateAction<string>>;
@@ -38,6 +47,7 @@ export const ProfileAccountTab = ({
   loading,
   saving,
   fullName,
+  fullNameMaxLength,
   setFullName,
   country,
   setCountry,
@@ -54,6 +64,14 @@ export const ProfileAccountTab = ({
 
   const [avatarUploading, setAvatarUploading] = React.useState(false);
   const [avatarRemoving, setAvatarRemoving] = React.useState(false);
+  const countryOptions = React.useMemo(
+    () =>
+      Array.from(new Set(countryCodes.map((item) => item.name))).sort((a, b) =>
+        a.localeCompare(b)
+      ),
+    []
+  );
+  const hasCountryOption = !country || countryOptions.includes(country);
 
   function prevent(e: React.FormEvent) {
     e.preventDefault();
@@ -62,7 +80,7 @@ export const ProfileAccountTab = ({
   const avatarSrc: string | null = profile?.avatarUrl || null;
 
   const labelClass =
-    "font-['Space_Grotesk'] text-[18px] font-semibold leading-[32px] tracking-[-0.3px] text-text-heading dark:text-white";
+    "font-['Space_Grotesk'] text-[17px] sm:text-[18px] font-semibold leading-[30px] sm:leading-[32px] tracking-[-0.3px] text-text-heading dark:text-white";
 
   const fieldSurfaceClass =
     "font-['Space_Grotesk'] bg-select-pill-bg border border-select-pill-border rounded-[10px] px-5 py-4 h-auto";
@@ -173,8 +191,8 @@ export const ProfileAccountTab = ({
 
   return (
     <div className="font-['Space_Grotesk'] grid items-start gap-6 lg:grid-cols-[auto_1fr]">
-      <DashboardCard className="p-6 bg-public-card-bg-dark dark:bg-public-card-bg-dark backdrop-blur-none font-['Space_Grotesk']">
-        <div className="flex items-start gap-4">
+      <DashboardCard className="p-4 sm:p-6 bg-public-card-bg-dark dark:bg-public-card-bg-dark backdrop-blur-none font-['Space_Grotesk']">
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-start">
           <div className="relative shrink-0">
             <Avatar className="h-20 w-20">
               {avatarSrc ? <AvatarImage src={avatarSrc} alt="Profile" /> : null}
@@ -188,9 +206,9 @@ export const ProfileAccountTab = ({
             </div>
           </div>
 
-          <div className="flex min-w-0 flex-col gap-4">
+          <div className="flex min-w-0 w-full flex-col gap-4">
             <div className="space-y-1">
-              <p className="font-['Space_Grotesk'] truncate text-[16px] font-semibold leading-[1.6] text-text-heading dark:text-white">
+              <p className="max-w-full font-['Space_Grotesk'] truncate text-[16px] font-semibold leading-[1.6] text-text-heading dark:text-white">
                 {fullName || "—"}
               </p>
               <p className="font-['Space_Grotesk'] text-[12px] font-normal text-input-placeholder dark:text-muted-foreground">
@@ -198,7 +216,7 @@ export const ProfileAccountTab = ({
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -230,7 +248,7 @@ export const ProfileAccountTab = ({
         </div>
       </DashboardCard>
 
-      <DashboardCard className="p-6 bg-public-card-bg-dark dark:bg-public-card-bg-dark font-['Space_Grotesk']">
+      <DashboardCard className="p-4 sm:p-6 bg-public-card-bg-dark dark:bg-public-card-bg-dark font-['Space_Grotesk']">
         <form
           onSubmit={prevent}
           className="flex flex-col gap-5 font-['Space_Grotesk']"
@@ -243,7 +261,10 @@ export const ProfileAccountTab = ({
               id="fullName"
               name="fullName"
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={(e) =>
+                setFullName(e.target.value.slice(0, fullNameMaxLength))
+              }
+              maxLength={fullNameMaxLength}
               disabled={loading || saving}
               autoComplete="name"
               className={fieldSurfaceClass}
@@ -270,17 +291,30 @@ export const ProfileAccountTab = ({
             <Label htmlFor="country" className={labelClass}>
               Country
             </Label>
-            <Input
-              id="country"
-              name="country"
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
+            <Select
+              value={country || undefined}
+              onValueChange={setCountry}
               disabled={loading || saving}
-              autoComplete="country-name"
-              className={fieldSurfaceClass}
-              placeholder="Your Country"
-              data-testid="profile-country-input"
-            />
+            >
+              <SelectTrigger
+                id="country"
+                variant="form"
+                className={`${fieldSurfaceClass} h-[56px]`}
+                data-testid="profile-country-input"
+              >
+                <SelectValue placeholder="Select your country" />
+              </SelectTrigger>
+              <SelectContent variant="form" className="max-h-[280px]">
+                {!hasCountryOption && (
+                  <SelectItem value={country}>{country}</SelectItem>
+                )}
+                {countryOptions.map((countryName) => (
+                  <SelectItem key={countryName} value={countryName}>
+                    {countryName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <p className="font-['Space_Grotesk'] text-[16px] leading-[24px] tracking-[-0.3px] text-input-placeholder dark:text-muted-foreground">

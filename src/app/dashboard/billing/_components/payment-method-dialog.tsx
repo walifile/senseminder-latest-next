@@ -303,6 +303,8 @@ export function PaymentMethodDialog() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
           data-testid="billing-add-payment-modal"
+          closeClassName="right-2 top-2 sm:right-4 sm:top-4"
+          closeIconClassName="h-5 w-5 sm:h-7 sm:w-7"
           className="
             p-0
             max-w-none sm:max-w-none

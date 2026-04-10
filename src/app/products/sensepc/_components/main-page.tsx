@@ -1,19 +1,16 @@
-"use client";
-
 import React from "react";
 import FAQ from "@/app/home/_components/faq";
+import { MainLayout } from "@/app/home/_components/main-layout";
+import SensePCPricingSection from "@/app/products/_components/sensepc-pricing-section";
+import { GetStartedCtaActions } from "@/app/products/_components/get-started-cta-actions";
 import { GetStartedCtaSection } from "@/app/products/_components/get-started-cta-section";
 import RealWorldUse, {
   type RealWorldUseItem,
 } from "@/app/products/_components/real-world-use";
 
-import { useGetStartedNav } from "@/hooks/use-get-started";
-
 import Hero from "./hero";
-import { MainLayout } from "./layout";
 import WhyTeamsChoose from "./why-teams-choose";
 import RentSmarterProcess from "./how-it-works";
-import SmartStoragePricing from "./sensepc-pricing";
 
 const senseCloudFaqItems = [
   {
@@ -67,16 +64,10 @@ const REAL_WORLD_ITEMS: RealWorldUseItem[] = [
 const HEADING_FONT =
   "justify-start text-black dark:text-white text-2xl font-bold font-['Space_Grotesk'] leading-8";
 
-const SensePCPage = () => {
-  const onGetStarted = useGetStartedNav();
-
-  return (
-    <MainLayout>
-      {/* ✅ apply the heading font to the main page wrapper so headings inside
-          these sections inherit if they use `inherit` / default text styles */}
+const SensePCPage = () => (
+  <MainLayout>
       <div className="w-full">
-        {/* If your shared components don’t inherit font-family,
-            apply the class on their heading nodes inside each component. */}
+
         <div className={HEADING_FONT} style={{ display: "contents" }}>
           <Hero />
           <WhyTeamsChoose />
@@ -87,7 +78,7 @@ const SensePCPage = () => {
             items={REAL_WORLD_ITEMS}
           />
 
-          <SmartStoragePricing />
+          <SensePCPricingSection />
 
           <FAQ
             items={senseCloudFaqItems}
@@ -97,16 +88,16 @@ const SensePCPage = () => {
           <GetStartedCtaSection
             title="For You. For Your Team. For Any Workflow."
             description="Whether you’re deploying SensePC across your organization or just trying it out yourself, getting started takes just minutes."
-            primaryCta={{
-              label: "Build a SensePC",
-              onClick: onGetStarted,
-            }}
-            secondaryCta={{ label: "Contact Sales", onClick: onGetStarted }}
+            actions={
+              <GetStartedCtaActions
+                primaryLabel="Build a SensePC"
+                secondaryLabel="Contact Sales"
+              />
+            }
           />
         </div>
       </div>
     </MainLayout>
-  );
-};
+);
 
 export default SensePCPage;

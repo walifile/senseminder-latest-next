@@ -1,19 +1,16 @@
-"use client";
-
 import React from "react";
 import FAQ from "@/app/home/_components/faq";
+import { MainLayout } from "@/app/home/_components/main-layout";
+import { GetStartedCtaActions } from "@/app/products/_components/get-started-cta-actions";
 import { GetStartedCtaSection } from "@/app/products/_components/get-started-cta-section";
+import SenseCloudPricingSection from "@/app/products/_components/sensecloud-pricing-section";
 import RealWorldUse, {
   type RealWorldUseItem,
 } from "@/app/products/_components/real-world-use";
 
-import { useGetStartedNav } from "@/hooks/use-get-started";
-
 import Hero from "./hero";
-import { MainLayout } from "./layout";
 import WhyTeamsChoose from "./why-teams-choose";
 import RentSmarterProcess from "./how-it-works";
-import SmartStoragePricing from "./smartstorage-pricing";
 
 const senseCloudFaqItems = [
   {
@@ -65,38 +62,35 @@ const REAL_WORLD_ITEMS: RealWorldUseItem[] = [
   },
 ];
 
-const SenseCloudPage = () => {
-  const onGetStarted = useGetStartedNav();
+const SenseCloudPage = () => (
+  <MainLayout>
+    <Hero />
+    <WhyTeamsChoose />
+    <RentSmarterProcess />
 
-  return (
-    <MainLayout>
-      <Hero />
-      <WhyTeamsChoose />
-      <RentSmarterProcess />
+    <RealWorldUse
+      heading="Cloud Storage Solutions That Make Sense"
+      items={REAL_WORLD_ITEMS}
+    />
 
-      <RealWorldUse
-        heading="Cloud Storage Solutions That Make Sense"
-        items={REAL_WORLD_ITEMS}
-      />
+    <SenseCloudPricingSection />
 
-      <SmartStoragePricing />
+    <FAQ
+      items={senseCloudFaqItems}
+      subtitle="Everything you need to know about Sense Cloud"
+    />
 
-      <FAQ
-        items={senseCloudFaqItems}
-        subtitle="Everything you need to know about Sense Cloud"
-      />
-
-      <GetStartedCtaSection
-        title="Power your Sense PC with secure storage."
-        description="Get started by choosing the storage option that fits your work."
-        primaryCta={{
-          label: "Get Started with SensePC",
-          onClick: onGetStarted,
-        }}
-        secondaryCta={{ label: "Contact Sales", onClick: onGetStarted }}
-      />
-    </MainLayout>
-  );
-};
+    <GetStartedCtaSection
+      title="Power your Sense PC with secure storage."
+      description="Get started by choosing the storage option that fits your work."
+      actions={
+        <GetStartedCtaActions
+          primaryLabel="Get Started with SensePC"
+          secondaryLabel="Contact Sales"
+        />
+      }
+    />
+  </MainLayout>
+);
 
 export default SenseCloudPage;

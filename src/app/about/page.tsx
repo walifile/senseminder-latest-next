@@ -9,6 +9,22 @@ export const metadata: Metadata = {
   title: aboutMeta.title,
   description: aboutMeta.description,
   keywords: aboutMeta.keywords,
+  alternates: {
+    canonical: "/about",
+  },
+  openGraph: {
+    title: aboutMeta.title,
+    description: aboutMeta.description,
+    url: "/about",
+    type: "website",
+    images: ["/sensepc-logo.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: aboutMeta.title,
+    description: aboutMeta.description,
+    images: ["/sensepc-logo.png"],
+  },
 };
 
 export default function About() {

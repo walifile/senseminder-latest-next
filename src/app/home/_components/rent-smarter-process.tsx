@@ -38,11 +38,6 @@ const RentSmarterProcess: React.FC = () => {
   const onBuildPc = useBuildPcNav();
   return (
   <section data-testid="home-rent-smarter-process" className="relative">
-    <div className="z-0 absolute -top-80 -left-96 blur-[160px] md:blur-[200px] w-60 md:w-[400px] h-full opacity-40 bg-[#9C05BF]" />
-    <div className="z-0 absolute top-0 -left-72 blur-[160px] md:blur-[200px] w-60 md:w-[400px] h-full opacity-40 bg-[#4027E5]" />
-
-    <div className="z-0 absolute w-[267px] h-[50%] opacity-40 top-1/2 -translate-y-1/2 -right-[200px] bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)] blur-[150px]" />
-
     <div className="container my-12 md:my-20 relative grid lg:grid-cols-5 gap-8 md:gap-24">
       {/* Left Content */}
       <motion.div

@@ -11,6 +11,7 @@ type GradientInfoCardProps = {
   children: React.ReactNode;
   className?: string;
   rightImage?: string;
+  hideMobileRightCircleGlow?: boolean;
 };
 
 export function GradientInfoCard({
@@ -19,6 +20,7 @@ export function GradientInfoCard({
   children,
   className,
   rightImage = "",
+  hideMobileRightCircleGlow = false,
 }: GradientInfoCardProps) {
   return (
     <div className={cn("relative h-full", className)}>
@@ -84,7 +86,12 @@ export function GradientInfoCard({
         )}
 
         {rightImage && (
-          <div className="pointer-events-none absolute top-10 right-[150px] w-[313px] h-[313px] rounded-[313px] bg-[rgba(46,45,236,0.53)] backdrop-blur-[100px] -z-10 blur-[100px] opacity-50" />
+          <div
+            className={cn(
+              "pointer-events-none absolute top-10 right-[150px] w-[313px] h-[313px] rounded-[313px] bg-[rgba(46,45,236,0.53)] backdrop-blur-[100px] -z-10 blur-[100px] opacity-50",
+              hideMobileRightCircleGlow && "hidden md:block"
+            )}
+          />
         )}
 
         {/* Conditional Rendering of the Right Image */}

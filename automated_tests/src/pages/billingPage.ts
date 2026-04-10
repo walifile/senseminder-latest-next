@@ -19,8 +19,8 @@ export class BillingPage {
     constructor(page: Page) {
         this.page = page;
         this.frame = page.frameLocator('iframe[name^="__privateStripeFrame"]').first();
-        this.walletBalance = page.locator('div:has-text("Wallet Balance")').locator('div.text-2xl.font-bold').first();
-        this.addPaymentMethodButton = page.locator('button:has-text("Add Payment Method")');
+        this.walletBalance = page.locator('div[data-testid="billing-wallet-balance"]').first();
+        this.addPaymentMethodButton = page.locator('button:has-text("Manage Payment")');
         this.cardholderNameInput = page.locator('input[placeholder="Cardholder name"]');
         this.cardNumberInput = this.frame.locator('input[name="cardnumber"]').first();
         this.expiryInput = this.frame.locator('input[placeholder="MM / YY"]');

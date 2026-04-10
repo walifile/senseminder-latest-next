@@ -36,6 +36,7 @@ import { Copy, Loader2, Download } from "lucide-react";
 
 // import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 import type { FileItem } from "../types";
 
@@ -55,6 +56,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
   region,
 }) => {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const [sharePermissions, setSharePermissions] = useState<"view" | "edit">(
     "view"
@@ -70,6 +72,15 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
   const userId = useSelector((state: RootState) => state.auth.user?.id);
   const [shareFile, { isLoading }] = useShareFileMutation();
   const [cancelShare, { isLoading: isCancelling }] = useCancelShareMutation();
+  const isFolder = file?.fileType === "folder";
+  const titleText =
+    isMobile && shareLink
+      ? isFolder
+        ? "Folder Shared"
+        : "File Shared"
+      : isFolder
+      ? `Share ${file?.fileName ?? "folder"}`
+      : `Share ${file?.fileName ?? "file"}`;
 
   useEffect(() => {
     if (!open) {
@@ -172,14 +183,31 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         data-testid="storage-share-modal"
+        closeClassName="right-3 top-3 sm:right-4 sm:top-4"
+        closeIconClassName="h-4 w-4 sm:h-7 sm:w-7"
         className="sm:max-w-[640px]"
       >
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            Share {file?.fileName}
+        <DialogHeader className="space-y-2 pr-10 sm:pr-0">
+          <DialogTitle className="text-center leading-tight sm:text-left">
+            <span className={isMobile && shareLink ? "" : "break-words"}>
+              {isMobile && shareLink ? (
+                titleText
+              ) : (
+                <span className="break-words">
+                  Share{" "}
+                  <span className="break-all">
+                    {file?.fileName}
+                  </span>
+                </span>
+              )}
+            </span>
           </DialogTitle>
           <DialogDescription>
-            {file?.fileType === "folder"
+            {shareLink
+              ? isFolder
+                ? "Your folder link is ready to copy and manage."
+                : "Your file link is ready to copy and manage."
+              : isFolder
               ? "Create a link to share this folder and all its contents"
               : "Create a link to share this file with others"}
           </DialogDescription>
@@ -187,7 +215,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
 
         <div className="space-y-4 py-4">
           {shareLink && (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label className="flex items-center gap-2">
                 {/* Link icon */}
                 <svg
@@ -200,71 +228,80 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                 </svg>
                 Share link
               </Label>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <Input
                   value={shareLink}
                   readOnly
-                  className="flex-1 min-w-[60%] font-mono text-xs"
+                  className="w-full min-w-0 font-mono text-xs sm:flex-1 sm:min-w-[60%]"
                 />
-                <Button variant="outline" size="sm" onClick={handleCopyLink}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyLink}
+                  className="w-full justify-center sm:w-auto"
+                >
                   <Copy className="h-4 w-4 mr-2" />
                   Copy
                 </Button>
-                {file?.fileType !== "folder" && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={async () => {
-                      try {
-                        setIsDownloadingShare(true);
-                        const response = await fetch(downloadUrl || shareLink);
-                        const blob = await response.blob();
-                        const blobUrl = window.URL.createObjectURL(blob);
+                <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
+                  {file?.fileType !== "folder" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          setIsDownloadingShare(true);
+                          const response = await fetch(downloadUrl || shareLink);
+                          const blob = await response.blob();
+                          const blobUrl = window.URL.createObjectURL(blob);
 
-                        const a = document.createElement("a");
-                        a.href = blobUrl;
-                        a.download = file?.fileName || "download";
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        window.URL.revokeObjectURL(blobUrl);
-                      } catch (error) {
-                        Logger.error("Download failed:", error);
-                        toast({
-                          title: "Download Error",
-                          description:
-                            "Could not download the file. Try again later.",
-                          variant: "destructive",
-                        });
-                      } finally {
-                        setIsDownloadingShare(false);
-                      }
-                    }}
-                    disabled={isDownloadingShare}
-                  >
-                    {isDownloadingShare ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Downloading...
-                      </>
-                    ) : (
-                      <>
-                        <Download className="h-4 w-4 mr-2" />
-                        Download
-                      </>
-                    )}
-                  </Button>
-                )}
-                {shareId && (
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleCancelShare}
-                    disabled={isCancelling}
-                  >
-                    {isCancelling ? "Cancelling..." : "Cancel Share"}
-                  </Button>
-                )}
+                          const a = document.createElement("a");
+                          a.href = blobUrl;
+                          a.download = file?.fileName || "download";
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          window.URL.revokeObjectURL(blobUrl);
+                        } catch (error) {
+                          Logger.error("Download failed:", error);
+                          toast({
+                            title: "Download Error",
+                            description:
+                              "Could not download the file. Try again later.",
+                            variant: "destructive",
+                          });
+                        } finally {
+                          setIsDownloadingShare(false);
+                        }
+                      }}
+                      disabled={isDownloadingShare}
+                      className="w-full justify-center sm:w-auto"
+                    >
+                      {isDownloadingShare ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Downloading...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-4 w-4 mr-2" />
+                          Download
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  {shareId && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleCancelShare}
+                      disabled={isCancelling}
+                      className="w-full justify-center sm:w-auto"
+                    >
+                      {isCancelling ? "Cancelling..." : "Cancel Share"}
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -333,7 +370,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
           </div> */}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="gap-3">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}

@@ -135,7 +135,7 @@ const QuickStats = ({ blurValues = false }: QuickStatsProps) => {
         >
           {/* Content sits on top of illustration */}
           <div className="relative z-10 flex h-full flex-col justify-between gap-4 md:flex-row md:items-center">
-            <div className="flex flex-1 flex-col justify-between gap-4">
+            <div className="flex flex-1 flex-col justify-between gap-4 pr-24 sm:pr-28 md:pr-0">
               {promoInfo?.eligible && !hasPromoAmounts ? (
                 <>
                   <div className="space-y-1">
@@ -236,13 +236,13 @@ const QuickStats = ({ blurValues = false }: QuickStatsProps) => {
           </div>
 
           {/* Illustration pinned to bottom-right like Figma */}
-          <div className="pointer-events-none absolute bottom-0 right-0 hidden md:block">
+          <div className="pointer-events-none absolute bottom-0 right-0 md:bottom-0 md:right-0 md:top-auto">
             <Image
               src="/assets/dashboard/cashback.svg"
               alt="Promotion & Cashback illustration"
               width={193}
               height={144}
-              className="h-[144px] w-[193px] object-contain translate-x-[25px] translate-y-[16px]"
+              className="h-[102px] w-[136px] object-contain translate-x-[10px] translate-y-[8px] opacity-80 md:h-[144px] md:w-[193px] md:translate-x-[25px] md:translate-y-[16px] md:opacity-100"
               priority
             />
           </div>
@@ -295,13 +295,13 @@ const QuickStats = ({ blurValues = false }: QuickStatsProps) => {
           </div>
 
           {/* illustration pinned bottom-right */}
-          <div className="pointer-events-none absolute bottom-0 right-0 hidden md:block">
+          <div className="pointer-events-none absolute bottom-0 right-0 md:bottom-0 md:right-0 md:top-auto">
             <Image
               src="/assets/dashboard/wallet.svg"
               alt="Wallet balance illustration"
               width={154}
               height={160}
-              className="h-[160px] w-[154px] object-contain translate-x-[25px] translate-y-[20px]"
+              className="h-[104px] w-[104px] object-contain translate-x-[8px] translate-y-[10px] opacity-80 md:h-[160px] md:w-[154px] md:translate-x-[25px] md:translate-y-[20px] md:opacity-100"
             />
           </div>
         </DashboardCard>
@@ -352,13 +352,13 @@ const QuickStats = ({ blurValues = false }: QuickStatsProps) => {
           </div>
 
           {/* illustration pinned bottom-right */}
-          <div className="pointer-events-none absolute bottom-0 right-0 hidden md:block">
+          <div className="pointer-events-none absolute bottom-0 right-0 md:bottom-0 md:right-0 md:top-auto">
             <Image
               src="/assets/dashboard/monthly.svg"
               alt="Monthly spending illustration"
               width={200}
               height={160}
-              className="h-[160px] w-[200px] object-contain translate-x-[25px] translate-y-[20px]"
+              className="h-[104px] w-[128px] object-contain translate-x-[8px] translate-y-[10px] opacity-80 md:h-[160px] md:w-[200px] md:translate-x-[25px] md:translate-y-[20px] md:opacity-100"
             />
           </div>
         </DashboardCard>

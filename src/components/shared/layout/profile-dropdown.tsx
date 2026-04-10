@@ -179,8 +179,8 @@ const ProfileDropdown = () => {
             </Avatar>
 
             <div className="hidden text-left md:block">
-              <p className="text-base font-medium">{fullName}</p>
-              <p className="text-sm text-muted-foreground">{user?.email}</p>
+              <p className="text-sm font-medium leading-5">{fullName}</p>
+              <p className="text-xs leading-4 text-muted-foreground">{user?.email}</p>
             </div>
 
             <ChevronDown className="hidden h-4 w-4 md:block" />

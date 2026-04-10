@@ -1,5 +1,3 @@
-// src/app/auth/page.tsx
-
 "use client";
 
 import Image from "next/image";
@@ -19,7 +17,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Mail, Lock } from "lucide-react";
+import { Eye, Mail, Lock, EyeOff } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
 
@@ -55,6 +53,7 @@ export default function LoginPage() {
   const [isMfaSelectOpen, setIsMfaSelectOpen] = useState(false);
   const [isMfaTotpOpen, setIsMfaTotpOpen] = useState(false);
   const [isMfaEmailOpen, setIsMfaEmailOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const methods = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -183,80 +182,50 @@ export default function LoginPage() {
 
   return (
     <>
-      <div className="w-full px-4 md:px-6 pt-24 md:pt-18 lg:pt-40 xl:pt-[100px] 2xl:pt-[122px] pb-16 md:pb-20">
-        {/* Overall width wrapper */}
-        <div className="mx-auto w-full max-w-[960px] lg:max-w-[1040px] xl:max-w-[1200px] 2xl:max-w-[1369px]">
-          {/* Outer card now uses PublicCard for bg + border + glass logic */}
+      <div className="w-full px-4 pb-10 pt-24 md:px-6 md:pb-14 md:pt-20 lg:pt-[150px]">
+        <div className="mx-auto w-full max-w-[1280px]">
           <PublicCard
             className={cn(
-              "relative mx-auto w-full max-w-[1320px]",
-              // keep layout/padding here, card visuals come from PublicCard
-              "px-[20px] md:px-[30px] pt-[30px] pb-[30px]"
+              "relative mx-auto w-full max-w-[940px] overflow-hidden rounded-[28px]"
             )}
           >
-            {/* Light-mode ellipse glow on top-right of card */}
-            <div
-              className="
-                pointer-events-none absolute
-                -top-[185px] right-[-50px]
-                h-[436px] w-[739px]
-                dark:hidden
-                z-0
-              "
-            >
-              <Image
-                src="/assets/authlayout/light/card-Ellipse 6.png"
-                alt=""
-                fill
-                className="h-full w-full"
-              />
-            </div>
+            <div className="relative z-10 grid gap-6 px-5 py-6 md:px-7 md:py-7 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,0.78fr)] lg:items-center lg:gap-8 lg:px-8 lg:py-8">
+              <div className="flex items-start justify-center lg:justify-start">
+                <div className="w-full max-w-[430px] space-y-4">
+                  <div className="space-y-3">
+                    <h2 className="font-space-grotesk text-[24px] font-bold leading-[1.15] text-slate-900 dark:text-white md:text-[25px]">
+                      Access your Sense PC account
+                    </h2>
+                  </div>
 
-            {/* Inner layout: illustration | form */}
-            <div
-              className="
-                relative z-10 grid
-                gap-8 lg:gap-16
-                lg:grid-cols-[0.8fr_0.95fr]
-              "
-            >
-              {/* LEFT: illustration */}
-              <div className="flex items-center justify-center">
-                <div className="w-full max-w-[360px] md:max-w-[420px] lg:max-w-[460px] xl:max-w-[520px] 2xl:max-w-[600px]">
-                  <Image
-                    src="/assets/authlayout/light/login-illustration.svg"
-                    alt="Sense PC cloud infrastructure illustration"
-                    width={622}
-                    height={650}
-                    priority
-                    className="h-auto w-full object-contain dark:hidden"
-                  />
-                  <Image
-                    src="/assets/authlayout/light/login-illustration-dark.svg"
-                    alt="Sense PC cloud infrastructure illustration"
-                    width={622}
-                    height={650}
-                    priority
-                    className="h-auto w-full object-contain hidden dark:block dark:opacity-80"
-                  />
+                  <div className="relative w-full max-w-[400px]">
+                    <Image
+                      src="/assets/authlayout/light/login-illustration.svg"
+                      alt="Sense PC cloud infrastructure illustration"
+                      width={622}
+                      height={650}
+                      priority
+                      className="h-auto w-full object-contain dark:hidden"
+                    />
+                    <Image
+                      src="/assets/authlayout/light/login-illustration-dark.svg"
+                      alt="Sense PC cloud infrastructure illustration"
+                      width={622}
+                      height={650}
+                      priority
+                      className="hidden h-auto w-full object-contain dark:block dark:opacity-80"
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* RIGHT: login form */}
-              <div className="flex items-center">
-                <div className="relative mx-auto w-full max-w-[520px]">
+              <div className="flex items-center justify-center">
+                <div className="relative mx-auto w-full max-w-[380px]">
                   <div className="relative z-10">
-                    <div className="mb-8 text-center">
-                      <h1
-                        className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl"
-                        data-testid="dashboard-welcome-heading"
-                      >
-                        <span className="sr-only">Welcome Back</span>
-                        Sign in to Access Your Sense PC
-                      </h1>
-                      <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">
-                        Welcome Back! Please Enter Your Details.
-                      </p>
+                    <div className="mb-5 text-center">
+                      <div className="inline-flex items-center rounded-full bg-[#2530F0]/10 px-3 py-1.5 text-xs font-medium text-[#2530F0] dark:bg-white/10 dark:text-[#B9C2D5]">
+                        Log in
+                      </div>
                     </div>
 
                     <Form
@@ -264,11 +233,10 @@ export default function LoginPage() {
                       onSubmit={handleSubmit(onSubmit)}
                       submitOnEnter
                     >
-                      <div className="space-y-5">
-                        {/* Email */}
+                      <div className="space-y-3.5">
                         <div className="space-y-1.5">
                           <div className="relative">
-                            <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                            <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                             <Input
                               id="email"
                               type="email"
@@ -278,7 +246,7 @@ export default function LoginPage() {
                               uiSize="lg"
                               intent={errors.email ? "error" : "default"}
                               aria-invalid={!!errors.email}
-                              className="pl-11"
+                              className="h-9 pl-10 text-sm"
                             />
                           </div>
                           {errors.email && (
@@ -288,21 +256,36 @@ export default function LoginPage() {
                           )}
                         </div>
 
-                        {/* Password */}
                         <div className="space-y-1.5">
                           <div className="relative">
-                            <Lock className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                            <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                             <Input
                               id="password"
-                              type="password"
+                              type={showPassword ? "text" : "password"}
                               placeholder="Password"
                               {...register("password")}
                               data-testid="login-password-input"
                               uiSize="lg"
                               intent={errors.password ? "error" : "default"}
                               aria-invalid={!!errors.password}
-                              className="pl-11 pr-11"
+                              className="h-9 pl-10 pr-10 text-sm"
                             />
+
+                            <button
+                              type="button"
+                              className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
+                              onClick={() => setShowPassword((prev) => !prev)}
+                              tabIndex={-1}
+                              aria-label={
+                                showPassword ? "Hide password" : "Show password"
+                              }
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
                           </div>
                           {errors.password && (
                             <p className="text-xs text-red-500">
@@ -335,20 +318,22 @@ export default function LoginPage() {
                           </button>
                         </div>
 
-                        {/* Primary button */}
                         <Button
                           type="submit"
                           size="lg"
-                          className="mt-3 w-full rounded-full text-sm font-medium"
+                          className={cn(
+                            "mt-3 h-9 w-full rounded-full text-sm font-medium",
+                            "bg-gradient-to-l from-[#a801ba] to-[#2530f0]",
+                            "hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+                          )}
                           disabled={isLoading}
                           data-testid="login-button"
                         >
-                          {isLoading ? "Logging in..." : "Login"}
+                          {isLoading ? "Logging in..." : "Log-in"}
                         </Button>
                       </div>
                     </Form>
 
-                    {/* Social login + footer */}
                     <div className="mt-5 space-y-3">
                       <div className="flex items-center text-xs">
                         <span className="h-px flex-1 bg-slate-200/70 dark:bg-white/10" />
@@ -380,7 +365,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Dialogs */}
       <ForgotPasswordDialog
         isOpen={isForgotOpen}
         onClose={() => setIsForgotOpen(false)}

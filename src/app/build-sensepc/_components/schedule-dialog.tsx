@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import type { Schedule } from "@/api/schedule";
@@ -33,8 +31,27 @@ import {
   SelectContent,
   SelectTrigger,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogTitle,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+} from "@/components/ui/alert-dialog";
 
-import { X, Clock, Trash, Search, Calendar } from "lucide-react";
+import {
+  X,
+  Clock3,
+  Search,
+  Trash2,
+  Loader2,
+  Calendar,
+  AlertTriangle,
+  CalendarClock,
+} from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -42,6 +59,8 @@ interface Props {
   instanceId: string;
   onSuccess: () => void;
 }
+
+type ScheduleFrequency = "everyday" | "weekdays" | "weekends" | "custom";
 
 const detectTimeZone = (): string =>
   Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
@@ -81,13 +100,13 @@ export default function ScheduleDialog({
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [existingSchedule, setExistingSchedule] = useState<Schedule | null>(
-    null
+    null,
   );
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const [selectedTimeZone, setSelectedTimeZone] = useState(detectTimeZone());
-  const [scheduleFrequency, setScheduleFrequency] = useState<
-    "everyday" | "weekdays" | "weekends" | "custom"
-  >("everyday");
+  const [scheduleFrequency, setScheduleFrequency] =
+    useState<ScheduleFrequency>("everyday");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
   const [autoStartTime, setAutoStartTime] = useState<string | null>(null);
@@ -98,13 +117,15 @@ export default function ScheduleDialog({
   const [loadedZones, setLoadedZones] = useState<
     { value: string; label: string }[]
   >([]);
+
   const [triggerGetSchedule] = useLazyGetScheduleQuery();
   const [saveSchedule] = useSaveScheduleMutation();
   const [deleteSchedule] = useDeleteScheduleMutation();
 
   const closeDialog = useCallback(() => {
+    if (loading) return;
     onClose();
-  }, [onClose]);
+  }, [loading, onClose]);
 
   useEffect(() => {
     if (!open || !instanceId) return;
@@ -116,7 +137,9 @@ export default function ScheduleDialog({
         const schedule = res?.data ?? null;
         setExistingSchedule(schedule);
         setSelectedTimeZone(schedule?.timeZone || detectTimeZone());
-        setScheduleFrequency(schedule?.frequency || "everyday");
+        setScheduleFrequency(
+          (schedule?.frequency as ScheduleFrequency) || "everyday",
+        );
         setCustomStartDate(schedule?.startDate || "");
         setCustomEndDate(schedule?.endDate || "");
         setAutoStartTime(schedule?.autoStartTime ?? null);
@@ -134,7 +157,7 @@ export default function ScheduleDialog({
         setEnabled(true);
       })
       .finally(() => setFetching(false));
-  }, [open, instanceId]);
+  }, [open, instanceId, triggerGetSchedule]);
 
   useEffect(() => {
     if (tzSearch.length > 0 && loadedZones.length === 0) {
@@ -152,12 +175,40 @@ export default function ScheduleDialog({
       .filter(
         (z) =>
           z.value.toLowerCase().includes(term) ||
-          z.label.toLowerCase().includes(term)
+          z.label.toLowerCase().includes(term),
       )
       .filter((z) => z.value !== selectedTimeZone);
   }, [tzSearch, loadedZones, selectedTimeZone]);
 
+  const summaryText = useMemo(() => {
+    const start = autoStartTime || "not set";
+    const stop = autoStopTime || "not set";
+
+    const labelMap: Record<ScheduleFrequency, string> = {
+      everyday: "Everyday",
+      weekdays: "Weekdays",
+      weekends: "Weekends",
+      custom: "Custom range",
+    };
+
+    return `${labelMap[scheduleFrequency]} • Start ${start} • Stop ${stop}`;
+  }, [scheduleFrequency, autoStartTime, autoStopTime]);
+
+  const hasAtLeastOneTime = useMemo(
+    () =>
+      Boolean(
+        (autoStartTime && autoStartTime.trim()) ||
+          (autoStopTime && autoStopTime.trim()),
+      ),
+    [autoStartTime, autoStopTime],
+  );
+
   const handleSave = async () => {
+    if (!hasAtLeastOneTime) {
+      alert("Please set at least an Auto Start time or an Auto Stop time.");
+      return;
+    }
+
     setLoading(true);
     try {
       await saveSchedule({
@@ -182,13 +233,12 @@ export default function ScheduleDialog({
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this schedule?"))
-      return;
+    if (!existingSchedule) return;
 
     setLoading(true);
     try {
       await deleteSchedule({ instanceId }).unwrap();
-
+      setConfirmDeleteOpen(false);
       onSuccess();
       closeDialog();
     } catch (err) {
@@ -199,22 +249,17 @@ export default function ScheduleDialog({
     }
   };
 
-  // Hide native picker icon but keep it clickable
   const hideNativePickerIndicator =
     "[&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:top-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-12 [&::-webkit-calendar-picker-indicator]:cursor-pointer";
-
-  const fieldInputBase =
-    "h-[52px] w-full px-4 text-[16px] leading-6";
 
   const timeInput = (
     label: string,
     value: string | null,
-    setter: (v: string | null) => void
+    setter: (v: string | null) => void,
   ) => (
-    <div className="space-y-2" key={label}>
-      <Label>
-        Auto {label} time{" "}
-        <span className="text-xs text-muted-foreground">(optional)</span>
+    <div className="space-y-1.5" key={label}>
+      <Label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+        {label}
       </Label>
 
       <div className="relative">
@@ -222,7 +267,7 @@ export default function ScheduleDialog({
           type="time"
           value={value ?? ""}
           onChange={(e) => setter(e.target.value || null)}
-          className={`${fieldInputBase} pr-20 ${hideNativePickerIndicator}`}
+          className={`h-[46px] w-full pr-20 ${hideNativePickerIndicator}`}
         />
 
         {value && (
@@ -230,14 +275,14 @@ export default function ScheduleDialog({
             type="button"
             size="icon"
             variant="ghost"
-            className="absolute right-11 top-1/2 h-9 w-9 -translate-y-1/2"
+            className="absolute right-10 top-1/2 h-8 w-8 -translate-y-1/2"
             onClick={() => setter(null)}
           >
             <X className="h-4 w-4 text-muted-foreground" />
           </Button>
         )}
 
-        <Clock className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Clock3 className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       </div>
     </div>
   );
@@ -248,150 +293,311 @@ export default function ScheduleDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={closeDialog}>
-      <DialogContent className="sm:max-w-[420px]">
-        <DialogHeader>
-          <DialogTitle>Schedule Your PC</DialogTitle>
-          <DialogDescription>
-            Auto start/stop your PC on a calendar to save costs.
-          </DialogDescription>
-        </DialogHeader>
-
-        {fetching ? (
-          <div className="py-12 text-center text-muted-foreground">
-            Loading schedule…
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {existingSchedule && (
-              <div className="flex items-center gap-2">
-                <Switch checked={enabled} onCheckedChange={setEnabled} />
-                <span className="text-sm">
-                  {enabled ? "Enabled" : "Disabled"}
-                </span>
+    <>
+      <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && closeDialog()}>
+        <DialogContent className="w-[min(92vw,36rem)] max-w-lg gap-0 overflow-hidden rounded-2xl border-zinc-300/60 p-0 dark:border-zinc-700/60">
+          <DialogHeader className="border-b border-zinc-300/50 px-5 pb-4 pt-5 dark:border-zinc-700/50">
+            <div className="flex items-start gap-3">
+              <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,rgba(79,70,229,0.12)_0%,rgba(124,58,237,0.18)_100%)] ring-1 ring-inset ring-violet-300/40 dark:ring-violet-500/25">
+                <CalendarClock className="h-5 w-5 text-violet-600 dark:text-violet-400" />
               </div>
-            )}
 
-            <div className="space-y-2">
-              <Label>Time Zone</Label>
-              <Select
-                value={selectedTimeZone}
-                onValueChange={setSelectedTimeZone}
-              >
-                <SelectTrigger variant="form" className="px-4">
-                  <SelectValue placeholder="Pick time zone" />
-                </SelectTrigger>
+              <div className="min-w-0">
+                <DialogTitle className="text-left text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                  Schedule Your PC
+                </DialogTitle>
+                <DialogDescription className="mt-1 text-left text-sm leading-6 text-zinc-700 dark:text-zinc-200">
+                  Set an automatic start and stop schedule to keep usage
+                  predictable.
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
 
-                <SelectContent
-                  variant="form"
-                  className="max-h-[300px] overflow-y-auto"
-                >
-                  <div className="sticky top-0 z-10 bg-input-surface p-2 dark:bg-select-surface-dark">
-                    <div className="relative">
-                      <Input
-                        placeholder="Search by region or UTC offset…"
-                        value={tzSearch}
-                        onChange={(e) => setTzSearch(e.target.value)}
-                        className="h-10 pl-10 pr-3 text-sm"
-                      />
-                      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <div className="px-5 py-4">
+            {fetching ? (
+              <div className="flex min-h-[180px] flex-col items-center justify-center gap-3 text-center">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <p className="text-sm text-muted-foreground">
+                  Loading schedule...
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {existingSchedule && (
+                  <div className="flex items-center justify-between rounded-xl border border-zinc-300/60 bg-white/70 px-3 py-2.5 dark:border-zinc-700/60 dark:bg-zinc-900/60">
+                    <div>
+                      <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                        Schedule status
+                      </p>
+                      <p className="text-xs text-zinc-600 dark:text-zinc-300">
+                        {enabled ? "Enabled" : "Disabled"}
+                      </p>
                     </div>
+
+                    <Switch checked={enabled} onCheckedChange={setEnabled} />
+                  </div>
+                )}
+
+                <div className="rounded-xl border border-zinc-300/60 bg-white/70 p-3 dark:border-zinc-700/60 dark:bg-zinc-900/60">
+                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                    Schedule summary
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-zinc-600 dark:text-zinc-300">
+                    {summaryText}
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                    Time Zone
+                  </Label>
+
+                  <Select
+                    value={selectedTimeZone}
+                    onValueChange={setSelectedTimeZone}
+                  >
+                    <SelectTrigger variant="form" className="h-[46px] px-4">
+                      <SelectValue placeholder="Pick time zone" />
+                    </SelectTrigger>
+
+                    <SelectContent
+                      variant="form"
+                      className="max-h-[300px] overflow-y-auto"
+                    >
+                      <div className="sticky top-0 z-10 bg-input-surface p-2 dark:bg-select-surface-dark">
+                        <div className="relative">
+                          <Input
+                            placeholder="Search time zone..."
+                            value={tzSearch}
+                            onChange={(e) => setTzSearch(e.target.value)}
+                            className="h-10 pl-10 pr-3 text-sm"
+                          />
+                          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        </div>
+                      </div>
+
+                      <SelectGroup>
+                        <SelectLabel>Suggested</SelectLabel>
+                        <SelectItem value={suggestedOption.value}>
+                          {suggestedOption.label}
+                        </SelectItem>
+                      </SelectGroup>
+
+                      {tzSearch && (
+                        <SelectGroup>
+                          <SelectLabel>Matching Results</SelectLabel>
+                          {filteredZones.map((z) => (
+                            <SelectItem key={z.value} value={z.value}>
+                              {z.label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                      Frequency
+                    </Label>
+
+                    <Select
+                      value={scheduleFrequency}
+                      onValueChange={(val: ScheduleFrequency) =>
+                        setScheduleFrequency(val)
+                      }
+                    >
+                      <SelectTrigger variant="form" className="h-[46px] px-4">
+                        <SelectValue placeholder="Everyday" />
+                      </SelectTrigger>
+
+                      <SelectContent variant="form">
+                        <SelectItem value="everyday">Everyday</SelectItem>
+                        <SelectItem value="weekdays">Weekdays</SelectItem>
+                        <SelectItem value="weekends">Weekends</SelectItem>
+                        <SelectItem value="custom">Custom range</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
-                  <SelectGroup>
-                    <SelectLabel>Suggested</SelectLabel>
-                    <SelectItem value={suggestedOption.value}>
-                      {suggestedOption.label}
-                    </SelectItem>
-                  </SelectGroup>
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                      Time Zone Offset
+                    </Label>
+                    <div className="flex h-[46px] items-center rounded-md border border-input bg-background px-3 text-sm text-muted-foreground">
+                      {getOffset(selectedTimeZone)}
+                    </div>
+                  </div>
+                </div>
 
-                  {tzSearch && (
-                    <SelectGroup>
-                      <SelectLabel>Matching Results</SelectLabel>
-                      {filteredZones.map((z) => (
-                        <SelectItem key={z.value} value={z.value}>
-                          {z.label}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
+                {scheduleFrequency === "custom" && (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                        Start Date
+                      </Label>
 
-            <div className="space-y-2">
-              <Label>Frequency</Label>
-              <Select
-                value={scheduleFrequency}
-                onValueChange={(
-                  val: "everyday" | "weekdays" | "weekends" | "custom"
-                ) => setScheduleFrequency(val)}
-              >
-                <SelectTrigger variant="form" className="px-4">
-                  <SelectValue placeholder="Everyday" />
-                </SelectTrigger>
-
-                <SelectContent variant="form">
-                  <SelectItem value="everyday">Everyday</SelectItem>
-                  <SelectItem value="weekdays">Weekdays</SelectItem>
-                  <SelectItem value="weekends">Weekends</SelectItem>
-                  <SelectItem value="custom">Custom date range</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {scheduleFrequency === "custom" && (
-              <div className="space-y-2">
-                <Label>Custom Date Range</Label>
-                <div className="grid gap-3">
-                  {["Start", "End"].map((label, idx) => {
-                    const val = idx === 0 ? customStartDate : customEndDate;
-                    const setter =
-                      idx === 0 ? setCustomStartDate : setCustomEndDate;
-
-                    return (
-                      <div className="relative" key={label}>
+                      <div className="relative">
                         <Input
                           type="date"
-                          placeholder={label}
-                          value={val}
-                          onChange={(e) => setter(e.target.value)}
-                          className={`${fieldInputBase} pr-14 ${hideNativePickerIndicator}`}
+                          value={customStartDate}
+                          onChange={(e) => setCustomStartDate(e.target.value)}
+                          className={`h-[46px] pr-12 ${hideNativePickerIndicator}`}
                         />
-                        <Calendar className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Calendar className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       </div>
-                    );
-                  })}
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                        End Date
+                      </Label>
+
+                      <div className="relative">
+                        <Input
+                          type="date"
+                          value={customEndDate}
+                          onChange={(e) => setCustomEndDate(e.target.value)}
+                          className={`h-[46px] pr-12 ${hideNativePickerIndicator}`}
+                        />
+                        <Calendar className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {timeInput("Auto Start", autoStartTime, setAutoStartTime)}
+                  {timeInput("Auto Stop", autoStopTime, setAutoStopTime)}
                 </div>
+
+                {!hasAtLeastOneTime && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-3 dark:border-amber-900/40 dark:bg-amber-950/20">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                      <p className="text-xs leading-5 text-zinc-700 dark:text-zinc-300">
+                        Set at least one time:{" "}
+                        <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                          Auto Start
+                        </span>{" "}
+                        or{" "}
+                        <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                          Auto Stop
+                        </span>
+                        .
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
-
-            {timeInput("Start", autoStartTime, setAutoStartTime)}
-            {timeInput("Stop", autoStopTime, setAutoStopTime)}
           </div>
-        )}
 
-        <DialogFooter className="mt-4 flex flex-col md:flex-col gap-2 sm:space-x-0">
-          <Button
-            onClick={handleSave}
-            disabled={loading || fetching}
-            className="w-full"
-          >
-            {existingSchedule ? "Update Schedule" : "Create Schedule"}
-          </Button>
+          <DialogFooter className="border-t border-zinc-300/50 px-5 py-4 sm:justify-end dark:border-zinc-700/50">
+            {existingSchedule && (
+              <Button
+                variant="outline"
+                onClick={() => existingSchedule && setConfirmDeleteOpen(true)}
+                disabled={loading || fetching || !existingSchedule}
+                className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-900/40 dark:text-red-400 dark:hover:bg-red-950/20"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+            )}
 
-          {existingSchedule && (
             <Button
-              variant="destructive"
-              onClick={handleDelete}
+              variant="outline"
+              onClick={closeDialog}
               disabled={loading || fetching}
-              className="w-full"
+              className="border-zinc-300/60 bg-white/75 text-zinc-900 transition-all hover:bg-white dark:border-zinc-700/60 dark:bg-zinc-900/65 dark:text-zinc-100 dark:hover:bg-zinc-900"
             >
-              <Trash className="mr-2 h-4 w-4" /> Delete Schedule
+              Cancel
             </Button>
-          )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+
+            <Button
+              onClick={handleSave}
+              disabled={loading || fetching || !hasAtLeastOneTime}
+              className="bg-[linear-gradient(90deg,#4F46E5_0%,#7C3AED_55%,#C026D3_100%)] text-white shadow-[0_10px_30px_-12px_rgba(124,58,237,0.55)] hover:opacity-95"
+            >
+              {loading ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving...
+                </span>
+              ) : existingSchedule ? (
+                "Update Schedule"
+              ) : (
+                "Create Schedule"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog
+        open={confirmDeleteOpen}
+        onOpenChange={(nextOpen) => !loading && setConfirmDeleteOpen(nextOpen)}
+      >
+        <AlertDialogContent className="w-[min(92vw,30rem)] max-w-md gap-0 overflow-hidden rounded-2xl border-zinc-300/60 p-0 dark:border-zinc-700/60">
+          <AlertDialogHeader className="border-b border-zinc-300/50 px-5 pb-4 pt-5 dark:border-zinc-700/50">
+            <div className="flex items-start gap-3">
+              <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,rgba(220,38,38,0.12)_0%,rgba(220,38,38,0.18)_100%)] ring-1 ring-inset ring-red-300/40 dark:ring-red-500/25">
+                <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+
+              <div className="min-w-0">
+                <AlertDialogTitle className="text-left text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                  Delete Schedule
+                </AlertDialogTitle>
+                <AlertDialogDescription className="mt-1 text-left text-sm leading-6 text-zinc-700 dark:text-zinc-200">
+                  This will permanently remove the saved automatic start and stop
+                  schedule for this PC.
+                </AlertDialogDescription>
+              </div>
+            </div>
+          </AlertDialogHeader>
+
+          <div className="px-5 py-4">
+            <div className="rounded-xl border border-red-200 bg-red-50/80 p-3 dark:border-red-900/40 dark:bg-red-950/20">
+              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                Important
+              </p>
+              <p className="mt-1 text-xs leading-5 text-zinc-700 dark:text-zinc-300">
+                After deletion, this PC will no longer start or stop
+                automatically until a new schedule is created.
+              </p>
+            </div>
+          </div>
+
+          <AlertDialogFooter className="border-t border-zinc-300/50 px-5 py-4 sm:justify-end dark:border-zinc-700/50">
+            <AlertDialogCancel
+              disabled={loading}
+              className="mt-0 border-zinc-300/60 bg-white/75 text-zinc-900 transition-all hover:bg-white dark:border-zinc-700/60 dark:bg-zinc-900/65 dark:text-zinc-100 dark:hover:bg-zinc-900"
+            >
+              Cancel
+            </AlertDialogCancel>
+
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={loading}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              {loading ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Deleting...
+                </span>
+              ) : (
+                "Delete Schedule"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

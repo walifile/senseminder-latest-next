@@ -67,30 +67,37 @@ const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
 
   const isFolder = file.fileType === "folder";
 
-  return (
+      return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent data-testid="dashboard-sense-cloud-confirm-delete-dialog">
-        <DialogHeader>
-          <DialogTitle>
-            Delete {isFolder ? "folder" : "file"} "{file.fileName}"?
+      <DialogContent
+        data-testid="dashboard-sense-cloud-confirm-delete-dialog"
+        closeClassName="right-3 top-3 sm:right-4 sm:top-4"
+        closeIconClassName="h-4 w-4 sm:h-7 sm:w-7"
+      >
+        <DialogHeader className="pr-10 sm:pr-0">
+          <DialogTitle className="text-center leading-tight sm:text-left">
+            <span className="break-words">
+              Delete {isFolder ? "folder" : "file"}{" "}
+              <span className="break-all">"{file.fileName}"</span>?
+            </span>
           </DialogTitle>
           <DialogDescription>
             This will permanently delete the{" "}
             {isFolder ? "folder and all its contents" : "file"}. Are you sure?
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className="gap-3">
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
             Cancel
           </Button>
-        <Button
-          variant="destructive"
-          onClick={handleFileDelete}
-          disabled={isLoading}
-          data-testid="storage-confirm-delete-button"
-        >
-          {isLoading ? "Deleting..." : "Confirm Delete"}
-        </Button>
+          <Button
+            variant="destructive"
+            onClick={handleFileDelete}
+            disabled={isLoading}
+            data-testid="storage-confirm-delete-button"
+          >
+            {isLoading ? "Deleting..." : "Confirm Delete"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

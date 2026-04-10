@@ -1,4 +1,5 @@
 import { Page, Locator, expect, FrameLocator } from '@playwright/test';
+import {SensePCPage} from "./sensePCPage";
 
 export class UserManagementPage {
     readonly page: Page;
@@ -31,8 +32,9 @@ export class UserManagementPage {
 
     // Navigation
     async navigateToUserManagement(): Promise<void> {
-        await this.page.goto('/dashboard/users');
-        await this.page.waitForLoadState('networkidle');
+        const sensePCPage = new SensePCPage(this.page);
+        await sensePCPage.clickUsersFromSidebar();
+        console.log("Clicked Users from Sidebar")
     }
 
     // Invite User functionality

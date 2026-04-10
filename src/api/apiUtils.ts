@@ -7,6 +7,8 @@ import type {
 import appConfig from "@/config/app-config";
 import { clearAuth } from "@/redux/slices/auth/auth-slice";
 
+import { fetchAuthSession } from "aws-amplify/auth";
+
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const { BASE_URL } = appConfig;
@@ -18,13 +20,23 @@ const createBaseQuery = (useAuth: boolean = true, baseUrl: string = BASE_URL) =>
   fetchBaseQuery({
     baseUrl,
     credentials: "same-origin",
-    prepareHeaders: (headers, { getState }) => {
+    prepareHeaders: async (headers, { getState }) => {
       const state = getState() as { auth?: { token?: string | null } } | undefined;
-      const token = state?.auth?.token ?? null;
+      let token = state?.auth?.token ?? null;
 
       // If authentication is disabled, return headers without modifying
       if (!useAuth) {
         return headers;
+      }
+
+      try {
+        const session = await fetchAuthSession();
+        const freshToken = session.tokens?.idToken?.toString();
+        if (freshToken) {
+          token = freshToken;
+        }
+      } catch {
+        // Fall back to the persisted token if refresh/session lookup fails.
       }
 
       // Attach token if available
@@ -72,7 +84,24 @@ export const baseQueryWithReauth =
       result?.meta?.response?.status === 401 ||
       customError?.originalStatus === 401
     ) {
-      api.dispatch(clearAuth());
+      try {
+        await fetchAuthSession({ forceRefresh: true });
+        result = await baseQuery(args as FetchArgs, api, extraOptions);
+      } catch {
+        // Ignore refresh failure and fall through to clear auth.
+      }
+
+      const retryError = result.error as FetchBaseQueryError & {
+        originalStatus?: number;
+      };
+      const isStillUnauthorized =
+        result?.error?.status === 401 ||
+        result?.meta?.response?.status === 401 ||
+        retryError?.originalStatus === 401;
+
+      if (isStillUnauthorized) {
+        api.dispatch(clearAuth());
+      }
     }
 
     return result;

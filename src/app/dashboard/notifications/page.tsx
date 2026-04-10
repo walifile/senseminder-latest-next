@@ -195,33 +195,37 @@ const NotificationsPage = () => {
       >
         <CardContent className="p-0 space-y-6">
           {/* Header */}
-          <div className="flex justify-between items-center p-6 border-b border-black/10 dark:border-border">
-            <div className="flex flex-col items-left gap-2">
-              <h1 className="justify-start text-black dark:text-white text-3xl font-semibold font-['Space_Grotesk'] leading-10">
+          <div className="relative flex flex-col items-start gap-4 border-b border-black/10 p-4 dark:border-border md:flex-row md:items-center md:justify-between md:p-6">
+            <div className="flex flex-col items-left gap-2 pr-12 md:pr-0">
+              <h1 className="justify-start text-2xl font-semibold leading-8 text-black font-['Space_Grotesk'] dark:text-white md:text-3xl md:leading-10">
                 Notifications
               </h1>
               <p className="text-muted-foreground">
                 Manage your notifications
               </p>
             </div>
-            <div className="flex space-x-2">
+            <div className="absolute top-4 right-4 md:static md:flex md:w-auto md:space-x-2">
               {/* Preferences modal */}
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="lg" className="gap-2">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="h-10 w-10 gap-0 rounded-full p-0 md:h-14 md:w-auto md:gap-2 md:px-7"
+                  >
                     <Settings className="h-4 w-4" />
-                    Preferences
+                    <span className="hidden md:inline">Preferences</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent
                   data-testid="dashboard-notifications-preferences-dialog"
-                  className="sm:max-w-[425px] rounded-2xl border border-border/40 bg-gradient-to-b from-background/90 to-muted/40 shadow-2xl backdrop-blur-xl transition-all"
+                  className="w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] gap-5 rounded-2xl border border-border/40 bg-gradient-to-b from-background/90 to-muted/40 p-6 shadow-2xl backdrop-blur-xl transition-all sm:max-w-[425px] sm:p-8"
                 >
-                  <DialogHeader className="space-y-2 pb-2">
-                    <DialogTitle className="text-2xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">
+                  <DialogHeader className="space-y-2 pb-1 text-center sm:pb-2">
+                    <DialogTitle className="bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-center text-xl font-semibold text-transparent sm:text-left sm:text-2xl">
                       Notification Preferences
                     </DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription className="text-sm sm:text-base">
                       Toggle channels you’d like to receive.
                     </DialogDescription>
                   </DialogHeader>
@@ -234,7 +238,7 @@ const NotificationsPage = () => {
                   ].map(([key, label]) => (
                     <div
                       key={key}
-                      className="flex items-center justify-between space-x-4 py-2"
+                      className="flex items-center justify-between space-x-4 py-1.5 sm:py-2"
                     >
                       <div className="flex-1 space-y-1">
                         <Label htmlFor={key}>{label}</Label>
@@ -253,18 +257,30 @@ const NotificationsPage = () => {
             </div>
           </div>
 
-          <div className="p-6 pt-0">
+          <div className="p-4 pt-0 md:p-6 md:pt-0">
             {/* ─── Tabs & list ──────────────────────────────── */}
             <Tabs defaultValue="all" className="w-full">
-              <div className="flex items-center justify-between mb-4">
-                <TabsList className="inline-flex justify-start items-center bg-transparent gap-2">
-                  <TabsTrigger value="all" variant="gradient">
+              <div className="mb-4 flex flex-col items-stretch gap-3 md:flex-row md:items-center md:justify-between">
+                <TabsList className="flex w-full flex-wrap items-center justify-start gap-2 bg-transparent md:w-auto">
+                  <TabsTrigger
+                    value="all"
+                    variant="gradient"
+                    className="px-3 text-sm md:px-4 md:text-base"
+                  >
                     All
                   </TabsTrigger>
-                  <TabsTrigger value="unread" variant="gradient">
+                  <TabsTrigger
+                    value="unread"
+                    variant="gradient"
+                    className="px-3 text-sm md:px-4 md:text-base"
+                  >
                     Unread
                   </TabsTrigger>
-                  <TabsTrigger value="alerts" variant="gradient">
+                  <TabsTrigger
+                    value="alerts"
+                    variant="gradient"
+                    className="px-3 text-sm md:px-4 md:text-base"
+                  >
                     Alerts
                   </TabsTrigger>
                 </TabsList>
@@ -272,7 +288,7 @@ const NotificationsPage = () => {
                   variant="link"
                   size="sm"
                   onClick={handleMarkAll}
-                  className="text-black dark:text-white hover:text-secondary-foreground underline"
+                  className="self-start px-0 text-black underline hover:text-secondary-foreground dark:text-white md:self-auto"
                 >
                   Mark all as read
                 </Button>
@@ -352,7 +368,7 @@ const NotificationList: React.FC<ListProps> = ({
     <>
       <div
         data-testid="dashboard-notifications-list"
-        className="grid grid-cols-1 md:grid-cols-2 gap-5"
+        className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5"
       >
         {items.map((n) => (
           <NotificationCard
@@ -408,19 +424,19 @@ const NotificationCard: React.FC<CardProps> = ({ n, onRead, onNavigate }) => {
       >
         <X className="h-4 w-4" />
       </Button>
-      <CardContent className="p-4 md:p-6">
-        <div className="flex gap-3">
+      <CardContent className="p-4 pr-12 md:p-6 md:pr-14">
+        <div className="flex min-w-0 gap-3">
           {/* icon circle */}
           <div
-            className={`w-7 h-7 p-1.5 rounded-full flex items-center justify-center ${bgIconColor(n.severity)}`}
+            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full p-1.5 ${bgIconColor(n.severity)}`}
           >
             <Bell className="w-4 h-4 text-white" />
           </div>
 
-          <div className="flex-1 space-y-1">
+          <div className="min-w-0 flex-1 space-y-1">
             <div className="flex items-start justify-between gap-2">
               <h3
-                className={`text-lg font-medium font-['Inter'] leading-7 ${
+                className={`pr-2 text-lg font-medium leading-7 font-['Inter'] ${
                   n.isRead ? "" : "text-primary"
                 }`}
               >
@@ -428,11 +444,11 @@ const NotificationCard: React.FC<CardProps> = ({ n, onRead, onNavigate }) => {
               </h3>
             </div>
 
-            <p className="text-[#454545] dark:text-[#A3A3A3] text-sm font-normal font-['Inter'] leading-5">
+            <p className="break-words text-sm font-normal leading-5 text-[#454545] font-['Inter'] dark:text-[#A3A3A3]">
               {n.content}
             </p>
 
-            <div className="pt-2 flex justify-between">
+            <div className="flex flex-col items-start gap-2 pt-2 sm:flex-row sm:items-center sm:justify-between">
               <Button
                 variant="link"
                 size="sm"
@@ -444,14 +460,14 @@ const NotificationCard: React.FC<CardProps> = ({ n, onRead, onNavigate }) => {
 
               <div className="flex items-center gap-1">
                 <div
-                  className={`px-4 py-1.5 bg-${bgDateColor(n.severity)}-500/10 rounded-[60px] inline-flex justify-center items-center gap-2.5`}
+                  className={`inline-flex items-center justify-center gap-2.5 rounded-[60px] px-3 py-1.5 md:px-4 bg-${bgDateColor(n.severity)}-500/10`}
                 >
                   <div
                     className={`justify-start ${
                       bgDateColor(n.severity) === "yellow"
                         ? "text-[#F39C12]"
                         : `text-${bgDateColor(n.severity)}-500`
-                    } text-base font-normal font-['Inter'] leading-6`}
+                    } text-sm font-normal leading-5 font-['Inter'] md:text-base md:leading-6`}
                   >
                     {timeAgo(n.timestamp)}
                   </div>

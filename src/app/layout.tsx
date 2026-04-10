@@ -2,9 +2,11 @@ import "../styles/globals.css";
 
 import type { ReactNode } from "react";
 
+import { headers } from "next/headers";
 import { appMetadata } from "@/app/seo/metadata";
-import AppShell from "@/app/_components/app-shell";
 import { Inter, Poppins, Space_Grotesk } from "next/font/google";
+
+import RootShell from "@/components/shared/layout/root-shell";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,14 +26,20 @@ const poppins = Poppins({
 
 export const metadata = appMetadata;
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const pathname = (await headers()).get("x-pathname") || "";
+
   return (
     <html
       lang="en"
       className={`${inter.variable} ${spaceGrotesk.variable} ${poppins.variable}  overflow-x-hidden md:overflow-x-visible`}
     >
       <body suppressHydrationWarning className="font-inter">
-        <AppShell>{children}</AppShell>
+        <RootShell initialPathname={pathname}>{children}</RootShell>
       </body>
     </html>
   );

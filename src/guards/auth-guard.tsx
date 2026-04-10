@@ -2,7 +2,7 @@
 
 import type { RootState } from "@/redux/store";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { routes, publicRoutes } from "@/constants/routes";
 import { setUser, setLoading } from "@/redux/slices/auth/auth-slice";
@@ -29,14 +29,17 @@ export default function AuthGuard({ children }: AuthProviderProps) {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [initialized, setInitialized] = useState(false);
   const isLanding = pathname === "/";
+  const isAuthRoute = pathname.startsWith("/auth");
 
   // Treat entries ending with "/" as prefixes, except the root "/".
   const isPublicRoute = publicRoutes.some(
     (r) =>
-      pathname === r || (r !== "/" && r.endsWith("/") && pathname.startsWith(r))
+      pathname === r ||
+      (r !== "/" && r.endsWith("/") && pathname.startsWith(r)),
   );
+  const shouldSkipInitialization = isLanding || isAuthRoute;
 
-  const initializeAuth = async () => {
+  const initializeAuth = useCallback(async () => {
     try {
       dispatch(setLoading(true));
 
@@ -53,26 +56,31 @@ export default function AuthGuard({ children }: AuthProviderProps) {
         setUser({
           user: userInfo.userData,
           token: userInfo.token || "",
-        })
+        }),
       );
     } catch (error) {
       Logger.error("Auth initialization error:", error);
-      await handleSignOut();
       if (!isPublicRoute) {
+        await handleSignOut();
         router.replace(routes.auth);
       }
     } finally {
       dispatch(setLoading(false));
       setInitialized(true);
     }
-  };
+  }, [dispatch, isPublicRoute, router]);
 
   useEffect(() => {
-    if (isLanding) return;
-    if (!initialized) {
-      initializeAuth();
+    if (shouldSkipInitialization) {
+      setInitialized(true);
+      dispatch(setLoading(false));
+      return;
     }
-  }, [initialized, isLanding]);
+
+    if (!initialized) {
+      void initializeAuth();
+    }
+  }, [dispatch, initializeAuth, initialized, shouldSkipInitialization]);
 
   useEffect(() => {
     if (initialized && !isAuthenticated && !isPublicRoute) {

@@ -93,8 +93,8 @@ export default function ResetPasswordPage() {
   });
 
   const logoSrc = isDark
-    ? "/assets/authlayout/dark/sensepc-logo-code-dark.svg"
-    : "/assets/authlayout/light/sensepc-logo-code.svg";
+    ? "/assets/authlayout/dark/sensepc-logo-dark.png"
+    : "/assets/authlayout/light/sensepc-logo-code.png";
 
   const isOtpStep = step === "otp";
 

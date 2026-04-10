@@ -5,7 +5,6 @@ import type { RootState } from "@/redux/store";
 
 /* ---- External (alias first, then next/react) ---- */
 import { useSearchParams } from "next/navigation";
-import DCVViewer from "@/app/pc-viewer/_components/dcv-viewer";
 import React, { useRef, useState, Suspense, useEffect, useCallback } from "react";
 import { validateSessionWithPolling } from "@/app/pc-viewer/_components/sensepc-session";
 import { setLaunchVMResponse, selectLaunchVMResponse } from "@/redux/slices/dcv/dcv-slice";
@@ -41,8 +40,10 @@ import {
 /* ---- Relative ---- */
 import dcv from "../../../public/dcvjs/dcv";
 import FileStorageModal from "./_components/file-storage-modal";
+import { GamingModeModal } from "./_components/gaming-mode-modal";
 import { looksLikeDcvConn } from "./_components/file-transfer/types"; // adjust path
 import { DraggableSidebarHandle } from "./_components/draggable-sidebar-handle";
+import { GamingModeConfirmDialog } from "./_components/gaming-mode-confirm-dialog";
 
 /* ---------------- Types ---------------- */
 
@@ -165,6 +166,7 @@ function triggerBrowserDownload(url: string, filename?: string) {
 
 const DCViewerContent: React.FC = () => {
   const [fileModalOpen, setFileModalOpen] = useState(false);
+  const [showGamingModeModal, setShowGamingModeModal] = useState(false);
   const searchParams = useSearchParams();
   const pcParam = searchParams.get("pc");
   const sessionKey = pcParam ? decodeURIComponent(pcParam) : null;
@@ -178,19 +180,19 @@ const DCViewerContent: React.FC = () => {
 
   const [isConnected, setIsConnected] = useState(false);
   const [connectionState, setConnectionState] = useState<ConnectionState>("DISCONNECTED");
-  const [quality, setQuality] = useState("auto");
-  const [keyboardEnabled] = useState(true);
-  const [mouseEnabled] = useState(true);
-  const [audioEnabled] = useState(true);
+  const [, setQuality] = useState("auto");
+  // const [keyboardEnabled] = useState(true);
+  // const [mouseEnabled] = useState(true);
+  // const [audioEnabled] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-  const [tvEffect, setTvEffect] = useState<"on" | "off" | null>("on");
+  const [, setTvEffect] = useState<"on" | "off" | null>("on");
   const [_dcvError, setDcvError] = useState<Error | null>(null); // used via no-op below
 
-  const dcvConfig = { quality: "high", keyboard: true, mouse: true, touch: true, audio: true };
+  // const dcvConfig = { quality: "high", keyboard: true, mouse: true, touch: true, audio: true };
 
-  const [dcvSession] = useState<{ sessionId: string; sessionToken: string } | null>(null);
+  // const [dcvSession] = useState<{ sessionId: string; sessionToken: string } | null>(null);
   const connRef = useRef<DcvConnection | null>(null);
 
   const [connectionStats, setConnectionStats] = useState({
@@ -217,6 +219,18 @@ const DCViewerContent: React.FC = () => {
   const [micError, setMicError] = useState<string | null>(null);
   const [micSupported, setMicSupported] = useState<boolean | null>(null);
   const [micSupportReason, setMicSupportReason] = useState<string | null>(null);
+
+  const [showGamingModeConfirm, setShowGamingModeConfirm] = useState(false);
+
+  // state for pending native launch data  
+  const [isGamingModeLaunching, setIsGamingModeLaunching] = useState(false);
+  const [pendingNativeLaunch] = useState<{
+    sessionId: string;
+    sessionToken: string;
+    dnsName: string;
+    dcvPort?: number;
+    webUrlPath?: string;
+  } | null>(null);
 
   // ---- Microphone helpers (uses setMicrophone) ----
   async function requestAndEnableMic() {
@@ -285,26 +299,26 @@ const DCViewerContent: React.FC = () => {
 
   useEffect(() => {
     // ✅ always return a cleanup function (consistent-return)
-    if (!fileModalOpen) return () => {};
-  
+    if (!fileModalOpen) return () => { };
+
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-  
+
     return () => {
       document.body.style.overflow = prev;
     };
   }, [fileModalOpen]);
-  
+
   useEffect(() => {
     // ✅ always return a cleanup function (consistent-return)
-    if (typeof document === "undefined") return () => {};
-  
+    if (typeof document === "undefined") return () => { };
+
     document.body.classList.toggle("sensepc-modal-open", fileModalOpen);
-  
+
     return () => {
       document.body.classList.remove("sensepc-modal-open");
     };
-  }, [fileModalOpen]);  
+  }, [fileModalOpen]);
 
   // Ensure “unused” state vars are consumed (no-op reads to satisfy eslint)
   void _dcvError;
@@ -689,42 +703,135 @@ const DCViewerContent: React.FC = () => {
     }
   };
 
-  const handleDisconnect = () => {
-  const c = connRef.current;
-  if (!c) return;
-  if (instanceId && userId) {
-    void stopSession({ instanceId, userId });
-  }
+  // const handleDisconnect = () => {
+  //   const c = connRef.current;
+  //   if (!c) return;
+  //   if (instanceId && userId) {
+  //     void stopSession({ instanceId, userId });
+  //   }
 
-  setIsDisconnecting(true);
-  setIsLoading(true);
+  //   setIsDisconnecting(true);
+  //   setIsLoading(true);
 
-  try {
-    c._sensepcCleanup?.();
-  } catch {
-    /* no-op */
-  }
-  try {
-    void c.disconnect();
-  } catch {
-    /* no-op */
-  }
+  //   try {
+  //     c._sensepcCleanup?.();
+  //   } catch {
+  //     /* no-op */
+  //   }
+  //   try {
+  //     void c.disconnect();
+  //   } catch {
+  //     /* no-op */
+  //   }
 
-  connRef.current = null;
+  //   connRef.current = null;
 
-  // local optimistic UI (callback.disconnect will also run)
-  setTvEffect(null);
-  setIsConnected(false);
-  setConnectionState("DISCONNECTED");
+  //   // local optimistic UI (callback.disconnect will also run)
+  //   setTvEffect(null);
+  //   setIsConnected(false);
+  //   setConnectionState("DISCONNECTED");
 
-  setWebcamEnabled(false);
-  setWebcamDeviceId(undefined);
-  setWebcamError(null);
-  setMicEnabled(false);
-  setMicError(null);
-  setIsLoading(false);
-  setIsDisconnecting(false);
-};
+  //   setWebcamEnabled(false);
+  //   setWebcamDeviceId(undefined);
+  //   setWebcamError(null);
+  //   setMicEnabled(false);
+  //   setMicError(null);
+  //   setIsLoading(false);
+  //   setIsDisconnecting(false);
+  // };
+  const handleDisconnect = async () => {
+    const c = connRef.current;
+    if (!c) return;
+  
+    setIsDisconnecting(true);
+    setIsLoading(true);
+  
+    try {
+      if (instanceId && userId) {
+        await stopSession({ instanceId, userId }).unwrap();
+      }
+    } catch {
+      /* optional: log if needed */
+    }
+  
+    try {
+      c._sensepcCleanup?.();
+    } catch {
+      /* no-op */
+    }
+  
+    try {
+      await c.disconnect?.();
+    } catch {
+      /* no-op */
+    }
+  
+    connRef.current = null;
+  
+    setIsConnected(false);
+    setConnectionState("DISCONNECTED");
+    setWebcamEnabled(false);
+    setWebcamDeviceId(undefined);
+    setWebcamError(null);
+    setMicEnabled(false);
+    setMicError(null);
+    setIsLoading(false);
+    setIsDisconnecting(false);
+  };
+
+  const disconnectBrowserClientOnly = async () => {
+    const c = connRef.current;
+    if (!c) return;
+  
+    try {
+      c._sensepcCleanup?.();
+    } catch {
+      /* no-op */
+    }
+  
+    try {
+      await c.disconnect?.();
+    } catch {
+      /* no-op */
+    }
+  
+    connRef.current = null;
+  
+    setIsConnected(false);
+    setConnectionState("DISCONNECTED");
+    setWebcamEnabled(false);
+    setWebcamDeviceId(undefined);
+    setWebcamError(null);
+    setMicEnabled(false);
+    setMicError(null);
+  };
+
+  const openNativeDcvClient = ({
+    host,
+    sessionId,
+    authToken,
+    port = 443,
+    webUrlPath = "/",
+  }: {
+    host: string;
+    sessionId: string;
+    authToken: string;
+    port?: number;
+    webUrlPath?: string;
+  }) => {
+    const normalizedPath = webUrlPath.startsWith("/") ? webUrlPath : `/${webUrlPath}`;
+    const dcvUri =
+      `dcv://${host}:${port}${normalizedPath}` +
+      `?authToken=${encodeURIComponent(authToken)}` +
+      `#${encodeURIComponent(sessionId)}`;
+  
+    const a = document.createElement("a");
+    a.href = dcvUri;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
 
 
   // Stats
@@ -789,6 +896,213 @@ const DCViewerContent: React.FC = () => {
     autoCloseTimer.current = null;
   };
 
+  // const launchGamingMode = () => {
+  //   if (!sessionId || !authToken || !url) return;
+
+  //   const gatewayHost = url;
+
+  //   // 1. Try launching through custom URI protocol. 
+  //   // This supports auto-launch on systems (Windows/Mac/Linux) where DCV is installed.
+  //   const dcvUri = `dcv://${gatewayHost}:443/?authtoken=${encodeURIComponent(authToken)}&weburlpath=%2F#${sessionId}`;
+  //   window.location.href = dcvUri;
+
+  //   // 2. Show the modal explaining what to do if they don't have it.
+  //   setShowGamingModeModal(true);
+  // };
+
+  const launchGamingMode = async () => {
+    if (!sessionId || !authToken || !url) return;
+  
+    setIsGamingModeLaunching(true);
+    setShowGamingModeModal(false);
+  
+    let handoffConfirmed = false;
+    let fallbackTimer: number | undefined;
+    let handoffTimer: number | undefined;
+  
+    const cleanup = () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("blur", onBlur);
+      window.removeEventListener("focus", onFocus);
+  
+      if (handoffTimer) {
+        window.clearTimeout(handoffTimer);
+        handoffTimer = undefined;
+      }
+      if (fallbackTimer) {
+        window.clearTimeout(fallbackTimer);
+        fallbackTimer = undefined;
+      }
+    };
+  
+    const completeHandoff = async () => {
+      if (handoffConfirmed) return;
+      handoffConfirmed = true;
+      cleanup();
+  
+      try {
+        await disconnectBrowserClientOnly();
+      } finally {
+        setIsGamingModeLaunching(false);
+      }
+  
+      if (window.opener) {
+        window.setTimeout(() => {
+          try {
+            window.close();
+          } catch {
+            /* no-op */
+          }
+        }, 250);
+      }
+    };
+  
+    const scheduleHandoffCheck = () => {
+      if (handoffConfirmed || handoffTimer) return;
+  
+      handoffTimer = window.setTimeout(() => {
+        handoffTimer = undefined;
+  
+        // If the page is still hidden OR the browser still does not have focus,
+        // assume the native client actually took over.
+        if (document.visibilityState === "hidden" || !document.hasFocus()) {
+          void completeHandoff();
+        }
+      }, 1200);
+    };
+  
+    const cancelHandoffCheck = () => {
+      if (handoffTimer) {
+        window.clearTimeout(handoffTimer);
+        handoffTimer = undefined;
+      }
+    };
+  
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        scheduleHandoffCheck();
+      } else {
+        cancelHandoffCheck();
+      }
+    };
+  
+    const onPageHide = () => {
+      scheduleHandoffCheck();
+    };
+  
+    const onBlur = () => {
+      scheduleHandoffCheck();
+    };
+  
+    const onFocus = () => {
+      if (!handoffConfirmed) {
+        cancelHandoffCheck();
+      }
+    };
+  
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("blur", onBlur);
+    window.addEventListener("focus", onFocus);
+  
+    try {
+      openNativeDcvClient({
+        host: url,
+        sessionId,
+        authToken,
+        port: 443,
+        webUrlPath: "/",
+      });
+  
+      // If nothing took over after a short window, keep browser session alive
+      // and show the fallback modal.
+      fallbackTimer = window.setTimeout(() => {
+        if (handoffConfirmed) return;
+  
+        cleanup();
+        setShowGamingModeModal(true);
+        setIsGamingModeLaunching(false);
+      }, 2500);
+    } catch {
+      cleanup();
+      setShowGamingModeModal(true);
+      setIsGamingModeLaunching(false);
+    }
+  };
+
+//   const downloadDcvFile = () => {
+//     if (!sessionId || !authToken || !url) return;
+
+//     const gatewayHost = url;
+//     const dcvFileContent = `[version]
+// format=1.0
+
+// [connect]
+// host=${gatewayHost}
+// port=443
+// weburlpath=/
+// sessionid=${sessionId}
+// authtoken=${authToken}
+// `;
+
+//     const blob = new Blob([dcvFileContent], { type: "application/x-dcv" });
+//     const blobUrl = URL.createObjectURL(blob);
+//     const a = document.createElement("a");
+//     a.href = blobUrl;
+//     a.download = `GamingMode-${launchVMResponse?.pcName?.replace(/\s+/g, "_") || "Session"}.dcv`;
+//     a.style.display = "none";
+//     document.body.appendChild(a);
+//     a.click();
+//     document.body.removeChild(a);
+//     setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+//   };
+
+  const downloadDcvFile = () => {
+    const data =
+      pendingNativeLaunch ??
+      (sessionId && authToken && url
+        ? {
+            sessionId,
+            sessionToken: authToken,
+            dnsName: url,
+            dcvPort: 443,
+            webUrlPath: "/",
+          }
+        : null);
+
+    if (!data) return;
+
+    const dcvFileContent = `[version]
+  format=1.0
+
+  [connect]
+  host=${data.dnsName}
+  port=${data.dcvPort ?? 443}
+  weburlpath=${data.webUrlPath ?? "/"}
+  sessionid=${data.sessionId}
+  authtoken=${data.sessionToken}
+  transport=auto
+
+  [options]
+  fullscreen=true
+  promptreconnect=false
+  `;
+
+    const blob = new Blob([dcvFileContent], { type: "application/x-dcv" });
+    const blobUrl = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = `GamingMode-${launchVMResponse?.pcName?.replace(/\s+/g, "_") || "Session"}.dcv`;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+  };
+
   return (
     <div className="relative flex h-screen w-full overflow-hidden bg-gray-50 dark:bg-gray-950">
       {/* Fullscreen stage contains BOTH the viewer and the drawer */}
@@ -828,49 +1142,49 @@ const DCViewerContent: React.FC = () => {
                 <img src="/check-light.svg" alt="SensePC" className="hidden dark:block" />
 
                 {/* Status copy (improved) */}
-            {/* Status copy */}
-            <div className="mt-1 flex w-full max-w-[360px] flex-col items-center gap-3 text-center">
-              {/* Big primary status */}
-              {(isDisconnecting || isLoading || connectionState === "RECONNECTING") && (
-                <div className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-lg md:text-xl">
-                  {isDisconnecting ? "Disconnecting from your PC" : "Connecting to your PC"}
-                </div>
-              )}
+                {/* Status copy */}
+                <div className="mt-1 flex w-full max-w-[360px] flex-col items-center gap-3 text-center">
+                  {/* Big primary status */}
+                  {(isDisconnecting || isLoading || connectionState === "RECONNECTING") && (
+                    <div className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-lg md:text-xl">
+                      {isDisconnecting ? "Disconnecting from your PC" : "Connecting to your PC"}
+                    </div>
+                  )}
 
-              {/* Spinner row (always same height while connecting) */}
-              {(isLoading || isDisconnecting || connectionState === "RECONNECTING") ? (
-                <div className="flex h-9 items-center justify-center">
-                  <div className="flex items-center justify-center rounded-full border border-zinc-200/70 bg-white/70 px-4 py-2 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5">
-                    <Loader2 className="h-4 w-4 animate-spin text-zinc-800/80 dark:text-zinc-100/80" />
+                  {/* Spinner row (always same height while connecting) */}
+                  {(isLoading || isDisconnecting || connectionState === "RECONNECTING") ? (
+                    <div className="flex h-9 items-center justify-center">
+                      <div className="flex items-center justify-center rounded-full border border-zinc-200/70 bg-white/70 px-4 py-2 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5">
+                        <Loader2 className="h-4 w-4 animate-spin text-zinc-800/80 dark:text-zinc-100/80" />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="rounded-full border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-200">
+                        Session not connected
+                      </div>
+
+                      <Button
+                        size="sm"
+                        variant="default"
+                        className="h-9 px-6"
+                        onClick={handleConnect}
+                        disabled={isLoading || !(canConnectSession || canLaunchSession)}
+                        data-testid="sensepc-overlay-connect-button"
+                      >
+                        <Power className="mr-2 h-4 w-4" />
+                        Connect
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Helper line */}
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400 sm:text-sm">
+                    {isLoading || isDisconnecting || connectionState === "RECONNECTING"
+                      ? "This usually takes a few seconds."
+                      : "Press Connect to start the session."}
                   </div>
                 </div>
-              ) : (
-                <div className="flex flex-col items-center gap-3">
-                  <div className="rounded-full border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-200">
-                    Session not connected
-                  </div>
-
-                  <Button
-                    size="sm"
-                    variant="default"
-                    className="h-9 px-6"
-                    onClick={handleConnect}
-                    disabled={isLoading || !(canConnectSession || canLaunchSession)}
-                    data-testid="sensepc-overlay-connect-button"
-                  >
-                    <Power className="mr-2 h-4 w-4" />
-                    Connect
-                  </Button>
-                </div>
-              )}
-
-              {/* Helper line */}
-              <div className="text-xs text-zinc-500 dark:text-zinc-400 sm:text-sm">
-                {isLoading || isDisconnecting || connectionState === "RECONNECTING"
-                  ? "This usually takes a few seconds."
-                  : "Press Connect to start the session."}
-              </div>
-            </div>
 
               </div>
             </motion.div>
@@ -878,7 +1192,7 @@ const DCViewerContent: React.FC = () => {
         </AnimatePresence>
 
 
-        {/* DCV Viewer (optional path) */}
+        {/* DCV Viewer (optional path)
         {isConnected && !tvEffect && dcvSession && url && (
           <DCVViewer
             url={`https://${url}`}
@@ -905,18 +1219,18 @@ const DCViewerContent: React.FC = () => {
               audio: audioEnabled,
             }}
           />
-        )}
+        )} */}
 
 
 
-      <DraggableSidebarHandle
-        visible={!isSidebarOpen}
-        onOpen={() => {
-          cancelAutoClose();
-          openSidebar();
-        }}
-        storageKey={sessionKey ? `sensepc.sidebar.handleY:${sessionKey}` : "sensepc.sidebar.handleY"}
-      />
+        <DraggableSidebarHandle
+          visible={!isSidebarOpen}
+          onOpen={() => {
+            cancelAutoClose();
+            openSidebar();
+          }}
+          storageKey={sessionKey ? `sensepc.sidebar.handleY:${sessionKey}` : "sensepc.sidebar.handleY"}
+        />
 
 
         {/* Mobile overlay (inside pcv-stage for fullscreen) */}
@@ -1218,6 +1532,29 @@ const DCViewerContent: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Performance Mode */}
+                <div
+                  className={cn(
+                    "rounded-lg border p-3 text-left",
+                    connectionState === "DISCONNECTED"
+                      ? "border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900"
+                      : "border-zinc-300/60 dark:border-zinc-700/60 bg-white/55 dark:bg-zinc-900/35"
+                  )}
+                >
+                  <h3 className="text-sm font-semibold mb-1">Performance Mode</h3>
+                  <p className="text-[11px] text-zinc-800 dark:text-zinc-100 mb-3 leading-snug">
+                    Launch the native DCV Client for maximum performance and low latency.
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="w-full h-8 text-[11px] font-medium"
+                    onClick={() => setShowGamingModeConfirm(true)}
+                    disabled={!isConnected || !instanceId || !userId || isGamingModeLaunching}
+                  >
+                    <MonitorPlay className="h-4 w-4 mr-2" />
+                    {isGamingModeLaunching ? "Launching..." : "Open Native Client"}
+                  </Button>
+                </div>
 
                 {/* Bottom Session Control */}
                 <div className="relative">
@@ -1306,6 +1643,23 @@ const DCViewerContent: React.FC = () => {
           onOpenChange={setFileModalOpen}
           autoOpenOnGlobalDrag
           title="File transfer:"
+        />
+
+        <GamingModeConfirmDialog
+          open={showGamingModeConfirm}
+          onOpenChange={setShowGamingModeConfirm}
+          isLaunching={isGamingModeLaunching}
+          onConfirm={() => {
+            setShowGamingModeConfirm(false);
+            void launchGamingMode();
+          }}
+        />
+
+        {/* Performance Mode Launch Modal */}
+        <GamingModeModal
+          open={showGamingModeModal}
+          onOpenChange={setShowGamingModeModal}
+          onDownloadFallback={downloadDcvFile}
         />
       </div>
 

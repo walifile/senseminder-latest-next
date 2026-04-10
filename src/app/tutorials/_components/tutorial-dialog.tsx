@@ -26,12 +26,15 @@ export const TutorialDialog = ({ tutorial }: TutorialDialogProps) => (
         data-testid={`dashboard-tutorial-trigger-${tutorial.id}`}
         className="relative cursor-pointer group"
       >
-        <div
-          className="relative h-[216px] overflow-hidden bg-center bg-cover"
-          style={{
-            background: `linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.20) 100%), url(${tutorial.thumbnail}) center/cover no-repeat`,
-          }}
-        >
+        <div className="relative h-[216px] overflow-hidden">
+          <Image
+            src={tutorial.thumbnail}
+            alt={`${tutorial.title} thumbnail`}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+          <div className="absolute inset-0 bg-black/20" />
           <div className="absolute inset-0 flex items-center justify-center">
             <Image
               src="/assets/svg/tutorials/play-button.svg"
@@ -39,7 +42,6 @@ export const TutorialDialog = ({ tutorial }: TutorialDialogProps) => (
               width={32}
               height={32}
               className="h-16 w-16 rounded-[50%] backdrop-blur-sm"
-              priority
             />
           </div>
           <div className="absolute top-3 right-3">

@@ -11,10 +11,10 @@ import {
   useSendRecoveryEmailMutation,
 } from "@/api/mfa-recovery";
 
-import { cn } from "@/lib/utils";
 import { Logger } from "@/lib/utils/logger";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { cn, getErrorMessage } from "@/lib/utils";
 
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -63,8 +63,8 @@ export function ForgotPasswordDialog({
   if (!isOpen) return null;
 
   const logoSrc = isDark
-    ? "/assets/authlayout/dark/sensepc-logo-code-dark.svg"
-    : "/assets/authlayout/light/sensepc-logo-code.svg";
+    ? "/assets/authlayout/dark/sensepc-logo-dark.png"
+    : "/assets/authlayout/light/sensepc-logo-code.png";
 
   const handleSuccessStartReset = (email: string) => {
     setResetEmail(email);
@@ -132,10 +132,7 @@ export function ForgotPasswordDialog({
         }
       }
     } catch (error) {
-      const msg =
-        error instanceof Error
-          ? error.message
-          : "Something went wrong. Try again.";
+      const msg = getErrorMessage(error, "Something went wrong. Try again.");
       Logger.error("Error in forgot password flow:", msg);
       toast({
         title: "Error",

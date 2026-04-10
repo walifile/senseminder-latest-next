@@ -32,7 +32,7 @@ const ConfirmBulkDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
           {selectedFiles.length > 1 ? "s" : ""}. Are you sure?
         </DialogDescription>
       </DialogHeader>
-      <DialogFooter>
+      <DialogFooter className="gap-3">
         <Button variant="outline" onClick={onClose} disabled={isLoading}>
           Cancel
         </Button>

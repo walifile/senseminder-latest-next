@@ -168,7 +168,7 @@ const ConfirmPurchaseDialog = ({
           </label>
         </div>
 
-        <DialogFooter className="mt-4">
+        <DialogFooter className="mt-4 gap-3">
           <Button variant="outline" onClick={closeDialog}>
             Cancel
           </Button>

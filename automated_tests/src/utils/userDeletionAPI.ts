@@ -23,6 +23,14 @@ export class UserDeletionAPI {
     this.baseURL = baseURL;
     this.adminToken = process.env.ADMIN_TOKEN || '';
     
+    // // DEBUG: Log the token that was read
+    // console.log('🔍 ===== DEBUG: UserDeletionAPI Constructor =====');
+    // console.log(`📌 process.env.ADMIN_TOKEN type: ${typeof process.env.ADMIN_TOKEN}`);
+    // console.log(`📌 process.env.ADMIN_TOKEN length: ${process.env.ADMIN_TOKEN ? process.env.ADMIN_TOKEN.length : 'null'}`);
+    // console.log(`📌 process.env.ADMIN_TOKEN value (first 50 chars): ${process.env.ADMIN_TOKEN ? process.env.ADMIN_TOKEN.substring(0, 50) + '...' : 'EMPTY'}`);
+    // console.log(`📌 this.adminToken length: ${this.adminToken ? this.adminToken.length : 'null'}`);
+    // console.log(`📌 this.adminToken value (first 50 chars): ${this.adminToken ? this.adminToken.substring(0, 50) + '...' : 'EMPTY'}`);
+    
     if (!this.adminToken) {
       console.warn('⚠️ ADMIN_TOKEN not found in environment variables. User deletion will not work.');
     }
@@ -187,8 +195,16 @@ export class UserDeletionAPI {
             email: testEmail
           },
           headers: {
-            'Authorization': this.adminToken,
-            'Content-Type': 'application/json'
+            'authorization': this.adminToken,
+            'Content-Type': 'application/json',
+            'Origin': 'https://sms.smartpc.cloud',
+            'Referer': 'https://sms.smartpc.cloud/',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
+            'Accept': '*/*',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'cross-site',
+            'Sec-Fetch-Dest': 'empty'
           },
           timeout: 10000 // 10 second timeout for validation
         }

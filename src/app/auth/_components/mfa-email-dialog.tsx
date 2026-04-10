@@ -83,8 +83,8 @@ export function MfaEmailDialog({
   if (!isOpen) return null;
 
   const logoSrc = isDark
-    ? "/assets/authlayout/dark/sensepc-logo-code-dark.svg"
-    : "/assets/authlayout/light/sensepc-logo-code.svg";
+    ? "/assets/authlayout/dark/sensepc-logo-dark.png"
+    : "/assets/authlayout/light/sensepc-logo-code.png";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,10 +1,22 @@
 {
   "application": {
     "baseURL": "https://smartpc.cloud/",
-    "timeout": 120000
+    "timeout": 180000,
+    "timeouts": {
+      "default": 180000,
+      "navigation": 180000,
+      "action": 180000,
+      "api": 60000,
+      "email": 30000,
+      "fileUpload": 120000,
+      "pcCreation": 300000,
+      "pcConnection": 300000,
+      "mfa": 60000,
+      "pageLoad": 60000
+    }
   },
   "browser": {
-    "headless": true,
+    "headless": false,
     "slowMo": 1000
   },
   "reporting": {
@@ -73,13 +85,13 @@
     },
     "configurations": {
       "basic": {
-        "configId": "Basic_win11_2core_4gbRam",
+        "configId": "SensePC.Basic11—2Cores·8GBRAM",
         "region": "us-east-1",
         "storageSize": 120,
         "billingPlan": "hourly"
       },
       "custom": {
-        "configId": "Basic_win11_2core_4gbRam",
+        "configId": "SensePC.Basic11—2Cores·8GBRAM",
         "region": "us-east-1",
         "storageSize": 240,
         "billingPlan": "hourly"

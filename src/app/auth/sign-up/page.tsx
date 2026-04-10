@@ -1,12 +1,9 @@
-
-// src/app/auth/signup/page.tsx
-
 "use client";
 
 import Link from "next/link";
 import Image from "next/image";
-import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import React, { useMemo, useState } from "react";
 import { useSubscribeToNewsletterMutation } from "@/api/newsletterAPI";
 
 import { cn } from "@/lib/utils";
@@ -15,7 +12,15 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PublicCard } from "@/components/ui/public-card";
 
-import { Eye, Mail, Lock, User, EyeOff, ArrowUpRight } from "lucide-react";
+import {
+  Eye,
+  Mail,
+  Lock,
+  User,
+  EyeOff,
+  ArrowUpRight,
+  CheckCircle2,
+} from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
 import useLocation from "@/hooks/use-location";
@@ -24,7 +29,6 @@ import { handleSignUp } from "@/lib/services/auth";
 
 import SocailLogin from "../_components/socail-login";
 import { OtpVerificationDialog } from "../_components/otp-verification-dialog";
-
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -43,12 +47,52 @@ export default function SignUpPage() {
 
   const [subscribeToNewsletter] = useSubscribeToNewsletterMutation();
 
-  // OTP dialog state
   const [isOtpOpen, setIsOtpOpen] = useState(false);
   const [otpEmail, setOtpEmail] = useState<string | null>(null);
 
+  const passwordChecks = useMemo(
+    () => [
+      {
+        label: "At least 8 characters",
+        valid: password.length >= 8,
+      },
+      {
+        label: "One uppercase letter",
+        valid: /[A-Z]/.test(password),
+      },
+      {
+        label: "One lowercase letter",
+        valid: /[a-z]/.test(password),
+      },
+      {
+        label: "One number",
+        valid: /\d/.test(password),
+      },
+      {
+        label: "One special character",
+        valid: /[^A-Za-z0-9]/.test(password),
+      },
+      {
+        label: "Passwords match",
+        valid: confirmPassword.length > 0 && password === confirmPassword,
+      },
+    ],
+    [password, confirmPassword],
+  );
+
+  const isPasswordValid = passwordChecks.slice(0, 5).every((item) => item.valid);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isPasswordValid) {
+      toast({
+        title: "Weak password",
+        description:
+          "Please make sure your password meets all required conditions.",
+      });
+      return;
+    }
 
     if (password !== confirmPassword) {
       toast({
@@ -125,110 +169,97 @@ export default function SignUpPage() {
 
   return (
     <>
-      <div className="w-full px-4 md:px-6 pt-24 md:pt-14 lg:pt-[140px] pb-16 md:pb-20">
-        <div className="mx-auto w-full max-w-[1369px]">
-          {/* ✅ Outer card now uses PublicCard for bg + border + glass (same as login) */}
+      <div className="w-full px-4 pb-10 pt-24 md:px-6 md:pb-14 md:pt-20 lg:pt-[150px]">
+        <div className="mx-auto w-full max-w-[1280px]">
           <PublicCard
             className={cn(
-              "relative mx-auto w-full max-w-[1320px]",
-              "min-h-[640px] lg:min-h-[680px] xl:min-h-[710px]",
+              "relative mx-auto w-full max-w-[940px] overflow-hidden rounded-[28px]",
             )}
           >
-            {/* Inner layout: illustration | form */}
-            <div className="relative z-10 grid gap-8 lg:gap-16 pl-6 pr-8 py-6 md:pl-8 md:pr-10 md:py-8 lg:grid-cols-[1fr_0.9fr]">
-              {/* LEFT: signup illustration */}
-              <div className="flex items-center justify-center">
-                <div className="w-full max-w-[622px]">
-                  {/* Light theme illustration */}
-                  <Image
-                    src="/assets/authlayout/light/signup-illustration.svg"
-                    alt="Sense PC signup illustration"
-                    width={640}
-                    height={520}
-                    priority
-                    className="h-auto w-full object-contain dark:hidden"
-                  />
+            <div className="relative z-10 grid gap-6 px-5 py-6 md:px-7 md:py-7 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,0.78fr)] lg:items-center lg:gap-8 lg:px-8 lg:py-8">
+              <div className="flex items-start justify-center lg:justify-start">
+                <div className="w-full max-w-[430px] space-y-4">
+                  <div className="space-y-3">
+                    <h2 className="font-space-grotesk text-[24px] font-bold leading-[1.15] text-slate-900 dark:text-white md:text-[25px]">
+                      Create your personal account
+                    </h2>
+                    <p className="max-w-lg text-sm leading-6 text-slate-500 dark:text-slate-300 md:text-[15px]">
+                      Sign up to start building your cloud PC in
+                      minutes.
+                    </p>
+                  </div>
 
-                  {/* Dark theme illustration */}
-                  <Image
-                    src="/assets/authlayout/light/signup-illustration-dark.svg"
-                    alt="Sense PC signup illustration"
-                    width={640}
-                    height={520}
-                    priority
-                    className="h-auto w-full object-contain hidden dark:block dark:opacity-80"
-                  />
+                  <div className="relative w-full max-w-[400px]">
+                    <Image
+                      src="/assets/authlayout/light/signup-illustration.svg"
+                      alt="Sense PC signup illustration"
+                      width={640}
+                      height={520}
+                      priority
+                      className="h-auto w-full object-contain dark:hidden"
+                    />
+
+                    <Image
+                      src="/assets/authlayout/light/signup-illustration-dark.svg"
+                      alt="Sense PC signup illustration"
+                      width={640}
+                      height={520}
+                      priority
+                      className="hidden h-auto w-full object-contain dark:block dark:opacity-80"
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* RIGHT: signup form */}
-              <div className="flex items-center">
-                <div className="relative mx-auto w-full max-w-[520px]">
-                  {/* Ellipse 11 glow behind the form area (light only) */}
-                  <Image
-                    src="/assets/authlayout/light/Ellipse 11.svg"
-                    alt=""
-                    width={693}
-                    height={306}
-                    className="pointer-events-none absolute -top-[140px] -right-[80px] h-[306px] w-[693px] opacity-90 dark:hidden"
-                  />
-
-                  {/* Actual form content sits above the glow */}
+              <div className="flex items-center justify-center">
+                <div className="relative mx-auto w-full max-w-[380px]">
                   <div className="relative z-10">
-                    {/* Heading */}
-                    <div className="mb-8 text-center">
-                      <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl">
-                        Create an account
+                    <div className="mb-5 text-center">
+                      <div className="inline-flex items-center rounded-full bg-[#2530F0]/10 px-3 py-1.5 text-xs font-medium text-[#2530F0] dark:bg-white/10 dark:text-[#B9C2D5]">
+                        Sign up
+                      </div>
+
+                      <h1 className="mt-3 text-[20px] font-semibold tracking-tight text-slate-900 dark:text-white md:text-[22px]">
+                        Create your account
                       </h1>
-                      <p className="mt-2 text-[0.95rem] md:text-base text-slate-500 dark:text-slate-300">
-                        Enter your details to create your Sense PC account
-                      </p>
                     </div>
 
-                    {/* Form */}
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                      {/* First Name */}
-                      <div className="space-y-2">
+                    <form onSubmit={handleSubmit} className="space-y-3.5">
+                      <div className="grid gap-3 md:grid-cols-2">
                         <div className="relative">
-                          <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                          <User className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                           <Input
-                          id="first-name"
-                          type="text"
-                          placeholder="First name"
-                          value={firstName}
-                          onChange={(e) => setFirstName(e.target.value)}
-                          required
-                          data-testid="signup-first-name-input"
-                          uiSize="lg"
-                          className="pl-11"
-                        />
+                            id="first-name"
+                            type="text"
+                            placeholder="First name"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            required
+                            data-testid="signup-first-name-input"
+                            uiSize="lg"
+                            className="h-9 pl-10 text-sm"
+                          />
+                        </div>
+
+                        <div className="relative">
+                          <User className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                          <Input
+                            id="last-name"
+                            type="text"
+                            placeholder="Last name"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            required
+                            data-testid="signup-last-name-input"
+                            uiSize="lg"
+                            className="h-9 pl-10 text-sm"
+                          />
                         </div>
                       </div>
 
-                      {/* Last Name */}
-                      <div className="space-y-2">
-                        <div className="relative">
-                          <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                      <div className="relative">
+                        <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                         <Input
-                        id="last-name"
-                        type="text"
-                        placeholder="Last name"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        required
-                        data-testid="signup-last-name-input"
-                        uiSize="lg"
-                        className="pl-11"
-                      />
-
-                        </div>
-                      </div>
-
-                      {/* Email */}
-                      <div className="space-y-2">
-                        <div className="relative">
-                          <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                          <Input
                           id="email"
                           type="email"
                           placeholder="Enter your email"
@@ -237,16 +268,23 @@ export default function SignUpPage() {
                           required
                           data-testid="signup-email-input"
                           uiSize="lg"
-                          className="pl-11"
+                          className="h-9 pl-10 text-sm"
                         />
+                      </div>
 
+                      <div className="pt-1">
+                        <div className="mb-2 flex items-center gap-3">
+                          <div className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
+                          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-slate-500 dark:text-slate-300">
+                            Account security
+                          </p>
+                          <div className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
                         </div>
                       </div>
 
-                      {/* Password */}
                       <div className="space-y-2">
                         <div className="relative">
-                          <Lock className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                          <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                           <Input
                             id="password"
                             type={showPassword ? "text" : "password"}
@@ -256,7 +294,7 @@ export default function SignUpPage() {
                             required
                             data-testid="signup-password-input"
                             uiSize="lg"
-                            className="pl-11 pr-11"
+                            className="h-9 pl-10 pr-10 text-sm"
                           />
 
                           <button
@@ -266,18 +304,17 @@ export default function SignUpPage() {
                             tabIndex={-1}
                           >
                             {showPassword ? (
-                              <EyeOff className="h-5 w-5" />
+                              <EyeOff className="h-4 w-4" />
                             ) : (
-                              <Eye className="h-5 w-5" />
+                              <Eye className="h-4 w-4" />
                             )}
                           </button>
                         </div>
                       </div>
 
-                      {/* Confirm Password */}
                       <div className="space-y-2">
                         <div className="relative">
-                          <Lock className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                          <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                           <Input
                             id="confirm-password"
                             type={showConfirmPassword ? "text" : "password"}
@@ -287,29 +324,58 @@ export default function SignUpPage() {
                             required
                             data-testid="signup-confirm-password-input"
                             uiSize="lg"
-                            className="pl-11 pr-11"
+                            className="h-9 pl-10 pr-10 text-sm"
                           />
 
                           <button
                             type="button"
                             className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
-                            onClick={() =>
-                              setShowConfirmPassword((prev) => !prev)
-                            }
+                            onClick={() => setShowConfirmPassword((prev) => !prev)}
                             tabIndex={-1}
                           >
                             {showConfirmPassword ? (
-                              <EyeOff className="h-5 w-5" />
+                              <EyeOff className="h-4 w-4" />
                             ) : (
-                              <Eye className="h-5 w-5" />
+                              <Eye className="h-4 w-4" />
                             )}
                           </button>
                         </div>
+
+                        {password.length > 0 && (
+                          <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-white/10 dark:bg-white/5">
+                            <p className="mb-2 text-[11px] font-medium text-slate-600 dark:text-slate-300">
+                              Password must include:
+                            </p>
+
+                            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                              {passwordChecks.map((item) => (
+                                <div
+                                  key={item.label}
+                                  className={cn(
+                                    "flex items-center gap-1.5 text-[11px] leading-4 transition-colors",
+                                    item.valid
+                                      ? "text-green-600 dark:text-green-400"
+                                      : "text-slate-400 dark:text-slate-500",
+                                  )}
+                                >
+                                  <CheckCircle2
+                                    className={cn(
+                                      "h-3.5 w-3.5 shrink-0",
+                                      item.valid
+                                        ? "text-green-600 dark:text-green-400"
+                                        : "text-slate-300 dark:text-slate-600",
+                                    )}
+                                  />
+                                  <span>{item.label}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
-                      {/* Terms of service */}
                       <div className="mt-1">
-                        <label className="flex items-start gap-2 text-sm text-slate-500 dark:text-slate-300">
+                        <label className="flex items-start gap-2 text-xs leading-5 text-slate-500 dark:text-slate-300">
                           <Checkbox
                             id="terms"
                             checked={acceptTerms}
@@ -338,14 +404,13 @@ export default function SignUpPage() {
                         </label>
                       </div>
 
-                      {/* Submit button – gradient + arrow, like Figma */}
                       <Button
                         type="submit"
                         disabled={isLoading}
                         size="lg"
                         data-testid="signup-submit-button"
                         className={cn(
-                          "mt-3 w-full rounded-full text-sm font-medium",
+                          "mt-3 h-9 w-full rounded-full text-sm font-medium",
                           "bg-gradient-to-l from-[#a801ba] to-[#2530f0]",
                           "hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed",
                         )}
@@ -361,9 +426,7 @@ export default function SignUpPage() {
                       </Button>
                     </form>
 
-                    {/* Social login + footer (outside form) */}
                     <div className="mt-6 space-y-4">
-                      {/* Divider: Or continue with */}
                       <div className="flex items-center text-sm">
                         <span className="h-px flex-1 bg-slate-200/70 dark:bg-white/10" />
                         <span className="mx-3 text-slate-400 dark:text-slate-300">
@@ -372,7 +435,6 @@ export default function SignUpPage() {
                         <span className="h-px flex-1 bg-slate-200/70 dark:bg-white/10" />
                       </div>
 
-                      {/* Google + Apple buttons */}
                       <SocailLogin />
 
                       <p className="text-center text-sm text-slate-400 dark:text-slate-300">
@@ -382,20 +444,18 @@ export default function SignUpPage() {
                           className="font-semibold text-link-primary hover:underline"
                           onClick={() => router.push("/auth")}
                         >
-                          Login
+                          Log in
                         </button>
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
-              {/* END right col */}
             </div>
           </PublicCard>
         </div>
       </div>
 
-      {/* OTP dialog on top of signup page */}
       <OtpVerificationDialog
         isOpen={isOtpOpen}
         email={otpEmail}

@@ -210,6 +210,7 @@ export const countryCodes = [
     { code: "UA", dial_code: "+380", name: "Ukraine" },
     { code: "AE", dial_code: "+971", name: "United Arab Emirates" },
     { code: "GB", dial_code: "+44", name: "United Kingdom" },
+    { code: "US", dial_code: "+1", name: "United States" },
     { code: "UY", dial_code: "+598", name: "Uruguay" },
     { code: "UZ", dial_code: "+998", name: "Uzbekistan" },
     { code: "VU", dial_code: "+678", name: "Vanuatu" },

@@ -1,10 +1,7 @@
-"use client";
-
 import React from "react";
+import ProductMiniInfoCard from "@/app/products/_components/product-mini-info-card";
 
 import { cn } from "@/lib/utils";
-
-import ProductMiniInfoCard from "./product-mini-info-card";
 
 const ProductInfoCard = ProductMiniInfoCard;
 

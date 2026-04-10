@@ -33,7 +33,7 @@ export const fetchEstimate = async ({
 }: FetchEstimateParams) => {
   const { trigger, getValues } = methods;
 
-  const isValid = await trigger();
+  const isValid = await trigger(["cpu", "storage", "region"]);
   if (!isValid) return;
 
   const values = getValues();

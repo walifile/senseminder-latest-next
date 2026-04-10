@@ -32,11 +32,15 @@ import {
   Moon,
   Plus,
   Trash2,
-  HardDrive, // ✅ SSD icon
+  HardDrive,
   RotateCcw,
+  ArrowRight,
+  ShieldCheck,
+  CircleCheck,
   MoreVertical,
   AlertTriangle,
   CalendarClock,
+
 } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
@@ -55,6 +59,50 @@ type Props = {
   handleAssignUser: () => void;
   handleDelete: (pc: DesktopInstance) => void;
 };
+
+function InfoCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-xl border border-zinc-300/60 bg-white/70 p-4 dark:border-zinc-700/60 dark:bg-zinc-900/60">
+      <div className="flex items-start gap-3">
+        <div className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+          {icon}
+        </div>
+
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            {title}
+          </p>
+          <p className="mt-1 text-xs leading-5 text-zinc-600 dark:text-zinc-300">
+            {description}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StepPill({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="
+        inline-flex h-12 w-[170px] shrink-0 items-center justify-center
+        rounded-full border border-zinc-300/70 bg-white/80 px-4 py-2
+        text-center text-sm font-medium leading-tight text-zinc-900 shadow-sm
+        dark:border-zinc-700/70 dark:bg-zinc-900/70 dark:text-zinc-100
+      "
+    >
+      <span className="block text-center leading-tight">{children}</span>
+    </div>
+  );
+}
 
 const SmartPcDropdownMenu = ({
   pc,
@@ -118,12 +166,10 @@ const SmartPcDropdownMenu = ({
     }
   };
 
- 
   const resizeDisabled = planRestricted || !isStopped;
   const addVolumeDisabled = planRestricted || !isRunning;
   const assignUserDisabled = !isStopped && !isAssigned;
   const idleSettingsDisabled = !isRunning;
-
 
   return (
     <>
@@ -135,7 +181,6 @@ const SmartPcDropdownMenu = ({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end">
-          {/* Schedule */}
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
@@ -143,9 +188,10 @@ const SmartPcDropdownMenu = ({
               handleSchedule();
             }}
           >
-            <CalendarClock className="h-4 w-4 mr-2" />
+            <CalendarClock className="mr-2 h-4 w-4" />
             Schedule
           </DropdownMenuItem>
+
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
@@ -154,15 +200,13 @@ const SmartPcDropdownMenu = ({
               handleIdle();
             }}
             className={
-              idleSettingsDisabled ? "opacity-50 cursor-default select-none" : ""
+              idleSettingsDisabled ? "cursor-default select-none opacity-50" : ""
             }
           >
-            <Moon className="h-4 w-4 mr-2" />
+            <Moon className="mr-2 h-4 w-4" />
             Idle Settings
           </DropdownMenuItem>
 
-
-          {/* Reboot */}
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation();
@@ -171,17 +215,15 @@ const SmartPcDropdownMenu = ({
             }}
             className={
               !isRunning || isRebooting
-                ? "opacity-50 cursor-default select-none"
+                ? "cursor-default select-none opacity-50"
                 : ""
             }
           >
-            <RotateCcw className="h-4 w-4 mr-2" />
+            <RotateCcw className="mr-2 h-4 w-4" />
             {isRebooting ? "Rebooting..." : "Reboot"}
           </DropdownMenuItem>
 
-          {/* --- Tooltip-enabled restricted actions --- */}
           <TooltipProvider>
-            {/* PC Resize */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <DropdownMenuItem
@@ -191,11 +233,11 @@ const SmartPcDropdownMenu = ({
                     openPCResizeDialog(pc);
                   }}
                   className={
-                    resizeDisabled ? "opacity-50 cursor-default select-none" : ""
+                    resizeDisabled ? "cursor-default select-none opacity-50" : ""
                   }
                   data-testid="sensepc-resize-button"
                 >
-                  <Cpu className="h-4 w-4 mr-2" />
+                  <Cpu className="mr-2 h-4 w-4" />
                   PC Resize
                 </DropdownMenuItem>
               </TooltipTrigger>
@@ -208,7 +250,6 @@ const SmartPcDropdownMenu = ({
               )}
             </Tooltip>
 
-            {/* Add Volume */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <DropdownMenuItem
@@ -219,11 +260,11 @@ const SmartPcDropdownMenu = ({
                   }}
                   className={
                     addVolumeDisabled
-                      ? "opacity-50 cursor-default select-none"
+                      ? "cursor-default select-none opacity-50"
                       : ""
                   }
                 >
-                  <HardDrive className="h-4 w-4 mr-2" />
+                  <HardDrive className="mr-2 h-4 w-4" />
                   Add Volume (SSD)
                 </DropdownMenuItem>
               </TooltipTrigger>
@@ -236,7 +277,6 @@ const SmartPcDropdownMenu = ({
               )}
             </Tooltip>
 
-            {/* Assign User */}
             {!isMember && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -249,12 +289,12 @@ const SmartPcDropdownMenu = ({
                     }}
                     className={
                       assignUserDisabled
-                        ? "opacity-50 cursor-default select-none"
+                        ? "cursor-default select-none opacity-50"
                         : ""
                     }
                     data-testid="sensepc-assign-user-button"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="mr-2 h-4 w-4" />
                     {isAssigned ? "Unassign User" : "Assign User"}
                   </DropdownMenuItem>
                 </TooltipTrigger>
@@ -269,7 +309,6 @@ const SmartPcDropdownMenu = ({
 
           <DropdownMenuSeparator />
 
-          {/* Delete */}
           {!isMember && (
             <DropdownMenuItem
               className="text-destructive"
@@ -279,14 +318,13 @@ const SmartPcDropdownMenu = ({
               }}
               data-testid="sensepc-delete-button"
             >
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Reboot confirmation dialog */}
       <Dialog
         open={isRebootDialogOpen}
         onOpenChange={(open) => {
@@ -294,48 +332,114 @@ const SmartPcDropdownMenu = ({
         }}
       >
         <DialogContent
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
+          onClick={(e) => e.stopPropagation()}
+          className="w-[min(92vw,44rem)] max-w-xl gap-0 overflow-hidden rounded-2xl border-zinc-300/60 p-0 dark:border-zinc-700/60"
         >
-          <DialogHeader>
-            <DialogTitle className="text-base md:text-lg font-semibold">
-              You are about to reboot{" "}
-              <span className="italic font-bold tracking-tight text-yellow-800 dark:text-yellow-400">
-                {pc.systemName}
-              </span>{" "}
-              <span className="not-italic font-medium text-black dark:text-white">
-                computer
-              </span>
-              .
-            </DialogTitle>
+          <div className="flex max-h-[calc(100vh-2.5rem)] flex-col overflow-hidden">
+            <DialogHeader className="shrink-0 border-b border-zinc-300/50 px-6 pb-5 pt-6 dark:border-zinc-700/50">
+              <div className="flex items-start gap-4">
+                <div className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,rgba(245,158,11,0.12)_0%,rgba(245,158,11,0.18)_100%)] ring-1 ring-inset ring-amber-300/40 dark:ring-amber-500/25">
+                  <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                </div>
 
-            <DialogDescription className="mt-2 flex items-start gap-3 text-sm text-yellow-700 bg-yellow-100/80 p-3 rounded-md border border-yellow-200">
-              <AlertTriangle className="h-5 w-5 mt-2.5 text-yellow-600 shrink-0" />
-              <span>
-                Rebooting will disconnect all active remote connections. Your Sense
-                PC may take about <strong>1–2 minutes</strong> to finish rebooting.
-                After that, you&apos;ll need to{" "}
-                <strong>connect again from the dashboard</strong>
-              </span>
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsRebootDialogOpen(false)}
-              disabled={isRebooting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleConfirmReboot}
-              disabled={isRebooting}
-            >
-              {isRebooting ? "Rebooting..." : "Yes, Reboot it"}
-            </Button>
-          </DialogFooter>
+                <div className="min-w-0">
+                  <DialogTitle className="text-left text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                    Restart Sense PC
+                  </DialogTitle>
+
+                  <DialogDescription asChild>
+                    <div className="mt-2 space-y-3 text-left text-sm leading-6 text-zinc-700 dark:text-zinc-200">
+                      <p>
+                        You are about to restart{" "}
+                        <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                          {pc.systemName}
+                        </span>
+                        . This will temporarily interrupt remote access while the system restarts.
+                      </p>
+
+                      <p>
+                        Active sessions will end during the restart process. You can reconnect from
+                        the dashboard after the computer becomes available again.
+                      </p>
+                    </div>
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+
+            <div className="min-h-0 overflow-y-auto px-6 py-5">
+              <div className="space-y-5">
+                <div className="grid gap-3 md:grid-cols-3">
+                  <InfoCard
+                    icon={<RotateCcw className="h-4 w-4" />}
+                    title="System restart"
+                    description="The operating system will restart and current remote activity will be interrupted."
+                  />
+                  <InfoCard
+                    icon={<CircleCheck className="h-4 w-4" />}
+                    title="Expected downtime"
+                    description="Most restarts complete in about 1–2 minutes, depending on current system activity."
+                  />
+                  <InfoCard
+                    icon={<ShieldCheck className="h-4 w-4" />}
+                    title="Reconnect later"
+                    description="Once the restart is complete, reconnect from the dashboard using the normal Connect flow."
+                  />
+                </div>
+
+                <div className="rounded-2xl border border-zinc-300/60 bg-white/65 p-4 dark:border-zinc-700/60 dark:bg-zinc-900/55">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500 dark:text-zinc-400">
+                      What happens next
+                    </p>
+                    <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-200">
+                      After confirmation, SensePC will send a restart request and temporarily end
+                      active remote access.
+                    </p>
+                  </div>
+
+                  <div className="mt-4 flex flex-nowrap items-center gap-2 overflow-x-auto pb-1">
+                    <StepPill>Confirmation</StepPill>
+                    <ArrowRight className="h-4 w-4 shrink-0 text-violet-500 dark:text-violet-400" />
+                    <StepPill>PC Restart Begins</StepPill>
+                    <ArrowRight className="h-4 w-4 shrink-0 text-violet-500 dark:text-violet-400" />
+                    <StepPill>Reconnect from Dashboard</StepPill>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-4 dark:border-amber-900/40 dark:bg-amber-950/20">
+                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                    Important
+                  </p>
+                  <ul className="mt-2 space-y-2 text-xs leading-5 text-zinc-700 dark:text-zinc-300">
+                    <li>• All active remote connections will disconnect during restart.</li>
+                    <li>• Unsaved work inside the remote computer may be affected.</li>
+                    <li>• Reconnect from the dashboard after the restart completes.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter className="shrink-0 border-t border-zinc-300/50 px-6 py-4 sm:justify-end dark:border-zinc-700/50">
+              <Button
+                variant="outline"
+                onClick={() => setIsRebootDialogOpen(false)}
+                disabled={isRebooting}
+                className="border-zinc-300/60 bg-white/75 text-zinc-900 transition-all hover:bg-white dark:border-zinc-700/60 dark:bg-zinc-900/65 dark:text-zinc-100 dark:hover:bg-zinc-900"
+              >
+                Cancel
+              </Button>
+
+              <Button
+                variant="destructive"
+                onClick={handleConfirmReboot}
+                disabled={isRebooting}
+                className="shadow-sm"
+              >
+                {isRebooting ? "Restarting..." : "Restart PC"}
+              </Button>
+            </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </>

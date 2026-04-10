@@ -1,4 +1,5 @@
 import axios, { AxiosResponse, AxiosError } from 'axios';
+import { logConfig } from '../utils/logConfig';
 
 export interface GetPaymentMethodsRequest {
     // No userId needed - extracted from JWT token
@@ -178,7 +179,9 @@ export class ApiBillingPage {
             
             console.log(`✅ Payment methods retrieved successfully`);
             console.log(`📊 Response status: ${response.status}`);
-            console.log(`📦 Response data:`, JSON.stringify(response.data, null, 2));
+            if (logConfig.shouldLogResponse()) {
+                console.log(`📦 Response data:`, JSON.stringify(response.data, null, 2));
+            }
             console.log('=====================================\n');
             
             return response;
@@ -252,8 +255,10 @@ export class ApiBillingPage {
                 timeout: 30000
             });
             
-            // Log the actual response for debugging
-            console.log('🔍 Get Recharges API Response:', JSON.stringify(response.data, null, 2));
+            // Log the actual response for debugging (only if network logging is enabled)
+            if (logConfig.shouldLogResponse()) {
+                console.log('🔍 Get Recharges API Response:', JSON.stringify(response.data, null, 2));
+            }
             
             return response;
         } catch (error) {
@@ -275,7 +280,9 @@ export class ApiBillingPage {
             });
             
             // Log the actual response for debugging
-            console.log('🔍 Recharge API Response:', JSON.stringify(response.data, null, 2));
+            if (logConfig.shouldLogResponse()) {
+                console.log('🔍 Recharge API Response:', JSON.stringify(response.data, null, 2));
+            }
             
             return response;
         } catch (error) {

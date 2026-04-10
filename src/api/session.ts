@@ -43,13 +43,16 @@ export const sessionAPI = createApi({
   reducerPath: "sessionAPI",
   baseQuery: baseQueryWithReauth(true, CLIENT_SESSION_API),
   endpoints: (builder) => ({
-    updateSessionHeartbeat: builder.mutation<void, void>({
+    updateSessionHeartbeat: builder.mutation<
+      { success: boolean; reason?: string },
+      void
+    >({
       async queryFn(_arg, api, _extraOptions, baseQuery) {
         try {
           const sessionId = localStorage.getItem("smartpc-session-id");
           if (!sessionId) {
             Logger.warn("No sessionId in localStorage. Skipping heartbeat.");
-            return { data: undefined };
+            return { data: { success: false, reason: "NO_SESSION_ID" } };
           }
 
           const ip = await getIpAddress(api);
@@ -85,11 +88,11 @@ export const sessionAPI = createApi({
               "Heartbeat skipped: session is not active or not claimed yet.",
               parsed
             );
-            return { data: undefined };
+            return { data: { success: false, reason: "SESSION_NOT_ACTIVE" } };
           }
 
           Logger.log("Heartbeat updated for session:", sessionId);
-          return { data: undefined };
+          return { data: { success: true } };
         } catch (err) {
           Logger.error("Heartbeat error:", err);
           return {
@@ -101,7 +104,10 @@ export const sessionAPI = createApi({
         }
       },
     }),
-    claimSessionIfAvailable: builder.mutation<void, void>({
+    claimSessionIfAvailable: builder.mutation<
+      { claimed: boolean; sessionId?: string; message?: string },
+      void
+    >({
       async queryFn(_arg, api, _extraOptions, baseQuery) {
         try {
           const prevSessionId = localStorage.getItem("smartpc-session-id");
@@ -142,11 +148,15 @@ export const sessionAPI = createApi({
 
             localStorage.setItem("smartpc-session-id", newSessionId);
             Logger.log("Session claimed:", newSessionId);
+            return {
+              data: { claimed: true, sessionId: newSessionId, message: data?.message },
+            };
           } else {
             Logger.warn("No unclaimed session available:", data?.message || data);
+            return {
+              data: { claimed: false, message: data?.message || "No session available" },
+            };
           }
-
-          return { data: undefined };
         } catch (err) {
           Logger.error("Failed to claim session:", err);
           return {

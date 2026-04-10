@@ -10,13 +10,15 @@ import { firstLoginGuard } from "./middleware/firstLoginGuard";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", pathname);
   const cookies = request.cookies.getAll();
 
   // Check for Cognito tokens
   const hasCognitoToken = cookies.some(
     (cookie: { name: string }) =>
       cookie.name.includes("CognitoIdentityServiceProvider") &&
-      (cookie.name.includes("accessTokenky") || cookie.name.includes("idToken"))
+      (cookie.name.includes("accessToken") || cookie.name.includes("idToken"))
   );
 
   // Check for our synced auth state
@@ -58,7 +60,11 @@ export async function middleware(request: NextRequest) {
   //   return passwordProtectionResponse;
   // }
 
-  return NextResponse.next();
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {

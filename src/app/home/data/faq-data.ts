@@ -1,6 +1,7 @@
 export type FAQItem = {
-  question: string;
   answer: string;
+  category?: string;
+  question: string;
 };
 
 export const defaultFaqItems: FAQItem[] = [

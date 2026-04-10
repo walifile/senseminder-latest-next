@@ -18,7 +18,7 @@ export class ProfileInformationPage {
         this.emailInput = page.locator('#email');
         this.saveChangesButton = page.locator('button:has-text("Save Changes")');
         this.profileUpdatedSuccessMessage = page.locator('div.grid.gap-1:has(div:has-text("Profile Updated")), div:has-text("Profile Updated"), div:has-text("Your profile changes have been saved"), [data-testid="success-message"], .success-message, .alert-success');
-        this.profileInformationSpan = page.locator('h3:has-text("Profile Information")');
+        this.profileInformationSpan = page.locator('p[data-testid="profile-information-heading"]');
     }
 
     async goto() {

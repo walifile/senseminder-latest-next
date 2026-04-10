@@ -389,7 +389,7 @@ const SmartPCConfigDialog = ({
                 Cancel
               </Button>
 
-              {!isResize && (
+              {/* {!isResize && (
                 <Button
                   onClick={handleEstimate}
                   disabled={disableAction}
@@ -398,7 +398,7 @@ const SmartPCConfigDialog = ({
                 >
                   {isEstimating ? "Estimating..." : "Estimate"}
                 </Button>
-              )}
+              )} */}
 
               {isResize ? (
                 <Button

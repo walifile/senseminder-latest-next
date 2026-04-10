@@ -28,6 +28,7 @@ interface SignUpFormData {
   email: string;
   password: string;
   firstName?: string;
+  organization?: string;
   acceptedLegal?: boolean;
   // lastName: string;
   // country: string;
@@ -59,6 +60,9 @@ export const handleSignUp = async (formData: SignUpFormData) => {
           email: formData.email,
           // 'custom:country': formData.country,
           "custom:firstName": formData.firstName,
+          ...(formData.organization
+            ? { "custom:organization": formData.organization }
+            : {}),
           // 'custom:lastName': formData.lastName,
           // phone_number: formData.cellphone,
           // 'custom:organization': formData.organization || 'N/A',
@@ -115,8 +119,10 @@ export const getUserAttributes = async () => {
     const userData = {
       email: attributes.email || "",
       firstName: attributes["custom:firstName"] || attributes.given_name || "",
-      // lastName: attributes['custom:lastName'] || attributes.family_name || '',
-      // organization: attributes['custom:organization'] || '',
+      lastName: attributes["custom:lastName"] || attributes.family_name || "",
+      organization: attributes["custom:organization"] || "",
+      acceptedLegal: attributes["custom:acceptedLegal"] || "",
+      onboarded: attributes["custom:onboarded"] || "",
       role: attributes["custom:role"] || "user",
       id: attributes["sub"] || "",
       ownerid: attributes["custom:ownerid"] || attributes["ownerid"] || "",

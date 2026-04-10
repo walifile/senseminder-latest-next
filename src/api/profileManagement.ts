@@ -14,6 +14,7 @@ export type UserProfile = {
   lastName?: string;
   country?: string;
   organization?: string;
+  isBusiness?: boolean;
   role?: string;
   avatarUrl?: string;
 };
@@ -21,6 +22,12 @@ export type UserProfile = {
 type AvatarUploadUrlResponse = {
   uploadUrl: string;
   key?: string;
+};
+
+type BusinessDetailsPayload = {
+  teamSize: number;
+  pcCount: number;
+  businessUseCase: string;
 };
 
 export const profileManagementAPI = createApi({
@@ -61,7 +68,23 @@ export const profileManagementAPI = createApi({
       query: (body) => ({
         url: "avatar",
         method: "POST",
-        body,
+        body: {
+          ...body,
+          type: "avatar",
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    }),
+    createBusinessDetails: builder.mutation<unknown, BusinessDetailsPayload>({
+      query: (body) => ({
+        url: "avatar",
+        method: "POST",
+        body: {
+          ...body,
+          type: "businessDetails",
+        },
         headers: {
           "Content-Type": "application/json",
         },
@@ -80,6 +103,7 @@ export const {
   useLazyGetUserProfileQuery,
   useUpdateUserProfileMutation,
   useCreateAvatarUploadUrlMutation,
+  useCreateBusinessDetailsMutation,
   useDeleteAvatarMutation,
 } = profileManagementAPI;
 

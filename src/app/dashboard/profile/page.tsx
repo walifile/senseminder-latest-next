@@ -11,6 +11,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/components/ui/dashboard/dashboard-card";
 import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
@@ -28,6 +29,9 @@ const ICONS = {
   orgEditLight: "/assets/dashboard/write-light.svg",
   orgEditDark: "/assets/dashboard/write-dark.svg",
 } as const;
+
+const PROFILE_NAME_MAX_LENGTH = 40;
+const ORGANIZATION_MAX_LENGTH = 40;
 
 const ProfilePage = () => {
   const { toast } = useToast();
@@ -64,9 +68,9 @@ const ProfilePage = () => {
         const last = (data.lastName || "").trim();
         const name = [first, last].filter(Boolean).join(" ");
 
-        setFullName(name);
+        setFullName(name.slice(0, PROFILE_NAME_MAX_LENGTH));
         setCountry(data.country || "");
-        setOrgInput(data.organization || "");
+        setOrgInput((data.organization || "").slice(0, ORGANIZATION_MAX_LENGTH));
       } catch (error: unknown) {
         const message =
           error instanceof Error ? error.message : "Could not fetch profile.";
@@ -107,7 +111,10 @@ const ProfilePage = () => {
     firstName: string;
     lastName: string;
   } {
-    const trimmed = raw.trim().replace(/\s+/, " ");
+    const trimmed = raw
+      .slice(0, PROFILE_NAME_MAX_LENGTH)
+      .trim()
+      .replace(/\s+/g, " ");
     if (!trimmed) return { firstName: "", lastName: "" };
     const [first, ...rest] = trimmed.split(/\s+/);
     return {
@@ -128,7 +135,7 @@ const ProfilePage = () => {
     };
 
     if (canEditOrg) {
-      payload.organization = orgInput ?? "";
+      payload.organization = (orgInput ?? "").slice(0, ORGANIZATION_MAX_LENGTH);
     }
 
     Object.keys(payload).forEach((k) => {
@@ -160,9 +167,14 @@ const ProfilePage = () => {
 
       const first = (data.firstName || "").trim();
       const last = (data.lastName || "").trim();
-      setFullName([first, last].filter(Boolean).join(" "));
+      setFullName(
+        [first, last]
+          .filter(Boolean)
+          .join(" ")
+          .slice(0, PROFILE_NAME_MAX_LENGTH)
+      );
       setCountry(data.country || "");
-      setOrgInput(data.organization || "");
+      setOrgInput((data.organization || "").slice(0, ORGANIZATION_MAX_LENGTH));
       setOrgEditing(false);
     } catch (error: unknown) {
       const message =
@@ -181,11 +193,13 @@ const ProfilePage = () => {
     if (!canEditOrg) return;
     setSaving(true);
     try {
-      await updateUserProfile({ organization: orgInput }).unwrap();
+      await updateUserProfile({
+        organization: orgInput.slice(0, ORGANIZATION_MAX_LENGTH),
+      }).unwrap();
 
       const data = await triggerGetUserProfile().unwrap();
       setProfile(data);
-      setOrgInput(data.organization || "");
+      setOrgInput((data.organization || "").slice(0, ORGANIZATION_MAX_LENGTH));
       setOrgEditing(false);
 
       toast({
@@ -220,7 +234,25 @@ const ProfilePage = () => {
     "text-[16px] leading-[24px] tracking-[-0.3px] text-muted-foreground";
 
   const orgTextClass =
-    "truncate text-[24px] font-bold leading-8 tracking-[-0.4px] font-['Space_Grotesk']";
+    "block min-w-0 max-w-full break-all text-[18px] font-bold leading-6 tracking-[-0.3px] font-['Space_Grotesk'] sm:text-[24px] sm:leading-8 sm:break-words";
+  const organizationName = (profile?.organization || "").trim();
+  const hasOrganizationName = organizationName.length > 0;
+
+  const organizationTypeBadge = useMemo(() => {
+    if (typeof profile?.isBusiness !== "boolean") return null;
+
+    return profile.isBusiness
+      ? {
+          label: "Business",
+          className:
+            "border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-200 dark:hover:bg-emerald-500/15",
+        }
+      : {
+          label: "Personal",
+          className:
+            "border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-50 dark:border-slate-400/40 dark:bg-slate-500/10 dark:text-slate-200 dark:hover:bg-slate-500/10",
+        };
+  }, [profile?.isBusiness]);
 
   return (
     <DashboardCard
@@ -231,31 +263,39 @@ const ProfilePage = () => {
         value={activeTab}
         onValueChange={(v) => {
           setActiveTab(v);
-          if (v !== "security") setOrgEditing(false);
+          if (v !== "account") setOrgEditing(false);
         }}
         className="w-full"
         variant="glowing"
       >
-        <div className="px-6 pt-5">
+        <div className="px-4 pt-4 sm:px-6 sm:pt-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
-              {activeTab === "security" ? (
-                <div className="flex min-w-0 items-center gap-3">
+              {activeTab === "account" ? (
+                <div className="min-w-0 space-y-1">
+                  <p
+                    className="text-sm leading-5 text-muted-foreground"
+                    data-testid="org-title"
+                  >
+                    Organization
+                  </p>
                   {orgEditing ? (
                     <form
                       onSubmit={prevent}
                       className="flex w-full flex-wrap items-center gap-2"
                     >
-                      <span className={orgTextClass} data-testid="org-prefix">
-                        Organization:
-                      </span>
-
                       <Input
                         ref={orgInputRef}
                         value={orgInput}
-                        onChange={(e) => setOrgInput(e.target.value)}
+                        onChange={(e) =>
+                          setOrgInput(
+                            e.target.value.slice(0, ORGANIZATION_MAX_LENGTH)
+                          )
+                        }
+                        maxLength={ORGANIZATION_MAX_LENGTH}
                         disabled={saving}
-                        className="max-w-xs text-[24px] font-bold leading-8 tracking-[-0.4px]"
+                        placeholder="Organization name"
+                        className="w-full max-w-full text-[20px] font-bold leading-7 tracking-[-0.3px] sm:max-w-xs sm:text-[24px] sm:leading-8 sm:tracking-[-0.4px]"
                         data-testid="org-input"
                       />
 
@@ -281,50 +321,83 @@ const ProfilePage = () => {
                       </Button>
                     </form>
                   ) : (
-                    <>
-                      <span className={orgTextClass} data-testid="org-label">
-                        {profile?.organization || ""}
-                      </span>
-
-                      {canEditOrg && (
+                    <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
+                      {hasOrganizationName ? (
+                        <div className="flex min-w-0 w-full max-w-full items-center gap-1.5 sm:w-auto sm:gap-2">
+                          <span
+                            className={cn("min-w-0 max-w-full", orgTextClass)}
+                            data-testid="org-label"
+                          >
+                            {organizationName}
+                          </span>
+                          {canEditOrg && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 shrink-0"
+                              aria-label="Edit Organization"
+                              onClick={() => setOrgEditing(true)}
+                              data-testid="org-edit"
+                              type="button"
+                            >
+                              <img
+                                src={ICONS.orgEditLight}
+                                alt=""
+                                aria-hidden
+                                className="h-5 w-5 dark:hidden"
+                              />
+                              <img
+                                src={ICONS.orgEditDark}
+                                alt=""
+                                aria-hidden
+                                className="hidden h-5 w-5 dark:block"
+                              />
+                            </Button>
+                          )}
+                        </div>
+                      ) : canEditOrg ? (
                         <Button
-                          size="icon"
-                          variant="ghost"
-                          className="shrink-0"
-                          aria-label="Edit Organization"
+                          variant="link"
+                          className="h-auto max-w-full whitespace-normal p-0 text-left text-base"
                           onClick={() => setOrgEditing(true)}
-                          data-testid="org-edit"
+                          data-testid="org-set-name-link"
                           type="button"
                         >
-                          {/* Light icon */}
-                          <img
-                            src={ICONS.orgEditLight}
-                            alt=""
-                            aria-hidden
-                            className="h-5 w-5 dark:hidden"
-                          />
-                          {/* Dark icon */}
-                          <img
-                            src={ICONS.orgEditDark}
-                            alt=""
-                            aria-hidden
-                            className="hidden h-5 w-5 dark:block"
-                          />
+                          Set Organization Name
                         </Button>
+                      ) : (
+                        <span
+                          className="text-base font-medium text-muted-foreground"
+                          data-testid="org-unnamed-label"
+                        >
+                          Unnamed Organization
+                        </span>
                       )}
-                    </>
+                      {organizationTypeBadge && (
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "max-w-full shrink-0",
+                            organizationTypeBadge.className
+                          )}
+                          data-testid="org-type-badge"
+                        >
+                          {organizationTypeBadge.label}
+                        </Badge>
+                      )}
+                    </div>
                   )}
                 </div>
               ) : (
                 <div className="space-y-1">
                   <p
                     className={headerTitleClass}
-                    data-testid="profile-information-heading"
+                    data-testid="profile-security-heading"
                   >
-                    Profile Information
+                    Security
                   </p>
                   <p className={headerDescClass}>
-                    Update your personal details
+                    Manage your account security settings
                   </p>
                 </div>
               )}
@@ -346,7 +419,7 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        <div className="px-6 pb-6 pt-5">
+        <div className="px-4 pb-5 pt-4 sm:px-6 sm:pb-6 sm:pt-5">
           <TabsContent value="account" className="m-0 space-y-6">
             <ProfileAccountTab
               profile={profile}
@@ -354,6 +427,7 @@ const ProfilePage = () => {
               loading={loading}
               saving={saving}
               fullName={fullName}
+              fullNameMaxLength={PROFILE_NAME_MAX_LENGTH}
               setFullName={setFullName}
               country={country}
               setCountry={setCountry}

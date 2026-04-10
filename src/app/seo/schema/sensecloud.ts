@@ -2,46 +2,41 @@ export const senseCloudJsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "Product",
+      "@type": "Service",
       "@id": "https://sensepc.com/products/sensecloud#product",
       name: "Sense Cloud Storage",
-      image:
-        "https://sensepc.com/_next/image?url=%2Fsensepc-logo-dark.png&w=128&q=75",
+      image: "https://sensepc.com/sensepc-logo-dark.png",
       description:
         "Secure, scalable, and cost-aware cloud storage built for Sense PC. Features auto-tiering, encrypted volumes, and seamless integration with Sense PC virtual desktops.",
+      serviceType: "Cloud Storage Service",
+      areaServed: "Global",
+      provider: {
+        "@type": "Organization",
+        name: "SensePC",
+        url: "https://sensepc.com",
+      },
       brand: {
         "@type": "Brand",
         name: "Sense PC",
       },
-      sku: "SENSECLOUD-STORAGE-001",
-      offers: {
-        "@type": "AggregateOffer",
-        url: "https://sensepc.com/products/sensecloud",
-        priceCurrency: "USD",
-        lowPrice: "0.00",
-        highPrice: "500.00",
-        offerCount: "2",
-        availability: "https://schema.org/InStock",
-        offers: [
-          {
-            "@type": "Offer",
-            name: "Auto-Tiered Plan",
-            description:
-              "Adaptive billing based on highest storage usage during the period.",
-          },
-          {
-            "@type": "Offer",
-            name: "Dedicated Plans",
-            description:
-              "Reserved capacity with consistent pricing for stable workloads.",
-          },
-        ],
-      },
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: "4.8",
-        reviewCount: "95",
-      },
+      offers: [
+        {
+          "@type": "Offer",
+          name: "Auto-Tiered Plan",
+          url: "https://sensepc.com/products/sensecloud",
+          description:
+            "Usage-based pricing based on highest storage usage during the billing period.",
+          availability: "https://schema.org/InStock",
+        },
+        {
+          "@type": "Offer",
+          name: "Dedicated Plans",
+          url: "https://sensepc.com/products/sensecloud",
+          description:
+            "Usage-based pricing tied to selected storage configuration.",
+          availability: "https://schema.org/InStock",
+        },
+      ],
       additionalProperty: [
         {
           "@type": "PropertyValue",
@@ -115,12 +110,6 @@ export const senseCloudJsonLd = {
         {
           "@type": "ListItem",
           position: 2,
-          name: "Products",
-          item: "https://sensepc.com/products/sensepc",
-        },
-        {
-          "@type": "ListItem",
-          position: 3,
           name: "Sense Cloud",
           item: "https://sensepc.com/products/sensecloud",
         },

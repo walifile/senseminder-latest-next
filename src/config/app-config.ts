@@ -83,6 +83,7 @@ const serverEnv = {
   PING_API_KEY: process.env.NEXT_PUBLIC_PING_API_KEY ?? "",
   IPINFO_URL: process.env.NEXT_PUBLIC_IPINFO_URL ?? "",
   IPINFO_TOKEN: process.env.NEXT_PUBLIC_IPINFO_TOKEN ?? "",
+  ANNOUNCEMENTS_API_URL: process.env.NEXT_PUBLIC_ANNOUNCEMENTS_API_URL ?? "",
 };
 
 const appConfig = {

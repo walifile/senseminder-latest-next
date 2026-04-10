@@ -106,10 +106,12 @@ export class SecurityAndPrivacyPage {
                             // Also check for other common token field names
                             const tokenFields = ['accessToken', 'access_token', 'token', 'authToken', 'jwt'];
                             for (const field of tokenFields) {
-                                if (bodyData[field]) {
-                                    this.capturedAccessToken = bodyData[field];
-
-                                    break;
+                                if (bodyData[field] && typeof bodyData[field] === 'string' && bodyData[field].length > 50 && bodyData[field].startsWith('eyJ')) {
+                                    if (!this.capturedAccessToken || this.capturedAccessToken.length < 50) {
+                                        this.capturedAccessToken = bodyData[field];
+                                        console.log(`✅ Access token captured from request body field ${field}:`, bodyData[field].substring(0, 20) + '...');
+                                        break;
+                                    }
                                 }
                             }
                         } catch (e) {
@@ -123,10 +125,15 @@ export class SecurityAndPrivacyPage {
                                           urlObj.searchParams.get('token') ||
                                           urlObj.searchParams.get('accessToken') ||
                                           urlObj.searchParams.get('auth_token');
-                    if (accessTokenParam) {
-                        this.capturedAccessToken = accessTokenParam;
-                        console.log('✅ Access token captured from URL parameters:', accessTokenParam.substring(0, 20) + '...');
-                        console.log('🔑 Full token length:', accessTokenParam.length);
+                    // Only capture if it looks like a valid JWT token (starts with eyJ and is long enough)
+                    if (accessTokenParam && accessTokenParam.length > 50 && accessTokenParam.startsWith('eyJ')) {
+                        if (!this.capturedAccessToken || this.capturedAccessToken.length < 50) {
+                            this.capturedAccessToken = accessTokenParam;
+                            console.log('✅ Access token captured from URL parameters:', accessTokenParam.substring(0, 20) + '...');
+                            console.log('🔑 Full token length:', accessTokenParam.length);
+                        } else {
+                            console.log('🔍 Access token already exists, skipping capture from URL parameters');
+                        }
                     }
                     
                 } catch (error) {
@@ -192,10 +199,12 @@ export class SecurityAndPrivacyPage {
                         
                         for (const pattern of tokenPatterns) {
                             const match = responseBody.match(pattern);
-                            if (match) {
-                                this.capturedAccessToken = match[1];
-
-                                break;
+                            if (match && match[1] && match[1].length > 50 && match[1].startsWith('eyJ')) {
+                                if (!this.capturedAccessToken || this.capturedAccessToken.length < 50) {
+                                    this.capturedAccessToken = match[1];
+                                    console.log('✅ Access token captured from response body:', match[1].substring(0, 20) + '...');
+                                    break;
+                                }
                             }
                         }
                     } catch (e) {
@@ -383,9 +392,17 @@ export class SecurityAndPrivacyPage {
             // Check if we have a captured access token from login
             if (this.capturedAccessToken) {
                 const token = this.capturedAccessToken;
-                console.log('🔍 MFA setup - this.capturedAccessToken:', token);
+                console.log('🔍 MFA setup - this.capturedAccessToken:', token.substring(0, 30) + '...');
                 console.log('🔍 MFA setup - token type:', typeof token);
                 console.log('🔍 MFA setup - token length:', token.length);
+                
+                // Validate token format (should be a JWT token)
+                if (token.length < 50 || !token.startsWith('eyJ')) {
+                    console.error('❌ Invalid access token format. Token should be a JWT (starts with "eyJ" and be at least 50 characters).');
+                    console.error('🔍 Token value:', token);
+                    throw new Error(`Invalid access token format. Expected JWT token, got: ${token.substring(0, 20)}...`);
+                }
+                
                 console.log('✅ Using captured access token from login:', token.substring(0, 30) + '...');
                 
                 // Make API call to get the secret code directly

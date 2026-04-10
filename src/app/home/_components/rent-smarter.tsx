@@ -3,9 +3,6 @@ import Image from "next/image";
 
 const RentSmarter: React.FC = () => (
   <section data-testid="home-rent-smarter" className="relative">
-    <div className="z-0 absolute -top-60 -right-40 blur-[160px] md:blur-[200px] w-60 md:w-[400px] h-full opacity-20 dark:opacity-40 bg-[#9C05BF]" />
-    <div className="z-0 absolute top-20 -right-60 blur-[160px] md:blur-[200px] w-60 md:w-[400px] h-full opacity-20 dark:opacity-40 bg-[#4027E5]" />
-
     <div className="container my-12 md:my-20 relative grid md:grid-cols-2 gap-8 md:gap-24">
       {/* Left Illustration */}
       <div>

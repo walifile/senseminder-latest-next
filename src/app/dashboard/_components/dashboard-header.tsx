@@ -92,10 +92,8 @@ const DashboardHeader = () => {
   return (
     <header
       data-testid="dashboard-header"
-      className="sticky top-0 z-30 h-20 flex items-center justify-between px-4 md:px-6 backdrop-blur"
+      className="sticky top-0 z-30 flex min-h-20 items-center justify-end gap-2 px-4 py-4 pl-[8.5rem] backdrop-blur md:h-20 md:justify-between md:gap-0 md:px-6 md:py-0 md:pl-6"
     >
-      <div className="md:hidden w-10" />
-
       {/* {sidebarCollapsed && (
         <Link
           data-testid="dashboard-header-logo-link"
@@ -106,15 +104,15 @@ const DashboardHeader = () => {
         </Link>
       )} */}
 
-      <div className="flex-1" />
+      <div className="hidden md:flex-1" />
 
       <div
         data-testid="dashboard-header-actions"
-        className="flex items-center gap-3 md:gap-5"
+        className="ml-auto flex min-w-0 items-center gap-2 sm:gap-3 md:gap-5"
       >
         <div
           data-testid="dashboard-header-balance-card"
-          className="rounded-full border border-[#A801BA] dark:border-fuchsia-700 bg-[rgba(37,48,240,0.07)] dark:bg-white/5 "
+          className="shrink-0 rounded-full border border-[#A801BA] bg-[rgba(37,48,240,0.07)] dark:border-fuchsia-700 dark:bg-white/5"
         >
           <div className="flex items-center gap-1 md:gap-2 rounded-full p-1 md:p-[2px] backdrop-blur supports-[backdrop-filter]:bg-white/75 dark:supports-[backdrop-filter]:bg-white/5 dark:shadow-[6px_16px_50px_6px_rgba(38,57,136,0.06)]">
             <Link
@@ -179,7 +177,7 @@ const DashboardHeader = () => {
                   size="icon"
                   className={cn(
                     HEADER_ICON_BTN,
-                    "relative rounded-full mr-1 md:mr-1",
+                    "relative rounded-full",
                     "bg-gradient-to-b dark:bg-white/5 dark:from-white/5 dark:to-white/5 from-[#e9ecff] to-[#dfe5ff]",
                     "text-[#2530f0] dark:text-white hover:bg-[#d4d9ff] shadow-none",
                     "ring-1 ring-white/35 dark:ring-white/10"
@@ -202,7 +200,7 @@ const DashboardHeader = () => {
               <DropdownMenuContent
                 data-testid="dashboard-header-notifications-menu"
                 align="end"
-                className="relative w-80 pb-10 pr-0"
+                className="relative w-[min(20rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] pb-10 pr-0 sm:w-80"
               >
                 <DropdownMenuLabel data-testid="dashboard-header-notifications-title">
                   Notifications
@@ -272,7 +270,7 @@ const DashboardHeader = () => {
                 </div>
                 <div
                   data-testid="dashboard-header-notifications-footer"
-                  className="fixed bottom-0 right-0 left-0 border-t border-[#7E808F] dark:border-[#2A2067] bg-[#F2EFFF] dark:bg-[#191748]"
+                  className="absolute right-0 bottom-0 left-0 border-t border-[#7E808F] bg-[#F2EFFF] dark:border-[#2A2067] dark:bg-[#191748]"
                 >
                   <Link
                     data-testid="dashboard-header-notifications-link"
@@ -287,7 +285,7 @@ const DashboardHeader = () => {
           </div>
         </div>
 
-        <div data-testid="dashboard-header-profile">
+        <div data-testid="dashboard-header-profile" className="shrink-0">
           <ProfileDropdown />
         </div>
       </div>

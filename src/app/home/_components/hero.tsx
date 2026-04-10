@@ -19,6 +19,7 @@ type HeroProps = {
   imageAlt?: string;
   imageWidth?: number;
   imageHeight?: number;
+  showDefaultCTA?: boolean;
 };
 
 const Hero: React.FC<HeroProps> = ({
@@ -28,6 +29,7 @@ const Hero: React.FC<HeroProps> = ({
   imageAlt = "Hero",
   imageWidth = 600,
   imageHeight = 400,
+  showDefaultCTA = true,
 }) => {
   const onGetStarted = useGetStartedNav();
   const pathname = usePathname();
@@ -38,7 +40,6 @@ const Hero: React.FC<HeroProps> = ({
   return (
     <section
       data-testid="home-hero"
-      className="relative bg-[linear-gradient(180deg,_#F4F1FF_0%,_#FFFFFF_100%)] dark:bg-none"
     >
       {!hideAboutGlows && (
         <>
@@ -47,7 +48,6 @@ const Hero: React.FC<HeroProps> = ({
         </>
       )}
 
-      <div className="hidden md:block z-0 absolute bottom-20 right-0 blur-[250px] size-60 bg-[#E7ECEF]" />
 
       <div className="container z-10 relative mt-[60px] md:mt-[92px]">
         <div className="container flex flex-col-reverse md:grid md:grid-cols-2 gap-4 md:gap-[90px] md:items-center px-0 py-10 md:pt-16 md:pb-32">
@@ -60,19 +60,20 @@ const Hero: React.FC<HeroProps> = ({
           >
             <div className="flex flex-col gap-2.5 md:gap-3">{children}</div>
 
-            <div className="relative md:w-fit">
-              <div className="z-0 absolute left-1/2 top-2.5 -translate-x-1/2 w-[50%] h-[40px] bg-[linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)]" />
-             <Button
-              size="lg"
-              className="relative w-full z-10"
-              onClick={onGetStarted}
-              data-testid="landing-get-started-button"
-            >
-              Get Started Now
-              <ArrowUpRight />
-            </Button>
-
-            </div>
+            {showDefaultCTA ? (
+              <div className="relative md:w-fit">
+                <div className="z-0 absolute left-1/2 top-2.5 -translate-x-1/2 w-[50%] h-[40px] bg-[linear-gradient(270deg,_#A801BA_0%,_#2530F0_100%)]" />
+                <Button
+                  size="lg"
+                  className="relative w-full z-10"
+                  onClick={onGetStarted}
+                  data-testid="landing-get-started-button"
+                >
+                  Get Started Now
+                  <ArrowUpRight />
+                </Button>
+              </div>
+            ) : null}
           </div>
 
           {/* RIGHT: IMAGE */}

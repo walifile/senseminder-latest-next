@@ -2,49 +2,41 @@ export const sensePcJsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "Product",
+      "@type": "SoftwareApplication",
       "@id": "https://sensepc.com/products/sensepc#product",
       name: "SensePC Cloud Desktop",
-      image:
-        "https://sensepc.com/_next/image?url=%2Fsensepc-logo-dark.png&w=128&q=75",
+      image: "https://sensepc.com/sensepc-logo-dark.png",
       description:
         "High-performing cloud workstation with 12ms latency, scalable CPU/RAM, and encrypted storage. Built for developers, remote teams, and students to work from any device.",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Windows 10, Windows 11, Linux",
       brand: {
         "@type": "Brand",
         name: "Sense PC",
       },
-      sku: "SPC-CLOUD-DT-2026",
-      offers: {
-        "@type": "AggregateOffer",
-        url: "https://sensepc.com/products/sensepc",
-        priceCurrency: "USD",
-        lowPrice: "0.00",
-        highPrice: "1000.00",
-        offerCount: "3",
-        availability: "https://schema.org/InStock",
-        offers: [
-          {
-            "@type": "Offer",
-            name: "Hourly Plan",
-            description: "Pay per hour while running. SSD storage continues while stopped.",
-          },
-          {
-            "@type": "Offer",
-            name: "Daily Plan",
-            description: "Flat daily rate with up to 10 hours/day included.",
-          },
-          {
-            "@type": "Offer",
-            name: "Monthly Plan",
-            description: "Flat monthly rate with up to 180 hours/month included.",
-          },
-        ],
-      },
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: "4.9",
-        reviewCount: "150",
-      },
+      offers: [
+        {
+          "@type": "Offer",
+          name: "Hourly Plan",
+          url: "https://sensepc.com/products/sensepc",
+          description: "Usage-based pricing while instance is running.",
+          availability: "https://schema.org/InStock",
+        },
+        {
+          "@type": "Offer",
+          name: "Daily Plan",
+          url: "https://sensepc.com/products/sensepc",
+          description: "Usage-based pricing based on selected configuration and runtime.",
+          availability: "https://schema.org/InStock",
+        },
+        {
+          "@type": "Offer",
+          name: "Monthly Plan",
+          url: "https://sensepc.com/products/sensepc",
+          description: "Usage-based pricing based on selected configuration and runtime.",
+          availability: "https://schema.org/InStock",
+        },
+      ],
       additionalProperty: [
         {
           "@type": "PropertyValue",
@@ -113,12 +105,6 @@ export const sensePcJsonLd = {
         {
           "@type": "ListItem",
           position: 2,
-          name: "Products",
-          item: "https://sensepc.com/products/sensepc",
-        },
-        {
-          "@type": "ListItem",
-          position: 3,
           name: "SensePC",
           item: "https://sensepc.com/products/sensepc",
         },

@@ -104,6 +104,7 @@ export function MissionCard() {
               <GradientInfoCard
                 title="Our Story"
                 rightImage="/assets/svg/about/our-story-1.svg"
+                hideMobileRightCircleGlow
               >
                 <div className="font-inter text-[24px] font-normal leading-[40px] tracking-[-0.4px] text-[#7D7D7D] dark:text-[#B9C2D5]">
                   <p className="mb-4">

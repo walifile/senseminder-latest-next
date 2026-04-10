@@ -18,7 +18,7 @@ export class LandingPage {
 
     constructor(page: Page) {
         this.page = page;
-        this.getStartedButton = page.locator('a:has-text("Get Started"), button:has-text("Get Started")').first();
+        this.getStartedButton = page.locator('a:has-text("Get Started Now"), button:has-text("Get Started Now")').first();
         this.chooseConfigurationsSection = page.locator('text=Choose Configurations').first();
         this.operatingSystemDropdown = page.locator('select, [role="combobox"]').filter({ hasText: 'Operating System' }).first();
         this.cpuMemoryDropdown = page.locator('select, [role="combobox"]').filter({ hasText: 'CPU' }).first();

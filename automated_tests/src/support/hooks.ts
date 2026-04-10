@@ -120,9 +120,10 @@ Before({ timeout: 60000 }, async function(this: CustomWorld) {
             // Create a new page in the new context
             this.page = await this.context.newPage();
             
-            // Set default timeouts
-            this.page.setDefaultTimeout(testData.application.timeout);
-            this.page.setDefaultNavigationTimeout(testData.application.timeout);
+            // Set default timeouts using TimeoutManager
+            const { TimeoutManager } = await import('../utils/timeoutUtils');
+            this.page.setDefaultTimeout(TimeoutManager.getDefaultTimeout());
+            this.page.setDefaultNavigationTimeout(TimeoutManager.getNavigationTimeout());
             
             // Reinitialize page objects with the new page
             const { LoginPage } = await import('../pages/loginPage');
@@ -566,8 +567,9 @@ Before({ tags: '@profileAndSecurity' }, async function(this: CustomWorld) {
             });
             
             this.page = await this.context.newPage();
-            this.page.setDefaultTimeout(testData.application.timeout);
-            this.page.setDefaultNavigationTimeout(testData.application.timeout);
+            const { TimeoutManager } = await import('../utils/timeoutUtils');
+            this.page.setDefaultTimeout(TimeoutManager.getDefaultTimeout());
+            this.page.setDefaultNavigationTimeout(TimeoutManager.getNavigationTimeout());
             
             console.log('✅ Created new browser context for ProfileAndSecurity test');
         } catch (error) {
@@ -758,7 +760,7 @@ async function cleanupCreatedPC(world: CustomWorld) {
                     if (!navigationSuccess) {
                         try {
                             console.log('🔄 Trying smart-pc URL navigation...');
-                            await world.page?.goto('/dashboard/smart-pc');
+                            await world.page?.goto('/dashboard/sense-pc');
                             await world.page?.waitForTimeout(3000);
                             navigationSuccess = true;
                             console.log('✅ Smart-PC URL navigation successful');

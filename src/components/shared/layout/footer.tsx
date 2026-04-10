@@ -23,17 +23,30 @@ const socialLinks = [
 const quickLinks = [
   { href: "/about", text: "About Us", icon: "about-us-icon" },
   { href: "/contact", text: "Contact", icon: "contact-icon" },
-  { href: "/tutorials", text: "Tutorials", icon: "tutorials-icon" },
+  { href: "/compare", text: "Comparisons", icon: "about-us-icon" },
+  { href: "/faq", text: "FAQ", icon: "contact-icon" },
+  { href: "/tutorials", text: "Tutorials", icon: "tutorials-icon", size: 16 },
+  { href: "/pricing", text: "Pricing", icon: "billing", size: 14 },
+  { href: "/security", text: "Security", icon: "privacy-policy-icon" },
   { href: "/privacy", text: "Privacy Policy", icon: "privacy-policy-icon" },
   { href: "/terms", text: "Terms of Service", icon: "terms-icon" },
 ];
 
-const product = [
-  { icon: "computer1", text: "Sense PC", href: "/products/sensepc" },
-  { icon: "storage", text: "Sense Cloud", href: "/products/sensecloud" },
+const quickLinksSplitIndex = Math.ceil(quickLinks.length / 2);
+const quickLinksColumns = [
+  quickLinks.slice(0, quickLinksSplitIndex),
+  quickLinks.slice(quickLinksSplitIndex),
 ];
 
-const noGlowRoutes = ["/build-sensepc", "/contact", "/tutorials"];
+const product = [
+  { icon: "computer1", text: "Sense PC", href: "/products/sensepc" },
+  {
+    icon: "computer1",
+    text: "Sense PC Pro",
+    href: "/business/onboarding",
+  },
+  { icon: "storage", text: "Sense Cloud", href: "/products/sensecloud" },
+];
 
 const Footer = () => {
   const pathname = usePathname();
@@ -41,38 +54,28 @@ const Footer = () => {
 
   if (
     pathname?.startsWith("/auth") ||
+    pathname?.startsWith("/business/sign-up") ||
     pathname?.startsWith("/dashboard") ||
     pathname?.startsWith("/pc-viewer")
   ) {
     return null;
   }
 
-  const hideGlow = noGlowRoutes.some((route) => pathname?.startsWith(route));
-
   return (
     <footer
       className="relative overflow-visible min-h-[190px] font-['Inter'] text-white"
       aria-label="Site footer"
     >
-      {/* Glow background layers (home only, disabled for some routes) */}
-      {!hideGlow && (
-        <>
-          <div className="h-[150px] w-[400px] md:h-[248px] md:w-[995px] z-0 absolute -top-10 left-0 md:top-[-95px] md:left-48 bg-[#4027E5] rounded-[50%] blur-[160px] md:blur-[200px] opacity-40" />
-          <div className="h-[150px] w-[400px] md:h-[248px] md:w-[995px] z-0 absolute -top-20 right-0 md:top-[-165px] md:right-48 bg-[#9C05BF] rounded-[50%] blur-[160px] md:blur-[200px] opacity-40" />
-        </>
-      )}
-
-      {/* Background layer — same size in light/dark */}
       <div className="absolute inset-0 bg-[#020817] dark:bg-[#0208176E]" />
 
       {/* Content wrapper — unified spacing */}
       <div className="relative container pt-10 pb-6 space-y-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 items-start gap-8">
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_1.4fr_0.9fr_1.1fr] lg:gap-x-8">
           {/* Brand */}
           <div className="space-y-4">
             <div className="space-y-3">
               <Image
-                src="/sensepc-home-logo.png"
+                src="/sensepc-logo-home-8.png"
                 alt="SensePC logo"
                 width={210}
                 height={60}
@@ -100,48 +103,46 @@ const Footer = () => {
           </div>
 
           {/* Quick Links */}
-          <div className="w-full space-y-4">
-            <div className="flex items-center gap-2">
-              <Image
-                src="/assets/svg/quick-links-icon.svg"
-                alt="Quick Links"
-                width={26}
-                height={26}
-                unoptimized
-              />
-              {/* ✅ heading font */}
-              <h3
-                className={`${HEADING_FONT} text-base font-semibold text-white`}
-              >
-                Quick Links
-              </h3>
-            </div>
-
-            <ul className="flex flex-col gap-3 md:flex-col md:flex-nowrap">
-              {quickLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="flex items-center gap-2 text-link font-['Inter']"
-                  >
-                    <Image
-                      src={`/assets/svg/${link.icon}.svg`}
-                      alt={link.text}
-                      width={24}
-                      height={24}
-                      unoptimized
-                    />
-                    <span className="text-white/85 hover:text-white transition-colors">
-                      {link.text}
-                    </span>
-                  </Link>
-                </li>
+          <div className="w-full space-y-3 xl:pr-6 lg:-mt-1">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-6 gap-y-3">
+              {quickLinksColumns.map((column, columnIndex) => (
+                <ul key={columnIndex} className="space-y-3">
+                  {column.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        className="flex items-center gap-2 text-link font-['Inter']"
+                      >
+                        <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center">
+                          <Image
+                            src={`/assets/svg/${link.icon}.svg`}
+                            alt={link.text}
+                            width={link.size ?? 24}
+                            height={link.size ?? 24}
+                            className="object-contain"
+                            unoptimized
+                          />
+                        </span>
+                        <span
+                          className={`text-white/85 hover:text-white transition-colors ${
+                            link.text === "Terms of Service" ||
+                            link.text === "Privacy Policy"
+                              ? "xl:whitespace-nowrap"
+                              : ""
+                          }`}
+                        >
+                          {link.text}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               ))}
-            </ul>
+            </div>
           </div>
 
           {/* Product */}
-          <div className="w-full space-y-4">
+          <div className="w-full space-y-4 lg:-mt-1">
             <div className="flex items-center gap-3">
               <Image
                 src="/assets/svg/product-icon.svg"
@@ -211,8 +212,10 @@ const Footer = () => {
 
         <div className="pt-4 border-t border-[#F8F8F8]/25">
           <p className="text-center text-[#F8F8F8] text-sm font-['Inter']">
-            © {currentYear} sensepc. All rights reserved.{" "}
-            <span className="opacity-80">v1.9.2-beta</span>
+            © {currentYear} SensePC® — a product of Senseminder LLC. All rights
+            reserved.
+            <br />
+            {/* <span className="opacity-80">Cloud computing platform. Built in the USA.</span> */}
           </p>
         </div>
       </div>

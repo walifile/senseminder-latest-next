@@ -157,7 +157,6 @@ const ProductHighlights = () => (
         </div>
     </div>
 
-    <div className="z-0 absolute -bottom-20 left-1/2 -translate-x-1/2 w-[680px] h-[680px] -rotate-[11.32deg] opacity-50 blur-[500px] dark:blur-[120px] bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)]" />
   </div>
 );
 

@@ -8,6 +8,22 @@ export const metadata: Metadata = {
   title: homeMeta.title,
   description: homeMeta.description,
   keywords: homeMeta.keywords,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: homeMeta.title,
+    description: homeMeta.description,
+    url: "/",
+    type: "website",
+    images: ["/sensepc-logo.png"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: homeMeta.title,
+    description: homeMeta.description,
+    images: ["/sensepc-logo.png"],
+  },
 };
 
 export default function HomePage() {

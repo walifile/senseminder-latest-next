@@ -16,6 +16,7 @@ export function setCurrentStepName(stepName: string) {
 // Create a wrapper around Playwright's expect that captures screenshots on failure
 export const expect = (actual: any) => {
     const originalExpect = playwrightExpect(actual);
+    const originalExpectAny = originalExpect as any;
     
     // Wrap each matcher to capture screenshots on failure
     const wrappedMatchers: any = {};
@@ -27,7 +28,7 @@ export const expect = (actual: any) => {
     ];
     
     matchersToWrap.forEach(matcherName => {
-        const originalMatcher = originalExpect[matcherName];
+        const originalMatcher = originalExpectAny[matcherName];
         if (originalMatcher) {
             wrappedMatchers[matcherName] = async (...args: any[]) => {
                 try {
@@ -35,7 +36,8 @@ export const expect = (actual: any) => {
                 } catch (error) {
                     console.log(`❌ Assertion failed in step: ${currentStepName}`);
                     console.log(`❌ Matcher: ${matcherName}`);
-                    console.log(`❌ Error: ${error.message}`);
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    console.log(`❌ Error: ${errorMessage}`);
                     
                     // Capture screenshot at the failure point
                     await errorHandler.handleAssertionFailure(
@@ -50,9 +52,9 @@ export const expect = (actual: any) => {
     });
     
     // Copy over any other matchers that weren't wrapped
-    Object.keys(originalExpect).forEach(key => {
+    Object.keys(originalExpectAny).forEach(key => {
         if (!wrappedMatchers[key]) {
-            wrappedMatchers[key] = originalExpect[key];
+            wrappedMatchers[key] = originalExpectAny[key];
         }
     });
     

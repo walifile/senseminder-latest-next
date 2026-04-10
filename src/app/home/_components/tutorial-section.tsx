@@ -24,43 +24,9 @@ const TutorialSection = () => {
   const [selectedVideo, setSelectedVideo] = useState<Tutorial | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
-  // const [canScrollLeft, setCanScrollLeft] = useState(false);
-  // const [canScrollRight, setCanScrollRight] = useState(false);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
-  // const checkScrollButtons = () => {
-  //   if (carouselRef.current) {
-  //     const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
-  //     setCanScrollLeft(scrollLeft > 0);
-  //     setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-  //   }
-  // };
-
-  // React.useEffect(() => {
-  //   checkScrollButtons();
-  //   const carousel = carouselRef.current;
-  //   if (carousel) {
-  //     carousel.addEventListener("scroll", checkScrollButtons);
-  //     window.addEventListener("resize", checkScrollButtons);
-  //     return () => {
-  //       carousel.removeEventListener("scroll", checkScrollButtons);
-  //       window.removeEventListener("resize", checkScrollButtons);
-  //     };
-  //   }
-  //   return undefined;
-  // }, []);
-
-  // const scroll = (direction: "left" | "right") => {
-  //   if (carouselRef.current) {
-  //     const scrollAmount = carouselRef.current.offsetWidth * 0.8;
-  //     carouselRef.current.scrollBy({
-  //       left: direction === "left" ? -scrollAmount : scrollAmount,
-  //       behavior: "smooth",
-  //     });
-  //     setTimeout(checkScrollButtons, 300);
-  //   }
-  // };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientX);
@@ -91,9 +57,6 @@ const TutorialSection = () => {
 
   return (
     <section data-testid="home-tutorial-section" className="relative">
-      <div className="hidden dark:md:block z-0 absolute -top-10 -right-20 w-[195px] h-[357px] opacity-40 bg-[linear-gradient(270deg,#A801BA_0%,#2530F0_100%)] blur-[100px]" />
-      <div className="hidden dark:md:block z-0 absolute -bottom-10 left-32 w-[195px] h-[357px] opacity-40 bg-[#9C05BF] blur-[100px]" />
-
       <div className="container my-12 md:my-20 space-y-8 md:space-y-12 overflow-hidden">
         {/* Header Section */}
         <div className="flex items-center justify-between gap-2">
@@ -156,7 +119,6 @@ const TutorialSection = () => {
           ))}
         </motion.div>
 
-        {/* Mobile Layout - Carousel with peek view */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -167,7 +129,6 @@ const TutorialSection = () => {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          {/* Carousel container with peek */}
           <div
             className="flex gap-4 transition-transform duration-300 ease-out"
             style={{
@@ -193,7 +154,6 @@ const TutorialSection = () => {
             ))}
           </div>
 
-          {/* Mobile Dots Indicator */}
           <div className="flex justify-center gap-4">
             {homeTutorials.map((_, index) => (
               <button
@@ -209,7 +169,6 @@ const TutorialSection = () => {
           </div>
         </motion.div>
 
-        {/* Dialog for video playback */}
         <Dialog
           open={!!selectedVideo}
           onOpenChange={() => setSelectedVideo(null)}
@@ -238,16 +197,7 @@ const TutorialSection = () => {
                     controlsList="nodownload"
                   />
                 </div>
-                {/* <div className="flex justify-end">
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      window.open(selectedVideo.youtubeUrl, "_blank")
-                    }
-                  >
-                    <Youtube /> Watch on YouTube
-                  </Button>
-                </div> */}
+
               </div>
             )}
           </DialogContent>

@@ -162,4 +162,19 @@ export const tutorials: Tutorial[] = [
     lastUpdated: "2026-02-12",
     showCategory: true,
   },
+  {
+    id: 12,
+    title: "Business Onboarding Flow",
+    duration: "1:46",
+    description:
+      "Walk through the full business onboarding flow — from setting up your organization and inviting team members to configuring billing and provisioning cloud desktops for your team.",
+    videoUrl: "https://dj27q01b9pdam.cloudfront.net/SENSE%20PC%2012.mp4",
+    youtubeUrl: "https://youtube.com/watch?v=tutorial-12",
+    thumbnail: "/assets/tutorials/lat-video-12.png",
+    category: "Business",
+    difficulty: "Beginner",
+    uploadDate: "2026-04-03",
+    lastUpdated: "2026-04-03",
+    showCategory: true,
+  },
 ];

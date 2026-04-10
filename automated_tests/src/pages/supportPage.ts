@@ -37,7 +37,7 @@ export class SupportPage {
         this.newTicketTab = page.locator('button:has-text("New Ticket"), a:has-text("New Ticket")');
         this.myTicketsTab = page.locator('button:has-text("My Tickets"), a:has-text("My Tickets")');
         this.faqTab = page.locator('button:has-text("FAQ"), a:has-text("FAQ")');
-        this.subjectInput = page.locator('input[placeholder="Subject"]');
+        this.subjectInput = page.locator('input[data-testid="support-subject-input"]');
         this.categoryDropdown = page.locator('select, [role="combobox"]').first();
         this.priorityDropdown = page.locator('select, [role="combobox"]').nth(1);
         this.descriptionTextarea = page.locator('textarea[placeholder*="Describe"], textarea[placeholder*="issue"]');
@@ -58,7 +58,7 @@ export class SupportPage {
         this.ticketTitle = page.locator('h1, h2, .ticket-title');
         this.ticketInfo = page.locator('.ticket-info, [class*="ticket-info"]');
         this.conversationHistory = page.locator('.conversation, .messages, [class*="conversation"]');
-        this.replyMessage = page.locator('div.mt-1.text-base.whitespace-pre-wrap');
+        this.replyMessage = page.locator('pre[data-testid="support-reply-message"]').first();
         this.ticketStatusBadge = page.locator('tr').locator('td').nth(4).locator('span');
         this.reopenWarning = page.locator('.warning, .alert-warning, [class*="warning"]');
     }

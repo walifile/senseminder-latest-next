@@ -79,7 +79,7 @@ const SmartPcConnectButton = ({
           );
           const pcParam = encodeURIComponent(sessionKey);
           window.open(
-            `${routes?.pcViewer}?pc=${pcParam}&instanceId=${encodeURIComponent(instanceId)}`,
+            `${routes?.pcViewer}?pc=${pcParam}`,
             "_blank",
             "noopener,noreferrer"
           );
@@ -96,7 +96,7 @@ const SmartPcConnectButton = ({
       dispatch(setLaunchVMResponse({ sessionKey, response, pcName, instanceId, userId }));
       const pcParam = encodeURIComponent(sessionKey);
       window.open(
-        `${routes?.pcViewer}?pc=${pcParam}&instanceId=${encodeURIComponent(instanceId)}`,
+        `${routes?.pcViewer}?pc=${pcParam}`,
         "_blank",
         "noopener,noreferrer"
       );

@@ -106,7 +106,7 @@ const NewFolderDialog: React.FC<NewFolderDialogProps> = ({
             onChange={(e) => setFolderName(e.target.value)}
           />
         </div>
-        <DialogFooter>
+        <DialogFooter className="gap-3">
           <Button variant="outline" className="w-full text-center text-black dark:text-white text-base font-medium font-['Inter'] leading-6" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>

@@ -260,7 +260,7 @@ const MoveFilesDialog: React.FC<MoveFilesDialogProps> = ({
           rootLabel="All Files"
         />
 
-        <DialogFooter>
+        <DialogFooter className="gap-3">
           <Button variant="outline" onClick={closeDialog}>
             Cancel
           </Button>

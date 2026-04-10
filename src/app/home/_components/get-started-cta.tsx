@@ -39,12 +39,9 @@ export default function GetStartedCTA({
             height={320}
             className="absolute w-[140px] h-[93px] md:size-80 -bottom-0 md:-bottom-8 right-0"
           />
-          {/* className="pointer-events-none size-1/2 md:w-[561px] md:h-[79px] absolute left-1/2 -translate-x-1/2 bottom-2 md:bottom-0 md:left-[15%] md:translate-x-0" */}
 
           <div className="pointer-events-none">
             <Image
-              // src="/assets/svg/about/partner-us-shape-2-bg.png"
-              // src="/assets/svg/about/partner-us-shape-2.png"
               src="/assets/svg/about/shape.png"
               alt="Gradient"
               fill
@@ -55,7 +52,6 @@ export default function GetStartedCTA({
       </div>
 
       {gradient}
-      <div className="z-0 absolute top-1/2 -translate-y-1/2 right-0 blur-[100px] md:blur-[150px] size-24 bg-[#E7ECEF]" />
     </section>
   );
 }

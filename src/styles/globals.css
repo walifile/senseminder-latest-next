@@ -28,7 +28,7 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 230 100% 7.1%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
@@ -362,4 +362,35 @@
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome, Safari */
+}
+
+
+.home-safari-render-fix [class^="blur-["],
+.home-safari-render-fix [class*=" blur-["],
+.home-safari-render-fix [class*=":blur-["] {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+@supports (-webkit-touch-callout: none) {
+  .home-safari-render-fix [class^="blur-[500px]"],
+  .home-safari-render-fix [class*=" blur-[500px]"],
+  .home-safari-render-fix [class*=":blur-[500px]"],
+  .home-safari-render-fix [class^="blur-[250px]"],
+  .home-safari-render-fix [class*=" blur-[250px]"],
+  .home-safari-render-fix [class*=":blur-[250px]"],
+  .home-safari-render-fix [class^="blur-[200px]"],
+  .home-safari-render-fix [class*=" blur-[200px]"],
+  .home-safari-render-fix [class*=":blur-[200px]"],
+  .home-safari-render-fix [class^="blur-[160px]"],
+  .home-safari-render-fix [class*=" blur-[160px]"],
+  .home-safari-render-fix [class*=":blur-[160px]"],
+  .home-safari-render-fix [class^="blur-[150px]"],
+  .home-safari-render-fix [class*=" blur-[150px]"],
+  .home-safari-render-fix [class*=":blur-[150px]"] {
+    -webkit-filter: blur(110px) !important;
+    filter: blur(110px) !important;
+  }
 }

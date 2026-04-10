@@ -16,6 +16,8 @@ import { UserManagementPage } from '../pages/userManagementPage';
 import { SupportPage } from '../pages/supportPage';
 import { LandingPage } from '../pages/landingPage';
 import { errorHandler } from '../utils/errorHandler';
+import { TimeoutManager } from '../utils/timeoutUtils';
+import * as fs from 'fs';
 
 export interface CustomWorld extends World {
     browser?: Browser;
@@ -233,10 +235,13 @@ export class CustomWorldClass extends World implements CustomWorld {
             console.log('✅ New page created successfully');
             
             console.log('🔄 Setting page timeouts...');
-            // Set default timeout
-            this.page.setDefaultTimeout(testData.application.timeout);
-            this.page.setDefaultNavigationTimeout(testData.application.timeout);
-            console.log('✅ Page timeouts set successfully');
+            // Set default timeout using TimeoutManager
+            const defaultTimeout = TimeoutManager.getDefaultTimeout();
+            const navigationTimeout = TimeoutManager.getNavigationTimeout();
+            
+            this.page.setDefaultTimeout(defaultTimeout);
+            this.page.setDefaultNavigationTimeout(navigationTimeout);
+            console.log(`✅ Page timeouts set - Default: ${defaultTimeout}ms, Navigation: ${navigationTimeout}ms`);
             
             console.log('🔄 Initializing page objects...');
             // Initialize page objects
@@ -474,7 +479,6 @@ export class CustomWorldClass extends World implements CustomWorld {
             try {
                 const pageSource = await this.page.content();
                 const sourcePath = `screenshots/${type}_${cleanScenarioName}_source_${timestamp}.html`;
-                const fs = require('fs');
                 fs.writeFileSync(sourcePath, pageSource);
                 console.log(`📄 Page source saved: ${sourcePath}`);
             } catch (sourceError) {

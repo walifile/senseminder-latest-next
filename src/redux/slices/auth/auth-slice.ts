@@ -11,11 +11,13 @@ interface User {
   firstName: string;
   lastName?: string;
   // country: string;
-  // organization: string;
+  organization?: string;
   id?: string; // Add optional 'id' property
   role: string;
   ownerid?: string;
   idToken?: string;
+  acceptedLegal?: string;
+  onboarded?: string;
   // cellPhone: string;
 }
 

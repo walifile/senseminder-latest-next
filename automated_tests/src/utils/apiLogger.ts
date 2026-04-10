@@ -1,4 +1,5 @@
 import { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import { logConfig } from './logConfig';
 
 export interface APICallDetails {
     method: string;
@@ -42,35 +43,38 @@ export class APILogger {
 
         this.apiCalls.push(apiCall);
 
-        console.log('\n🚀 ===== API REQUEST =====');
-        console.log(`📋 Call ID: ${callId}`);
-        console.log(`⏰ Timestamp: ${new Date(startTime).toISOString()}`);
-        console.log(`🔗 Method: ${apiCall.method}`);
-        console.log(`🌐 URL: ${apiCall.url}`);
-        
-        if (apiCall.headers && Object.keys(apiCall.headers).length > 0) {
-            console.log(`📋 Headers:`);
-            Object.entries(apiCall.headers).forEach(([key, value]) => {
-                // Mask sensitive headers
-                const displayValue = this.maskSensitiveData(key, value);
-                console.log(`   ${key}: ${displayValue}`);
-            });
+        // Only log request details if network logging is enabled
+        if (logConfig.shouldLogRequest()) {
+            console.log('\n🚀 ===== API REQUEST =====');
+            console.log(`📋 Call ID: ${callId}`);
+            console.log(`⏰ Timestamp: ${new Date(startTime).toISOString()}`);
+            console.log(`🔗 Method: ${apiCall.method}`);
+            console.log(`🌐 URL: ${apiCall.url}`);
+            
+            if (apiCall.headers && Object.keys(apiCall.headers).length > 0) {
+                console.log(`📋 Headers:`);
+                Object.entries(apiCall.headers).forEach(([key, value]) => {
+                    // Mask sensitive headers
+                    const displayValue = this.maskSensitiveData(key, value);
+                    console.log(`   ${key}: ${displayValue}`);
+                });
+            }
+            
+            if (apiCall.params && Object.keys(apiCall.params).length > 0) {
+                console.log(`🔍 Query Parameters:`);
+                Object.entries(apiCall.params).forEach(([key, value]) => {
+                    console.log(`   ${key}: ${value}`);
+                });
+            }
+            
+            if (apiCall.data) {
+                console.log(`📦 Request Body:`);
+                const maskedData = this.maskSensitiveDataInObject(apiCall.data);
+                console.log(JSON.stringify(maskedData, null, 2));
+            }
+            
+            console.log('========================\n');
         }
-        
-        if (apiCall.params && Object.keys(apiCall.params).length > 0) {
-            console.log(`🔍 Query Parameters:`);
-            Object.entries(apiCall.params).forEach(([key, value]) => {
-                console.log(`   ${key}: ${value}`);
-            });
-        }
-        
-        if (apiCall.data) {
-            console.log(`📦 Request Body:`);
-            const maskedData = this.maskSensitiveDataInObject(apiCall.data);
-            console.log(JSON.stringify(maskedData, null, 2));
-        }
-        
-        console.log('========================\n');
 
         return callId;
     }
@@ -85,14 +89,17 @@ export class APILogger {
         apiCall.statusCode = response.status;
         apiCall.responseData = response.data;
 
-        console.log('\n✅ ===== API RESPONSE =====');
-        console.log(`📋 Call ID: ${callId}`);
-        console.log(`⏰ Timestamp: ${new Date(endTime).toISOString()}`);
-        console.log(`⏱️  Duration: ${apiCall.duration}ms`);
-        console.log(`📊 Status Code: ${apiCall.statusCode}`);
-        console.log(`📦 Response Data:`);
-        console.log(JSON.stringify(response.data, null, 2));
-        console.log('==========================\n');
+        // Only log response details if network logging is enabled
+        if (logConfig.shouldLogResponse()) {
+            console.log('\n✅ ===== API RESPONSE =====');
+            console.log(`📋 Call ID: ${callId}`);
+            console.log(`⏰ Timestamp: ${new Date(endTime).toISOString()}`);
+            console.log(`⏱️  Duration: ${apiCall.duration}ms`);
+            console.log(`📊 Status Code: ${apiCall.statusCode}`);
+            console.log(`📦 Response Data:`);
+            console.log(JSON.stringify(response.data, null, 2));
+            console.log('==========================\n');
+        }
     }
 
     public logError(callId: string, error: AxiosError): void {
@@ -109,6 +116,7 @@ export class APILogger {
             data: error.response?.data
         };
 
+        // Always log errors, but conditionally show response data
         console.log('\n❌ ===== API ERROR =====');
         console.log(`📋 Call ID: ${callId}`);
         console.log(`⏰ Timestamp: ${new Date(endTime).toISOString()}`);
@@ -118,12 +126,18 @@ export class APILogger {
         if (error.response) {
             console.log(`📊 Status Code: ${error.response.status}`);
             console.log(`📝 Status Text: ${error.response.statusText}`);
-            console.log(`📦 Error Response Data:`);
-            console.log(JSON.stringify(error.response.data, null, 2));
+            // Only show response data if network logging is enabled
+            if (logConfig.shouldLogResponse()) {
+                console.log(`📦 Error Response Data:`);
+                console.log(JSON.stringify(error.response.data, null, 2));
+            }
         } else if (error.request) {
             console.log(`🌐 Request was made but no response received`);
-            console.log(`📦 Request Data:`);
-            console.log(JSON.stringify(error.request, null, 2));
+            // Only show request data if network logging is enabled
+            if (logConfig.shouldLogRequest()) {
+                console.log(`📦 Request Data:`);
+                console.log(JSON.stringify(error.request, null, 2));
+            }
         } else {
             console.log(`⚠️  Error setting up request: ${error.message}`);
         }

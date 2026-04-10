@@ -1,4 +1,5 @@
 import { Page, Locator, expect } from '@playwright/test';
+import * as fs from 'fs';
 
 export class SenseStoragePage {
     readonly page: Page;
@@ -49,7 +50,9 @@ export class SenseStoragePage {
         this.fileList = page.locator('tbody tr');
         
         // File viewer elements
-        this.fileViewerClose = page.locator('button:has-text("Close")');
+        // Target the Close button in DialogFooter (not the X button in DialogHeader)
+        // The footer Close button is NOT absolutely positioned, unlike the header X button
+        this.fileViewerClose = page.locator('button:has-text("Close")').first();
 
         // Bulk operations elements
         this.selectAllCheckbox = page.locator('[data-testid="select-all"], input[type="checkbox"]:has-text("Select All")');
@@ -194,7 +197,7 @@ export class SenseStoragePage {
 
     async isFileViewerClosed(fileName: String): Promise<boolean> {
         try {
-            const fileViewer = this.page.locator(`iframe[title="${fileName}"]`)
+            const fileViewer = this.page.locator(`p:has-text("${fileName}")`)
             await fileViewer.waitFor({ state: 'hidden', timeout: 5000 });
             return true;
         } catch {
@@ -214,11 +217,53 @@ export class SenseStoragePage {
 
     async closeFileViewer(): Promise<void> {
         await this.fileViewerClose.click();
+        console.log("Clicked Close button in file viewer");
+    }
+
+    async closeUploadModal(): Promise<void> {
+        try {
+            console.log('🔍 Closing upload modal...');
+            
+            // Wait for upload modal to be visible
+            await this.uploadModal.waitFor({ state: 'visible', timeout: 5000 });
+            
+            // Find the Close button within the upload modal
+            // The Close button is inside the upload modal dialog
+            const closeButton = this.uploadModal.locator('button[aria-label="Close"]');
+            
+            // Wait for the close button to be visible
+            await closeButton.waitFor({ state: 'visible', timeout: 5000 });
+            
+            // Scroll into view if needed
+            await closeButton.scrollIntoViewIfNeeded().catch(() => {});
+            await this.page.waitForTimeout(200);
+            
+            // Click the close button
+            await closeButton.click();
+            console.log('✅ Clicked Close button on upload modal');
+            
+            // Wait for modal to close
+            await this.uploadModal.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {
+                console.log('⚠️ Upload modal may still be visible after close click');
+            });
+            
+        } catch (error) {
+            console.error('❌ Error closing upload modal:', error);
+            // Try alternative: click the X button in the dialog header
+            try {
+                const xButton = this.uploadModal.locator('button[aria-label*="Close"], button:has(svg)').first();
+                await xButton.click();
+                console.log('✅ Clicked X button on upload modal');
+            } catch (xError) {
+                console.error('❌ Failed to close upload modal with X button:', xError);
+                throw error; // Throw the original error
+            }
+        }
     }
 
     // File menu and actions functionality
     async clickFileMenu(fileName: string): Promise<void> {
-        const menuButton = this.page.locator(`tr:has-text("${fileName}") button:has(svg.lucide-ellipsis)`);
+        const menuButton = this.page.locator(`tr:has-text("${fileName.replace("./test-files/", "")}") button:has(svg.lucide-ellipsis)`);
         await menuButton.click();
         await this.fileMenuDropdown.waitFor({ state: 'visible', timeout: 5000 });
     }
@@ -241,7 +286,7 @@ export class SenseStoragePage {
 
     async isFileViewerOpenWithTitle(expectedTitle: string): Promise<boolean> {
         try {
-            const fileViewer = this.page.locator(`h2:has-text("${expectedTitle}")`);
+            const fileViewer = this.page.locator(`p:has-text("${expectedTitle.replace("./test-files/", "")}")`);
             await fileViewer.waitFor({ state: 'visible', timeout: 5000 });
             return true;
         } catch {
@@ -252,7 +297,7 @@ export class SenseStoragePage {
     async isFileStatus(fileName: string, status: string): Promise<boolean> {
         try {
             const statusElement = this.page.locator('tr', {
-                                         has: this.page.locator('span', { hasText: fileName })
+                                         has: this.page.locator('span', { hasText: fileName.replace("./test-files/", "") }),
                                        }).locator('div.inline-flex', { hasText: status });
             await statusElement.waitFor({ state: 'visible', timeout: 5000 });
             const statusText = await statusElement.textContent();
@@ -269,7 +314,7 @@ export class SenseStoragePage {
 
     async selectMultipleFiles(fileNames: string[]): Promise<void> {
         for (const fileName of fileNames) {
-            const checkbox = this.page.locator(`tr:has-text("${fileName}") button[role="checkbox"]`);
+            const checkbox = this.page.locator(`tr:has-text("${fileName.replace("./test-files/", "")}") button[role="checkbox"]`);
             await checkbox.click();
         }
     }
@@ -284,7 +329,7 @@ export class SenseStoragePage {
 
     async isFileDeleted(fileName: string): Promise<boolean> {
         try {
-            const fileElement = this.fileList.locator(`:has-text("${fileName}")`);
+            const fileElement = this.fileList.locator(`:has-text("${fileName.replace("./test-files/", "")}")`);
             await fileElement.waitFor({ state: 'hidden', timeout: 5000 });
             return true;
         } catch {
@@ -311,7 +356,7 @@ export class SenseStoragePage {
             
             // First, ensure the file menu is open
             console.log('🔍 Ensuring file menu is open...');
-            const fileMenu = this.page.locator(`tr:has-text("${fileName}") button:has(svg.lucide-ellipsis)`);
+            const fileMenu = this.page.locator(`tr:has-text("${fileName.replace("./test-files/", "")}") button:has(svg.lucide-ellipsis)`);
             
             // Try to find the file menu with multiple attempts
             let menuFound = false;
@@ -474,19 +519,94 @@ export class SenseStoragePage {
     async createTestFile(fileName: string, sizeInMB: number = 1): Promise<string> {
         const filePath = `./test-files/${fileName}`;
         // Ensure test-files directory exists
-        const fs = require('fs');
         if (!fs.existsSync('./test-files')) {
             fs.mkdirSync('./test-files', { recursive: true });
         }
-        // Create a dummy file for testing
-        fs.writeFileSync(filePath, 'Test file content');
+        
+        // If the file already exists, use it (don't overwrite existing test files)
+        // This prevents corruption of existing valid test files
+        if (fs.existsSync(filePath)) {
+            console.log(`✅ Using existing test file: ${fileName}`);
+            return filePath;
+        }
+        
+        // Create a new file with appropriate content based on file extension
+        const fileExtension = fileName.toLowerCase().split('.').pop();
+        const sizeInBytes = sizeInMB * 1024 * 1024;
+        
+        let fileContent: Buffer;
+        
+        switch (fileExtension) {
+            case 'pdf':
+                // Create a minimal valid PDF structure
+                // PDF header + minimal content
+                const pdfHeader = '%PDF-1.4\n';
+                const pdfContent = `1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> >>\nendobj\n4 0 obj\n<< /Length 44 >>\nstream\nBT\n/F1 12 Tf\n100 700 Td\n(Test PDF Content) Tj\nET\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \n0000000306 00000 n \ntrailer\n<< /Size 5 /Root 1 0 R >>\nstartxref\n395\n%%EOF\n`;
+                const pdfBuffer = Buffer.from(pdfHeader + pdfContent, 'utf-8');
+                // Pad to desired size if needed
+                if (sizeInBytes > pdfBuffer.length) {
+                    const padding = Buffer.alloc(sizeInBytes - pdfBuffer.length, 0x20); // Space characters
+                    fileContent = Buffer.concat([pdfBuffer, padding]);
+                } else {
+                    fileContent = pdfBuffer;
+                }
+                break;
+                
+            case 'png':
+                // Create a minimal valid PNG structure
+                // PNG signature + minimal IHDR chunk
+                const pngSignature = Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+                const pngHeader = Buffer.from([
+                    0x00, 0x00, 0x00, 0x0D, // IHDR chunk length
+                    0x49, 0x48, 0x44, 0x52, // IHDR
+                    0x00, 0x00, 0x00, 0x01, // Width: 1
+                    0x00, 0x00, 0x00, 0x01, // Height: 1
+                    0x08, 0x02, 0x00, 0x00, 0x00, // Bit depth, color type, compression, filter, interlace
+                ]);
+                const pngCrc = Buffer.from([0x00, 0x00, 0x00, 0x00]); // Placeholder CRC
+                const pngIend = Buffer.from([
+                    0x00, 0x00, 0x00, 0x00, // IEND chunk length
+                    0x49, 0x45, 0x4E, 0x44, // IEND
+                    0xAE, 0x42, 0x60, 0x82  // IEND CRC
+                ]);
+                const pngBuffer = Buffer.concat([pngSignature, pngHeader, pngCrc, pngIend]);
+                // Pad to desired size if needed
+                if (sizeInBytes > pngBuffer.length) {
+                    const padding = Buffer.alloc(sizeInBytes - pngBuffer.length, 0x00);
+                    fileContent = Buffer.concat([pngBuffer, padding]);
+                } else {
+                    fileContent = pngBuffer;
+                }
+                break;
+                
+            case 'docx':
+            case 'doc':
+                // DOCX files are ZIP archives with XML content
+                // Create a minimal valid DOCX structure (simplified)
+                // For testing, we'll create a file with appropriate size
+                // Note: A proper DOCX would require creating a ZIP with specific XML structure
+                // For now, create binary data that's approximately the right size
+                fileContent = Buffer.alloc(sizeInBytes, 0x00);
+                // Add a simple header to make it somewhat recognizable
+                const docxHeader = Buffer.from('PK\x03\x04'); // ZIP file signature
+                docxHeader.copy(fileContent, 0);
+                break;
+                
+            default:
+                // For other file types, create binary data of the specified size
+                fileContent = Buffer.alloc(sizeInBytes, 0x00);
+                break;
+        }
+        
+        fs.writeFileSync(filePath, fileContent);
+        console.log(`✅ Created test file: ${fileName} (${sizeInMB}MB)`);
         return filePath;
     }
 
     async isFilesDeleted(fileNames: string[]): Promise<boolean> {
         try{
             for (const fileName of fileNames) {
-                const fileElement = this.page.locator(`tr:has-text("${fileName}")`);
+                const fileElement = this.page.locator(`tr:has-text("${fileName.replace("./test-files/", "")}")`);
                 await fileElement.waitFor({ state: 'hidden', timeout: 5000 });
                 }
             return true;
@@ -503,19 +623,11 @@ export class SenseStoragePage {
     }
 
     // File upload with validation methods
-    async uploadFileWithValidation(fileName: string, sizeInMB: number = 1): Promise<void> {
-        const filePath = await this.createTestFile(fileName, sizeInMB);
+    async uploadFileWithValidation(filePath: string, sizeInMB: number = 1): Promise<void> {
         await this.uploadSingleFile(filePath);
     }
 
-    async uploadMultipleFilesWithValidation(fileNames: string[], sizeInMB: number = 1): Promise<void> {
-        const filePaths: string[] = [];
-        
-        for (const fileName of fileNames) {
-            const filePath = await this.createTestFile(fileName, sizeInMB);
-            filePaths.push(filePath);
-        }
-        
+    async uploadMultipleFilesWithValidation(filePaths: string[]): Promise<void> {
         await this.uploadMultipleFiles(filePaths);
     }
 

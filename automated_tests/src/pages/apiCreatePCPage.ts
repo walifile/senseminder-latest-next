@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
+import { logConfig } from '../utils/logConfig';
 
 export interface CreatePCRequest {
   action: string;
@@ -178,10 +179,12 @@ export class ApiCreatePCPage {
    * Create a new PC instance via API
    */
   async createPC(requestData: CreatePCRequest): Promise<AxiosResponse<CreatePCResponse>> {
-    console.log('\n🚀 ===== CREATE PC API CALL =====');
-    console.log(`📋 Request Data:`, JSON.stringify(requestData, null, 2));
-    console.log(`🌐 Endpoint: ${this.apiConfig.baseURL}/instance`);
-    console.log(`⏱️  Timeout: ${this.apiConfig.timeout}ms`);
+    if (logConfig.shouldLogRequest()) {
+      console.log('\n🚀 ===== CREATE PC API CALL =====');
+      console.log(`📋 Request Data:`, JSON.stringify(requestData, null, 2));
+      console.log(`🌐 Endpoint: ${this.apiConfig.baseURL}/instance`);
+      console.log(`⏱️  Timeout: ${this.apiConfig.timeout}ms`);
+    }
     
     const startTime = Date.now();
     
@@ -201,11 +204,13 @@ export class ApiCreatePCPage {
       this.lastResponse = response;
       this.lastError = null;
       
-      console.log(`✅ PC creation successful`);
-      console.log(`⏱️  Duration: ${duration}ms`);
-      console.log(`📊 Status: ${response.status} ${response.statusText}`);
-      console.log(`📦 Response Data:`, JSON.stringify(response.data, null, 2));
-      console.log('=====================================\n');
+      if (logConfig.shouldLogResponse()) {
+        console.log(`✅ PC creation successful`);
+        console.log(`⏱️  Duration: ${duration}ms`);
+        console.log(`📊 Status: ${response.status} ${response.statusText}`);
+        console.log(`📦 Response Data:`, JSON.stringify(response.data, null, 2));
+        console.log('=====================================\n');
+      }
 
       return response;
     } catch (error: any) {
@@ -215,12 +220,17 @@ export class ApiCreatePCPage {
       this.lastError = error;
       this.lastResponse = error.response || null;
       
+      // Always show errors, but conditionally show response data
       console.log(`❌ PC creation failed`);
       console.log(`⏱️  Duration: ${duration}ms`);
       console.log(`🚨 Error Message: ${error.message}`);
       console.log(`📊 Error Status: ${error.response?.status || 'No response'}`);
-      console.log(`📦 Error Data:`, error.response?.data || 'No error data');
-      console.log('=====================================\n');
+      if (logConfig.shouldLogResponse()) {
+        console.log(`📦 Error Data:`, error.response?.data || 'No error data');
+      }
+      if (logConfig.shouldLogRequest()) {
+        console.log('=====================================\n');
+      }
 
       throw error;
     }
@@ -315,10 +325,10 @@ export class ApiCreatePCPage {
   createBasicPCConfig(systemName: string = 'Test001'): CreatePCRequest {
     return {
       action: 'create',
-      configId: 'Basic_win11_2core_4gbRam',
+      configId: 'SensePC.Standard11—4Cores·16GBRAM',
       systemName: systemName,
       region: 'us-east-1',
-      storageSize: 120,
+      storageSize: 220,
       billingPlan: 'hourly'
     };
   }
@@ -328,9 +338,9 @@ export class ApiCreatePCPage {
    */
   createCustomPCConfig(
     systemName: string,
-    configId: string = 'Basic_win11_2core_4gbRam',
+    configId: string = 'SensePC.Standard11—4Cores·16GBRAM',
     region: string = 'us-east-1',
-    storageSize: number = 120,
+    storageSize: number = 220,
     billingPlan: string = 'hourly'
   ): CreatePCRequest {
     return {

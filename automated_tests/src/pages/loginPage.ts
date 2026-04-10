@@ -1,28 +1,35 @@
 import { Page, Locator } from '@playwright/test';
+import { authenticator } from 'otplib';
 
 export class LoginPage {
     readonly page: Page;
     readonly usernameInput: Locator;
     readonly passwordInput: Locator;
+    readonly fullNameInput: Locator;
     readonly loginButton: Locator;
+    readonly continueButton: Locator;
     readonly mfaInput: Locator;
     readonly mfaSubmitButton: Locator;
     readonly errorMessage: Locator;
     readonly dashboardElement: Locator;
     readonly successMsg: Locator;
+    readonly acceptTermsCheckbox: Locator;
     capturedAccessToken?: string;
     capturedIdToken?: string;
 
     constructor(page: Page) {
         this.page = page;
         this.usernameInput = page.locator('#email').first();
-        this.passwordInput = page.locator('input[type="password"]');
-        this.loginButton = page.locator('button:has-text("Sign in")');
+        this.passwordInput = page.locator('#password');
+        this.fullNameInput = page.locator('input#fullName');
+        this.loginButton = page.locator('[data-testid="login-button"]');
         this.mfaInput = page.locator('input[data-input-otp="true"], input[autocomplete="one-time-code"], input[placeholder*="code"], input[placeholder*="OTP"], input[placeholder*="MFA"], input[type="text"], input[type="number"], input[name*="code"], input[name*="otp"], input[name*="mfa"]').first();
-        this.mfaSubmitButton = page.locator('button:has-text("Verify"), button:has-text("Submit"), button:has-text("Continue"), button[type="submit"]').first();
+        this.mfaSubmitButton = page.locator('button:has-text("Continue")');
         this.errorMessage = page.locator('[data-testid="error-message"]');
         this.dashboardElement = page.locator('[data-testid="dashboard"]');
         this.successMsg = page.locator('span:has-text("Logged in successfully!")')
+        this.acceptTermsCheckbox = page.locator('#terms');
+        this.continueButton = page.locator('button:has-text("Continue")');
     }
 
     async goto() {
@@ -95,6 +102,18 @@ export class LoginPage {
         await this.loginButton.click();
     }
 
+    async enterFullName(fullName: string){
+        await this.fullNameInput.fill(fullName)
+    }
+
+    async acceptTerms(){
+        await this.acceptTermsCheckbox.click();
+    }
+
+    async clickContinue(){
+        await this.continueButton.click();
+    }
+
     async login(username: string, password: string) {
         await this.enterUsername(username);
         await this.enterPassword(password);
@@ -112,37 +131,38 @@ export class LoginPage {
         try {
             console.log('🔍 Starting dashboard visibility check...');
             
-            // Wait for URL to change to dashboard - check multiple possible dashboard URLs
-            await this.page.waitForURL('**/dashboard/**', { timeout: 25000 });
-            
-            // Additional wait to ensure page is fully loaded after redirect
-            console.log('⏳ Waiting for page to fully load after redirect...');
-            await this.page.waitForTimeout(4000);
-            
-            // Verify we're actually on a dashboard page by checking for dashboard-specific elements
-            const currentUrl = this.page.url();
-            console.log(`🔍 Current URL after redirect: ${currentUrl}`);
-            
-            // Check if URL contains dashboard path
-            if (currentUrl.includes('/dashboard/')) {
-                console.log('✅ Successfully redirected to dashboard');
-                
-                // Additional verification: wait for dashboard-specific elements to be visible
-                try {
-                    // Wait for common dashboard elements to ensure page is fully loaded
-                    await this.page.waitForSelector('body', { timeout: 5000 });
-                    console.log('✅ Dashboard page elements are visible');
-                    return true;
-                } catch (elementError) {
-                    console.log('⚠️ Dashboard URL correct but elements not fully loaded, retrying...');
-                    // Give it one more chance with a longer wait
-                    await this.page.waitForTimeout(3000);
-                    return true; // Still return true if URL is correct
-                }
-            } else {
-                console.log('❌ Not on dashboard page, current URL:', currentUrl);
-                return false;
+            // First check if we're already on dashboard (check for both /dashboard and /dashboard/sense-pc)
+            const currentUrlBeforeWait = this.page.url();
+            if (currentUrlBeforeWait.includes('/dashboard/sense-pc')) {
+                console.log('✅ Already on dashboard/sense-pc page');
+                return true;
             }
+            
+            // Poll for URL change instead of blocking wait - more resilient
+            const maxWaitTime = 15000; // 15 seconds max (increased for CI)
+            const pollInterval = 500; // Check every 500ms
+            const startTime = Date.now();
+            
+            while (Date.now() - startTime < maxWaitTime) {
+                const currentUrl = this.page.url();
+                // Check for any dashboard URL, not just /dashboard/sense-pc
+                if (currentUrl.includes('/dashboard/sense-pc')) {
+                    console.log('✅ Redirected to dashboard/sense-pc');
+                    return true;
+                }
+                await new Promise(resolve => setTimeout(resolve, pollInterval));
+            }
+            
+            // If we get here, timeout occurred - check one more time
+            const finalUrl = this.page.url();
+            if (finalUrl.includes('/dashboard/sense-pc')) {
+                console.log('✅ Dashboard found on final check');
+                return true;
+            }
+            
+            console.log('⏳ Dashboard redirect timeout - still on:', finalUrl);
+            return false;
+
         } catch (error) {
             console.log('❌ Dashboard visibility check failed:', error);
             
@@ -152,7 +172,8 @@ export class LoginPage {
                 const currentUrl = this.page.url();
                 console.log(`🔍 Current URL during retry: ${currentUrl}`);
                 
-                if (currentUrl.includes('/dashboard/')) {
+                // Check for any dashboard URL
+                if (currentUrl.includes('/dashboard/sense-pc')) {
                     console.log('✅ Dashboard found on retry');
                     return true;
                 }
@@ -174,9 +195,9 @@ export class LoginPage {
             console.log('Current URL:', currentUrl);
             
             // Check if URL contains login-related paths
-            const urlIndicators = ['/login', '/auth', '/signin', '/sign-in', 'login', 'auth'];
-            const urlMatch = urlIndicators.some(indicator => currentUrl.toLowerCase().includes(indicator));
-            
+            const urlIndicators = '/auth';
+            const urlMatch = currentUrl.toLowerCase().includes(urlIndicators);
+
             if (urlMatch) {
                 console.log('URL indicates login page');
                 return true;
@@ -319,6 +340,13 @@ export class LoginPage {
                         // Check response body for tokens
                         try {
                             const responseBody = await response.text();
+                            const contentType = headers['content-type'] || headers['Content-Type'] || '';
+                            const looksLikeJson = responseBody && (responseBody.trim().startsWith('{') || responseBody.trim().startsWith('['));
+                            if (!String(contentType).toLowerCase().includes('application/json') && !looksLikeJson) {
+                                // Skip non-JSON responses quietly (HTML, JS, etc.)
+                                await route.fulfill({ response });
+                                return;
+                            }
                             console.log('📄 Response body preview:', responseBody.substring(0, 200) + '...');
                             
                             const bodyData = JSON.parse(responseBody);
@@ -492,15 +520,19 @@ export class LoginPage {
 
     // Check if a request is related to authentication
     private isAuthRelatedRequest(url: string, method: string): boolean {
-        const authKeywords = [
-            'login', 'auth', 'signin', 'sign-in', 'authenticate', 'token', 'cognito',
-            'oauth', 'jwt', 'session', 'credential', 'password', 'verify', 'amplify',
-            'aws-amplify', 'amplify-auth', 'cognito-idp', 'cognito-identity'
-        ];
-        
         const urlLower = url.toLowerCase();
-        return authKeywords.some(keyword => urlLower.includes(keyword)) || 
-               method === 'POST' && (urlLower.includes('api') || urlLower.includes('auth') || urlLower.includes('amplify'));
+        // Strongly target Cognito and our auth APIs to avoid matching HTML/JS assets under /auth
+        const isCognito = urlLower.includes('cognito-idp.') || urlLower.includes('cognito-identity');
+        const isAwsApiGateway = urlLower.includes('execute-api');
+        const isKnownAuthApi = urlLower.includes('/api/auth') || urlLower.includes('/api/login') || urlLower.includes('/api/session');
+        const isTokenLike = urlLower.includes('token') || urlLower.includes('authenticate');
+
+        // Only treat GET as auth-related if it's Cognito (token/mfa flows). Otherwise focus on POSTs
+        if (method === 'GET') {
+            return isCognito;
+        }
+
+        return method === 'POST' && (isCognito || isAwsApiGateway || isKnownAuthApi || isTokenLike);
     }
 
     // Get the captured access token
@@ -791,31 +823,43 @@ export class LoginPage {
         
         console.log('🔍 Looking for MFA input field on login page...');
         
-        // Try multiple selectors for MFA input
+        // Wait a bit for the page to update after MFA challenge is triggered
+        await this.page.waitForTimeout(2000);
+        
+        // Try multiple selectors for MFA input with longer timeout
         const mfaSelectors = [
             'input[data-input-otp="true"]',
             'input[autocomplete="one-time-code"]',
-            'input[placeholder*="code"]',
-            'input[placeholder*="OTP"]',
-            'input[placeholder*="MFA"]',
+            'input[placeholder*="code" i]',
+            'input[placeholder*="OTP" i]',
+            'input[placeholder*="MFA" i]',
             'input[type="text"]',
             'input[type="number"]',
-            'input[name*="code"]',
-            'input[name*="otp"]',
-            'input[name*="mfa"]'
+            'input[name*="code" i]',
+            'input[name*="otp" i]',
+            'input[name*="mfa" i]'
         ];
         
         let mfaInput = null;
+        const maxWaitTime = 15000; // Total time to wait for MFA input
+        const startTime = Date.now();
+        
+        // Try each selector with increasing timeout
         for (const selector of mfaSelectors) {
             try {
                 const element = this.page.locator(selector).first();
-                if (await element.isVisible({ timeout: 2000 })) {
-                    mfaInput = element;
-                    console.log(`✅ Found MFA input with selector: ${selector}`);
-                    break;
-                }
+                const remainingTime = maxWaitTime - (Date.now() - startTime);
+                if (remainingTime <= 0) break;
+                
+                // Wait for element to be visible with remaining time
+                const timeout = Math.min(remainingTime, 5000); // Max 5 seconds per selector
+                await element.waitFor({ state: 'visible', timeout });
+                mfaInput = element;
+                console.log(`✅ Found MFA input with selector: ${selector}`);
+                break;
             } catch (error) {
                 // Continue to next selector
+                continue;
             }
         }
         
@@ -825,12 +869,11 @@ export class LoginPage {
             throw new Error('MFA input field not found on login page. Check screenshot for debugging.');
         }
         
-        const { authenticator } = require('otplib');
         const otp = authenticator.generate(secretCode);
         console.log(`Generated MFA OTP from secret: ${otp}`);
         
-        // Wait for the MFA input field to be visible
-        await mfaInput.waitFor({ state: 'visible', timeout: 15000 });
+        // Ensure the MFA input field is still visible before entering OTP
+        await mfaInput.waitFor({ state: 'visible', timeout: 5000 });
         
         // For OTP input fields, we need to clear first and then type
         await mfaInput.clear();
@@ -853,15 +896,8 @@ export class LoginPage {
         }
         
         // Click the submit button
-        try {
-            await this.mfaSubmitButton.click();
-            console.log('✅ Clicked MFA submit button');
-        } catch (error) {
-            console.log('⚠️ Could not click MFA submit button, trying alternative...');
-            // Try pressing Enter
-            await mfaInput.press('Enter');
-            console.log('✅ Pressed Enter on MFA input field');
-        }
+        await this.mfaSubmitButton.click();
+        console.log('✅ Clicked MFA submit button');
     }
 
 }

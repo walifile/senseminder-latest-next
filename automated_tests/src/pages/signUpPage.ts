@@ -2,9 +2,47 @@ import { Page, Locator } from '@playwright/test';
 import axios from 'axios';
 import { expect } from '@playwright/test';
 import * as dotenv from 'dotenv';
+import https from 'https';
 
 // Load environment variables
 dotenv.config();
+
+const createAxiosInstance = () => {
+    const httpsAgent = new https.Agent({
+        rejectUnauthorized: false, // Allow self-signed or expired certificates
+        minVersion: 'TLSv1.2',
+        maxVersion: 'TLSv1.3'
+    });
+    
+    return axios.create({
+        httpsAgent,
+        timeout: 30000,
+        headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'SensePC-Test-Automation/1.0'
+        }
+    });
+};
+
+// Separate axios instance for Mailisk API with proper SSL settings
+const createMailiskAxiosInstance = () => {
+    // Use default Node.js HTTPS agent for Mailisk
+    // Note: If you encounter SSL errors, it might indicate:
+    // 1. The API endpoint URL is incorrect
+    // 2. Mailisk may require using their client library instead of direct REST calls
+    // 3. Check https://docs.mailisk.com/ for the correct API endpoint format
+    return axios.create({
+        timeout: 30000,
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'User-Agent': 'SensePC-Test-Automation/1.0'
+        }
+    });
+};
+
+// Global set to track used email IDs across test runs to avoid reusing old MFA codes
+const usedEmailIds = new Set<string>();
 
 export class SignUpPage {
     readonly page: Page;
@@ -28,12 +66,12 @@ export class SignUpPage {
         this.emailInput = page.locator('#email');
         this.passwordInput = page.locator('#password');
         this.confirmPasswordInput = page.locator('#confirm-password');
-        this.acceptTermsCheckbox = page.locator('button[role="checkbox"]');
-        this.signUpLink = page.locator('a:has-text("Sign up")');
-        this.signUpButton = page.locator('button:has-text("Sign up")');
+        this.acceptTermsCheckbox = page.locator('#terms');
+        this.signUpLink = page.locator('button:has-text("Sign up")');
+        this.signUpButton = page.locator('button[type="submit"]');
         this.successMsg = page.getByText('Account created successfully! Please verify your email.', {exact: true});
         this.otpInput = page.locator('input[data-input-otp="true"]');
-        this.verifyOTPButton = page.locator('button:has-text("Verify OTP")');
+        this.verifyOTPButton = page.locator('button:has-text("Continue")');
         this.verifyOTPSuccessMsg = page.getByText('Your email has been verified successfully. You can now sign in.', {exact: true});
     }
 
@@ -111,7 +149,7 @@ export class SignUpPage {
 
     async isOnVerifyEmailPage() {
         try {
-            await this.page.waitForURL('/auth/verify-otp', { timeout: 30000 });
+            await this.page.waitForURL('/auth/sign-up', { timeout: 30000 });
             return true;
         } catch {
             return false;
@@ -192,41 +230,108 @@ export class SignUpPage {
     }
 
     async isVerifyOTPSuccessMessageVisible() {
+        // Detect CI environment for extended timeouts
+        const isCI = process.env.CI === 'true' || process.env.BITBUCKET_BUILD_NUMBER !== undefined;
+        const baseTimeout = isCI ? 20000 : 10000;
+        const extendedTimeout = isCI ? 30000 : 15000;
+        
         try {
             console.log('🔍 Waiting for OTP verification success message...');
+            console.log(`🔍 Environment: CI=${isCI}, Timeout=${baseTimeout}ms`);
             console.log('🔍 Expected message: "Your email has been verified successfully. You can now sign in."');
             
-            // First, let's check what's currently on the page
-            await this.debugPageContent();
+            // First, check for URL redirect (strongest indicator of success)
+            // If we've been redirected to login or dashboard, verification succeeded
+            try {
+                const currentUrl = await this.page.url();
+                if (currentUrl.includes('/auth/login') || currentUrl.includes('/dashboard')) {
+                    console.log(`✅ Email verification successful - redirected to: ${currentUrl}`);
+                    return true;
+                }
+            } catch (urlError) {
+                // Continue to other checks
+            }
             
-            // Wait for the success message with a longer timeout
-            await this.verifyOTPSuccessMsg.waitFor({ state: 'visible', timeout: 60000 });
-            console.log('✅ OTP verification success message is visible');
-            return true;
-        } catch (error) {
-            console.log('⚠️ OTP verification success message not found within timeout');
-            console.log('🔍 Debugging page content after timeout...');
-            await this.debugPageContent();
-            
-            // Try alternative success message patterns
-            const alternativeMessages = [
-                'verified successfully',
-                'email verified',
-                'verification successful',
-                'successfully verified',
-                'account verified'
+            // Try multiple selector strategies for success message
+            const selectors = [
+                // Primary selector
+                () => this.verifyOTPSuccessMsg,
+                // Alternative text-based selectors
+                () => this.page.getByText('Your email has been verified successfully', { exact: false }),
+                () => this.page.getByText('Email verified successfully', { exact: false }),
+                () => this.page.getByText('Verification successful', { exact: false }),
+                () => this.page.getByText('successfully verified', { exact: false }),
+                () => this.page.getByText('email verified', { exact: false }),
+                () => this.page.getByText('account verified', { exact: false }),
+                // Data attribute and class selectors
+                () => this.page.locator('[data-testid="verification-success"]'),
+                () => this.page.locator('[data-testid="email-verification-success"]'),
+                () => this.page.locator('.success-message'),
+                () => this.page.locator('.verification-success'),
+                () => this.page.locator('div:has-text("verified")'),
             ];
             
-            for (const message of alternativeMessages) {
+            // Try each selector with wait
+            for (let i = 0; i < selectors.length; i++) {
                 try {
-                    const altElement = this.page.getByText(message, { exact: false });
-                    if (await altElement.isVisible()) {
-                        console.log(`✅ Found alternative success message: "${message}"`);
+                    const locator = selectors[i]();
+                    await locator.waitFor({ state: 'visible', timeout: baseTimeout });
+                    const isVisible = await locator.isVisible();
+                    if (isVisible) {
+                        console.log(`✅ Found success message using selector strategy ${i + 1}`);
                         return true;
                     }
                 } catch (e) {
-                    // Continue to next alternative
+                    // Continue to next selector
+                    continue;
                 }
+            }
+            
+            // If no element found, check URL again (might have redirected while checking)
+            const finalUrl = await this.page.url();
+            if (finalUrl.includes('/auth/login') || finalUrl.includes('/dashboard')) {
+                console.log(`✅ Email verification successful - redirected to: ${finalUrl}`);
+                return true;
+            }
+            
+            // Final fallback: Check for any success-related text on page
+            console.log('⚠️ Primary selectors failed, trying text content search...');
+            const pageContent = await this.page.textContent('body').catch(() => null);
+            if (pageContent) {
+                const successKeywords = [
+                    'verified successfully',
+                    'email verified',
+                    'verification successful',
+                    'successfully verified'
+                ];
+                
+                for (const keyword of successKeywords) {
+                    if (pageContent.toLowerCase().includes(keyword.toLowerCase())) {
+                        console.log(`✅ Found success keyword "${keyword}" in page content`);
+                        return true;
+                    }
+                }
+            }
+            
+            // If we get here, debug and return false
+            console.log('⚠️ OTP verification success message not found within timeout');
+            console.log('🔍 Debugging page content after timeout...');
+            await this.debugPageContent();
+            console.log(`🔍 Current URL: ${finalUrl}`);
+            console.log('❌ No success message found with any pattern');
+            return false;
+        } catch (error: any) {
+            console.log('⚠️ Error during success message check:', error.message);
+            
+            // Final URL check as last resort
+            try {
+                const errorUrl = await this.page.url();
+                if (errorUrl.includes('/auth/login') || errorUrl.includes('/dashboard')) {
+                    console.log(`✅ Email verification successful - redirected to: ${errorUrl}`);
+                    return true;
+                }
+            } catch (urlError) {
+                // Ignore
             }
             
             console.log('❌ No success message found with any pattern');
@@ -304,7 +409,7 @@ export class SignUpPage {
         const testId = process.env.CUCUMBER_WORKER_ID || 'main';
         const timestamp = Date.now();
         const uniqueTimestamp = `${timestamp}_${testId}_${Math.random().toString(36).substr(2, 9)}`;
-        const mailAccount = await this.createMailTmAccount(uniqueTimestamp);
+        const mailAccount = await this.createMailiskAccount(uniqueTimestamp);
         
         return {
             firstName: this.generateRandomFirstName(timestamp),
@@ -317,7 +422,7 @@ export class SignUpPage {
     }
 
     async generateRandomUserDataWithEmailAndTimestamp(customTimestamp: number) {
-        const mailAccount = await this.createMailTmAccount(customTimestamp);
+        const mailAccount = await this.createMailiskAccount(customTimestamp);
         
         return {
             firstName: this.generateRandomFirstName(customTimestamp),
@@ -329,167 +434,573 @@ export class SignUpPage {
         };
     }
 
-    async createMailTmAccount(timestamp?: number | string) {
-        // Get valid domain
-        const domainRes = await axios.get("https://api.mail.tm/domains");
-        const domain = domainRes.data['hydra:member'][0].domain;
+    async createMailiskAccount(timestamp?: number | string) {
+        try {
+            console.log('🔗 Creating Mailisk email address...');
+            
+            // Get Mailisk configuration from environment
+            const apiKey = process.env.MAILISK_API_KEY;
+            const namespace = process.env.MAILISK_NAMESPACE;
+            
+            if (!apiKey || !namespace) {
+                throw new Error('Mailisk API key and namespace must be configured in .env file (MAILISK_API_KEY and MAILISK_NAMESPACE)');
+            }
 
-        const ts = timestamp || Date.now();
-        const randomUser = `user${ts}`;
-        const email = `${randomUser}@${domain}`;
-        const password = "Password123!";
+            const ts = timestamp || Date.now();
+            const randomUser = `user${ts}`;
+            const email = `${randomUser}@${namespace}.mailisk.net`;
+            
+            console.log(`✅ Generated Mailisk email: ${email}`);
+            console.log(`📝 Note: Mailisk uses API key authentication, no account creation needed`);
 
-        // Create account
-        await axios.post("https://api.mail.tm/accounts", {
-            address: email,
-            password: password
-        });
-
-        // Get token
-        const tokenRes = await axios.post("https://api.mail.tm/token", {
-            address: email,
-            password: password
-        });
-
-        return { email, password, token: tokenRes.data.token };
+            // Mailisk doesn't require account creation or password
+            // Email addresses are created on-the-fly when emails are sent to them
+            // We return the API key as "token" for consistency with existing code
+            return { 
+                email, 
+                password: '', // Not used for Mailisk
+                token: apiKey // Use API key as "token" for API calls
+            };
+            
+        } catch (error: any) {
+            console.error('❌ Error creating Mailisk account:', error.message);
+            throw new Error(`Mailisk account creation failed: ${error.message}`);
+        }
     }
 
 
-    async getOtpFromMailTm(token: string): Promise<string> {
-        const headers = { Authorization: `Bearer ${token}` };
-        console.log('Starting OTP retrieval from Mail.tm...');
-        console.log('⏳ Waiting for at least 2 emails to be received...');
+    async getOtpFromMailisk(token: string, lastVerificationEmailTimestamp?: Date | null): Promise<string> {
+        const axiosInstance = createMailiskAxiosInstance();
+        const apiKey = token; // token is actually the API key for Mailisk
+        const namespace = process.env.MAILISK_NAMESPACE;
+        
+        // Validate required configuration
+        if (!apiKey || apiKey.trim() === '') {
+            throw new Error('MAILISK_API_KEY is missing or empty. Please ensure MAILISK_API_KEY is set in your environment variables or Bitbucket pipeline configuration.');
+        }
+        
+        if (!namespace || namespace.trim() === '') {
+            throw new Error('MAILISK_NAMESPACE must be configured in .env file or Bitbucket pipeline configuration');
+        }
+        
+        // According to Mailisk documentation: https://docs.mailisk.com/
+        // Use X-Api-Key header (not Authorization Bearer)
+        // Endpoint: GET https://api.mailisk.com/api/emails/{namespace}/inbox
+        const headers = { 
+            'X-Api-Key': apiKey,
+            'Accept': 'application/json'
+        };
+        
+        console.log('Starting OTP retrieval from Mailisk...');
+        
+        // If we have a timestamp, we'll wait for emails AFTER that timestamp
+        if (lastVerificationEmailTimestamp) {
+            console.log(`📅 Baseline timestamp provided: ${lastVerificationEmailTimestamp.toISOString()}`);
+            console.log(`📧 Will wait for NEW verification email that arrives after this timestamp`);
+        } else {
+            console.log('⏳ Waiting for at least 2 emails to be received...');
+        }
+        
+        console.log(`🔑 Using API key: ${apiKey.substring(0, 10)}... (${apiKey.length} chars)`);
+        console.log(`📧 Using namespace: ${namespace}`);
 
-        for (let i = 0; i < 10; i++) {
-            console.log(`Attempt ${i + 1}/10: Checking for messages...`);
+        const maxAttempts = lastVerificationEmailTimestamp ? 30 : 10; // More attempts if waiting for new email
+        const waitTime = lastVerificationEmailTimestamp ? 5000 : 3000; // Longer wait if waiting for new email
+        
+        for (let i = 0; i < maxAttempts; i++) {
+            console.log(`Attempt ${i + 1}/${maxAttempts}: Checking for messages...`);
             
             try {
-                const res = await axios.get("https://api.mail.tm/messages", { headers });
-                const messageCount = res.data['hydra:member'].length;
+                // Mailisk API endpoint according to documentation
+                const endpoint = `https://api.mailisk.com/api/emails/${namespace}/inbox`;
+                console.log(`🔗 Attempting to connect to: ${endpoint}`);
+                console.log(`📧 Namespace: ${namespace}`);
+                
+                const res = await axiosInstance.get(endpoint, { headers });
+                
+                console.log(`✅ API Response Status: ${res.status}`);
+                console.log(`✅ API Response Data Keys: ${Object.keys(res.data || {}).join(', ')}`);
+                
+                // Mailisk API returns data in response.data array according to docs
+                const messages = res.data?.data || [];
+                const messageCount = messages.length;
                 console.log(`Found ${messageCount} messages in inbox`);
-                
-                // Wait for at least 2 emails
-                if (messageCount < 2) {
-                    console.log(`⏳ Only ${messageCount} email(s) found. Waiting for at least 2 emails...`);
-                    if (i < 9) { // Don't wait after the last attempt
-                        console.log('Waiting 3 seconds before next attempt...');
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                    }
-                    continue;
-                }
-                
-                console.log(`✅ Found ${messageCount} emails! Proceeding with OTP extraction...`);
 
-                if (res.data['hydra:member'].length > 0) {
-                    const messages = res.data['hydra:member'];
+                if (messages.length > 0) {
+                    // Sort messages by received_date (newest first)
+                    const sortedMessages = messages.sort((a: any, b: any) => {
+                        const dateA = new Date(a.received_date || a.received_timestamp || 0).getTime();
+                        const dateB = new Date(b.received_date || b.received_timestamp || 0).getTime();
+                        return dateB - dateA;
+                    });
                     
-                    // Function to check a specific email for OTP
-                    const checkEmailForOTP = async (message: any, emailNumber: number) => {
-                        console.log(`\n📧 EMAIL ${emailNumber}:`);
-                        console.log(`From: ${message.from?.address}`);
-                        console.log(`Subject: ${message.subject}`);
-                        console.log(`Date: ${message.createdAt}`);
+                    // Filter messages based on timestamp if provided
+                    let sortedMessagesForOTP: any[];
+                    
+                    if (lastVerificationEmailTimestamp) {
+                        console.log(`🔍 Filtering for emails after baseline timestamp: ${lastVerificationEmailTimestamp.toISOString()}`);
+                        sortedMessagesForOTP = sortedMessages.filter((msg: any) => {
+                            const msgTime = new Date(msg.received_date || msg.received_timestamp || 0);
+                            const isAfter = msgTime > lastVerificationEmailTimestamp;
+                            if (!isAfter) {
+                                console.log(`⏪ Skipping old email: ${msg.subject} (${msg.received_date || msg.received_timestamp})`);
+                            }
+                            return isAfter;
+                        });
                         
-                        const msgDetail = await axios.get(
-                            `https://api.mail.tm/messages/${message.id}`,
-                            { headers }
-                        );
-
-                        // Ensure body is always a string
-                        const body = String(msgDetail.data.text || msgDetail.data.html || "");
-                        console.log(`\n📄 FULL EMAIL BODY:`);
-                        console.log('='.repeat(80));
-                        console.log(body);
-                        console.log('='.repeat(80));
-                        console.log(`\n📊 Email body length: ${body.length} characters`);
-
-                        // Try multiple OTP patterns (prioritize 6-digit codes)
+                        if (sortedMessagesForOTP.length === 0) {
+                            console.log(`⏳ No NEW emails found after baseline timestamp. Waiting ${waitTime/1000} seconds...`);
+                            if (i < maxAttempts - 1) {
+                                await new Promise(resolve => setTimeout(resolve, waitTime));
+                            }
+                            continue;
+                        }
+                        
+                        console.log(`✅ Found ${sortedMessagesForOTP.length} NEW email(s) after baseline timestamp!`);
+                    } else {
+                        // Original logic: Wait for at least 2 emails
+                        if (messageCount < 2) {
+                            console.log(`⏳ Only ${messageCount} email(s) found. Waiting for at least 2 emails...`);
+                            if (i < maxAttempts - 1) {
+                                console.log(`Waiting ${waitTime/1000} seconds before next attempt...`);
+                                await new Promise(resolve => setTimeout(resolve, waitTime));
+                            }
+                            continue;
+                        }
+                        console.log(`✅ Found ${messageCount} emails! Proceeding with OTP extraction...`);
+                        sortedMessagesForOTP = sortedMessages;
+                    }
+                    
+                    // Log all email subjects for debugging
+                    console.log(`\n📋 INBOX SUMMARY:`);
+                    console.log(`Total emails found: ${sortedMessages.length}`);
+                    console.log(`Emails after baseline: ${sortedMessagesForOTP.length}`);
+                    console.log(`Email subjects (newest first):`);
+                    sortedMessages.forEach((msg: any, index: number) => {
+                        const msgTime = new Date(msg.received_date || msg.received_timestamp || 0);
+                        const isNew = lastVerificationEmailTimestamp ? msgTime > lastVerificationEmailTimestamp : true;
+                        console.log(`  ${index + 1}. ${msg.subject} (from: ${msg.from?.address || msg.from}) ${isNew ? '✅ NEW' : '⏪ OLD'}`);
+                    });
+                    
+                    // Function to check if an email is a verification email based on subject
+                    const isVerificationEmail = (subject: string): boolean => {
+                        if (!subject) return false;
+                        const lowerSubject = subject.toLowerCase();
+                        // Exclude welcome emails
+                        if (lowerSubject.includes('welcome')) return false;
+                        return lowerSubject.includes('verification code') ||
+                               (lowerSubject.includes('verification') && (lowerSubject.includes('code') || lowerSubject.includes('otp'))) ||
+                               lowerSubject.includes('verify your') ||
+                               lowerSubject.includes('email verification') ||
+                               lowerSubject.includes('otp');
+                    };
+                    
+                    // Function to check if email has the exact subject "Your verification code"
+                    const isExactVerificationCodeEmail = (subject: string): boolean => {
+                        if (!subject) return false;
+                        const lowerSubject = subject.toLowerCase().trim();
+                        // Exact match for "Your verification code"
+                        return lowerSubject === 'your verification code';
+                    };
+                    
+                    // Function to extract OTP from email body (prioritize 6-digit codes)
+                    const extractOTPFromBody = (body: string): string | null => {
+                        // Patterns ordered by priority (6-digit codes first, then with context)
                         const otpPatterns = [
-                            /\b\d{6}\b/,           // 6-digit number (preferred)
-                            /code[:\s]*(\d{6})/i,  // "code: 123456" format (6-digit)
-                            /otp[:\s]*(\d{6})/i,   // "otp: 123456" format (6-digit)
-                            /verification[:\s]*(\d{6})/i, // "verification: 123456" format (6-digit)
-                            /\b\d{4}\b/,           // 4-digit number (fallback)
-                            /\b\d{5}\b/,           // 5-digit number (fallback)
-                            /\b\d{8}\b/,           // 8-digit number (fallback)
-                            /code[:\s]*(\d{4,8})/i, // "code: 1234" format (any length)
-                            /otp[:\s]*(\d{4,8})/i,  // "otp: 1234" format (any length)
-                            /verification[:\s]*(\d{4,8})/i, // "verification: 1234" format (any length)
+                            /\b(\d{6})\b/,                    // 6-digit number standalone (highest priority)
+                            /verification[:\s]*code[:\s]*[:is]*(\d{6})/i,  // "verification code: 123456" or "verification code is 123456"
+                            /your[:\s]*verification[:\s]*code[:\s]*[:is]*(\d{6})/i,  // "your verification code: 123456"
+                            /code[:\s]*[:is]*(\d{6})/i,       // "code: 123456" or "code is 123456"
+                            /otp[:\s]*[:is]*(\d{6})/i,        // "otp: 123456" or "otp is 123456"
+                            /verification[:\s]*[:is]*(\d{6})/i, // "verification: 123456" or "verification is 123456"
                         ];
 
                         for (const pattern of otpPatterns) {
                             const match = body.match(pattern);
                             if (match) {
                                 const otp = match[1] || match[0]; // Use captured group or full match
-                                console.log(`✅ OTP found in EMAIL ${emailNumber}: ${otp}`);
-                                return otp;
+                                // Only return if it's a 6-digit code
+                                if (/^\d{6}$/.test(otp)) {
+                                    console.log(`✅ Found 6-digit OTP using pattern ${pattern.source}: ${otp}`);
+                                    return otp;
+                                }
                             }
                         }
 
-                        console.log(`❌ No OTP pattern found in EMAIL ${emailNumber}.`);
+                        // Fallback: look for any 6-digit number if no contextual match found
+                        const sixDigitMatch = body.match(/\b(\d{6})\b/);
+                        if (sixDigitMatch) {
+                            console.log(`✅ Found 6-digit OTP (fallback): ${sixDigitMatch[1]}`);
+                            return sixDigitMatch[1];
+                        }
+
                         return null;
                     };
                     
-                    // Check EMAIL 2 first (verification email - should be the newest)
-                    if (messages.length >= 2) {
-                        console.log('🔍 Checking EMAIL 2 first (verification email)...');
-                        const otpFromEmail2 = await checkEmailForOTP(messages[1], 2);
-                        if (otpFromEmail2) {
-                            return otpFromEmail2;
+                    // Function to check a specific email for OTP
+                    const checkEmailForOTP = (message: any, emailIndex: number) => {
+                        console.log(`\n📧 Checking EMAIL ${emailIndex + 1} (index ${emailIndex}):`);
+                        console.log(`From: ${message.from?.address || message.from}`);
+                        console.log(`Subject: ${message.subject}`);
+                        console.log(`Date: ${message.received_date || message.received_timestamp}`);
+
+                        // Ensure body is always a string
+                        const body = String(message.text || message.html || "");
+                        console.log(`\n📄 EMAIL BODY (first 500 chars):`);
+                        console.log('='.repeat(80));
+                        console.log(body.substring(0, 500));
+                        if (body.length > 500) {
+                            console.log(`... (${body.length - 500} more characters)`);
+                        }
+                        console.log('='.repeat(80));
+                        console.log(`📊 Email body length: ${body.length} characters`);
+
+                        const otp = extractOTPFromBody(body);
+                        if (otp) {
+                            console.log(`✅ OTP extracted from EMAIL ${emailIndex + 1}: ${otp}`);
+                            return otp;
+                        } else {
+                            console.log(`❌ No 6-digit OTP found in EMAIL ${emailIndex + 1}.`);
+                            return null;
+                        }
+                    };
+                    
+                    // Strategy: First look for exact "Your verification code" subject - this is the ONLY email we should use
+                    console.log('\n🔍 STEP 1: Searching for email with exact subject "Your verification code"...');
+                    let foundVerificationCodeEmail = false;
+                    for (let i = 0; i < sortedMessagesForOTP.length; i++) {
+                        const msg = sortedMessagesForOTP[i];
+                        const subject = msg.subject || '';
+                        if (isExactVerificationCodeEmail(subject)) {
+                            foundVerificationCodeEmail = true;
+                            console.log(`🎯 Found exact match at position ${i + 1}: "${subject}"`);
+                            console.log(`📧 Email ID: ${msg.id}`);
+                            console.log(`📅 Email timestamp: ${msg.received_date || msg.received_timestamp}`);
+                            const otp = checkEmailForOTP(msg, i);
+                            if (otp) {
+                                console.log(`✅ Successfully extracted OTP "${otp}" from "Your verification code" email`);
+                                console.log(`📝 Using OTP from email with subject: "${subject}"`);
+                                return otp;
+                            } else {
+                                console.log(`⚠️ Found "Your verification code" email but no valid OTP found in body`);
+                                console.log(`❌ This is a problem - the verification code email should contain a 6-digit OTP`);
+                            }
                         }
                     }
                     
-                    // If no OTP found in EMAIL 2, check EMAIL 1 (welcome email)
-                    console.log('🔍 Checking EMAIL 1 (welcome email) as fallback...');
-                    const otpFromEmail1 = await checkEmailForOTP(messages[0], 1);
-                    if (otpFromEmail1) {
-                        return otpFromEmail1;
+                    if (!foundVerificationCodeEmail) {
+                        console.log(`⚠️ No email with exact subject "Your verification code" was found!`);
+                        console.log(`📋 Available email subjects (after baseline):`);
+                        sortedMessagesForOTP.forEach((msg: any, index: number) => {
+                            console.log(`   ${index + 1}. "${msg.subject}"`);
+                        });
                     }
                     
-                    console.log(`\n📋 INBOX SUMMARY:`);
-                    console.log(`Total emails found: ${res.data['hydra:member'].length}`);
-                    console.log(`Email subjects:`);
-                    res.data['hydra:member'].forEach((msg: any, index: number) => {
-                        console.log(`  ${index + 1}. ${msg.subject} (from: ${msg.from?.address})`);
-                    });
+                    // Strategy 2: Only if "Your verification code" email was not found, look for other verification emails
+                    if (!foundVerificationCodeEmail) {
+                        console.log('\n🔍 STEP 2: "Your verification code" email not found. Searching for other verification emails by subject...');
+                        for (let i = 0; i < sortedMessagesForOTP.length; i++) {
+                            const msg = sortedMessagesForOTP[i];
+                            const subject = msg.subject || '';
+                            if (isVerificationEmail(subject)) {
+                                console.log(`✅ Found verification email at position ${i + 1}: "${subject}"`);
+                                const otp = checkEmailForOTP(msg, i);
+                                if (otp) {
+                                    console.log(`⚠️ Using OTP from non-standard verification email: "${subject}"`);
+                                    return otp;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Strategy 3: Only as last resort - check all emails (but warn about it)
+                    if (!foundVerificationCodeEmail) {
+                        console.log('\n🔍 STEP 3: No verification emails found. Checking all NEW emails (newest first) as last resort...');
+                        console.log(`⚠️ WARNING: This may extract OTP from wrong email (e.g., welcome email)`);
+                        for (let i = 0; i < sortedMessagesForOTP.length; i++) {
+                            const msg = sortedMessagesForOTP[i];
+                            const subject = msg.subject || '';
+                            console.log(`📧 Checking email ${i + 1}: "${subject}"`);
+                            const otp = checkEmailForOTP(msg, i);
+                            if (otp) {
+                                console.log(`⚠️ WARNING: Extracted OTP "${otp}" from email with subject "${subject}"`);
+                                console.log(`⚠️ This may not be the correct verification code!`);
+                                return otp;
+                            }
+                        }
+                    }
                 } else {
                     console.log('No messages found in inbox yet');
                 }
-            } catch (error) {
-                console.error(`Error during attempt ${i + 1}:`, error);
+            } catch (error: any) {
+                console.error(`❌ Error during attempt ${i + 1}:`, error.message || error);
+                
+                // Check for 401 Unauthorized - likely means invalid or missing API key
+                if (error.response?.status === 401) {
+                    console.error(`\n🚨 AUTHENTICATION ERROR (401 Unauthorized)`);
+                    console.error(`This usually means:`);
+                    console.error(`1. MAILISK_API_KEY is missing or not set in environment variables`);
+                    console.error(`2. MAILISK_API_KEY is invalid or expired`);
+                    console.error(`3. MAILISK_NAMESPACE is incorrect`);
+                    console.error(`\nPlease verify:`);
+                    console.error(`- MAILISK_API_KEY is set in Bitbucket pipeline variables`);
+                    console.error(`- MAILISK_NAMESPACE is set in Bitbucket pipeline variables`);
+                    console.error(`- API key is valid and has not expired`);
+                    console.error(`\nCurrent configuration:`);
+                    console.error(`- API Key present: ${!!apiKey} (length: ${apiKey?.length || 0})`);
+                    console.error(`- Namespace present: ${!!namespace} (value: ${namespace || 'NOT SET'})`);
+                    
+                    // Don't retry on 401 - it won't succeed
+                    throw new Error(`Mailisk API authentication failed (401 Unauthorized). Please check MAILISK_API_KEY and MAILISK_NAMESPACE configuration. Original error: ${error.message}`);
+                }
+                
+                if (error.response) {
+                    console.error(`Response status: ${error.response.status}`);
+                    console.error(`Response data:`, error.response.data);
+                } else if (error.request) {
+                    console.error(`Request was made but no response received`);
+                    console.error(`Request details:`, {
+                        url: error.config?.url,
+                        method: error.config?.method,
+                        headers: error.config?.headers ? Object.keys(error.config.headers) : 'No headers'
+                    });
+                }
+                if (error.code) {
+                    console.error(`Error code: ${error.code}`);
+                }
+                if (error.stack) {
+                    console.error(`Stack trace (first 5 lines):`, error.stack.split('\n').slice(0, 5).join('\n'));
+                }
             }
 
-            if (i < 9) { // Don't wait after the last attempt
-                console.log('Waiting 3 seconds before next attempt...');
-                await new Promise(r => setTimeout(r, 3000));
+            if (i < maxAttempts - 1) { // Don't wait after the last attempt
+                console.log(`Waiting ${waitTime/1000} seconds before next attempt...`);
+                await new Promise(r => setTimeout(r, waitTime));
             }
         }
 
         // If we get here, no OTP was found
-        console.error('OTP not found after 10 attempts. This could mean:');
+        console.error(`OTP not found after ${maxAttempts} attempts. This could mean:`);
         console.error('1. Verification email was not sent by the application (only welcome email received)');
         console.error('2. Verification email is still in transit (try increasing timeout)');
         console.error('3. Email format doesn\'t contain a recognizable OTP pattern');
         console.error('4. Email was sent to a different address');
         console.error('5. Need to wait longer for the verification email to arrive');
         
-        throw new Error("OTP not received in Mail.tm inbox after 10 attempts. Expected at least 2 emails (welcome + verification) but may not have received the verification email yet.");
+        if (lastVerificationEmailTimestamp) {
+            throw new Error(`OTP not received in Mailisk inbox after ${maxAttempts} attempts. Expected NEW verification email after ${lastVerificationEmailTimestamp.toISOString()} but none was found.`);
+        } else {
+            throw new Error(`OTP not received in Mailisk inbox after ${maxAttempts} attempts. Expected at least 2 emails (welcome + verification) but may not have received the verification email yet.`);
+        }
+    }
+
+    // Method to get the timestamp of the latest verification email before sign-up
+    // This helps us identify new emails that arrive after clicking Sign Up button
+    async getLatestVerificationEmailTimestamp(token: string): Promise<Date | null> {
+        const axiosInstance = createMailiskAxiosInstance();
+        const apiKey = token;
+        const namespace = process.env.MAILISK_NAMESPACE;
+        
+        if (!apiKey || apiKey.trim() === '') {
+            throw new Error('MAILISK_API_KEY is missing or empty');
+        }
+        
+        if (!namespace || namespace.trim() === '') {
+            throw new Error('MAILISK_NAMESPACE must be configured');
+        }
+        
+        const headers = { 
+            'X-Api-Key': apiKey,
+            'Accept': 'application/json'
+        };
+        
+        try {
+            const endpoint = `https://api.mailisk.com/api/emails/${namespace}/inbox`;
+            console.log('📧 Checking for existing verification emails to establish baseline timestamp...');
+            
+            const res = await axiosInstance.get(endpoint, { headers });
+            const messages = res.data?.data || [];
+            
+            if (messages.length === 0) {
+                console.log('📭 No existing emails found - will wait for first verification email');
+                return null;
+            }
+            
+            // Sort emails by received_date (newest first)
+            const sortedMessages = messages.sort((a: any, b: any) => {
+                const dateA = new Date(a.received_date || a.received_timestamp || 0).getTime();
+                const dateB = new Date(b.received_date || b.received_timestamp || 0).getTime();
+                return dateB - dateA;
+            });
+            
+            // Find the latest verification email (sign-up verification)
+            for (const msg of sortedMessages) {
+                const subject = msg.subject?.toLowerCase() || '';
+                const from = typeof msg.from === 'string' ? msg.from.toLowerCase() : (msg.from?.address?.toLowerCase() || '');
+                
+                // Check for verification emails (but exclude welcome emails)
+                const isVerificationEmail = (subject.includes('verification code') ||
+                                             subject.includes('verify your') ||
+                                             subject.includes('email verification') ||
+                                             subject.includes('otp') ||
+                                             (subject.includes('verification') && !subject.includes('welcome'))) &&
+                                            !subject.includes('welcome');
+                
+                if (isVerificationEmail) {
+                    const emailTime = new Date(msg.received_date || msg.received_timestamp || 0);
+                    console.log(`📅 Found latest verification email timestamp: ${emailTime.toISOString()}`);
+                    console.log(`📧 Email subject: ${msg.subject}`);
+                    console.log(`🆔 Email ID: ${msg.id}`);
+                    return emailTime;
+                }
+            }
+            
+            // If no verification email found, return the timestamp of the latest email
+            if (sortedMessages.length > 0) {
+                const latestEmail = sortedMessages[0];
+                const emailTime = new Date(latestEmail.received_date || latestEmail.received_timestamp || 0);
+                console.log(`📅 No verification email found, using latest email timestamp: ${emailTime.toISOString()}`);
+                console.log(`📧 Latest email subject: ${latestEmail.subject}`);
+                return emailTime;
+            }
+            
+            console.log('📭 No existing emails found - will wait for first verification email');
+            return null;
+        } catch (error: any) {
+            console.error('❌ Error getting latest verification email timestamp:', error.message || error);
+            // Return null if we can't get the timestamp - we'll use current time as fallback
+            return null;
+        }
+    }
+
+    // Method to get the timestamp of the latest MFA email before login/signup
+    // This helps us identify new emails that arrive after login/signup
+    async getLatestMFAEmailTimestamp(token: string): Promise<Date | null> {
+        const axiosInstance = createMailiskAxiosInstance();
+        const apiKey = token;
+        const namespace = process.env.MAILISK_NAMESPACE;
+        
+        if (!apiKey || apiKey.trim() === '') {
+            throw new Error('MAILISK_API_KEY is missing or empty');
+        }
+        
+        if (!namespace || namespace.trim() === '') {
+            throw new Error('MAILISK_NAMESPACE must be configured');
+        }
+        
+        const headers = { 
+            'X-Api-Key': apiKey,
+            'Accept': 'application/json'
+        };
+        
+        try {
+            const endpoint = `https://api.mailisk.com/api/emails/${namespace}/inbox`;
+            console.log('📧 Checking for existing MFA emails to establish baseline timestamp...');
+            
+            const res = await axiosInstance.get(endpoint, { headers });
+            const messages = res.data?.data || [];
+            
+            if (messages.length === 0) {
+                console.log('📭 No existing emails found - will wait for first MFA email');
+                return null;
+            }
+            
+            // Sort emails by received_date (newest first)
+            const sortedMessages = messages.sort((a: any, b: any) => {
+                const dateA = new Date(a.received_date || a.received_timestamp || 0).getTime();
+                const dateB = new Date(b.received_date || b.received_timestamp || 0).getTime();
+                return dateB - dateA;
+            });
+            
+            // Find the latest MFA email
+            for (const msg of sortedMessages) {
+                const subject = msg.subject?.toLowerCase() || '';
+                const from = typeof msg.from === 'string' ? msg.from.toLowerCase() : (msg.from?.address?.toLowerCase() || '');
+                
+                const isMFAEmail = subject.includes('authentication code') ||
+                                 subject.includes('verification') || 
+                                 subject.includes('otp') || 
+                                 subject.includes('code') ||
+                                 subject.includes('mfa') ||
+                                 subject.includes('authentication') ||
+                                 from.includes('smartpc') ||
+                                 from.includes('verification');
+                
+                if (isMFAEmail) {
+                    const emailTime = new Date(msg.received_date || msg.received_timestamp || 0);
+                    console.log(`📅 Found latest MFA email timestamp: ${emailTime.toISOString()}`);
+                    console.log(`📧 Email subject: ${msg.subject}`);
+                    console.log(`🆔 Email ID: ${msg.id}`);
+                    return emailTime;
+                }
+            }
+            
+            console.log('📭 No existing MFA emails found - will wait for first MFA email');
+            return null;
+        } catch (error: any) {
+            console.error('❌ Error getting latest MFA email timestamp:', error.message || error);
+            // Return null if we can't get the timestamp - we'll use current time as fallback
+            return null;
+        }
     }
 
     // Method specifically for getting the latest email OTP during sign-in
-    async getLatestEmailOTP(token: string, isMFAVerification: boolean = false): Promise<string> {
-        const headers = { Authorization: `Bearer ${token}` };
+    async getLatestEmailOTP(token: string, isMFAVerification: boolean = false, providedStartTime?: Date, lastMFAEmailTimestamp?: Date | null): Promise<string> {
+        const axiosInstance = createMailiskAxiosInstance();
+        const apiKey = token; // token is actually the API key for Mailisk
+        const namespace = process.env.MAILISK_NAMESPACE;
+        
+        // Validate required configuration
+        if (!apiKey || apiKey.trim() === '') {
+            throw new Error('MAILISK_API_KEY is missing or empty. Please ensure MAILISK_API_KEY is set in your environment variables or Bitbucket pipeline configuration.');
+        }
+        
+        if (!namespace || namespace.trim() === '') {
+            throw new Error('MAILISK_NAMESPACE must be configured in .env file or Bitbucket pipeline configuration');
+        }
+        
+        // According to Mailisk documentation: https://docs.mailisk.com/
+        // Use X-Api-Key header (not Authorization Bearer)
+        // Endpoint: GET https://api.mailisk.com/api/emails/{namespace}/inbox
+        const headers = { 
+            'X-Api-Key': apiKey,
+            'Accept': 'application/json'
+        };
         
         if (isMFAVerification) {
             console.log('📧 Retrieving OTP from most recent MFA verification email...');
         } else {
             console.log('📧 Retrieving OTP from most recent sign-up verification email...');
         }
-        console.log('🔑 Using token:', token.substring(0, 20) + '...');
+        console.log(`🔑 Using API key: ${apiKey.substring(0, 10)}... (${apiKey.length} chars)`);
+        console.log(`📧 Using namespace: ${namespace}`);
 
-        // Record the current time to ensure we get emails after this point
-        const startTime = new Date();
-        console.log(`⏰ Starting OTP retrieval at: ${startTime.toISOString()}`);
+        // For MFA verification, use the last MFA email timestamp if provided
+        // This ensures we only get emails that arrived AFTER the last known MFA email
+        let effectiveStartTime: Date;
+        
+        if (isMFAVerification && lastMFAEmailTimestamp) {
+            // Use the timestamp of the last MFA email - we want emails AFTER this
+            effectiveStartTime = lastMFAEmailTimestamp;
+            console.log(`⏰ Using last MFA email timestamp as baseline: ${effectiveStartTime.toISOString()}`);
+            console.log(`📧 Will wait for NEW MFA email that arrives after this timestamp`);
+        } else if (isMFAVerification && providedStartTime) {
+            // Fallback to provided start time with buffer
+            const bufferTime = 10000; // 10 second buffer
+            effectiveStartTime = new Date(providedStartTime.getTime() - bufferTime);
+            console.log(`⏰ Using provided start time (with ${bufferTime}ms buffer): ${effectiveStartTime.toISOString()}`);
+        } else if (isMFAVerification) {
+            // Last resort: use current time minus buffer
+            const bufferTime = 10000;
+            effectiveStartTime = new Date(Date.now() - bufferTime);
+            console.log(`⏰ Using current time minus buffer (${bufferTime}ms): ${effectiveStartTime.toISOString()}`);
+        } else {
+            // For non-MFA, use provided start time or current time
+            effectiveStartTime = providedStartTime || new Date();
+            console.log(`⏰ Starting OTP retrieval at: ${effectiveStartTime.toISOString()}`);
+        }
+        
+        console.log(`📋 Tracking used email IDs: ${usedEmailIds.size} emails already used`);
 
         const maxAttempts = isMFAVerification ? 30 : 10;
         const waitTime = isMFAVerification ? 5000 : 3000;
@@ -498,8 +1009,15 @@ export class SignUpPage {
             console.log(`\n🔄 Attempt ${i + 1}/${maxAttempts}: Checking for ${isMFAVerification ? 'MFA verification' : 'sign-up verification'} email...`);
             
             try {
-                const res = await axios.get("https://api.mail.tm/messages", { headers });
-                const messages = res.data['hydra:member'];
+                // Mailisk API endpoint according to documentation
+                const endpoint = `https://api.mailisk.com/api/emails/${namespace}/inbox`;
+                console.log(`🔗 Attempting to connect to: ${endpoint}`);
+                
+                const res = await axiosInstance.get(endpoint, { headers });
+                
+                console.log(`✅ API Response Status: ${res.status}`);
+                
+                const messages = res.data?.data || [];
                 console.log(`📬 Found ${messages.length} total emails in inbox`);
                 
                 if (messages.length < 1) {
@@ -510,16 +1028,17 @@ export class SignUpPage {
                     continue;
                 }
 
-                // Sort emails by creation time (newest first)
+                // Sort emails by received_date (newest first)
                 const sortedMessages = messages.sort((a: any, b: any) => {
-                    const dateA = new Date(a.createdAt).getTime();
-                    const dateB = new Date(b.createdAt).getTime();
+                    const dateA = new Date(a.received_date || a.received_timestamp || 0).getTime();
+                    const dateB = new Date(b.received_date || b.received_timestamp || 0).getTime();
                     return dateB - dateA; // Newest first
                 });
                 
                 console.log(`📅 Sorted ${sortedMessages.length} emails by time (newest first):`);
                 sortedMessages.forEach((msg: any, index: number) => {
-                    console.log(`  ${index + 1}. ${msg.subject} - ${msg.createdAt} (ID: ${msg.id})`);
+                    const dateStr = msg.received_date || msg.received_timestamp || 'N/A';
+                    console.log(`  ${index + 1}. ${msg.subject} - ${dateStr} (ID: ${msg.id})`);
                 });
                 
                 // Find the appropriate verification email based on context
@@ -527,18 +1046,29 @@ export class SignUpPage {
                 let targetIndex = -1;
                 
                 if (isMFAVerification) {
-                    console.log(`🔍 Looking for MFA verification email after ${startTime.toISOString()}`);
+                    console.log(`🔍 Looking for NEW MFA verification email after ${effectiveStartTime.toISOString()}`);
                     
-                    // Look for MFA verification emails that arrived after we started
+                    // Look for MFA verification emails that arrived after effective start time AND haven't been used
                     for (let j = 0; j < sortedMessages.length; j++) {
                         const msg = sortedMessages[j];
-                        const msgTime = new Date(msg.createdAt);
+                        const msgTime = new Date(msg.received_date || msg.received_timestamp || 0);
                         const subject = msg.subject?.toLowerCase() || '';
-                        const from = msg.from?.address?.toLowerCase() || '';
+                        const from = typeof msg.from === 'string' ? msg.from.toLowerCase() : (msg.from?.address?.toLowerCase() || '');
+                        const emailId = msg.id;
                         
-                        console.log(`📧 Email ${j + 1}: ${msg.subject} - ${msg.createdAt}`);
+                        const timeDiff = msgTime.getTime() - effectiveStartTime.getTime();
+                        const timeDiffSeconds = (timeDiff / 1000).toFixed(1);
                         
-                        // Check if this email is MFA-related AND arrived after we started
+                        console.log(`📧 Email ${j + 1}: ${msg.subject} - ${msg.received_date || msg.received_timestamp} (ID: ${emailId})`);
+                        console.log(`   ⏱️ Time difference from baseline: ${timeDiffSeconds}s ${timeDiff > 0 ? '(NEW)' : '(OLD)'}`);
+                        
+                        // Check if this email has already been used
+                        if (usedEmailIds.has(emailId)) {
+                            console.log(`⚠️ Email ${j + 1} (ID: ${emailId}) has already been used - skipping`);
+                            continue;
+                        }
+                        
+                        // Check if this email is MFA-related AND arrived after effective start time
                         const isMFAEmail = subject.includes('authentication code') ||  // Primary MFA email pattern
                                          subject.includes('verification') || 
                                          subject.includes('otp') || 
@@ -553,28 +1083,36 @@ export class SignUpPage {
                             console.log(`🎯 Found "authentication code" email - this is likely the MFA verification email!`);
                         }
                         
-                        const isAfterStart = msgTime > startTime;
+                        const isAfterStart = msgTime > effectiveStartTime;
                         
                         if (isMFAEmail && isAfterStart) {
                             targetMessage = msg;
                             targetIndex = j;
                             console.log(`✅ Found NEW MFA verification email at position ${j + 1}: ${msg.subject}`);
-                            console.log(`📅 Email time: ${msg.createdAt} (after start: ${isAfterStart})`);
+                            console.log(`📅 Email time: ${msg.received_date || msg.received_timestamp}`);
+                            console.log(`⏱️ Email arrived ${timeDiffSeconds}s after baseline timestamp`);
+                            console.log(`🆔 Email ID: ${emailId} (not used yet)`);
                             break;
                         } else if (isMFAEmail) {
-                            console.log(`⚠️ Found MFA email at position ${j + 1} but it's older than start time`);
+                            console.log(`⚠️ Found MFA email at position ${j + 1} but it's ${Math.abs(parseFloat(timeDiffSeconds))}s OLDER than baseline (skipping)`);
                         }
                     }
                     
                     // If no new MFA email found, wait longer for it to arrive
                     if (!targetMessage) {
-                        console.log(`⚠️ No new MFA email found after start time. Waiting longer for fresh MFA email...`);
+                        console.log(`⚠️ No NEW MFA email found after baseline timestamp (${effectiveStartTime.toISOString()})`);
+                        console.log(`⏳ Waiting ${waitTime/1000} seconds for new MFA email to arrive...`);
                         if (i < maxAttempts - 1) {
                             await new Promise(resolve => setTimeout(resolve, waitTime));
                             continue;
                         } else {
-                            console.log(`❌ No fresh MFA email received after ${maxAttempts} attempts. This indicates the MFA email may not have been sent.`);
-                            throw new Error(`No fresh MFA verification email received after ${maxAttempts} attempts. The MFA email may not have been sent by the application.`);
+                            console.log(`❌ No NEW MFA email received after ${maxAttempts} attempts.`);
+                            console.log(`📋 Baseline timestamp was: ${effectiveStartTime.toISOString()}`);
+                            console.log(`💡 This indicates either:`);
+                            console.log(`   1. MFA email was not sent by the application`);
+                            console.log(`   2. Email is still in transit (try increasing wait time)`);
+                            console.log(`   3. Email was sent before baseline timestamp was recorded`);
+                            throw new Error(`No NEW MFA verification email received after ${maxAttempts} attempts. Expected email after ${effectiveStartTime.toISOString()}.`);
                         }
                     }
                 } else {
@@ -605,16 +1143,12 @@ export class SignUpPage {
                 
                 console.log(`\n📧 TARGET EMAIL (${targetIndex + 1}st email from ${sortedMessages.length} emails):`);
                 console.log(`📧 Email ID: ${targetMessage.id}`);
-                console.log(`From: ${targetMessage.from?.address}`);
+                console.log(`From: ${typeof targetMessage.from === 'string' ? targetMessage.from : targetMessage.from?.address}`);
                 console.log(`Subject: ${targetMessage.subject}`);
-                console.log(`Date: ${targetMessage.createdAt}`);
+                console.log(`Date: ${targetMessage.received_date || targetMessage.received_timestamp}`);
 
-                const msgDetail = await axios.get(
-                    `https://api.mail.tm/messages/${targetMessage.id}`,
-                    { headers }
-                );
-
-                const body = String(msgDetail.data.text || msgDetail.data.html || "");
+                // Mailisk API returns full email content in the response
+                const body = String(targetMessage.text || targetMessage.html || "");
                 console.log(`\n📄 EMAIL BODY (${body.length} chars):`);
                 console.log('='.repeat(80));
                 console.log(body);
@@ -663,7 +1197,12 @@ export class SignUpPage {
                         if (otp && /^\d{4,6}$/.test(otp)) {
                             // Ensure 6-digit OTP
                             const paddedOTP = otp.padStart(6, '0');
-                            console.log(`✅ OTP found in email ${targetIndex + 1} from ${sortedMessages.length} emails (ID: ${targetMessage.id}): ${paddedOTP}`);
+                            const emailId = targetMessage.id;
+                            
+                            // Mark this email as used to avoid reusing the code
+                            usedEmailIds.add(emailId);
+                            console.log(`✅ OTP found in email ${targetIndex + 1} from ${sortedMessages.length} emails (ID: ${emailId}): ${paddedOTP}`);
+                            console.log(`📝 Marked email ID ${emailId} as used (total used: ${usedEmailIds.size})`);
                             return paddedOTP;
                         }
                     }
@@ -677,8 +1216,32 @@ export class SignUpPage {
                     await new Promise(resolve => setTimeout(resolve, 5000));
                 }
 
-            } catch (error) {
-                console.error(`❌ Error retrieving email on attempt ${i + 1}:`, error);
+            } catch (error: any) {
+                console.error(`❌ Error retrieving email on attempt ${i + 1}:`, error.message || error);
+                
+                // Check for 401 Unauthorized - likely means invalid or missing API key
+                if (error.response?.status === 401) {
+                    console.error(`\n🚨 AUTHENTICATION ERROR (401 Unauthorized)`);
+                    console.error(`This usually means:`);
+                    console.error(`1. MAILISK_API_KEY is missing or not set in environment variables`);
+                    console.error(`2. MAILISK_API_KEY is invalid or expired`);
+                    console.error(`3. MAILISK_NAMESPACE is incorrect`);
+                    console.error(`\nPlease verify:`);
+                    console.error(`- MAILISK_API_KEY is set in Bitbucket pipeline variables`);
+                    console.error(`- MAILISK_NAMESPACE is set in Bitbucket pipeline variables`);
+                    console.error(`- API key is valid and has not expired`);
+                    console.error(`\nCurrent configuration:`);
+                    console.error(`- API Key present: ${!!apiKey} (length: ${apiKey?.length || 0})`);
+                    console.error(`- Namespace present: ${!!namespace} (value: ${namespace || 'NOT SET'})`);
+                    
+                    // Don't retry on 401 - it won't succeed
+                    throw new Error(`Mailisk API authentication failed (401 Unauthorized). Please check MAILISK_API_KEY and MAILISK_NAMESPACE configuration. Original error: ${error.message}`);
+                }
+                
+                if (error.response) {
+                    console.error(`Response status: ${error.response.status}`);
+                    console.error(`Response data:`, error.response.data);
+                }
                 if (i < 14) {
                     console.log('⏳ Waiting 5 seconds before retry...');
                     await new Promise(resolve => setTimeout(resolve, 5000));
@@ -707,18 +1270,38 @@ export class SignUpPage {
 
     // Method to fetch email content for invitation emails
     async fetchEmailContent(email: string, token: string): Promise<string> {
-        // Use the provided token for the existing mail account
-        const headers = { Authorization: `Bearer ${token}` };
+        const axiosInstance = createMailiskAxiosInstance();
+        const apiKey = token; // token is actually the API key for Mailisk
+        const namespace = process.env.MAILISK_NAMESPACE;
+        
+        if (!namespace) {
+            throw new Error('MAILISK_NAMESPACE must be configured in .env file');
+        }
+        
+        // According to Mailisk documentation: https://docs.mailisk.com/
+        // Use X-Api-Key header (not Authorization Bearer)
+        // Endpoint: GET https://api.mailisk.com/api/emails/{namespace}/inbox
+        const headers = { 
+            'X-Api-Key': apiKey,
+            'Accept': 'application/json'
+        };
         
         console.log('📧 Fetching invitation email content...');
-        console.log('🔑 Using token:', token.substring(0, 20) + '...');
+        console.log('🔑 Using API key:', apiKey.substring(0, 20) + '...');
 
         for (let i = 0; i < 10; i++) {
             console.log(`\n🔄 Attempt ${i + 1}/10: Checking for invitation email...`);
             
             try {
-                const res = await axios.get("https://api.mail.tm/messages", { headers });
-                const messages = res.data['hydra:member'];
+                // Mailisk API endpoint according to documentation
+                const endpoint = `https://api.mailisk.com/api/emails/${namespace}/inbox`;
+                console.log(`🔗 Attempting to connect to: ${endpoint}`);
+                
+                const res = await axiosInstance.get(endpoint, { headers });
+                
+                console.log(`✅ API Response Status: ${res.status}`);
+                
+                const messages = res.data?.data || [];
                 console.log(`📬 Found ${messages.length} total emails in inbox`);
                 
                 if (messages.length === 0) {
@@ -729,14 +1312,21 @@ export class SignUpPage {
                     continue;
                 }
 
+                // Sort messages by received_date (newest first)
+                const sortedMessages = messages.sort((a: any, b: any) => {
+                    const dateA = new Date(a.received_date || a.received_timestamp || 0).getTime();
+                    const dateB = new Date(b.received_date || b.received_timestamp || 0).getTime();
+                    return dateB - dateA;
+                });
+
                 // Look for invitation email (should be the latest)
-                const latestMessage = messages[0]; // Messages are sorted by creation time, newest first
+                const latestMessage = sortedMessages[0];
                 
                 console.log(`\n📧 LATEST EMAIL:`);
                 console.log(`📧 Email ID: ${latestMessage.id}`);
-                console.log(`From: ${latestMessage.from?.address}`);
+                console.log(`From: ${typeof latestMessage.from === 'string' ? latestMessage.from : latestMessage.from?.address}`);
                 console.log(`Subject: ${latestMessage.subject}`);
-                console.log(`Date: ${latestMessage.createdAt}`);
+                console.log(`Date: ${latestMessage.received_date || latestMessage.received_timestamp}`);
 
                 // Check if this is an invitation email
                 if (latestMessage.subject && 
@@ -744,12 +1334,8 @@ export class SignUpPage {
                      latestMessage.subject.toLowerCase().includes('welcome') ||
                      latestMessage.subject.toLowerCase().includes('smartpc'))) {
                     
-                    const msgDetail = await axios.get(
-                        `https://api.mail.tm/messages/${latestMessage.id}`,
-                        { headers }
-                    );
-
-                    const body = String(msgDetail.data.text || msgDetail.data.html || "");
+                    // Mailisk API returns full email content in the response
+                    const body = String(latestMessage.text || latestMessage.html || "");
                     console.log(`\n📄 INVITATION EMAIL BODY (${body.length} chars):`);
                     console.log('='.repeat(80));
                     console.log(body);
@@ -764,8 +1350,12 @@ export class SignUpPage {
                     }
                 }
                 
-            } catch (error) {
-                console.error(`❌ Error fetching emails (attempt ${i + 1}):`, error);
+            } catch (error: any) {
+                console.error(`❌ Error fetching emails (attempt ${i + 1}):`, error.message || error);
+                if (error.response) {
+                    console.error(`Response status: ${error.response.status}`);
+                    console.error(`Response data:`, error.response.data);
+                }
                 if (i < 9) {
                     console.log('Waiting 5 seconds before retry...');
                     await new Promise(resolve => setTimeout(resolve, 5000));
@@ -773,7 +1363,7 @@ export class SignUpPage {
             }
         }
         
-        throw new Error("Invitation email not found in Mail.tm inbox after 10 attempts.");
+        throw new Error("Invitation email not found in Mailisk inbox after 10 attempts.");
     }
 
 }

@@ -1,4 +1,3 @@
-
 /* eslint perfectionist/sort-imports: "off" */
 
 "use client";
@@ -35,8 +34,8 @@ export default function WelcomePage() {
   const isDark = resolvedTheme === "dark";
 
   const logoSrc = isDark
-    ? "/assets/authlayout/dark/sensepc-logo-code-dark.svg"
-    : "/assets/authlayout/light/sensepc-logo-code.svg";
+    ? "/assets/authlayout/dark/sensepc-logo-dark.png"
+    : "/assets/authlayout/light/sensepc-logo-code.png";
 
   // ---- Redirect if already onboarded ----
   useEffect(() => {
@@ -52,8 +51,11 @@ export default function WelcomePage() {
   // ---- API Hooks ----
   const [completeFirstLogin, { isLoading: isCompleting }] =
     useCompleteFirstLoginMutation();
-  const { email, loading: emailLoading, error: emailError } =
-    useEmailFromSession();
+  const {
+    email,
+    loading: emailLoading,
+    error: emailError,
+  } = useEmailFromSession();
 
   // ---- Local state ----
   const [error, setError] = useState("");
@@ -172,18 +174,13 @@ export default function WelcomePage() {
                 {organization ? (
                   <>
                     Complete your setup as{" "}
-                    <strong>
-                      {role ? role.toLowerCase() : "member"}
-                    </strong>{" "}
-                    of <strong>{organization}</strong>.
+                    <strong>{role ? role.toLowerCase() : "member"}</strong> of{" "}
+                    <strong>{organization}</strong>.
                   </>
                 ) : (
                   <>
                     Complete your setup as{" "}
-                    <strong>
-                      {role ? role.toLowerCase() : "member"}
-                    </strong>
-                    .
+                    <strong>{role ? role.toLowerCase() : "member"}</strong>.
                   </>
                 )}
               </p>
@@ -200,11 +197,18 @@ export default function WelcomePage() {
               Email
             </label>
             <div
-              className={`w-full rounded-xl border px-4 py-3 text-sm ${
+              className={`w-full overflow-hidden rounded-xl border px-4 py-3 text-sm break-all leading-relaxed ${
                 isDark
                   ? "border-transparent bg-[#2A2067] text-white"
                   : "border-slate-200 bg-slate-50 text-slate-700"
               }`}
+              title={
+                emailLoading
+                  ? "Loading email..."
+                  : emailError
+                    ? "Failed to load email"
+                    : email || "No email found"
+              }
             >
               {emailLoading
                 ? "Loading email..."
@@ -235,7 +239,7 @@ export default function WelcomePage() {
                 {...register("fullName", { required: true })}
                 data-testid="login-full-name-input"
               />
-                          </div>
+            </div>
 
             {/* Terms checkbox */}
             <div className="mb-4 flex items-start gap-3">

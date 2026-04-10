@@ -1,4 +1,5 @@
 import { CustomWorld } from '../support/world';
+import * as fs from 'fs';
 
 /**
  * Custom error handler that captures screenshots at the actual failure point
@@ -194,7 +195,6 @@ export class ErrorHandler {
             try {
                 const pageSource = await this.world.page.content();
                 const sourcePath = `screenshots/${type}_${cleanStepName}_source_${timestamp}.html`;
-                const fs = require('fs');
                 fs.writeFileSync(sourcePath, pageSource);
                 console.log(`📄 Page source saved: ${sourcePath}`);
             } catch (sourceError) {
@@ -208,7 +208,6 @@ export class ErrorHandler {
                 });
                 if (logs && logs.length > 0) {
                     const logsPath = `screenshots/${type}_${cleanStepName}_logs_${timestamp}.json`;
-                    const fs = require('fs');
                     fs.writeFileSync(logsPath, JSON.stringify(logs, null, 2));
                     console.log(`📄 Console logs saved: ${logsPath}`);
                 }

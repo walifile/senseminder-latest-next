@@ -179,8 +179,8 @@ export function OtpVerificationDialog({
     }
   };
   const logoSrc = isDark
-  ? "/assets/authlayout/dark/sensepc-logo-code-dark.svg"
-  : "/assets/authlayout/light/sensepc-logo-code.svg";
+  ? "/assets/authlayout/dark/sensepc-logo-dark.png"
+  : "/assets/authlayout/light/sensepc-logo-code.png"
 
   return (
     <div className="fixed inset-0 z-[60] flex min-h-screen items-center justify-center bg-black/50 backdrop-blur-[2px] px-4">

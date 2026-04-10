@@ -7,8 +7,6 @@ import Image from "next/image";
 
 import { cn } from "@/lib/utils";
 
-import { useTheme } from "./theme-provider";
-
 type LogoProps = {
   sign?: boolean;
   /**
@@ -22,15 +20,6 @@ type LogoProps = {
 };
 
 export function Logo({ sign, noLink = false, href = "/" }: LogoProps) {
-  const { resolvedTheme } = useTheme();
-
-  const logoSrc =
-    sign === true
-      ? "/favicon/apple-touch-icon.png"
-      : resolvedTheme === "dark"
-        ? "/sensepc-logo-dark.png"
-        : "/sensepc-logo-light.png";
-
   const LogoImage = (
     <div
       className={cn(
@@ -40,13 +29,35 @@ export function Logo({ sign, noLink = false, href = "/" }: LogoProps) {
           : "w-[55px] h-[40px] md:w-[82px] md:h-[60px]"
       )}
     >
-      <Image
-        src={logoSrc}
-        alt="Sense PC Logo"
-        fill
-        priority
-        sizes="(max-width: 768px) 55px, 82px"
-      />
+      {sign === true ? (
+        <Image
+          src="/favicon/apple-touch-icon.png"
+          alt="Sense PC Logo"
+          fill
+          priority
+          className="object-contain"
+          sizes="(max-width: 768px) 55px, 82px"
+        />
+      ) : (
+        <>
+          <Image
+            src="/sensepc-logo-light-1.png"
+            alt="Sense PC Logo"
+            fill
+            priority
+            className="object-contain dark:hidden"
+            sizes="(max-width: 768px) 55px, 82px"
+          />
+          <Image
+            src="/assets/authlayout/dark/sensepc-logo-dark-white-mark.png"
+            alt="Sense PC Logo"
+            fill
+            priority
+            className="hidden object-contain dark:block"
+            sizes="(max-width: 768px) 55px, 82px"
+          />
+        </>
+      )}
     </div>
   );
 
