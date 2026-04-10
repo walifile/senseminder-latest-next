@@ -91,11 +91,24 @@ def as_optional_int(value: Any) -> Optional[int]:
 
 
 def normalize_routes(value: Any) -> List[str]:
+    normalized: List[str] = []
     if isinstance(value, list):
-        return [str(route).strip() for route in value if str(route).strip()]
-    if isinstance(value, str):
-        return [route.strip() for route in value.split(",") if route.strip()]
-    return []
+        raw_routes = [str(route).strip() for route in value if str(route).strip()]
+    elif isinstance(value, str):
+        raw_routes = [
+            route.strip()
+            for route in value.replace("\r", "\n").replace(",", "\n").split("\n")
+            if route.strip()
+        ]
+    else:
+        raw_routes = []
+
+    for route in raw_routes:
+        normalized_route = normalize_target_path(route)
+        if normalized_route and normalized_route not in normalized:
+            normalized.append(normalized_route)
+
+    return normalized
 
 
 def normalize_target_path(value: Any) -> Optional[str]:
@@ -193,7 +206,9 @@ def to_item(payload: Dict[str, Any], announcement_id: Optional[str] = None) -> D
 
     if placement == "public_page" and target_path:
         routes_include = [target_path]
-        routes_exclude = ["/dashboard", "/auth", "/pc-viewer"]
+        routes_exclude = list(
+            dict.fromkeys([*routes_exclude, "/dashboard", "/auth", "/pc-viewer"])
+        )
 
     return {
         "announcement_id": announcement_id or str(uuid.uuid4()),
