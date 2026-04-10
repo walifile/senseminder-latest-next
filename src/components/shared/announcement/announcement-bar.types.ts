@@ -17,6 +17,8 @@ export type AnnouncementItem = {
   version?: number;
   cta_label?: string;
   cta_url?: string;
+  placement?: AnnouncementPlacement | "public_page" | "all";
+  target_path?: string | null;
 };
 
 export type GetAnnouncementsArgs = {

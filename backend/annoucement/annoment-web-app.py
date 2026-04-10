@@ -85,7 +85,7 @@ def normalize_scope(value: str) -> str:
 
 def normalize_item_placement(value: Any) -> str:
     placement = str(value or "").strip().lower()
-    if placement in ("public", "dashboard", "all"):
+    if placement in ("public", "public_page", "dashboard", "all"):
         return placement
     if placement == "dashboard_top":
         return "dashboard"
@@ -100,6 +100,7 @@ def normalize_category(value: Any) -> str:
 def serialize_item(item: Dict[str, Any]) -> Dict[str, Any]:
     serialized = to_json_safe(item)
     serialized["category"] = normalize_category(serialized.get("category"))
+    serialized["placement"] = normalize_item_placement(serialized.get("placement"))
     return serialized
 
 
@@ -146,7 +147,9 @@ def lambda_handler(event, _context):
 
     for item in items:
         item_placement = normalize_item_placement(item.get("placement"))
-        if item_placement not in ("all", scope):
+        if item_placement not in ("all", scope, "public_page"):
+            continue
+        if scope == "dashboard" and item_placement == "public_page":
             continue
 
         end_at = item.get("end_at")
@@ -168,4 +171,4 @@ def lambda_handler(event, _context):
         reverse=True,
     )
 
-    return respond(200, {"items": [serialize_item(item) for item in active[:1]]})
+    return respond(200, {"items": [serialize_item(item) for item in active]})

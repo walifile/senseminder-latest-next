@@ -16,7 +16,7 @@ dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(ANNOUNCEMENTS_TABLE)
 
 VALID_STATUS = {"unpublished", "published"}
-VALID_PLACEMENT = {"public", "dashboard", "all"}
+VALID_PLACEMENT = {"public", "public_page", "dashboard", "all"}
 VALID_SEVERITY = {"normal", "info", "success", "warning", "critical"}
 VALID_AUDIENCE = {"all", "logged_in"}
 
@@ -98,10 +98,23 @@ def normalize_routes(value: Any) -> List[str]:
     return []
 
 
+def normalize_target_path(value: Any) -> Optional[str]:
+    path = str(value or "").strip()
+    if not path:
+        return None
+    if not path.startswith("/"):
+        path = f"/{path}"
+    if path != "/" and path.endswith("/"):
+        path = path[:-1]
+    return path
+
+
 def normalize_placement(value: Any) -> Optional[str]:
     placement = str(value or "").strip().lower()
     if placement in VALID_PLACEMENT:
         return placement
+    if placement in {"page", "specific_page", "specific_public_page"}:
+        return "public_page"
     if placement in {"global_top", "page_inline"}:
         return "public"
     if placement == "dashboard_top":
@@ -128,6 +141,7 @@ def serialize_item(item: Dict[str, Any]) -> Dict[str, Any]:
     serialized["status"] = normalize_status(serialized.get("status")) or "unpublished"
     serialized["placement"] = normalize_placement(serialized.get("placement")) or "public"
     serialized["category"] = normalize_category(serialized.get("category"))
+    serialized["target_path"] = normalize_target_path(serialized.get("target_path"))
     return serialized
 
 
@@ -146,8 +160,10 @@ def validate_fields(payload: Dict[str, Any], is_patch: bool = False) -> Optional
     if "placement" in payload:
         normalized_placement = normalize_placement(payload["placement"])
         if not normalized_placement:
-            return "placement must be public, dashboard, or all"
+            return "placement must be public, public_page, dashboard, or all"
         payload["placement"] = normalized_placement
+    if "target_path" in payload:
+        payload["target_path"] = normalize_target_path(payload["target_path"])
     if "severity" in payload and payload["severity"] not in VALID_SEVERITY:
         return "severity must be normal, info, success, warning, or critical"
     if "category" in payload:
@@ -157,6 +173,12 @@ def validate_fields(payload: Dict[str, Any], is_patch: bool = False) -> Optional
     if "end_at" in payload and payload.get("end_at") not in (None, ""):
         if int(payload["end_at"]) <= int(payload.get("start_at", 0)):
             return "end_at must be greater than start_at"
+    if payload.get("placement") == "public_page":
+        target_path = payload.get("target_path")
+        if not target_path:
+            return "target_path is required when placement is public_page"
+        if target_path.startswith("/dashboard") or target_path.startswith("/pc-viewer"):
+            return "target_path must be a public page path"
     return None
 
 
@@ -164,6 +186,14 @@ def to_item(payload: Dict[str, Any], announcement_id: Optional[str] = None) -> D
     current_ms = now_ms()
     status = normalize_status(payload.get("status")) or "unpublished"
     start_at = as_int(payload.get("start_at"), current_ms)
+    placement = normalize_placement(payload.get("placement")) or "public"
+    target_path = normalize_target_path(payload.get("target_path"))
+    routes_include = normalize_routes(payload.get("routes_include"))
+    routes_exclude = normalize_routes(payload.get("routes_exclude"))
+
+    if placement == "public_page" and target_path:
+        routes_include = [target_path]
+        routes_exclude = ["/dashboard", "/auth", "/pc-viewer"]
 
     return {
         "announcement_id": announcement_id or str(uuid.uuid4()),
@@ -171,7 +201,7 @@ def to_item(payload: Dict[str, Any], announcement_id: Optional[str] = None) -> D
         "message": str(payload.get("message", "")).strip(),
         "severity": payload.get("severity", "normal"),
         "category": normalize_category(payload.get("category")),
-        "placement": payload.get("placement", "public"),
+        "placement": placement,
         "status": status,
         "priority": as_int(payload.get("priority"), 0),
         "start_at": start_at,
@@ -180,8 +210,9 @@ def to_item(payload: Dict[str, Any], announcement_id: Optional[str] = None) -> D
         "version": as_int(payload.get("version"), 1),
         "cta_label": str(payload.get("cta_label", "")).strip(),
         "cta_url": str(payload.get("cta_url", "")).strip(),
-        "routes_include": normalize_routes(payload.get("routes_include")),
-        "routes_exclude": normalize_routes(payload.get("routes_exclude")),
+        "target_path": target_path,
+        "routes_include": routes_include,
+        "routes_exclude": routes_exclude,
         "audience_type": payload.get("audience_type", "all"),
         "audience_values": payload.get("audience_values", []),
         "created_at": as_int(payload.get("created_at"), current_ms),
@@ -275,10 +306,6 @@ def create_announcement(event: Dict[str, Any]) -> Dict[str, Any]:
     item = to_item(payload)
     table.put_item(Item=item)
 
-    current_ms = now_ms()
-    if normalize_status(item.get("status")) == "published":
-        unpublish_other_announcements(item["announcement_id"], current_ms)
-
     return respond(201, serialize_item(item))
 
 
@@ -300,10 +327,6 @@ def update_announcement(announcement_id: str, event: Dict[str, Any]) -> Dict[str
     item = to_item(merged, announcement_id=announcement_id)
     item["created_at"] = int(existing.get("created_at", now_ms()))
     table.put_item(Item=item)
-
-    current_ms = now_ms()
-    if normalize_status(item.get("status")) == "published":
-        unpublish_other_announcements(item["announcement_id"], current_ms)
 
     return respond(200, serialize_item(item))
 
