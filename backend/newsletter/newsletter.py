@@ -311,6 +311,8 @@ def lambda_handler(event, context):
                 "country": location.get("country", "Unknown"),
                 "city": location.get("city", "Unknown"),
                 "ip": location.get("ip", "Unknown"),
+                "signup": bool(signup),
+                "subscriptionType": "signup" if signup else "newsletter",
                 "createdAt": datetime.utcnow().isoformat() + "Z",
                 "unsubscribeToken": unsubscribe_token,
             })
