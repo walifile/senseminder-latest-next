@@ -1,6 +1,8 @@
 import boto3
 import json
 
+from discount_campaign_service import apply_campaign_discount
+
 dynamodb = boto3.resource("dynamodb")
 instance_table = dynamodb.Table("SmartPCInstancePricing")
 storage_table = dynamodb.Table("SmartPCSSDPricing")
@@ -76,6 +78,10 @@ def lambda_handler(event, context):
         total_monthly = float(instance_data["pricePerMonth"]) + ssd_monthly
 
 
+        hourly_discount = apply_campaign_discount(total_hourly, "hourly")
+        daily_discount = apply_campaign_discount(total_daily, "daily")
+        monthly_discount = apply_campaign_discount(total_monthly, "monthly")
+
         return {
             "statusCode": 200,
             "headers": cors_headers(),
@@ -86,23 +92,26 @@ def lambda_handler(event, context):
                     "pricePerDay": float(instance_data["pricePerDay"]),
                     "pricePerMonth": float(instance_data["pricePerMonth"]),
                 },
-                # "storage": {
-                #     "size": storage_size,
-                #     "pricePerHour": float(storage_data["totalPricePerHour"]),
-                #     "pricePerDay": float(storage_data["totalPricePerDay"]),
-                #     "pricePerMonth": float(storage_data["totalPricePerMonth"]),
-                # },
                 "storage": {
                     "size": int(storage_size),
                     "pricePerHour": round(ssd_hourly, 4),
                     "pricePerDay": round(ssd_daily, 4),
                     "pricePerMonth": round(ssd_monthly, 2),
                 },
-
                 "total": {
+                    "pricePerHour": hourly_discount["final_amount"],
+                    "pricePerDay": daily_discount["final_amount"],
+                    "pricePerMonth": monthly_discount["final_amount"],
+                },
+                "originalTotal": {
                     "pricePerHour": round(total_hourly, 4),
                     "pricePerDay": round(total_daily, 4),
                     "pricePerMonth": round(total_monthly, 2),
+                },
+                "discounts": {
+                    "hourly": hourly_discount,
+                    "daily": daily_discount,
+                    "monthly": monthly_discount,
                 }
             })
         }
