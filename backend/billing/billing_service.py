@@ -11,6 +11,7 @@ from instance_management_service import InstanceManagementService
 from wallet_service import WalletService
 from grace_period_service import GracePeriodService
 from promo_pc_lifecycle_service import PromoInstancePolicyService
+from discount_campaign_service import apply_campaign_discount
 from dataclasses import dataclass
 import traceback
 
@@ -270,36 +271,58 @@ class BillingService:
         storage_cost = Decimal(format_decimal_str(storage_cost))
         billing_amount = instance_cost + storage_cost
         billing_amount = Decimal(format_decimal_str(billing_amount))
+        discount_details = apply_campaign_discount(billing_amount, billing_data.plan_type)
+        final_billing_amount = Decimal(str(discount_details["final_amount"]))
         print(f"Instance {billing_data.instance_id} billing amount: Instance cost: {instance_cost}, Storage cost: {storage_cost}")
 
         # Try auto-recharge if insufficient funds
         current_wallet = wallet_info
         auto_recharge_success = False
-        if current_wallet.total_balance < billing_amount:
-            auto_recharge_success = self.try_auto_recharge(billing_data, current_wallet, billing_amount)
+        if current_wallet.total_balance < final_billing_amount:
+            auto_recharge_success = self.try_auto_recharge(billing_data, current_wallet, final_billing_amount)
             if auto_recharge_success:
                 current_wallet = self.data_service.get_wallet_info(billing_data.user_id)
 
-        if current_wallet.total_balance >= billing_amount:
+        if current_wallet.total_balance >= final_billing_amount:
             return self.complete_billing_transaction(
-                billing_data, billing_result, current_wallet, billing_amount, 
-                instance_cost, storage_cost, now, last_job_ts
+                billing_data, billing_result, current_wallet, final_billing_amount,
+                instance_cost, storage_cost, now, last_job_ts, discount_details
             )
         else:
-            return self.handle_insufficient_funds(billing_data, billing_amount, now, current_wallet, storage_cost, instance_cost, billing_result, target_plan, auto_recharge_success)
+            return self.handle_insufficient_funds(
+                billing_data,
+                final_billing_amount,
+                now,
+                current_wallet,
+                storage_cost,
+                instance_cost,
+                billing_result,
+                target_plan,
+                auto_recharge_success,
+            )
 
     def complete_billing_transaction(self, billing_data: InstanceBillingData, billing_result: BillingPeriodResult,
                                    wallet_info: WalletInfo, billing_amount: Decimal, instance_cost: Decimal,
-                                   storage_cost: Decimal, now: datetime, last_job_ts: datetime) -> bool:
+                                   storage_cost: Decimal, now: datetime, last_job_ts: datetime,
+                                   discount_details: Optional[Dict[str, Any]] = None) -> bool:
         """Complete the billing transaction."""
         
         
         # Deduct from wallet
         self.wallet_service.deduct_from_wallet(billing_data.user_id, wallet_info, billing_amount, billing_data.system_name, billing_data.instance_id, billing_result)
 
+        if discount_details and Decimal(str(discount_details.get("discount_amount", 0))) > 0:
+            self.notification_service.log_notification(
+                billing_data.user_id,
+                f"{discount_details.get('campaign_name')} applied a ${format_decimal_str(Decimal(str(discount_details['discount_amount'])))} discount on '{billing_data.system_name}' PC.",
+                "success",
+                "Campaign discount applied",
+                "billing-alert",
+            )
+
         # Record billing
         self.record_billing_transaction(
-            billing_data, billing_result, billing_amount, instance_cost, storage_cost, now, last_job_ts
+            billing_data, billing_result, billing_amount, instance_cost, storage_cost, now, last_job_ts, discount_details
         )
 
         # Update job history
@@ -310,7 +333,8 @@ class BillingService:
 
     def record_billing_transaction(self, billing_data: InstanceBillingData, billing_result: BillingPeriodResult,
                                  billing_amount: Decimal, instance_cost: Decimal, storage_cost: Decimal,
-                                 now: datetime, last_job_ts: datetime):
+                                 now: datetime, last_job_ts: datetime,
+                                 discount_details: Optional[Dict[str, Any]] = None):
         """Record billing transaction in billing table."""
         billing_table = self.dynamodb.Table(TABLE_SMARTPC_BILLING)
         
@@ -324,6 +348,10 @@ class BillingService:
             end_time = (last_job_ts + timedelta(days=30)).isoformat()
         
         current_instance_state = BillingCalculationService.get_last_instance_status(billing_data.events)
+        discount_details = discount_details or {}
+        original_billing_amount = Decimal(str(discount_details.get("base_amount", billing_amount)))
+        discount_amount = Decimal(str(discount_details.get("discount_amount", 0)))
+        discount_percent = Decimal(str(discount_details.get("discount_percent", 0)))
 
         billing_item = {
             'instanceId': billing_data.instance_id,
@@ -332,6 +360,11 @@ class BillingService:
             'timestamp': now.isoformat(),
             'updatedTimestamp': now.isoformat(),
             'billingAmount': format_decimal_str(billing_amount),
+            'originalBillingAmount': format_decimal_str(original_billing_amount),
+            'discountAmount': format_decimal_str(discount_amount),
+            'discountPercent': format_decimal_str(discount_percent),
+            'discountCampaignId': discount_details.get('campaign_id') or '',
+            'discountCampaignName': discount_details.get('campaign_name') or '',
             'instanceCost': format_decimal_str(instance_cost),
             'storageCost': format_decimal_str(storage_cost),
             'startTime': start_time,

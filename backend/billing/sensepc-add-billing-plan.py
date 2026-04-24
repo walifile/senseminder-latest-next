@@ -7,6 +7,8 @@ from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, List, Optional
 from boto3.dynamodb.conditions import Key
 
+from discount_campaign_service import apply_campaign_discount
+
 region = os.environ.get("AWS_REGION", "us-east-1")
 billing_plan_table_name = os.environ.get("PLAN_TABLE_NAME", "SmartPCBillingPlan")
 wallet_table_name = os.environ.get("WALLET_TABLE_NAME", "SmartPCWallet")
@@ -68,7 +70,8 @@ def lambda_handler(event, context):
 
         owner_id = get_owner_id(claims)
         print(f"Owner ID: {owner_id}")
-        
+        discount_details = None
+
         body = json.loads(event.get("body", "{}"))
         instance_id = body.get("instanceId")
 
@@ -112,9 +115,9 @@ def lambda_handler(event, context):
             instance_price = instance_price.quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
             storage_price = storage_price.quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
             total_price = instance_price + storage_price
+            discount_details = apply_campaign_discount(total_price, new_plan)
 
-            
-            if not deduct_wallet_balance(owner_id, total_price, instance_id, system_name, new_plan, instance_price, storage_price):
+            if not deduct_wallet_balance(owner_id, discount_details, instance_id, system_name, new_plan, instance_price, storage_price):
                 return _response(402, {"error": "Insufficient funds to upgrade plan"})
 
         print(f"Recording new billing plan '{new_plan}' for instance '{instance_id}'")
@@ -141,7 +144,8 @@ def lambda_handler(event, context):
             "newPlan": new_plan,
             "timestamp": current_date_time,
             "previousPlan": previous_plan,
-            "change": determine_change(previous_plan, new_plan)
+            "change": determine_change(previous_plan, new_plan),
+            "discount": discount_details if change_type in ("upgrade", "initial") else None
         }
 
         return _response(200, result)
@@ -182,8 +186,14 @@ def get_owner_id(claims):
     else:
         return claims.get("sub")
     
-def deduct_wallet_balance(user_id, amount, instance_id, system_name="", new_plan="", instance_price=Decimal('0'), storage_price=Decimal('0')) -> bool:
-    """Deduct from promo → cashback → wallet"""
+def deduct_wallet_balance(user_id, charge_details, instance_id, system_name="", new_plan="", instance_price=Decimal('0'), storage_price=Decimal('0')) -> bool:
+    """Deduct from promo -> cashback -> wallet and record campaign-aware billing."""
+    amount = Decimal(str(charge_details["final_amount"]))
+    original_amount = Decimal(str(charge_details.get("base_amount", charge_details["final_amount"])))
+    discount_amount = Decimal(str(charge_details.get("discount_amount", 0)))
+    discount_percent = Decimal(str(charge_details.get("discount_percent", 0)))
+    campaign_id = charge_details.get("campaign_id")
+    campaign_name = charge_details.get("campaign_name")
     print(f"deduct_wallet_balance: {amount}")
     res = wallet_table.get_item(Key={"userId": user_id})
     wallet = res.get("Item")
@@ -213,7 +223,6 @@ def deduct_wallet_balance(user_id, amount, instance_id, system_name="", new_plan
         remaining -= balance_deducted
         current_balance -= balance_deducted
 
-    
     wallet_table.update_item(
         Key={"userId": user_id},
         UpdateExpression="set promoBalance=:p, cashback=:c, balance=:w, updatedTimestamp=:u",
@@ -224,7 +233,7 @@ def deduct_wallet_balance(user_id, amount, instance_id, system_name="", new_plan
             ":u": datetime.now(timezone.utc).isoformat()
         }
     )
-    # Log the deductions (reuse your existing logging helpers)
+
     if promo_deducted > 0:
         log_deductions(user_id, promo_deducted, instance_id, "PROMO_DEDUCTION")
         log_notification(user_id, f"Promo balance of ${format_decimal_str(promo_deducted)} used for billing '{system_name}' PC.", "info", "Promotional Balance used", "billing-alert")
@@ -233,11 +242,12 @@ def deduct_wallet_balance(user_id, amount, instance_id, system_name="", new_plan
         log_notification(user_id, f"Cashback balance of ${format_decimal_str(cashback_deducted)} used for billing '{system_name}' PC.", "info", "Cashback Balance used", "billing-alert")
     if balance_deducted > 0:
         log_deductions(user_id, balance_deducted, instance_id, "BALANCE_DEDUCTION")
-        log_notification(user_id, f"${format_decimal_str(balance_deducted)} deducted from wallet for '{system_name}' PC.", "info", "Wallet Deduction", "billing-alert")    
+        log_notification(user_id, f"${format_decimal_str(balance_deducted)} deducted from wallet for '{system_name}' PC.", "info", "Wallet Deduction", "billing-alert")
+    if campaign_name and discount_amount > 0:
+        log_notification(user_id, f"{campaign_name} applied a ${format_decimal_str(discount_amount)} discount on '{system_name}' PC.", "success", "Campaign discount applied", "billing-alert")
 
     current_instance_state = get_last_instance_status(instance_id)
     start_time = datetime.now(timezone.utc)
-    # add SmartPCBilling entry
     pc_billing_table = dynamodb.Table(billing_table_name)
     pc_billing_table.put_item(Item={
         "instanceId": instance_id,
@@ -245,6 +255,11 @@ def deduct_wallet_balance(user_id, amount, instance_id, system_name="", new_plan
         "systemName": system_name,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "billingAmount": format_decimal_str(amount),
+        "originalBillingAmount": format_decimal_str(original_amount),
+        "discountAmount": format_decimal_str(discount_amount),
+        "discountPercent": format_decimal_str(discount_percent),
+        "discountCampaignId": campaign_id or "",
+        "discountCampaignName": campaign_name or "",
         "billingPlan": new_plan,
         "instanceCost": format_decimal_str(instance_price),
         "storageCost": format_decimal_str(storage_price),
@@ -256,8 +271,7 @@ def deduct_wallet_balance(user_id, amount, instance_id, system_name="", new_plan
         'systemStatus': current_instance_state
     })
     print(f"[BILLING] Logged billing for instance {instance_id}")
-    
-    
+
     update_expr = "SET autoRenew = :a, updatedTimestamp = :u"
     expr_attr_values = {
         ":a": bool(True),
