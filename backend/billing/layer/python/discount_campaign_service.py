@@ -1,3 +1,13 @@
+# NOTE:
+# This helper is shared by the discount-related billing Lambdas and may be
+# Current known usage:
+# - sensepc_discount_campaigns.py
+# - sensepc-add-billing-plan.py
+# - sensepc-pricing-calculator.py
+# - billing_service.py (used by sensepc-billing-lambda.py)
+# If discount campaign logic changes here, sync the same change to every
+# dependent Lambda repo/package before deployment.
+
 import os
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
