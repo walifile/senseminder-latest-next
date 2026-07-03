@@ -4,7 +4,7 @@ from decimal import Decimal
 from urllib import error, parse, request
 
 import boto3
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Attr, Key
 
 
 dynamodb = boto3.resource("dynamodb")
@@ -12,6 +12,7 @@ ses = boto3.client("ses", region_name=os.environ.get("AWS_REGION") or os.environ
 
 USER_TABLE_NAME = os.environ.get("USER_TABLE_NAME", "senseminder-user")
 QUOTA_TABLE_NAME = os.environ.get("QUOTA_TABLE_NAME", "SmartPCUserQuota")
+STORAGE_USAGE_TABLE_NAME = os.environ.get("STORAGE_USAGE_TABLE_NAME", "SmartPCStorageUsage")
 PC_EVENTS_TABLE_NAME = os.environ.get("PC_EVENTS_TABLE_NAME", "SmartPCEvents")
 USER_OWNER_INDEX = os.environ.get("USER_OWNER_INDEX", "owner_id-index")
 FETCH_PC_URL = os.environ.get("FETCH_PC_URL")
@@ -24,10 +25,13 @@ BUSINESS_CONTRACT_TABLE_NAME = os.environ.get(
     "BUSINESS_CONTRACT_TABLE_NAME",
     "sensepc-business-contract",
 )
+ACTIVE_SESSIONS_TABLE_NAME = os.environ.get("ACTIVE_SESSIONS_TABLE_NAME", "SmartPC-Active-Sessions")
 
 user_table = dynamodb.Table(USER_TABLE_NAME)
 quota_table = dynamodb.Table(QUOTA_TABLE_NAME)
+storage_usage_table = dynamodb.Table(STORAGE_USAGE_TABLE_NAME)
 pc_events_table = dynamodb.Table(PC_EVENTS_TABLE_NAME)
+active_sessions_table = dynamodb.Table(ACTIVE_SESSIONS_TABLE_NAME)
 
 business_contract_table = dynamodb.Table(
     BUSINESS_CONTRACT_TABLE_NAME
@@ -35,6 +39,51 @@ business_contract_table = dynamodb.Table(
 dcv_sessions_table = dynamodb.Table(DCV_SESSIONS_TABLE_NAME)
 
 GB = 1024 ** 3
+KB = 1024
+
+
+def format_storage_bytes(value):
+    """
+    Convert raw bytes into a compact, human-friendly storage representation.
+    Returns numeric values in multiple units plus a ready-to-render display string.
+    """
+    raw_bytes = int(value or 0)
+    units = [
+        ("TB", 1024 ** 4),
+        ("GB", GB),
+        ("MB", 1024 ** 2),
+        ("KB", KB),
+        ("B", 1),
+    ]
+
+    if raw_bytes <= 0:
+        return {
+            "bytes": 0,
+            "value": 0,
+            "unit": "B",
+            "display": "0 B",
+        }
+
+    for unit_name, factor in units:
+        if raw_bytes >= factor or unit_name == "B":
+            value_in_unit = raw_bytes / factor
+            if unit_name == "B":
+                display_value = f"{int(value_in_unit)}"
+            else:
+                display_value = f"{value_in_unit:.2f}".rstrip("0").rstrip(".")
+            return {
+                "bytes": raw_bytes,
+                "value": round(value_in_unit, 2),
+                "unit": unit_name,
+                "display": f"{display_value} {unit_name}",
+            }
+
+    return {
+        "bytes": raw_bytes,
+        "value": raw_bytes,
+        "unit": "B",
+        "display": f"{raw_bytes} B",
+    }
 
 
 def headers():
@@ -105,17 +154,64 @@ def build_user_payload(item):
 
 
 def get_user_quota(user_id):
-    item = quota_table.get_item(Key={"userId": user_id}).get("Item") or {}
-    storage_quota = int(item.get("storageQuota", 0) or 0)
-    used_storage = int(item.get("usedStorage", 0) or 0)
+    candidate_ids = [user_id]
+    try:
+        user_item = user_table.query(
+            IndexName="id-index",
+            KeyConditionExpression=Key("id").eq(user_id),
+            Limit=1,
+        ).get("Items", [])
+        if user_item:
+            owner_id = user_item[0].get("owner_id") or user_item[0].get("ownerid")
+            if owner_id and owner_id not in candidate_ids:
+                candidate_ids.append(owner_id)
+    except Exception:
+        pass
+
+    used_storage_display = None
+    for candidate_id in candidate_ids:
+        fallback_storage = get_latest_storage_usage(candidate_id)
+        if fallback_storage and fallback_storage.get("usedStorageDisplay") not in (None, "0 B"):
+            used_storage_display = fallback_storage["usedStorageDisplay"]
+            break
+
+    if not used_storage_display:
+        used_storage_display = "0 B"
+
     return {
-        "quota": int(item.get("quota", 0) or 0),
-        "storageQuotaBytes": storage_quota,
-        "storageQuotaGB": round(storage_quota / GB, 2) if storage_quota else 0,
-        "usedCount": int(item.get("usedCount", 0) or 0),
-        "usedStorageBytes": used_storage,
-        "usedStorageGB": round(used_storage / GB, 2) if used_storage else 0,
+        "usedStorageDisplay": used_storage_display,
     }
+
+
+def get_latest_storage_usage(user_id):
+    try:
+        response = storage_usage_table.scan(FilterExpression=Attr("userId").eq(user_id))
+        items = response.get("Items", []) or []
+        if not items:
+            return None
+
+        def sort_key(item):
+            return (
+                str(item.get("updatedAt") or ""),
+                str(item.get("month") or ""),
+                str(item.get("userMonth") or ""),
+            )
+
+        latest = next(
+            (item for item in sorted(items, key=sort_key, reverse=True) if int(item.get("currentBytes", 0) or 0) > 0),
+            None,
+        )
+        if not latest:
+            return None
+
+        current_bytes = int(latest.get("currentBytes", 0) or 0)
+        total_display = format_storage_bytes(current_bytes)
+        return {
+            "usedStorageDisplay": total_display["display"],
+        }
+    except Exception as exc:
+        print(f"[WARN] Storage usage lookup failed for userId={user_id}: {exc}")
+        return None
 
 
 def enrich_user_payload(item):
@@ -123,7 +219,25 @@ def enrich_user_payload(item):
     user_id = payload.get("userId")
     if user_id:
         payload["quota"] = get_user_quota(user_id)
+        payload["lastSeenAt"] = get_latest_active_session_last_seen(user_id) or payload.get("lastSeenAt")
     return payload
+
+
+def get_latest_active_session_last_seen(user_id):
+    try:
+        response = active_sessions_table.query(
+            KeyConditionExpression=Key("userId").eq(user_id),
+            ScanIndexForward=False,
+            Limit=1,
+        )
+        items = response.get("Items", []) or []
+        if not items:
+            return None
+        latest = items[0]
+        return latest.get("lastSeen") or latest.get("updatedAt") or latest.get("createdAt")
+    except Exception as exc:
+        print(f"[WARN] SmartPC-Active-Sessions query failed for userId={user_id}: {exc}")
+        return None
 
 
 def get_org_users(owner_id, requester_email, groups):
@@ -150,12 +264,13 @@ def get_org_users(owner_id, requester_email, groups):
 
 
 def get_owner_quota(owner_id):
-    item = quota_table.get_item(Key={"userId": owner_id}).get("Item") or {}
+    cloud_used_display = get_latest_storage_usage(owner_id)
+    if not cloud_used_display:
+        cloud_used_display = {"display": "0 B"}
     return {
-        "pcLimit": int(item.get("quota", 0) or 0),
-        "pcUsedCount": int(item.get("usedCount", 0) or 0),
-        "cloudLimitBytes": int(item.get("storageQuota", 0) or 0),
-        "cloudUsedBytes": int(item.get("usedStorage", 0) or 0),
+        "pcLimit": 0,
+        "pcUsedCount": 0,
+        "cloudUsedDisplay": cloud_used_display["display"],
     }
 
 
@@ -445,8 +560,7 @@ def handle_get(event, claims, groups):
         "activeSessionCount": active_session_count if active_session_count is not None else 0,
         "pcUsedCount": quota["pcUsedCount"] if quota["pcUsedCount"] else (total_pc_count or 0),
         "pcLimit": quota["pcLimit"],
-        "cloudUsedBytes": quota["cloudUsedBytes"],
-        "cloudLimitBytes": quota["cloudLimitBytes"],
+        "cloudUsedDisplay": quota["cloudUsedDisplay"],
     }
 
     return response(
@@ -496,7 +610,7 @@ def handle_limit_request(event, claims, groups):
     owner_id = claims.get("custom:ownerid", requester_sub) if "admin" in groups else requester_sub
     quota = get_owner_quota(owner_id)
 
-    current_limit = quota["pcLimit"] if request_type == "pc_limit" else int(quota["cloudLimitBytes"] / GB) if quota["cloudLimitBytes"] else 0
+    current_limit = quota["pcLimit"] if request_type == "pc_limit" else 0
     if requested_limit <= current_limit:
         return response(400, {"message": "Requested limit must be greater than the current limit."})
 
