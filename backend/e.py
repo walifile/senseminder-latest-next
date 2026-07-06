@@ -25,6 +25,12 @@ BUSINESS_CONTRACT_TABLE_NAME = os.environ.get(
     "BUSINESS_CONTRACT_TABLE_NAME",
     "sensepc-business-contract",
 )
+
+BUSINESS_PC_USAGE_TABLE_NAME = os.environ.get(
+    "BUSINESS_PC_USAGE_TABLE_NAME",
+    "sensepc-business-pc-usage",
+)
+
 ACTIVE_SESSIONS_TABLE_NAME = os.environ.get("ACTIVE_SESSIONS_TABLE_NAME", "SmartPC-Active-Sessions")
 
 user_table = dynamodb.Table(USER_TABLE_NAME)
@@ -35,6 +41,9 @@ active_sessions_table = dynamodb.Table(ACTIVE_SESSIONS_TABLE_NAME)
 
 business_contract_table = dynamodb.Table(
     BUSINESS_CONTRACT_TABLE_NAME
+)
+business_pc_usage_table = dynamodb.Table(
+    BUSINESS_PC_USAGE_TABLE_NAME
 )
 dcv_sessions_table = dynamodb.Table(DCV_SESSIONS_TABLE_NAME)
 
@@ -307,8 +316,7 @@ def get_owner_contracts(owner_id, groups):
             "startDate": item.get("startDate"),
             "endDate": item.get("endDate"),
             "region": item.get("region"),
-            "dailyUsageHoursPerPc": item.get("dailyUsageHoursPerPc"),
-            "monthlyUsageHoursPerPc": item.get("monthlyUsageHoursPerPc"),
+            "totalUsageHours": item.get("totalUsageHours"),
             "storageSizeGb": item.get("storageSizeGb"),
             "operatingSystem": item.get("operatingSystem"),
             "cpuCores": item.get("cpuCores"),
@@ -330,6 +338,175 @@ def _parse_iso_datetime(value):
         return None
 
 
+
+def format_duration_seconds(total_seconds):
+    total_seconds = int(total_seconds or 0)
+
+    if total_seconds <= 0:
+        return "0m"
+
+    hours = total_seconds // 3600
+    minutes = (total_seconds % 3600) // 60
+
+    if hours and minutes:
+        return f"{hours}h {minutes}m"
+
+    if hours:
+        return f"{hours}h"
+
+    return f"{minutes}m"
+
+
+def get_business_pc_usage_items(owner_id):
+    """
+    Returns all business PC usage rows for this owner/business account.
+    Includes running, stopped, and deleted PCs.
+    """
+    items = []
+
+    query_kwargs = {
+        "KeyConditionExpression": Key("accountId").eq(owner_id)
+    }
+
+    while True:
+        response = business_pc_usage_table.query(**query_kwargs)
+        items.extend(response.get("Items", []) or [])
+
+        last_key = response.get("LastEvaluatedKey")
+        if not last_key:
+            break
+
+        query_kwargs["ExclusiveStartKey"] = last_key
+
+    return items
+
+
+def build_business_pc_usage(owner_id, contracts):
+    """
+    Builds per-PC total runtime list from sensepc-business-pc-usage.
+    totalRuntimeSeconds means total running time since PC creation.
+    """
+    from datetime import datetime, timezone
+
+    now = datetime.now(timezone.utc)
+
+    contract_by_id = {
+        str(contract.get("contractId")): contract
+        for contract in contracts
+        if contract.get("contractId")
+    }
+
+    usage_items = get_business_pc_usage_items(owner_id)
+
+    pc_usage = []
+
+    for item in usage_items:
+        consumed_seconds = int(item.get("consumedSeconds", 0) or 0)
+        running_since_raw = item.get("runningSince")
+        status = str(item.get("status") or "").lower()
+
+        current_session_seconds = 0
+
+        if running_since_raw:
+            running_since = _parse_iso_datetime(running_since_raw)
+
+            if running_since:
+                current_session_seconds = max(
+                    int((now - running_since).total_seconds()),
+                    0
+                )
+
+        total_runtime_seconds = consumed_seconds + current_session_seconds
+
+        contract_id = str(item.get("contractId") or "")
+        contract = contract_by_id.get(contract_id, {})
+
+        pc_usage.append({
+            "instanceId": item.get("instanceId"),
+            "systemName": item.get("systemName", ""),
+            "contractId": contract_id,
+            "contractName": contract.get("contractName", ""),
+            "configId": item.get("configId", ""),
+
+            "status": status,
+            "consumedSeconds": consumed_seconds,
+
+            "currentSessionSeconds": current_session_seconds,
+            "currentSessionDisplay": format_duration_seconds(
+                current_session_seconds
+            ),
+
+            "totalRuntimeSeconds": total_runtime_seconds,
+            "totalRuntimeDisplay": format_duration_seconds(
+                total_runtime_seconds
+            ),
+
+            "createdAt": item.get("createdAt"),
+            "updatedAt": item.get("updatedAt"),
+            "deletedAt": item.get("deletedAt"),
+        })
+
+    pc_usage.sort(
+        key=lambda row: str(row.get("createdAt") or ""),
+        reverse=True
+    )
+
+    return pc_usage
+
+
+def build_business_contract_usage(contracts, pc_usage):
+    """
+    Builds contract-level usage summary using PC runtime data.
+    """
+    usage_by_contract = {}
+
+    for pc in pc_usage:
+        contract_id = str(pc.get("contractId") or "")
+
+        if not contract_id:
+            continue
+
+        usage_by_contract[contract_id] = (
+            usage_by_contract.get(contract_id, 0)
+            + int(pc.get("totalRuntimeSeconds", 0) or 0)
+        )
+
+    contract_usage = []
+
+    for contract in contracts:
+        contract_id = str(contract.get("contractId") or "")
+        total_usage_hours = contract.get("totalUsageHours", 0) or 0
+
+        try:
+            total_seconds = int(Decimal(str(total_usage_hours)) * Decimal(3600))
+        except Exception:
+            total_seconds = 0
+
+        used_seconds = usage_by_contract.get(contract_id, 0)
+        remaining_seconds = max(total_seconds - used_seconds, 0)
+
+        contract_usage.append({
+            "contractId": contract_id,
+            "contractName": contract.get("contractName", ""),
+            "status": contract.get("status"),
+            "configId": contract.get("configId"),
+
+            "totalUsageHours": total_usage_hours,
+            "totalUsageSeconds": total_seconds,
+            "totalUsageDisplay": format_duration_seconds(total_seconds),
+
+            "usedSeconds": used_seconds,
+            "usedDisplay": format_duration_seconds(used_seconds),
+
+            "remainingSeconds": remaining_seconds,
+            "remainingDisplay": format_duration_seconds(remaining_seconds),
+        })
+
+    return contract_usage
+
+
+
+
 def parse_datetime(value):
     from datetime import datetime, timezone
 
@@ -340,15 +517,42 @@ def parse_datetime(value):
 
 
 def get_pc_session_history(instance_id, limit=7):
+    items = []
     try:
-        response = pc_events_table.query(
-            KeyConditionExpression=Key("instanceId").eq(instance_id),
-            ScanIndexForward=True,
-        )
-    except Exception:
-        return []
+        query_kwargs = {
+            "KeyConditionExpression": Key("instanceId").eq(instance_id),
+            "ScanIndexForward": True,
+        }
 
-    items = response.get("Items", [])
+        while True:
+            response = pc_events_table.query(**query_kwargs)
+            items.extend(response.get("Items", []) or [])
+
+            last_key = response.get("LastEvaluatedKey")
+            if not last_key:
+                break
+
+            query_kwargs["ExclusiveStartKey"] = last_key
+    except Exception as exc:
+        print(f"[WARN] SmartPCEvents query failed for instanceId={instance_id}: {exc}")
+        try:
+            scan_kwargs = {
+                "FilterExpression": Attr("instanceId").eq(instance_id),
+            }
+
+            while True:
+                response = pc_events_table.scan(**scan_kwargs)
+                items.extend(response.get("Items", []) or [])
+
+                last_key = response.get("LastEvaluatedKey")
+                if not last_key:
+                    break
+
+                scan_kwargs["ExclusiveStartKey"] = last_key
+        except Exception as scan_exc:
+            print(f"[WARN] SmartPCEvents scan failed for instanceId={instance_id}: {scan_exc}")
+            return []
+
     if not items:
         return []
 
@@ -361,15 +565,22 @@ def get_pc_session_history(instance_id, limit=7):
     rows = []
     current_start = None
 
+    def normalize_action(value):
+        return str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+
+    items.sort(key=lambda item: str(item.get("timestamp") or ""))
+
     for item in items:
         event_time = _parse_iso_datetime(item.get("timestamp"))
         if not event_time or event_time < cutoff:
             continue
 
-        action = str(item.get("action", "")).lower()
-        if action in start_actions:
+        action = normalize_action(item.get("action"))
+        action_token = action.split("_")[-1] if action else ""
+
+        if action in start_actions or action_token in start_actions:
             current_start = event_time
-        elif action in stop_actions and current_start:
+        elif (action in stop_actions or action_token in stop_actions) and current_start:
             duration_hours = (event_time - current_start).total_seconds() / 3600
             rows.append({
                 "startTime": current_start.isoformat(),
@@ -544,8 +755,14 @@ def handle_get(event, claims, groups):
 
     org_users = get_org_users(owner_id, requester_email, groups)
     quota = get_owner_quota(owner_id)
+    # contracts = get_owner_contracts(owner_id, groups)
+    # pc_items = request_json(FETCH_PC_URL, token=token, params={"userId": owner_id}) or []
     contracts = get_owner_contracts(owner_id, groups)
+    pc_usage = build_business_pc_usage(owner_id, contracts)
+    contract_usage = build_business_contract_usage(contracts, pc_usage)
+
     pc_items = request_json(FETCH_PC_URL, token=token, params={"userId": owner_id}) or []
+
     if isinstance(pc_items, list):
         total_pc_count = len(pc_items)
         active_pc_count = sum(1 for item in pc_items if str(item.get("state", "")).lower() == "running")
@@ -569,6 +786,8 @@ def handle_get(event, claims, groups):
           "summary": summary,
           "users": org_users,
           "contracts": contracts,
+          "pcUsage": pc_usage,
+          "contractUsage": contract_usage,
           "pcHistory": pc_history,
           "viewer": {
               "role": "admin" if "admin" in groups else "owner" if "owner" in groups else "member",
