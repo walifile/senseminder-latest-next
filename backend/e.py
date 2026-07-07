@@ -3,7 +3,6 @@ import os
 import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
-from urllib import error, parse, request
 
 import boto3
 from boto3.dynamodb.conditions import Attr, Key
@@ -17,7 +16,6 @@ QUOTA_TABLE_NAME = os.environ.get("QUOTA_TABLE_NAME", "SmartPCUserQuota")
 STORAGE_USAGE_TABLE_NAME = os.environ.get("STORAGE_USAGE_TABLE_NAME", "SmartPCStorageUsage")
 PC_EVENTS_TABLE_NAME = os.environ.get("PC_EVENTS_TABLE_NAME", "SmartPCEvents")
 USER_OWNER_INDEX = os.environ.get("USER_OWNER_INDEX", "owner_id-index")
-FETCH_PC_URL = os.environ.get("FETCH_PC_URL")
 DCV_SESSIONS_TABLE_NAME = os.environ.get("DCV_SESSIONS_TABLE_NAME", "SmartPCDCVSessions")
 DCV_SESSIONS_USER_INDEX = os.environ.get("DCV_SESSIONS_USER_INDEX", "userId-instanceId-index")
 REQUEST_TO_EMAIL = os.environ.get("MONITORING_LIMIT_REQUEST_TO_EMAIL")
@@ -139,18 +137,6 @@ def get_claims(event):
         or authorizer.get("jwt", {}).get("claims")
         or {}
     )
-
-
-def get_bearer_token(event):
-    incoming_headers = event.get("headers") or {}
-    auth_header = incoming_headers.get("Authorization") or incoming_headers.get("authorization")
-    if not auth_header:
-        return None
-    if auth_header.lower().startswith("bearer "):
-        return auth_header.split(" ", 1)[1].strip()
-    return auth_header.strip()
-
-
 
 
 def build_user_payload(item):
@@ -612,6 +598,25 @@ def get_pc_session_history(instance_id, limit=7):
     return rows[:limit]
 
 
+def build_history_sources(pc_usage):
+    """
+    PC list for session history, taken from the business usage table —
+    covers running, stopped, and deleted PCs without any upstream API call.
+    """
+    sources = {}
+
+    for usage in (pc_usage or []):
+        instance_id = usage.get("instanceId")
+        if instance_id and instance_id not in sources:
+            sources[instance_id] = {
+                "instanceId": instance_id,
+                "systemName": usage.get("systemName", ""),
+                "region": "",
+            }
+
+    return list(sources.values())
+
+
 def get_pc_history(pc_items):
     history = []
     for item in pc_items:
@@ -630,44 +635,6 @@ def get_pc_history(pc_items):
     history.sort(key=lambda row: row.get("startTime", ""), reverse=True)
     return history
 
-
-
-def request_json(url, method="GET", token=None, params=None):
-    if not url:
-        return None
-
-    full_url = url
-    if params:
-        query_string = parse.urlencode({key: value for key, value in params.items() if value is not None})
-        separator = "&" if "?" in url else "?"
-        full_url = f"{url}{separator}{query_string}"
-
-    req = request.Request(full_url, method=method)
-    req.add_header("Content-Type", "application/json")
-    if token:
-        req.add_header("Authorization", f"Bearer {token}")
-
-    try:
-        with request.urlopen(req, timeout=15) as res:
-            payload = res.read().decode("utf-8")
-            return json.loads(payload) if payload else None
-    except error.HTTPError as exc:
-        body = exc.read().decode("utf-8", errors="ignore")
-        print(f"Upstream HTTPError for {full_url}: {exc.code} {body}")
-    except Exception as exc:
-        print(f"Upstream request failed for {full_url}: {exc}")
-
-    return None
-
-
-def get_active_pc_count(owner_id, token):
-    raw = request_json(FETCH_PC_URL, token=token, params={"userId": owner_id})
-    if not isinstance(raw, list):
-        return None, None
-
-    total_count = len(raw)
-    running_count = sum(1 for item in raw if str(item.get("state", "")).lower() == "running")
-    return total_count, running_count
 
 
 def get_active_session_count_from_dcv_sessions(user_ids):
@@ -803,31 +770,26 @@ def handle_get(event, claims, groups):
     requester_sub = claims.get("sub")
     requester_email = claims.get("email")
     owner_id = claims.get("custom:ownerid", requester_sub) if "admin" in groups else requester_sub
-    token = get_bearer_token(event)
 
     org_users = get_org_users(owner_id, requester_email, groups)
     quota = get_owner_quota(owner_id)
-    # contracts = get_owner_contracts(owner_id, groups)
-    # pc_items = request_json(FETCH_PC_URL, token=token, params={"userId": owner_id}) or []
     contracts = get_owner_contracts(owner_id, groups)
     pc_usage = build_business_pc_usage(owner_id, contracts)
     contract_usage = build_business_contract_usage(contracts, pc_usage)
 
-    pc_items = request_json(FETCH_PC_URL, token=token, params={"userId": owner_id}) or []
+    # PC counts come from the business usage table — no upstream API call.
+    live_usage = [item for item in pc_usage if not item.get("deletedAt")]
+    total_pc_count = len(live_usage)
+    active_pc_count = sum(1 for item in live_usage if item.get("status") == "running")
 
-    if isinstance(pc_items, list):
-        total_pc_count = len(pc_items)
-        active_pc_count = sum(1 for item in pc_items if str(item.get("state", "")).lower() == "running")
-    else:
-        total_pc_count, active_pc_count = None, None
     org_user_ids = [user.get("userId") for user in org_users if user.get("userId")]
     active_session_count = get_active_session_count_from_dcv_sessions(org_user_ids)
-    pc_history = get_pc_history(pc_items if isinstance(pc_items, list) else [])
+    pc_history = get_pc_history(build_history_sources(pc_usage))
 
     summary = {
-        "activePcCount": active_pc_count if active_pc_count is not None else quota["pcUsedCount"],
+        "activePcCount": active_pc_count,
         "activeSessionCount": active_session_count if active_session_count is not None else 0,
-        "pcUsedCount": quota["pcUsedCount"] if quota["pcUsedCount"] else (total_pc_count or 0),
+        "pcUsedCount": total_pc_count,
         "pcLimit": quota["pcLimit"],
         "cloudUsedDisplay": quota["cloudUsedDisplay"],
     }
