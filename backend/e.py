@@ -1,5 +1,7 @@
 import json
 import os
+import uuid
+from datetime import datetime, timezone
 from decimal import Decimal
 from urllib import error, parse, request
 
@@ -20,6 +22,7 @@ DCV_SESSIONS_TABLE_NAME = os.environ.get("DCV_SESSIONS_TABLE_NAME", "SmartPCDCVS
 DCV_SESSIONS_USER_INDEX = os.environ.get("DCV_SESSIONS_USER_INDEX", "userId-instanceId-index")
 REQUEST_TO_EMAIL = os.environ.get("MONITORING_LIMIT_REQUEST_TO_EMAIL")
 REQUEST_FROM_EMAIL = os.environ.get("MONITORING_REQUEST_FROM_EMAIL")
+LIMIT_REQUEST_TABLE_NAME = os.environ.get("MONITORING_LIMIT_REQUEST_TABLE_NAME", "SensePC-MonitoringLimitRequests")
 
 BUSINESS_CONTRACT_TABLE_NAME = os.environ.get(
     "BUSINESS_CONTRACT_TABLE_NAME",
@@ -46,6 +49,7 @@ business_pc_usage_table = dynamodb.Table(
     BUSINESS_PC_USAGE_TABLE_NAME
 )
 dcv_sessions_table = dynamodb.Table(DCV_SESSIONS_TABLE_NAME)
+limit_request_table = dynamodb.Table(LIMIT_REQUEST_TABLE_NAME)
 
 GB = 1024 ** 3
 KB = 1024
@@ -99,7 +103,7 @@ def headers():
     return {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, authorization",
     }
 
 
@@ -129,7 +133,12 @@ def normalize_groups(raw_groups):
 
 
 def get_claims(event):
-    return event.get("requestContext", {}).get("authorizer", {}).get("claims", {}) or {}
+    authorizer = event.get("requestContext", {}).get("authorizer", {}) or {}
+    return (
+        authorizer.get("claims")
+        or authorizer.get("jwt", {}).get("claims")
+        or {}
+    )
 
 
 def get_bearer_token(event):
@@ -718,6 +727,49 @@ def parse_body(event):
         return {}
 
 
+def query_params(event):
+    return event.get("queryStringParameters") or {}
+
+
+def request_path(event):
+    path = event.get("path") or event.get("rawPath") or ""
+    stage = (event.get("requestContext") or {}).get("stage") or ""
+    if stage:
+        prefix = f"/{stage}"
+        if path == prefix:
+            return "/"
+        if path.startswith(prefix + "/"):
+            return path[len(prefix):]
+    return path
+
+
+def request_method(event):
+    return (
+        event.get("httpMethod")
+        or (event.get("requestContext") or {}).get("http", {}).get("method")
+        or ""
+    ).upper()
+
+
+def save_limit_request(item):
+    limit_request_table.put_item(Item=item)
+
+
+def mark_limit_request_email_status(owner_id, created_at, email_status, error_message=None):
+    update_expression = "SET emailStatus = :emailStatus"
+    values = {":emailStatus": email_status}
+
+    if error_message:
+        update_expression += ", emailError = :emailError"
+        values[":emailError"] = str(error_message)[:500]
+
+    limit_request_table.update_item(
+        Key={"ownerId": owner_id, "createdAt": created_at},
+        UpdateExpression=update_expression,
+        ExpressionAttributeValues=values,
+    )
+
+
 def send_limit_increase_email(owner_id, requester_email, requester_role, request_type, requested_limit, current_limit, reason, contact_email):
     if not REQUEST_TO_EMAIL or not REQUEST_FROM_EMAIL:
         raise ValueError("Monitoring request email configuration is missing.")
@@ -833,6 +885,28 @@ def handle_limit_request(event, claims, groups):
     if requested_limit <= current_limit:
         return response(400, {"message": "Requested limit must be greater than the current limit."})
 
+    created_at = datetime.now(timezone.utc).isoformat()
+    request_item = {
+        "ownerId": owner_id,
+        "createdAt": created_at,
+        "requestId": str(uuid.uuid4()),
+        "requesterEmail": requester_email,
+        "requesterRole": "admin" if "admin" in groups else "owner",
+        "requestType": request_type,
+        "requestedLimit": requested_limit,
+        "currentLimit": current_limit,
+        "reason": reason,
+        "contactEmail": contact_email,
+        "status": "submitted",
+        "emailStatus": "pending",
+    }
+
+    try:
+        save_limit_request(request_item)
+    except Exception as exc:
+        print(f"Failed to save monitoring limit request: {exc}")
+        return response(500, {"message": "Unable to submit the request right now."})
+
     try:
         send_limit_increase_email(
             owner_id=owner_id,
@@ -844,31 +918,84 @@ def handle_limit_request(event, claims, groups):
             reason=reason,
             contact_email=contact_email,
         )
+        mark_limit_request_email_status(owner_id, created_at, "sent")
     except Exception as exc:
         print(f"Failed to send monitoring limit request email: {exc}")
+        try:
+            mark_limit_request_email_status(owner_id, created_at, "failed", exc)
+        except Exception as update_exc:
+            print(f"Failed to update monitoring request email status: {update_exc}")
         return response(500, {"message": "Unable to submit the request right now."})
 
-    return response(200, {"message": "Limit increase request submitted successfully."})
+    return response(
+        200,
+        {
+            "message": "Limit increase request submitted successfully.",
+            "request": {**request_item, "emailStatus": "sent"},
+        },
+    )
+
+
+def handle_limit_requests_get(event, claims, groups):
+    if not any(group in groups for group in ("owner", "admin")):
+        return response(403, {"message": "Not authorized to view limit requests."})
+
+    params = query_params(event)
+    requester_sub = claims.get("sub")
+    owner_id = (params.get("accountId") or params.get("ownerId") or "").strip()
+
+    if "admin" not in groups:
+        owner_id = requester_sub
+
+    if not owner_id:
+        return response(400, {"message": "accountId is required."})
+
+    result = limit_request_table.query(
+        KeyConditionExpression=Key("ownerId").eq(owner_id),
+        ScanIndexForward=False,
+        Limit=100,
+    )
+
+    return response(
+        200,
+        {
+            "accountId": owner_id,
+            "requests": result.get("Items", []),
+            "count": result.get("Count", 0),
+        },
+    )
 
 
 def lambda_handler(event, context):
-    method = event.get("httpMethod")
-    if method == "OPTIONS":
-        return {"statusCode": 200, "headers": headers(), "body": ""}
+    try:
+        method = request_method(event)
+        path = request_path(event)
+        if method == "OPTIONS":
+            return {"statusCode": 200, "headers": headers(), "body": ""}
 
-    claims = get_claims(event)
-    groups = normalize_groups(claims.get("cognito:groups"))
+        claims = get_claims(event)
+        groups = normalize_groups(claims.get("cognito:groups"))
 
-    if not claims.get("sub"):
-        return response(401, {"message": "Unauthorized"})
+        if not claims.get("sub"):
+            return response(401, {"message": "Unauthorized"})
 
-    if method == "GET":
-        return handle_get(event, claims, groups)
+        if method == "GET" and (
+            path.endswith("/limit-requests")
+            or path.endswith("/monitoring-limit-requests")
+        ):
+            return handle_limit_requests_get(event, claims, groups)
 
-    if method == "POST":
-        body = parse_body(event)
-        if (body.get("action") or "").strip().lower() == "limit-increase":
-            return handle_limit_request(event, claims, groups)
-        return response(400, {"message": "Unsupported action."})
+        if method == "GET":
+            return handle_get(event, claims, groups)
 
-    return response(405, {"message": "Method not allowed."})
+        if method == "POST":
+            body = parse_body(event)
+            if (body.get("action") or "").strip().lower() == "limit-increase":
+                return handle_limit_request(event, claims, groups)
+            return response(400, {"message": "Unsupported action."})
+
+        return response(405, {"message": "Method not allowed."})
+    except Exception as exc:
+        print(f"Unhandled monitoring error: {exc}")
+        return response(500, {"message": "Internal server error."})
+
