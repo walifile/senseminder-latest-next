@@ -783,6 +783,11 @@ def handle_get(event, claims, groups):
     active_pc_count = sum(1 for item in live_usage if item.get("status") == "running")
 
     org_user_ids = [user.get("userId") for user in org_users if user.get("userId")]
+    # The owner's own user record isn't always in the org users list, but the
+    # owner's DCV sessions must still be counted.
+    for extra_id in (owner_id, requester_sub):
+        if extra_id and extra_id not in org_user_ids:
+            org_user_ids.append(extra_id)
     active_session_count = get_active_session_count_from_dcv_sessions(org_user_ids)
     pc_history = get_pc_history(build_history_sources(pc_usage))
 
