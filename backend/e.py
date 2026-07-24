@@ -1,968 +1,508 @@
 import json
 import os
-import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
+from typing import Any, Dict, List, Optional, Set
 
 import boto3
-from boto3.dynamodb.conditions import Attr, Key
+from boto3.dynamodb.conditions import Key
 
 
 dynamodb = boto3.resource("dynamodb")
-ses = boto3.client("ses", region_name=os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION"))
 
-USER_TABLE_NAME = os.environ.get("USER_TABLE_NAME", "senseminder-user")
-QUOTA_TABLE_NAME = os.environ.get("QUOTA_TABLE_NAME", "SmartPCUserQuota")
-STORAGE_USAGE_TABLE_NAME = os.environ.get("STORAGE_USAGE_TABLE_NAME", "SmartPCStorageUsage")
-PC_EVENTS_TABLE_NAME = os.environ.get("PC_EVENTS_TABLE_NAME", "SmartPCEvents")
-USER_OWNER_INDEX = os.environ.get("USER_OWNER_INDEX", "owner_id-index")
-DCV_SESSIONS_TABLE_NAME = os.environ.get("DCV_SESSIONS_TABLE_NAME", "SmartPCDCVSessions")
-DCV_SESSIONS_USER_INDEX = os.environ.get("DCV_SESSIONS_USER_INDEX", "userId-instanceId-index")
-REQUEST_TO_EMAIL = os.environ.get("MONITORING_LIMIT_REQUEST_TO_EMAIL")
-REQUEST_FROM_EMAIL = os.environ.get("MONITORING_REQUEST_FROM_EMAIL")
-LIMIT_REQUEST_TABLE_NAME = os.environ.get("MONITORING_LIMIT_REQUEST_TABLE_NAME", "SensePC-MonitoringLimitRequests")
-
-BUSINESS_CONTRACT_TABLE_NAME = os.environ.get(
-    "BUSINESS_CONTRACT_TABLE_NAME",
-    "sensepc-business-contract",
-)
-
-BUSINESS_PC_USAGE_TABLE_NAME = os.environ.get(
-    "BUSINESS_PC_USAGE_TABLE_NAME",
-    "sensepc-business-pc-usage",
-)
-
-ACTIVE_SESSIONS_TABLE_NAME = os.environ.get("ACTIVE_SESSIONS_TABLE_NAME", "SmartPC-Active-Sessions")
-
-user_table = dynamodb.Table(USER_TABLE_NAME)
-quota_table = dynamodb.Table(QUOTA_TABLE_NAME)
-storage_usage_table = dynamodb.Table(STORAGE_USAGE_TABLE_NAME)
-pc_events_table = dynamodb.Table(PC_EVENTS_TABLE_NAME)
-active_sessions_table = dynamodb.Table(ACTIVE_SESSIONS_TABLE_NAME)
-
-business_contract_table = dynamodb.Table(
-    BUSINESS_CONTRACT_TABLE_NAME
-)
-business_pc_usage_table = dynamodb.Table(
-    BUSINESS_PC_USAGE_TABLE_NAME
-)
-dcv_sessions_table = dynamodb.Table(DCV_SESSIONS_TABLE_NAME)
-limit_request_table = dynamodb.Table(LIMIT_REQUEST_TABLE_NAME)
-
-GB = 1024 ** 3
-KB = 1024
-
-
-def format_storage_bytes(value):
-    """
-    Convert raw bytes into a compact, human-friendly storage representation.
-    Returns numeric values in multiple units plus a ready-to-render display string.
-    """
-    raw_bytes = int(value or 0)
-    units = [
-        ("TB", 1024 ** 4),
-        ("GB", GB),
-        ("MB", 1024 ** 2),
-        ("KB", KB),
-        ("B", 1),
-    ]
-
-    if raw_bytes <= 0:
-        return {
-            "bytes": 0,
-            "value": 0,
-            "unit": "B",
-            "display": "0 B",
-        }
-
-    for unit_name, factor in units:
-        if raw_bytes >= factor or unit_name == "B":
-            value_in_unit = raw_bytes / factor
-            if unit_name == "B":
-                display_value = f"{int(value_in_unit)}"
-            else:
-                display_value = f"{value_in_unit:.2f}".rstrip("0").rstrip(".")
-            return {
-                "bytes": raw_bytes,
-                "value": round(value_in_unit, 2),
-                "unit": unit_name,
-                "display": f"{display_value} {unit_name}",
-            }
-
-    return {
-        "bytes": raw_bytes,
-        "value": raw_bytes,
-        "unit": "B",
-        "display": f"{raw_bytes} B",
-    }
-
-
-def headers():
-    return {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, authorization",
-    }
-
-
-
-def response(status_code, body):
-    return {
-        "statusCode": status_code,
-        "headers": headers(),
-        "body": json.dumps(body, default=decimal_to_native),
-    }
-
-
-def decimal_to_native(value):
-    if isinstance(value, Decimal):
-        if value % 1 == 0:
-            return int(value)
-        return float(value)
-    raise TypeError
-
-
-def normalize_groups(raw_groups):
-    if isinstance(raw_groups, list):
-        return [str(group).strip().lower() for group in raw_groups if str(group).strip()]
-    if isinstance(raw_groups, str):
-        return [group.strip().lower() for group in raw_groups.split(",") if group.strip()]
-    return []
-
-
-def get_claims(event):
-    authorizer = event.get("requestContext", {}).get("authorizer", {}) or {}
-    return (
-        authorizer.get("claims")
-        or authorizer.get("jwt", {}).get("claims")
-        or {}
-    )
-
-
-def build_user_payload(item):
-    user_id = item.get("id")
-    return {
-        "userId": user_id,
-        "id": user_id,
-        "email": item.get("email"),
-        "firstName": item.get("firstName", ""),
-        "lastName": item.get("lastName", ""),
-        "role": item.get("role", "member"),
-        "status": item.get("status", "active"),
-        "organization": item.get("organization", ""),
-        "country": item.get("country", ""),
-        "phoneNumber": item.get("phoneNumber", ""),
-        "createdAt": item.get("createdAt", ""),
-        "lastSeenAt": item.get("lastSeenAt", ""),
-    }
-
-
-def get_user_quota(user_id):
-    candidate_ids = [user_id]
-    try:
-        user_item = user_table.query(
-            IndexName="id-index",
-            KeyConditionExpression=Key("id").eq(user_id),
-            Limit=1,
-        ).get("Items", [])
-        if user_item:
-            owner_id = user_item[0].get("owner_id") or user_item[0].get("ownerid")
-            if owner_id and owner_id not in candidate_ids:
-                candidate_ids.append(owner_id)
-    except Exception:
-        pass
-
-    used_storage_display = None
-    for candidate_id in candidate_ids:
-        fallback_storage = get_latest_storage_usage(candidate_id)
-        if fallback_storage and fallback_storage.get("usedStorageDisplay") not in (None, "0 B"):
-            used_storage_display = fallback_storage["usedStorageDisplay"]
-            break
-
-    if not used_storage_display:
-        used_storage_display = "0 B"
-
-    return {
-        "usedStorageDisplay": used_storage_display,
-    }
-
-
-def get_latest_storage_usage(user_id):
-    try:
-        response = storage_usage_table.scan(FilterExpression=Attr("userId").eq(user_id))
-        items = response.get("Items", []) or []
-        if not items:
-            return None
-
-        def sort_key(item):
-            return (
-                str(item.get("updatedAt") or ""),
-                str(item.get("month") or ""),
-                str(item.get("userMonth") or ""),
-            )
-
-        latest = next(
-            (item for item in sorted(items, key=sort_key, reverse=True) if int(item.get("currentBytes", 0) or 0) > 0),
-            None,
-        )
-        if not latest:
-            return None
-
-        current_bytes = int(latest.get("currentBytes", 0) or 0)
-        total_display = format_storage_bytes(current_bytes)
-        return {
-            "usedStorageDisplay": total_display["display"],
-        }
-    except Exception as exc:
-        print(f"[WARN] Storage usage lookup failed for userId={user_id}: {exc}")
-        return None
-
-
-def enrich_user_payload(item):
-    payload = build_user_payload(item)
-    user_id = payload.get("userId")
-    if user_id:
-        payload["quota"] = get_user_quota(user_id)
-        payload["lastSeenAt"] = get_latest_active_session_last_seen(user_id) or payload.get("lastSeenAt")
-    return payload
-
-
-def get_latest_active_session_last_seen(user_id):
-    try:
-        response = active_sessions_table.query(
-            KeyConditionExpression=Key("userId").eq(user_id),
-            ScanIndexForward=False,
-            Limit=1,
-        )
-        items = response.get("Items", []) or []
-        if not items:
-            return None
-        latest = items[0]
-        return latest.get("lastSeen") or latest.get("updatedAt") or latest.get("createdAt")
-    except Exception as exc:
-        print(f"[WARN] SmartPC-Active-Sessions query failed for userId={user_id}: {exc}")
-        return None
-
-
-def get_org_users(owner_id, requester_email, groups):
-    if "member" in groups and "owner" not in groups and "admin" not in groups:
-        item = user_table.get_item(Key={"email": requester_email}).get("Item")
-        return [enrich_user_payload(item)] if item else []
-
-    users = []
-    query_response = user_table.query(
-        IndexName=USER_OWNER_INDEX,
-        KeyConditionExpression=Key("owner_id").eq(owner_id),
-    )
-    users.extend(query_response.get("Items", []))
-
-    while "LastEvaluatedKey" in query_response:
-        query_response = user_table.query(
-            IndexName=USER_OWNER_INDEX,
-            KeyConditionExpression=Key("owner_id").eq(owner_id),
-            ExclusiveStartKey=query_response["LastEvaluatedKey"],
-        )
-        users.extend(query_response.get("Items", []))
-
-    return [enrich_user_payload(user) for user in users]
-
-
-def get_owner_quota(owner_id):
-    cloud_used_display = get_latest_storage_usage(owner_id)
-    if not cloud_used_display:
-        cloud_used_display = {"display": "0 B"}
-    return {
-        "pcLimit": 0,
-        "pcUsedCount": 0,
-        "cloudUsedDisplay": cloud_used_display["display"],
-    }
-
-
-def get_owner_contracts(owner_id, groups):
-    """
-    Returns contract information for owners and admins.
-    Members receive an empty list.
-    """
-    if "owner" not in groups and "admin" not in groups:
-        return []
-
-    contracts = []
-
-    query_response = business_contract_table.query(
-        KeyConditionExpression=Key("accountId").eq(owner_id)
-    )
-
-    items = query_response.get("Items", [])
-
-    while "LastEvaluatedKey" in query_response:
-        query_response = business_contract_table.query(
-            KeyConditionExpression=Key("accountId").eq(owner_id),
-            ExclusiveStartKey=query_response["LastEvaluatedKey"],
-        )
-        items.extend(query_response.get("Items", []))
-
-    for item in items:
-        contracts.append({
-            "contractId": item.get("contractId"),
-            "contractName": item.get("contractName"),
-            "status": item.get("status"),
-            "configId": item.get("configId"),
-            "pcCount": item.get("pcCount"),
-            "startDate": item.get("startDate"),
-            "endDate": item.get("endDate"),
-            "region": item.get("region"),
-            "totalUsageHours": item.get("totalUsageHours"),
-            "storageSizeGb": item.get("storageSizeGb"),
-            "operatingSystem": item.get("operatingSystem"),
-            "cpuCores": item.get("cpuCores"),
-            "ramGb": item.get("ramGb"),
-            "gpuEnabled": item.get("gpuEnabled"),
-        })
-
-    return contracts
-
-
-def _parse_iso_datetime(value):
-    if not value:
-        return None
-    try:
-        normalized = str(value).replace("Z", "+00:00")
-        parsed = parse_datetime(normalized)
-        return parsed
-    except Exception:
-        return None
-
-
-
-def format_duration_seconds(total_seconds):
-    total_seconds = int(total_seconds or 0)
-
-    if total_seconds <= 0:
-        return "0m"
-
-    hours = total_seconds // 3600
-    minutes = (total_seconds % 3600) // 60
-
-    if hours and minutes:
-        return f"{hours}h {minutes}m"
-
-    if hours:
-        return f"{hours}h"
-
-    return f"{minutes}m"
-
-
-def get_business_pc_usage_items(owner_id):
-    """
-    Returns all business PC usage rows for this owner/business account.
-    Includes running, stopped, and deleted PCs.
-    """
-    items = []
-
-    query_kwargs = {
-        "KeyConditionExpression": Key("accountId").eq(owner_id)
-    }
-
-    while True:
-        response = business_pc_usage_table.query(**query_kwargs)
-        items.extend(response.get("Items", []) or [])
-
-        last_key = response.get("LastEvaluatedKey")
-        if not last_key:
-            break
-
-        query_kwargs["ExclusiveStartKey"] = last_key
-
-    return items
-
-
-def build_business_pc_usage(owner_id, contracts):
-    """
-    Builds per-PC total runtime list from sensepc-business-pc-usage.
-    totalRuntimeSeconds means total running time since PC creation.
-    """
-    from datetime import datetime, timezone
-
-    now = datetime.now(timezone.utc)
-
-    contract_by_id = {
-        str(contract.get("contractId")): contract
-        for contract in contracts
-        if contract.get("contractId")
-    }
-
-    usage_items = get_business_pc_usage_items(owner_id)
-
-    pc_usage = []
-
-    for item in usage_items:
-        consumed_seconds = int(item.get("consumedSeconds", 0) or 0)
-        running_since_raw = item.get("runningSince")
-        status = str(item.get("status") or "").lower()
-
-        current_session_seconds = 0
-
-        if running_since_raw:
-            running_since = _parse_iso_datetime(running_since_raw)
-
-            if running_since:
-                current_session_seconds = max(
-                    int((now - running_since).total_seconds()),
-                    0
-                )
-
-        total_runtime_seconds = consumed_seconds + current_session_seconds
-
-        contract_id = str(item.get("contractId") or "")
-        contract = contract_by_id.get(contract_id, {})
-
-        pc_usage.append({
-            "instanceId": item.get("instanceId"),
-            "systemName": item.get("systemName", ""),
-            "contractId": contract_id,
-            "contractName": contract.get("contractName", ""),
-            "configId": item.get("configId", ""),
-
-            "status": status,
-            "consumedSeconds": consumed_seconds,
-
-            "currentSessionSeconds": current_session_seconds,
-            "currentSessionDisplay": format_duration_seconds(
-                current_session_seconds
-            ),
-
-            "totalRuntimeSeconds": total_runtime_seconds,
-            "totalRuntimeDisplay": format_duration_seconds(
-                total_runtime_seconds
-            ),
-
-            "createdAt": item.get("createdAt"),
-            "updatedAt": item.get("updatedAt"),
-            "deletedAt": item.get("deletedAt"),
-        })
-
-    pc_usage.sort(
-        key=lambda row: str(row.get("createdAt") or ""),
-        reverse=True
-    )
-
-    return pc_usage
-
-
-def build_business_contract_usage(contracts, pc_usage):
-    """
-    Builds contract-level usage summary using PC runtime data.
-    """
-    usage_by_contract = {}
-
-    for pc in pc_usage:
-        contract_id = str(pc.get("contractId") or "")
-
-        if not contract_id:
-            continue
-
-        usage_by_contract[contract_id] = (
-            usage_by_contract.get(contract_id, 0)
-            + int(pc.get("totalRuntimeSeconds", 0) or 0)
-        )
-
-    contract_usage = []
-
-    for contract in contracts:
-        contract_id = str(contract.get("contractId") or "")
-        total_usage_hours = contract.get("totalUsageHours", 0) or 0
-
-        try:
-            total_seconds = int(Decimal(str(total_usage_hours)) * Decimal(3600))
-        except Exception:
-            total_seconds = 0
-
-        used_seconds = usage_by_contract.get(contract_id, 0)
-        remaining_seconds = max(total_seconds - used_seconds, 0)
-
-        contract_usage.append({
-            "contractId": contract_id,
-            "contractName": contract.get("contractName", ""),
-            "status": contract.get("status"),
-            "configId": contract.get("configId"),
-
-            "totalUsageHours": total_usage_hours,
-            "totalUsageSeconds": total_seconds,
-            "totalUsageDisplay": format_duration_seconds(total_seconds),
-
-            "usedSeconds": used_seconds,
-            "usedDisplay": format_duration_seconds(used_seconds),
-
-            "remainingSeconds": remaining_seconds,
-            "remainingDisplay": format_duration_seconds(remaining_seconds),
-        })
-
-    return contract_usage
-
-
-
-
-def parse_datetime(value):
-    from datetime import datetime, timezone
-
-    parsed = datetime.fromisoformat(value)
-    if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=timezone.utc)
-    return parsed
-
-
-def get_pc_session_history(instance_id, limit=7):
-    items = []
-    try:
-        query_kwargs = {
-            "KeyConditionExpression": Key("instanceId").eq(instance_id),
-            "ScanIndexForward": True,
-        }
-
-        while True:
-            response = pc_events_table.query(**query_kwargs)
-            items.extend(response.get("Items", []) or [])
-
-            last_key = response.get("LastEvaluatedKey")
-            if not last_key:
-                break
-
-            query_kwargs["ExclusiveStartKey"] = last_key
-    except Exception as exc:
-        print(f"[WARN] SmartPCEvents query failed for instanceId={instance_id}: {exc}")
-        try:
-            scan_kwargs = {
-                "FilterExpression": Attr("instanceId").eq(instance_id),
-            }
-
-            while True:
-                response = pc_events_table.scan(**scan_kwargs)
-                items.extend(response.get("Items", []) or [])
-
-                last_key = response.get("LastEvaluatedKey")
-                if not last_key:
-                    break
-
-                scan_kwargs["ExclusiveStartKey"] = last_key
-        except Exception as scan_exc:
-            print(f"[WARN] SmartPCEvents scan failed for instanceId={instance_id}: {scan_exc}")
-            return []
-
-    if not items:
-        return []
-
-    from datetime import datetime, timedelta, timezone
-
-    now = datetime.now(timezone.utc)
-    cutoff = now - timedelta(days=7)
-    start_actions = {"create", "start", "restart", "started", "restarted"}
-    stop_actions = {"stop", "stopped", "delete", "terminate", "terminated", "deleted"}
-    rows = []
-    current_start = None
-
-    def normalize_action(value):
-        return str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
-
-    items.sort(key=lambda item: str(item.get("timestamp") or ""))
-
-    for item in items:
-        event_time = _parse_iso_datetime(item.get("timestamp"))
-        if not event_time or event_time < cutoff:
-            continue
-
-        action = normalize_action(item.get("action"))
-        action_token = action.split("_")[-1] if action else ""
-
-        if action in start_actions or action_token in start_actions:
-            current_start = event_time
-        elif (action in stop_actions or action_token in stop_actions) and current_start:
-            duration_hours = (event_time - current_start).total_seconds() / 3600
-            rows.append({
-                "startTime": current_start.isoformat(),
-                "endTime": event_time.isoformat(),
-                "durationHours": round(duration_hours, 2),
-                "state": "completed",
-            })
-            current_start = None
-
-    if current_start:
-        duration_hours = (now - current_start).total_seconds() / 3600
-        rows.append({
-            "startTime": current_start.isoformat(),
-            "endTime": now.isoformat(),
-            "durationHours": round(duration_hours, 2),
-            "state": "running",
-        })
-
-    rows.sort(key=lambda row: row.get("startTime", ""), reverse=True)
-    return rows[:limit]
-
-
-def build_history_sources(pc_usage):
-    """
-    PC list for session history, taken from the business usage table —
-    covers running, stopped, and deleted PCs without any upstream API call.
-    """
-    sources = {}
-
-    for usage in (pc_usage or []):
-        instance_id = usage.get("instanceId")
-        if instance_id and instance_id not in sources:
-            sources[instance_id] = {
-                "instanceId": instance_id,
-                "systemName": usage.get("systemName", ""),
-                "region": "",
-            }
-
-    return list(sources.values())
-
-
-def get_pc_history(pc_items):
-    history = []
-    for item in pc_items:
-        instance_id = item.get("instanceId")
-        if not instance_id:
-            continue
-
-        for row in get_pc_session_history(instance_id):
-            history.append({
-                "instanceId": instance_id,
-                "systemName": item.get("systemName", ""),
-                "region": item.get("region", ""),
-                **row,
-            })
-
-    history.sort(key=lambda row: row.get("startTime", ""), reverse=True)
-    return history
-
-
-
-def get_active_session_count_from_dcv_sessions(user_ids):
-    if not user_ids:
-        return 0
-
-    from datetime import datetime, timezone
-
-    now_ts = int(datetime.now(timezone.utc).timestamp())
-    active_session_ids = set()
-
-    for user_id in user_ids:
-        if not user_id:
-            continue
-
-        try:
-            query_kwargs = {
-                "IndexName": DCV_SESSIONS_USER_INDEX,
-                "KeyConditionExpression": Key("userId").eq(user_id),
-            }
-
-            while True:
-                response = dcv_sessions_table.query(**query_kwargs)
-                items = response.get("Items", []) or []
-
-                for item in items:
-                    session_id = item.get("sessionId")
-                    occupied = item.get("occupied", True)
-
-                    try:
-                        expires_at = int(item.get("expiresAt", 0) or 0)
-                    except (TypeError, ValueError):
-                        expires_at = 0
-
-                    if session_id and occupied is not False and expires_at > now_ts:
-                        active_session_ids.add(str(session_id))
-
-                last_key = response.get("LastEvaluatedKey")
-                if not last_key:
-                    break
-
-                query_kwargs["ExclusiveStartKey"] = last_key
-        except Exception as exc:
-            print(f"[WARN] SmartPCDCVSessions query failed for userId={user_id}: {exc}")
-            continue
-
-    return len(active_session_ids)
-
-
-def parse_body(event):
-    raw = event.get("body")
-    if not raw:
-        return {}
-    try:
-        return json.loads(raw)
-    except json.JSONDecodeError:
-        return {}
-
-
-def query_params(event):
-    return event.get("queryStringParameters") or {}
-
-
-def request_path(event):
-    path = event.get("path") or event.get("rawPath") or ""
-    stage = (event.get("requestContext") or {}).get("stage") or ""
-    if stage:
-        prefix = f"/{stage}"
-        if path == prefix:
-            return "/"
-        if path.startswith(prefix + "/"):
-            return path[len(prefix):]
-    return path
-
-
-def request_method(event):
-    return (
-        event.get("httpMethod")
-        or (event.get("requestContext") or {}).get("http", {}).get("method")
-        or ""
-    ).upper()
-
-
-def save_limit_request(item):
-    limit_request_table.put_item(Item=item)
-
-
-def mark_limit_request_email_status(owner_id, created_at, email_status, error_message=None):
-    update_expression = "SET emailStatus = :emailStatus"
-    values = {":emailStatus": email_status}
-
-    if error_message:
-        update_expression += ", emailError = :emailError"
-        values[":emailError"] = str(error_message)[:500]
-
-    limit_request_table.update_item(
-        Key={"ownerId": owner_id, "createdAt": created_at},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues=values,
-    )
-
-
-def send_limit_increase_email(owner_id, requester_email, requester_role, request_type, requested_limit, current_limit, reason, contact_email):
-    if not REQUEST_TO_EMAIL or not REQUEST_FROM_EMAIL:
-        raise ValueError("Monitoring request email configuration is missing.")
-
-    limit_label = "Sense PC limit" if request_type == "pc_limit" else "Sense Cloud limit"
-    unit_label = "PCs" if request_type == "pc_limit" else "GB"
-    subject = f"[Monitoring] {limit_label} increase request"
-    message = (
-        f"Requester role: {requester_role}\n"
-        f"Owner ID: {owner_id}\n"
-        f"Requester email: {requester_email}\n"
-        f"Contact email: {contact_email}\n"
-        f"Request type: {request_type}\n"
-        f"Current limit: {current_limit} {unit_label}\n"
-        f"Requested limit: {requested_limit} {unit_label}\n\n"
-        f"Reason:\n{reason}\n"
-    )
-
-    ses.send_email(
-        Source=REQUEST_FROM_EMAIL,
-        Destination={"ToAddresses": [REQUEST_TO_EMAIL]},
-        Message={
-            "Subject": {"Data": subject},
-            "Body": {"Text": {"Data": message}},
-        },
-        ReplyToAddresses=[contact_email],
-    )
-
-
-def handle_get(event, claims, groups):
-    requester_sub = claims.get("sub")
-    requester_email = claims.get("email")
-    owner_id = claims.get("custom:ownerid", requester_sub) if "admin" in groups else requester_sub
-
-    org_users = get_org_users(owner_id, requester_email, groups)
-    quota = get_owner_quota(owner_id)
-    contracts = get_owner_contracts(owner_id, groups)
-    pc_usage = build_business_pc_usage(owner_id, contracts)
-    contract_usage = build_business_contract_usage(contracts, pc_usage)
-
-    # PC counts come from the business usage table — no upstream API call.
-    live_usage = [item for item in pc_usage if not item.get("deletedAt")]
-    total_pc_count = len(live_usage)
-    active_pc_count = sum(1 for item in live_usage if item.get("status") == "running")
-
-    org_user_ids = [user.get("userId") for user in org_users if user.get("userId")]
-    # The owner's own user record isn't always in the org users list, but the
-    # owner's DCV sessions must still be counted.
-    for extra_id in (owner_id, requester_sub):
-        if extra_id and extra_id not in org_user_ids:
-            org_user_ids.append(extra_id)
-    active_session_count = get_active_session_count_from_dcv_sessions(org_user_ids)
-    pc_history = get_pc_history(build_history_sources(pc_usage))
-
-    summary = {
-        "activePcCount": active_pc_count,
-        "activeSessionCount": active_session_count if active_session_count is not None else 0,
-        "pcUsedCount": total_pc_count,
-        "pcLimit": quota["pcLimit"],
-        "cloudUsedDisplay": quota["cloudUsedDisplay"],
-    }
-
-    return response(
-        200,
-        {
-          "summary": summary,
-          "users": org_users,
-          "contracts": contracts,
-          "pcUsage": pc_usage,
-          "contractUsage": contract_usage,
-          "pcHistory": pc_history,
-          "viewer": {
-              "role": "admin" if "admin" in groups else "owner" if "owner" in groups else "member",
-              "scope": "organization" if "admin" in groups or "owner" in groups else "self",
-          },
-        },
-    )
-
-
-def handle_limit_request(event, claims, groups):
-    if not any(group in groups for group in ("owner", "admin")):
-        return response(403, {"message": "Not authorized to request a limit increase."})
-
-    body = parse_body(event)
-    request_type = (body.get("requestType") or "").strip().lower()
-    requested_limit = body.get("requestedLimit")
-    reason = (body.get("reason") or "").strip()
-    contact_email = (body.get("contactEmail") or "").strip()
-
-    if request_type not in ("pc_limit", "cloud_limit"):
-        return response(400, {"message": "Invalid requestType."})
-
-    try:
-        requested_limit = int(requested_limit)
-    except (TypeError, ValueError):
-        return response(400, {"message": "requestedLimit must be a valid number."})
-
-    if requested_limit <= 0:
-        return response(400, {"message": "requestedLimit must be greater than zero."})
-
-    if not reason:
-        return response(400, {"message": "Reason is required."})
-
-    if not contact_email or "@" not in contact_email:
-        return response(400, {"message": "A valid contact email is required."})
-
-    requester_sub = claims.get("sub")
-    requester_email = claims.get("email")
-    owner_id = claims.get("custom:ownerid", requester_sub) if "admin" in groups else requester_sub
-    quota = get_owner_quota(owner_id)
-
-    current_limit = quota["pcLimit"] if request_type == "pc_limit" else 0
-    if requested_limit <= current_limit:
-        return response(400, {"message": "Requested limit must be greater than the current limit."})
-
-    created_at = datetime.now(timezone.utc).isoformat()
-    request_item = {
-        "ownerId": owner_id,
-        "createdAt": created_at,
-        "requestId": str(uuid.uuid4()),
-        "requesterEmail": requester_email,
-        "requesterRole": "admin" if "admin" in groups else "owner",
-        "requestType": request_type,
-        "requestedLimit": requested_limit,
-        "currentLimit": current_limit,
-        "reason": reason,
-        "contactEmail": contact_email,
-        "status": "submitted",
-        "emailStatus": "pending",
-    }
-
-    try:
-        save_limit_request(request_item)
-    except Exception as exc:
-        print(f"Failed to save monitoring limit request: {exc}")
-        return response(500, {"message": "Unable to submit the request right now."})
-
-    try:
-        send_limit_increase_email(
-            owner_id=owner_id,
-            requester_email=requester_email,
-            requester_role="admin" if "admin" in groups else "owner",
-            request_type=request_type,
-            requested_limit=requested_limit,
-            current_limit=current_limit,
-            reason=reason,
-            contact_email=contact_email,
-        )
-        mark_limit_request_email_status(owner_id, created_at, "sent")
-    except Exception as exc:
-        print(f"Failed to send monitoring limit request email: {exc}")
-        try:
-            mark_limit_request_email_status(owner_id, created_at, "failed", exc)
-        except Exception as update_exc:
-            print(f"Failed to update monitoring request email status: {update_exc}")
-        return response(500, {"message": "Unable to submit the request right now."})
-
-    return response(
-        200,
-        {
-            "message": "Limit increase request submitted successfully.",
-            "request": {**request_item, "emailStatus": "sent"},
-        },
-    )
-
-
-def handle_limit_requests_get(event, claims, groups):
-    if not any(group in groups for group in ("owner", "admin")):
-        return response(403, {"message": "Not authorized to view limit requests."})
-
-    params = query_params(event)
-    requester_sub = claims.get("sub")
-    owner_id = (params.get("accountId") or params.get("ownerId") or "").strip()
-
-    if "admin" not in groups:
-        owner_id = requester_sub
-
-    if not owner_id:
-        return response(400, {"message": "accountId is required."})
-
-    result = limit_request_table.query(
-        KeyConditionExpression=Key("ownerId").eq(owner_id),
-        ScanIndexForward=False,
-        Limit=100,
-    )
-
-    return response(
-        200,
-        {
-            "accountId": owner_id,
-            "requests": result.get("Items", []),
-            "count": result.get("Count", 0),
-        },
-    )
+BUCKETS_TABLE = dynamodb.Table(os.environ.get("STORAGE_BUCKETS_TABLE_NAME", "SmartPCBuckets"))
+METADATA_TABLE = dynamodb.Table(os.environ.get("STORAGE_METADATA_TABLE_NAME", "SmartPCStorageMetadata"))
+USAGE_TABLE = dynamodb.Table(os.environ.get("STORAGE_USAGE_TABLE_NAME", "SmartPCStorageUsage"))
+USER_REGION_TABLE = dynamodb.Table(os.environ.get("USER_STORAGE_REGION_TABLE_NAME", "SmartPCUserStorageRegion"))
+USER_TABLE = dynamodb.Table(os.environ.get("USER_TABLE_NAME", "senseminder-user"))
+
+ADMIN_GROUPS = {"admin", "owner", "Admin", "Owner"}
+ADMIN_ROLES = {"admin", "owner"}
+LEGACY_REGION_MAP = {"virginia": "us-east-1", "oregon": "us-west-2"}
 
 
 def lambda_handler(event, context):
     try:
-        method = request_method(event)
-        path = request_path(event)
+        method = _request_method(event)
         if method == "OPTIONS":
-            return {"statusCode": 200, "headers": headers(), "body": ""}
+            return _response(204, {})
+        if method != "GET":
+            return _response(405, {"message": "Method not allowed"})
 
-        claims = get_claims(event)
-        groups = normalize_groups(claims.get("cognito:groups"))
+        claims = _get_claims(event)
+        requester_id = claims.get("sub") or _query(event).get("requesterId")
+        requester_email = claims.get("email")
+        requester_groups = _get_groups(claims)
+        custom_role = str(claims.get("custom:role") or "").strip().lower()
+        db_role = resolve_requester_role(requester_email, requester_id)
+        is_admin = (
+            bool(ADMIN_GROUPS.intersection(requester_groups))
+            or custom_role in ADMIN_ROLES
+            or db_role in ADMIN_ROLES
+        )
 
-        if not claims.get("sub"):
-            return response(401, {"message": "Unauthorized"})
+        params = _query(event)
+        scope = (params.get("scope") or "me").strip().lower()
+        target_user_id = (params.get("userId") or requester_id or "").strip()
 
-        if method == "GET" and (
-            path.endswith("/limit-requests")
-            or path.endswith("/monitoring-limit-requests")
-        ):
-            return handle_limit_requests_get(event, claims, groups)
+        if scope == "all":
+            if not is_admin:
+                return _response(403, {"message": "Only admins can view all storage usage."})
+            return _response(200, build_all_storage_summary())
 
-        if method == "GET":
-            return handle_get(event, claims, groups)
+        if not target_user_id:
+            return _response(401, {"message": "Missing user identity."})
+        if requester_id and target_user_id != requester_id and not is_admin:
+            return _response(403, {"message": "You can only view your own storage usage."})
 
-        if method == "POST":
-            body = parse_body(event)
-            if (body.get("action") or "").strip().lower() == "limit-increase":
-                return handle_limit_request(event, claims, groups)
-            return response(400, {"message": "Unsupported action."})
-
-        return response(405, {"message": "Method not allowed."})
+        return _response(
+            200,
+            build_user_storage_summary(
+                target_user_id,
+                include_global=False,
+                requester_email=requester_email,
+            ),
+        )
     except Exception as exc:
-        print(f"Unhandled monitoring error: {exc}")
-        return response(500, {"message": "Internal server error."})
+        print(f"[ERROR] storage info failed: {exc}")
+        return _response(500, {"message": "Internal server error", "error": str(exc)})
 
+
+def build_all_storage_summary() -> Dict[str, Any]:
+    bucket_regions = load_storage_regions()
+    active_items = scan_active_metadata()
+    usage_rows = scan_usage_rows()
+    user_email_map = fetch_user_email_map({item.get("userId") for item in active_items if item.get("userId")})
+
+    summary = aggregate_metadata(active_items, bucket_regions, usage_rows, user_email_map)
+    summary["scope"] = "all"
+    summary["generatedAt"] = now_iso()
+    summary["regionCatalog"] = bucket_regions
+    return summary
+
+
+def build_user_storage_summary(user_id: str, include_global: bool = False, requester_email: Optional[str] = None) -> Dict[str, Any]:
+    active_items = query_user_active_metadata(user_id)
+    usage_rows = query_user_usage_rows(user_id)
+    stored_region = get_user_storage_region(user_id)
+    user_email_map = {user_id: requester_email} if requester_email else fetch_user_email_map({user_id})
+    bucket_regions = load_storage_regions()
+
+    summary = aggregate_metadata(active_items, bucket_regions, usage_rows, user_email_map)
+    user_summary = summary["users"][0] if summary["users"] else empty_user_summary(user_id, user_email_map.get(user_id), stored_region)
+
+    return {
+        "scope": "me",
+        "generatedAt": now_iso(),
+        "summary": {
+            "totalBytes": user_summary["totalBytes"],
+            "totalDisplay": user_summary["totalDisplay"],
+            "activeFileCount": user_summary["activeFileCount"],
+            "folderCount": user_summary["folderCount"],
+            "regionCount": len(user_summary["regions"]),
+            "currentMonthBytes": user_summary.get("currentMonthBytes", 0),
+            "currentMonthDisplay": format_bytes(user_summary.get("currentMonthBytes", 0)),
+        },
+        "user": user_summary,
+        "regions": user_summary["regions"],
+        "regionCatalog": bucket_regions if include_global else [],
+    }
+
+
+def aggregate_metadata(
+    active_items: List[Dict[str, Any]],
+    bucket_regions: List[Dict[str, Any]],
+    usage_rows: List[Dict[str, Any]],
+    user_email_map: Dict[str, Optional[str]],
+) -> Dict[str, Any]:
+    region_map: Dict[str, Dict[str, Any]] = {}
+    for bucket in bucket_regions:
+        region = normalize_region(bucket.get("region")) or "unknown"
+        region_map[region] = {
+            "region": region,
+            "label": bucket.get("label") or region,
+            "shortLabel": bucket.get("shortLabel") or bucket.get("label") or region,
+            "bucketName": bucket.get("bucketName"),
+            "totalBytes": 0,
+            "totalDisplay": "0 B",
+            "activeFileCount": 0,
+            "folderCount": 0,
+            "userCount": 0,
+        }
+
+    user_map: Dict[str, Dict[str, Any]] = {}
+    region_users: Dict[str, Set[str]] = {}
+
+    for item in active_items:
+        user_id = str(item.get("userId") or "").strip()
+        if not user_id:
+            continue
+        region = normalize_region(item.get("region")) or "unknown"
+        file_type = str(item.get("fileType") or "").lower()
+        is_folder = file_type == "folder"
+        size = 0 if is_folder else parse_size_bytes(item.get("size"))
+
+        if region not in region_map:
+            region_map[region] = {
+                "region": region,
+                "label": region,
+                "shortLabel": region,
+                "bucketName": item.get("bucket"),
+                "totalBytes": 0,
+                "totalDisplay": "0 B",
+                "activeFileCount": 0,
+                "folderCount": 0,
+                "userCount": 0,
+            }
+
+        region_entry = region_map[region]
+        region_entry["totalBytes"] += size
+        region_entry["activeFileCount"] += 0 if is_folder else 1
+        region_entry["folderCount"] += 1 if is_folder else 0
+        region_users.setdefault(region, set()).add(user_id)
+
+        user_entry = user_map.setdefault(
+            user_id,
+            {
+                "userId": user_id,
+                "email": user_email_map.get(user_id),
+                "totalBytes": 0,
+                "totalDisplay": "0 B",
+                "activeFileCount": 0,
+                "folderCount": 0,
+                "lastUpdatedAt": None,
+                "currentMonthBytes": 0,
+                "currentMonthDisplay": "0 B",
+                "peakMonthBytes": 0,
+                "peakMonthDisplay": "0 B",
+                "regions": [],
+                "_regions": {},
+            },
+        )
+        user_entry["totalBytes"] += size
+        user_entry["activeFileCount"] += 0 if is_folder else 1
+        user_entry["folderCount"] += 1 if is_folder else 0
+        user_entry["lastUpdatedAt"] = latest_iso(user_entry.get("lastUpdatedAt"), item.get("updatedAt") or item.get("createdAt"))
+
+        user_region = user_entry["_regions"].setdefault(
+            region,
+            {
+                "region": region,
+                "label": region_entry.get("label") or region,
+                "totalBytes": 0,
+                "totalDisplay": "0 B",
+                "activeFileCount": 0,
+                "folderCount": 0,
+            },
+        )
+        user_region["totalBytes"] += size
+        user_region["activeFileCount"] += 0 if is_folder else 1
+        user_region["folderCount"] += 1 if is_folder else 0
+
+    latest_usage_by_user: Dict[str, Dict[str, Any]] = {}
+    for row in usage_rows:
+        user_id = str(row.get("userId") or "").strip()
+        if not user_id:
+            user_month = str(row.get("userMonth") or "")
+            user_id = user_month.split("#", 1)[0] if "#" in user_month else ""
+        if not user_id:
+            continue
+        current = latest_usage_by_user.get(user_id)
+        if current is None or str(row.get("month") or row.get("userMonth") or "") > str(current.get("month") or current.get("userMonth") or ""):
+            latest_usage_by_user[user_id] = row
+
+    for user_id, row in latest_usage_by_user.items():
+        user_entry = user_map.setdefault(user_id, empty_user_summary(user_id, user_email_map.get(user_id), None))
+        user_entry["currentMonthBytes"] = parse_size_bytes(row.get("currentBytes"))
+        user_entry["currentMonthDisplay"] = format_bytes(user_entry["currentMonthBytes"])
+        user_entry["peakMonthBytes"] = parse_size_bytes(row.get("peakBytes"))
+        user_entry["peakMonthDisplay"] = format_bytes(user_entry["peakMonthBytes"])
+
+    for region, users in region_users.items():
+        region_map[region]["userCount"] = len(users)
+
+    for region_entry in region_map.values():
+        region_entry["totalDisplay"] = format_bytes(region_entry["totalBytes"])
+
+    users = []
+    for user_entry in user_map.values():
+        regions = list(user_entry.pop("_regions", {}).values())
+        for user_region in regions:
+            user_region["totalDisplay"] = format_bytes(user_region["totalBytes"])
+        regions.sort(key=lambda item: item["totalBytes"], reverse=True)
+        user_entry["regions"] = regions
+        user_entry["totalDisplay"] = format_bytes(user_entry["totalBytes"])
+        users.append(user_entry)
+
+    users.sort(key=lambda item: item["totalBytes"], reverse=True)
+    regions = sorted(region_map.values(), key=lambda item: item["totalBytes"], reverse=True)
+
+    total_bytes = sum(region["totalBytes"] for region in regions)
+    return {
+        "summary": {
+            "totalBytes": total_bytes,
+            "totalDisplay": format_bytes(total_bytes),
+            "activeFileCount": sum(region["activeFileCount"] for region in regions),
+            "folderCount": sum(region["folderCount"] for region in regions),
+            "userCount": len(users),
+            "regionCount": len([region for region in regions if region["totalBytes"] > 0]),
+        },
+        "regions": regions,
+        "users": users,
+    }
+
+
+def empty_user_summary(user_id: str, email: Optional[str], stored_region: Optional[str]) -> Dict[str, Any]:
+    return {
+        "userId": user_id,
+        "email": email,
+        "totalBytes": 0,
+        "totalDisplay": "0 B",
+        "activeFileCount": 0,
+        "folderCount": 0,
+        "lastUpdatedAt": None,
+        "currentMonthBytes": 0,
+        "currentMonthDisplay": "0 B",
+        "peakMonthBytes": 0,
+        "peakMonthDisplay": "0 B",
+        "regions": ([{"region": stored_region, "label": stored_region, "totalBytes": 0, "totalDisplay": "0 B", "activeFileCount": 0, "folderCount": 0}] if stored_region else []),
+        "_regions": {},
+    }
+
+
+def scan_active_metadata() -> List[Dict[str, Any]]:
+    items: List[Dict[str, Any]] = []
+    params = {
+        "ProjectionExpression": "id, userId, #r, bucket, fileType, size, isDeleted, createdAt, updatedAt",
+        "ExpressionAttributeNames": {"#r": "region"},
+    }
+    while True:
+        res = METADATA_TABLE.scan(**params)
+        items.extend([item for item in res.get("Items", []) if not item.get("isDeleted")])
+        last_key = res.get("LastEvaluatedKey")
+        if not last_key:
+            break
+        params["ExclusiveStartKey"] = last_key
+    return items
+
+
+def query_user_active_metadata(user_id: str) -> List[Dict[str, Any]]:
+    items: List[Dict[str, Any]] = []
+    params = {
+        "IndexName": "userId-index",
+        "KeyConditionExpression": Key("userId").eq(user_id),
+        "ProjectionExpression": "id, userId, #r, bucket, fileType, size, isDeleted, createdAt, updatedAt",
+        "ExpressionAttributeNames": {"#r": "region"},
+    }
+    while True:
+        res = METADATA_TABLE.query(**params)
+        items.extend([item for item in res.get("Items", []) if not item.get("isDeleted")])
+        last_key = res.get("LastEvaluatedKey")
+        if not last_key:
+            break
+        params["ExclusiveStartKey"] = last_key
+    return items
+
+
+def scan_usage_rows() -> List[Dict[str, Any]]:
+    items: List[Dict[str, Any]] = []
+    params = {"ProjectionExpression": "userMonth, userId, #m, currentBytes, peakBytes, updatedAt", "ExpressionAttributeNames": {"#m": "month"}}
+    while True:
+        res = USAGE_TABLE.scan(**params)
+        items.extend(res.get("Items", []))
+        last_key = res.get("LastEvaluatedKey")
+        if not last_key:
+            break
+        params["ExclusiveStartKey"] = last_key
+    return items
+
+
+def query_user_usage_rows(user_id: str) -> List[Dict[str, Any]]:
+    items: List[Dict[str, Any]] = []
+    for row in scan_usage_rows():
+        if str(row.get("userId") or "") == user_id or str(row.get("userMonth") or "").startswith(f"{user_id}#"):
+            items.append(row)
+    return items
+
+
+def load_storage_regions() -> List[Dict[str, Any]]:
+    items: List[Dict[str, Any]] = []
+    params = {}
+    while True:
+        res = BUCKETS_TABLE.scan(**params)
+        items.extend(res.get("Items", []))
+        last_key = res.get("LastEvaluatedKey")
+        if not last_key:
+            break
+        params["ExclusiveStartKey"] = last_key
+
+    regions = []
+    for item in items:
+        region = normalize_region(item.get("region"))
+        if not region:
+            continue
+        regions.append(
+            {
+                "region": region,
+                "label": item.get("label") or region,
+                "shortLabel": item.get("shortLabel") or item.get("label") or region,
+                "bucketName": item.get("bucketName"),
+                "enabled": item.get("enabled", True),
+                "order": int(item.get("order", 999) or 999),
+            }
+        )
+    regions.sort(key=lambda item: (item["order"], item["label"]))
+    return regions
+
+
+def get_user_storage_region(user_id: str) -> Optional[str]:
+    try:
+        item = USER_REGION_TABLE.get_item(Key={"userId": user_id}).get("Item")
+        return normalize_region(item.get("region")) if item else None
+    except Exception as exc:
+        print(f"[WARN] user region lookup failed for userId={user_id}: {exc}")
+        return None
+
+
+def resolve_requester_role(email: Optional[str], user_id: Optional[str]) -> Optional[str]:
+    """
+    Look up the requester's `role` attribute from USER_TABLE (same table/shape
+    used by other lambdas, e.g. promo-cashback and sms-manage-user-profile),
+    since this app's admin status is stored there rather than in Cognito
+    Groups. Tries by email (the table's primary key) first, falling back to
+    the id-index GSI when the JWT doesn't carry an email claim.
+    """
+    item = None
+    if email:
+        try:
+            item = USER_TABLE.get_item(Key={"email": email}).get("Item")
+        except Exception as exc:
+            print(f"[WARN] role lookup by email failed for email={email}: {exc}")
+    if not item and user_id:
+        try:
+            res = USER_TABLE.query(IndexName="id-index", KeyConditionExpression=Key("id").eq(user_id), Limit=1)
+            items = res.get("Items") or []
+            item = items[0] if items else None
+        except Exception as exc:
+            print(f"[WARN] role lookup by id failed for userId={user_id}: {exc}")
+    role = str((item or {}).get("role") or "").strip().lower()
+    return role or None
+
+
+def fetch_user_email_map(user_ids: Set[str]) -> Dict[str, Optional[str]]:
+    result: Dict[str, Optional[str]] = {}
+    for user_id in [uid for uid in user_ids if uid]:
+        result[user_id] = None
+        try:
+            res = USER_TABLE.query(IndexName="id-index", KeyConditionExpression=Key("id").eq(user_id), Limit=1)
+            if res.get("Items"):
+                result[user_id] = res["Items"][0].get("email")
+        except Exception as exc:
+            print(f"[WARN] user lookup failed for userId={user_id}: {exc}")
+    return result
+
+
+def _get_claims(event: Dict[str, Any]) -> Dict[str, Any]:
+    authorizer = (event.get("requestContext") or {}).get("authorizer") or {}
+    return authorizer.get("claims") or (authorizer.get("jwt") or {}).get("claims") or {}
+
+
+def _get_groups(claims: Dict[str, Any]) -> Set[str]:
+    raw = claims.get("cognito:groups") or claims.get("groups") or ""
+    if isinstance(raw, list):
+        return {str(value) for value in raw}
+    return {part.strip() for part in str(raw).replace("[", "").replace("]", "").replace('"', "").split(",") if part.strip()}
+
+
+def _query(event: Dict[str, Any]) -> Dict[str, str]:
+    return event.get("queryStringParameters") or {}
+
+
+def _request_method(event: Dict[str, Any]) -> str:
+    return event.get("httpMethod") or ((event.get("requestContext") or {}).get("http") or {}).get("method") or ""
+
+
+def normalize_region(region: Any) -> str:
+    value = str(region or "").strip().lower()
+    return LEGACY_REGION_MAP.get(value, value)
+
+
+def parse_size_bytes(value: Any) -> int:
+    if value is None:
+        return 0
+    if isinstance(value, Decimal):
+        return int(value)
+    if isinstance(value, (int, float)):
+        return int(value)
+    text = str(value).strip().lower()
+    if not text:
+        return 0
+    import re
+
+    match = re.match(r"^([\d.]+)\s*(b|kb|kib|mb|mib|gb|gib|tb|tib)?$", text)
+    if not match:
+        try:
+            return int(float(text))
+        except Exception:
+            return 0
+    number = float(match.group(1))
+    unit = match.group(2) or "b"
+    multipliers = {
+        "b": 1,
+        "kb": 1000,
+        "kib": 1024,
+        "mb": 1000 ** 2,
+        "mib": 1024 ** 2,
+        "gb": 1000 ** 3,
+        "gib": 1024 ** 3,
+        "tb": 1000 ** 4,
+        "tib": 1024 ** 4,
+    }
+    return int(number * multipliers[unit])
+
+
+def format_bytes(value: Any) -> str:
+    size = parse_size_bytes(value)
+    units = ["B", "KB", "MB", "GB", "TB", "PB"]
+    amount = float(size)
+    unit_index = 0
+    while amount >= 1024 and unit_index < len(units) - 1:
+        amount /= 1024
+        unit_index += 1
+    if unit_index == 0:
+        return f"{int(amount)} B"
+    return f"{amount:.2f}".rstrip("0").rstrip(".") + f" {units[unit_index]}"
+
+
+def latest_iso(current: Optional[str], candidate: Optional[str]) -> Optional[str]:
+    if not candidate:
+        return current
+    if not current:
+        return str(candidate)
+    return str(candidate) if str(candidate) > str(current) else current
+
+
+def now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _json_default(value):
+    if isinstance(value, Decimal):
+        as_float = float(value)
+        return int(as_float) if as_float.is_integer() else as_float
+    if isinstance(value, set):
+        return list(value)
+    return str(value)
+
+
+def _response(status_code: int, body: Dict[str, Any]):
+    return {
+        "statusCode": status_code,
+        "headers": {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET,OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type,Authorization,authorization,x-user-id",
+        },
+        "body": json.dumps(body, default=_json_default),
+    }
