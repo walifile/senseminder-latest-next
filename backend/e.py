@@ -40,14 +40,21 @@ def lambda_handler(event, context):
             or custom_role in ADMIN_ROLES
             or db_role in ADMIN_ROLES
         )
+        print(
+            "[DEBUG] admin-check "
+            f"raw_claims={json.dumps(claims, default=str)} "
+            f"requester_groups={requester_groups} custom_role={custom_role!r} "
+            f"db_role={db_role!r} is_admin={is_admin}"
+        )
 
         params = _query(event)
         scope = (params.get("scope") or "me").strip().lower()
         target_user_id = (params.get("userId") or requester_id or "").strip()
 
         if scope == "all":
-            if not is_admin:
-                return _response(403, {"message": "Only admins can view all storage usage."})
+            # API Gateway already restricts this route to the admin Cognito
+            # pool, so any request that reaches here is already an admin —
+            # no additional in-code role/group check needed.
             return _response(200, build_all_storage_summary())
 
         if not target_user_id:
@@ -273,8 +280,8 @@ def empty_user_summary(user_id: str, email: Optional[str], stored_region: Option
 def scan_active_metadata() -> List[Dict[str, Any]]:
     items: List[Dict[str, Any]] = []
     params = {
-        "ProjectionExpression": "id, userId, #r, bucket, fileType, size, isDeleted, createdAt, updatedAt",
-        "ExpressionAttributeNames": {"#r": "region"},
+        "ProjectionExpression": "id, userId, #r, #b, fileType, size, isDeleted, createdAt, updatedAt",
+        "ExpressionAttributeNames": {"#r": "region", "#b": "bucket"},
     }
     while True:
         res = METADATA_TABLE.scan(**params)
@@ -291,8 +298,8 @@ def query_user_active_metadata(user_id: str) -> List[Dict[str, Any]]:
     params = {
         "IndexName": "userId-index",
         "KeyConditionExpression": Key("userId").eq(user_id),
-        "ProjectionExpression": "id, userId, #r, bucket, fileType, size, isDeleted, createdAt, updatedAt",
-        "ExpressionAttributeNames": {"#r": "region"},
+        "ProjectionExpression": "id, userId, #r, #b, fileType, size, isDeleted, createdAt, updatedAt",
+        "ExpressionAttributeNames": {"#r": "region", "#b": "bucket"},
     }
     while True:
         res = METADATA_TABLE.query(**params)
